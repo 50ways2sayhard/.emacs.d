@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug  8 16:07:40 2019 (-0400)
+;; Last-Updated: Sat Feb 22 00:08:22 2020 (+0800)
 ;;           By: Mingde (Matthew) Zeng
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -42,22 +42,63 @@
   (require 'init-const))
 
 ;; PythonConfig
-(use-package python-mode
-  :ensure nil
-  :after flycheck
-  :mode "\\.py\\'"
-  :custom
-  (python-indent-offset 4)
-  (flycheck-python-pycompile-executable "python3")
-  (python-shell-interpreter "python3"))
+;; (use-package python-mode
+;;   :ensure nil
+;;   :after flycheck
+;;   :mode "\\.py\\'"
+;;   :custom
+;;   (python-indent-offset 4)
+;;   (flycheck-python-pycompile-executable "python3")
+;;   (python-shell-interpreter "python3"))
 ;; -PythonConfig
+
+
+
+(use-package python
+  :ensure nil
+  :hook (inferior-python-mode . (lambda ()
+                                  (process-query-on-exit-flag
+                                   (get-process "Python"))))
+  :init
+  ;; Disable readline based native completion
+  (setq python-shell-completion-native-enable nil)
+  :config
+  (setq python-indent-offset 4)
+  (setq python-shell-interpreter "python")
+  (with-eval-after-load 'exec-path-from-shell
+    (exec-path-from-shell-copy-env "PYTHONPATH"))
+  ;; Live Coding in Python
+  (use-package live-py-mode)
+
+  (use-package pyvenv
+    :config
+    (with-eval-after-load 'exec-path-from-shell
+      (exec-path-from-shell-copy-env "WORKON_HOME"))
+    (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
+    )
+
+  (use-package py-isort
+    :defer t
+    :init
+    (setq python-sort-imports-on-save t)
+    (defun +python/python-sort-imports ()
+      (interactive)
+      (when (and python-sort-imports-on-save
+                 (derived-mode-p 'python-mode))
+        (py-isort-before-save)))
+    (add-hook 'python-mode-hook
+              (add-hook 'before-save-hook #'+python/python-sort-imports))
+    ))
 
 ;; LSPPythonPac
 (use-package lsp-python-ms
   :after lsp-mode python
   :if (or *python3* *python*)
   :custom
-  (lsp-python-executable-cmd "python3"))
+  (lsp-python-executable-cmd "python")
+  :config
+  (setq lsp-python-ms-dir "~/.local/mspyls/")
+  )
 ;; -LSPPythonPac
 
 (provide 'init-python)

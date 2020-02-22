@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb  8 14:11:55 2020 (-0500)
+;; Last-Updated: Sat Feb 22 00:03:34 2020 (+0800)
 ;;           By: Mingde (Matthew) Zeng
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -37,23 +37,64 @@
 ;;
 ;;; Code:
 
+
 (eval-when-compile
   (require 'init-const))
 
+
+;; ;; Ivy integration
+(use-package lsp-ivy
+  :after lsp-mode
+  :bind (:map lsp-mode-map
+              ([remap xref-find-apropos] . lsp-ivy-workspace-symbol)
+              ("C-s-." . lsp-ivy-global-workspace-symbol)))
+
 ;; LSPPac
-(use-package lsp-mode
-  :defer t
-  :commands lsp
-  :custom
-  (lsp-auto-guess-root nil)
-  (lsp-prefer-flymake nil) ; Use flycheck instead of flymake
-  (lsp-file-watch-threshold 2000)
-  (read-process-output-max (* 1024 1024))
-  :bind (:map lsp-mode-map ("C-c C-f" . lsp-format-buffer))
-  :hook ((java-mode python-mode go-mode
-          js-mode js2-mode typescript-mode web-mode
-          c-mode c++-mode objc-mode) . lsp))
+;; (use-package lsp-mode
+;;   :defer t
+;;   :commands lsp
+;;   :custom
+;;   (lsp-auto-guess-root nil)
+;;   (lsp-prefer-flymake nil) ; Use flycheck instead of flymake
+;;   (lsp-file-watch-threshold 2000)
+;;   (read-process-output-max (* 1024 1024))
+;;   :bind (:map lsp-mode-map ("C-c C-f" . lsp-format-buffer))
+;;   :hook ((java-mode python-mode go-mode
+;;                     js-mode js2-mode typescript-mode web-mode
+;;                     c-mode c++-mode objc-mode) . lsp))
 ;; -LSPPac
+
+(use-package lsp-mode
+  :diminish
+  :hook ((prog-mode . (lambda ()
+                        (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
+                          (lsp-deferred))))
+         (lsp-mode . (lambda ()
+                       ;; Integrate `which-key'
+                       (lsp-enable-which-key-integration)
+
+                       ;; Format and organize imports
+                       (unless (derived-mode-p 'c-mode 'c++-mode)
+                         (add-hook 'before-save-hook #'lsp-format-buffer t t)
+                         (add-hook 'before-save-hook #'lsp-organize-imports t t)))))
+  :bind (:map lsp-mode-map
+              ("C-c C-d" . lsp-describe-thing-at-point)
+              ([remap xref-find-definitions] . lsp-find-definition)
+              ([remap xref-find-references] . lsp-find-references))
+  :init
+  ;; @see https://github.com/emacs-lsp/lsp-mode#performance
+  (setq read-process-output-max (* 1024 1024)) ;; 1MB
+
+  (setq lsp-auto-guess-root t        ; Detect project root
+        lsp-keep-workspace-alive nil ; Auto-kill LSP server
+        lsp-enable-indentation nil
+        lsp-enable-on-type-formatting nil
+        lsp-keymap-prefix "C-c l")
+
+  ;; For `lsp-clients'
+  (setq lsp-clients-python-library-directories '("/usr/local/" "/usr/"))
+  (unless (executable-find "rls")
+    (setq lsp-rust-rls-server-command '("rustup" "run" "stable" "rls"))))
 
 ;; LSPUI
 (use-package lsp-ui
@@ -99,6 +140,7 @@
          ("C-M-<f11>" . dap-step-out)
          ("<f7>" . dap-breakpoint-toggle))))
 ;; -DAPPac
+
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

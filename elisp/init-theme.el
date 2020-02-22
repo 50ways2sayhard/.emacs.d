@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Jan  6 14:32:34 2020 (-0500)
+;; Last-Updated: Fri Feb 21 23:59:30 2020 (+0800)
 ;;           By: Mingde (Matthew) Zeng
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -41,30 +41,44 @@
 (eval-when-compile
   (require 'init-const))
 
-;; DoomThemes
-(use-package doom-themes
-  :custom-face
-  (cursor ((t (:background "BlanchedAlmond"))))
-  :config
-  ;; flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config)
-  (load-theme 'doom-one t))
-;; -DoomThemes
-
-;; DoomModeline
 (use-package doom-modeline
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
-  (doom-modeline-minor-modes t)
+  ;; (doom-modeline-minor-modes t)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-height 15)
   :config
   (doom-modeline-mode))
-;; -DoomModeline
+
+
+
+;; DoomThemes
+(use-package doom-themes
+  :custom-face
+  (cursor ((t (:background "BlanchedAlmond"))))
+  :custom
+  (doom-themes-treemacs-theme "doom-colors")
+  :config
+  ;; flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config)
+  (setq doom-modeline-env-version t)
+
+  (doom-themes-treemacs-config)
+  (load-theme 'doom-one t))
+;; -DoomThemes
+
+
+(use-package hide-mode-line
+  :hook (((completion-list-mode completion-in-region-mode) . hide-mode-line-mode)))
+
+;; A minor-mode menu for mode-line
+(use-package minions
+  :hook (doom-modeline-mode . minions-mode))
+
 
 (provide 'init-theme)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

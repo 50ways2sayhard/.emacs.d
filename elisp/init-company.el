@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Dec 27 22:11:06 2019 (-0500)
+;; Last-Updated: Sat Feb 22 01:14:01 2020 (+0800)
 ;;           By: Mingde (Matthew) Zeng
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -47,6 +47,10 @@
   :bind
   (:map company-active-map
         ([tab] . smarter-yas-expand-next-field-complete)
+        ("C-n" . company-next-line)
+        ("C-p" . company-previous-line)
+        ("<tab>" . company-complete-selection)
+        ("<RET>" . company-complete-selection)
         ("TAB" . smarter-yas-expand-next-field-complete))
   :custom
   (company-minimum-prefix-length 1)
@@ -105,25 +109,29 @@ If failed try to complete the common part with `company-complete-common'"
   (add-to-list 'company-backends #'company-tabnine)
 
   ;; Integrate company-tabnine with lsp-mode
+
+
   (defun company//sort-by-tabnine (candidates)
     (if (or (functionp company-backend)
             (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
         candidates
       (let ((candidates-table (make-hash-table :test #'equal))
-            candidates-lsp
-            candidates-tabnine)
+            candidates-1
+            candidates-2)
         (dolist (candidate candidates)
           (if (eq (get-text-property 0 'company-backend candidate)
                   'company-tabnine)
               (unless (gethash candidate candidates-table)
-                (push candidate candidates-tabnine))
-            (push candidate candidates-lsp)
+                (push candidate candidates-2))
+            (push candidate candidates-1)
             (puthash candidate t candidates-table)))
-        (setq candidates-lsp (nreverse candidates-lsp))
-        (setq candidates-tabnine (nreverse candidates-tabnine))
-        (nconc (seq-take candidates-tabnine 3)
-               (seq-take candidates-lsp 6))))))
-;; -CompanyTabNinePac
+        (setq candidates-1 (nreverse candidates-1))
+        (setq candidates-2 (nreverse candidates-2))
+        (nconc (seq-take candidates-1 2)
+               (seq-take candidates-2 2)
+               (seq-drop candidates-1 2)
+               (seq-drop candidates-2 2))))))
+;; -Companytabninepac
 
 ;; CompanyBoxPac
 (use-package company-box

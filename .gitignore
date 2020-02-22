@@ -41,3 +41,7 @@ workspace/
 /mu4e/
 /diary
 /excorporate/
+var/
+persp-confs/
+.persistent-scratch
+flycheck-init.el

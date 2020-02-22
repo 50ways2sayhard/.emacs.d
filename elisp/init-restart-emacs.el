@@ -1,22 +1,31 @@
-;;; init-edit.el --- -*- lexical-binding: t -*-
+;;; init-restart-emacs.el ---
 ;;
-;; Filename: init-edit.el
-;; Description: Initialize Editing Configuration
+;; Filename: init-restart-emacs.el
+;; Description:
 ;; Author: Mingde (Matthew) Zeng
+;; Maintainer:
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
-;; Created: Thu Mar 28 13:25:24 2019 (-0400)
-;; Version: 2.0.0
-;; Last-Updated: Tue Dec 24 11:50:24 2019 (-0500)
-;;           By: Mingde (Matthew) Zeng
-;; URL: https://github.com/MatthewZMD/.emacs.d
-;; Keywords: M-EMACS .emacs.d iedit
-;; Compatibility: emacs-version >= 26.1
+;; Created: Sat Feb 22 11:32:04 2020 (+0800)
+;; Version:
+;; Package-Requires: ()
+;; Last-Updated:
+;;           By:
+;;     Update #: 2
+;; URL:
+;; Doc URL:
+;; Keywords:
+;; Compatibility:
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
 ;;
-;; This initializes iedit, awesome-pair, delete-block
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;; Change Log:
+;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -36,26 +45,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'init-global-config))
 
-;; IEditPac
-(use-package iedit
-  :bind ("C-z ," . iedit-mode)
-  :diminish)
-;; -IEditPac
+(use-package restart-emacs)
 
+(provide 'init-restart-emacs)
 
-;; DeleteBlockPac
-(use-package delete-block
-  :load-path (lambda () (expand-file-name "site-elisp/delete-block" user-emacs-directory))
-  :bind
-  (("M-d" . delete-block-forward)
-   ("C-<backspace>" . delete-block-backward)
-   ("M-<backspace>" . delete-block-backward)
-   ("M-DEL" . delete-block-backward)))
-;; -DeleteBlockPac
-
-(provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; init-edit.el ends here
+;;; init-restart-emacs.el ends here

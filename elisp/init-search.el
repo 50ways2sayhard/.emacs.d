@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:01:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Feb 19 16:11:48 2020 (-0500)
+;; Last-Updated: Sat Feb 22 10:40:23 2020 (+0800)
 ;;           By: Mingde (Matthew) Zeng
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d color-rg rg
@@ -41,37 +41,6 @@
   (require 'init-global-config)
   (require 'init-const))
 
-;; IvyPac
-(use-package ivy
-  :diminish
-  :init
-  (use-package amx :defer t)
-  (use-package counsel :diminish :config (counsel-mode 1))
-  (use-package swiper :defer t)
-  (ivy-mode 1)
-  :bind
-  (("C-s" . swiper-isearch)
-   ("C-z s" . counsel-rg)
-   ("C-z b" . counsel-buffer-or-recentf)
-   ("C-z C-b" . counsel-ibuffer)
-   (:map ivy-minibuffer-map
-         ("C-r" . ivy-previous-line-or-history)
-         ("M-RET" . ivy-immediate-done))
-   (:map counsel-find-file-map
-         ("C-~" . counsel-goto-local-home)))
-  :custom
-  (ivy-use-virtual-buffers t)
-  (ivy-height 10)
-  (ivy-on-del-error-function nil)
-  (ivy-magic-slash-non-match-action 'ivy-magic-slash-non-match-create)
-  (ivy-count-format "【%d/%d】")
-  (ivy-wrap t)
-  :config
-  (defun counsel-goto-local-home ()
-      "Go to the $HOME of the local machine."
-      (interactive)
-    (ivy--cd "~/")))
-;; -IvyPac
 
 ;; ColorRGPac
 (use-package color-rg
@@ -80,39 +49,44 @@
   :bind ("C-M-s" . color-rg-search-input))
 ;; -ColorRGPac
 
+
+(use-package exec-path-from-shell
+  :if (featurep 'cocoa)
+  :defer t
+  :init
+  (setq exec-path-from-shell-check-startup-files nil
+        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy")
+        exec-path-from-shell-arguments '("-l"))
+  (exec-path-from-shell-initialize))
+
 ;; FFIPPac
 (use-package find-file-in-project
   :if *find*
   :bind ("C-z o" . ffip))
 ;; -FFIPPac
 
-;; SnailsPac
-(use-package snails
-  :load-path (lambda () (expand-file-name "site-elisp/snails/" user-emacs-directory))
-  :if *sys/gui*
-  :custom-face
-  (snails-content-buffer-face ((t (:background "#111" :height 110))))
-  (snails-input-buffer-face ((t (:background "#222" :foreground "gold" :height 110))))
-  (snails-header-line-face ((t (:inherit font-lock-function-name-face :underline t :height 1.1))))
+
+(use-package youdao-dictionary
+  :commands youdao-dictionary-play-voice-of-current-word
+  :bind (("C-c y" . my-youdao-search-at-point)
+         ("C-c Y" . youdao-dictionary-search-at-point)
+         :map youdao-dictionary-mode-map
+         ("h" . youdao-dictionary-hydra/body)
+         ("?" . youdao-dictionary-hydra/body))
   :init
-  (use-package exec-path-from-shell :if (featurep 'cocoa) :defer t)
-  :config
-  ;; Functions for specific backends
-  (defun snails-current-project ()
+  (setq url-automatic-caching t
+        youdao-dictionary-use-chinese-word-segmentation t) ; 中文分词
+
+  (defun my-youdao-search-at-point ()
+    "Search word at point and display result with `posframe', `pos-tip', or buffer."
     (interactive)
-    (snails '(snails-backend-projectile snails-backend-rg snails-backend-fd)))
-  (defun snails-active-recent-buffers ()
-    (interactive)
-    (snails '(snails-backend-buffer snails-backend-recentf)))
-  (defun snails-everywhere ()
-    (interactive)
-    (snails '(snails-backend-everything snails-backend-mdfind)))
-  :bind
-  (("M-s s" . snails)
-   ("M-s g" . snails-current-project)
-   ("M-s b" . snails-active-recent-buffers)
-   ("M-s e" . snails-everywhere)))
-;; -SnailsPac
+    (if (display-graphic-p)
+        (youdao-dictionary-search-at-point-posframe)
+      (youdao-dictionary-search-at-point))))
+
+
+(use-package google-this)
+
 
 (provide 'init-search)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
