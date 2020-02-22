@@ -8,3 +8,11 @@ It is compatible **Only with Emacs 26 and above**.
 
 Enjoy hacking!
 
+# Installation
+
+```
+cd ~
+mv .emacs.d .emacs.d.bak
+git clone --recurse-submodules -j8 https://github.com/50ways2sayhard/.emacs.d.git
+cd .emacs.d
+```

@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Feb 21 23:59:30 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sat Feb 22 21:37:30 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
 ;; Compatibility: emacs-version >= 26.1
@@ -45,13 +45,13 @@
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
-  ;; (doom-modeline-minor-modes t)
+  (doom-modeline-unicode-fallback t)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
+  (doom-modeline-env-version t)
   (doom-modeline-height 15)
   :config
   (doom-modeline-mode))
-
 
 
 ;; DoomThemes
@@ -65,10 +65,8 @@
   (doom-themes-visual-bell-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
-  (setq doom-modeline-env-version t)
-
   (doom-themes-treemacs-config)
-  (load-theme 'doom-one t))
+  (load-theme 'doom-gruvbox t))
 ;; -DoomThemes
 
 

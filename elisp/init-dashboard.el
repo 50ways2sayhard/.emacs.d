@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Feb 10 01:29:06 2020 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sat Feb 22 18:24:56 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
 ;; Compatibility: emacs-version >= 26.1
@@ -49,11 +49,12 @@
     ("N" . dashboard-next-section)
     ("F" . dashboard-previous-section)))
   :custom
-  (dashboard-banner-logo-title "Close the world. Open the nExt.")
+  (dashboard-banner-logo-title "SPC-M-EMACS")
   (dashboard-startup-banner (expand-file-name "images/KEC_Dark_BK_Small.png" user-emacs-directory))
   (dashboard-items '((recents  . 7)
                      (bookmarks . 7)
                      (agenda . 5)))
+
   (initial-buffer-choice (lambda () (get-buffer dashboard-buffer-name)))
   (dashboard-set-heading-icons t)
   (dashboard-set-navigator t)
@@ -61,17 +62,17 @@
    (if (featurep 'all-the-icons)
        `(((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust -0.05)
            "M-EMACS" "Browse M-EMACS Homepage"
-           (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
+           (lambda (&rest _) (browse-url "https://github.com/50ways2sayhard/.emacs.d")))
           (,(all-the-icons-fileicon "elisp" :height 1.0 :v-adjust -0.1)
            "Configuration" "" (lambda (&rest _) (edit-configs)))
           (,(all-the-icons-faicon "cogs" :height 1.0 :v-adjust -0.1)
            "Update" "" (lambda (&rest _) (auto-package-update-now)))))
      `((("" "M-EMACS" "Browse M-EMACS Homepage"
-         (lambda (&rest _) (browse-url "https://github.com/MatthewZMD/.emacs.d")))
+         (lambda (&rest _) (browse-url "https://github.com/50ways2sayhard/.emacs.d")))
         ("" "Configuration" "" (lambda (&rest _) (edit-configs)))
         ("" "Update" "" (lambda (&rest _) (auto-package-update-now)))))))
   :custom-face
-  (dashboard-banner-logo-title ((t (:family "Love LetterTW" :height 123))))
+  (dashboard-banner-logo-title ((t (:family "SauceCodePro Nerd Font" :height 200))))
   :config
   (dashboard-modify-heading-icons '((recents . "file-text")
                                     (bookmarks . "book")))

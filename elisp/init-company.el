@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 01:14:01 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sat Feb 22 19:18:46 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
 ;; Compatibility: emacs-version >= 26.1
@@ -42,28 +42,35 @@
 
 ;; ComPac
 (use-package company
-  :diminish company-mode
-  :hook ((prog-mode LaTeX-mode latex-mode ess-r-mode) . company-mode)
-  :bind
-  (:map company-active-map
-        ([tab] . smarter-yas-expand-next-field-complete)
-        ("C-n" . company-next-line)
-        ("C-p" . company-previous-line)
-        ("<tab>" . company-complete-selection)
-        ("<RET>" . company-complete-selection)
-        ("TAB" . smarter-yas-expand-next-field-complete))
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-tooltip-align-annotations t)
-  (company-begin-commands '(self-insert-command))
-  (company-require-match 'never)
-  ;; Don't use company in the following modes
-  (company-global-modes '(not shell-mode eaf-mode))
-  ;; Trigger completion immediately.
-  (company-idle-delay 0.1)
-  ;; Number the candidates (use M-1, M-2 etc to select completions).
-  (company-show-numbers t)
+  :diminish
+  :defines (company-dabbrev-ignore-case company-dabbrev-downcase)
+  :commands company-abort
+  :hook (after-init . global-company-mode)
+  :bind (("M-/" . company-complete)
+         ("C-M-i" . company-complete)
+         :map company-active-map
+         ("C-p" . company-select-previous)
+         ("C-n" . company-select-next)
+         ("<tab>" . company-complete-selection)
+         ("<RET>" . company-complete-selection)
+         ("<backtab>" . my-company-yasnippet)
+         :map company-search-map
+         ("C-p" . company-select-previous)
+         ("C-n" . company-select-next))
   :config
+  (setq company-tooltip-align-annotations t
+        company-tooltip-limit 12
+        company-show-numbers t
+        company-idle-delay 0
+        company-echo-delay (if (display-graphic-p) nil 0)
+        company-minimum-prefix-length 2
+        company-require-match nil
+        company-dabbrev-ignore-case nil
+        company-dabbrev-downcase nil
+        company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
+        company-backends '(company-capf)
+        company-frontends '(company-pseudo-tooltip-frontend
+                            company-echo-metadata-frontend))
   (unless *clangd* (delete 'company-clang company-backends))
   (global-company-mode 1)
   (defun smarter-yas-expand-next-field-complete ()
@@ -89,6 +96,9 @@ If failed try to complete the common part with `company-complete-common'"
   :defer t
   :custom (company-lsp-cache-candidates 'auto))
 ;; -CompanyLSPPac
+
+(use-package company-prescient
+  :init (company-prescient-mode 1))
 
 ;; CompanyTabNinePac
 (use-package company-tabnine

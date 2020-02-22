@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 11:39:04 2020 (+0800)
+;; Last-Updated: Sat Feb 22 21:10:08 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -45,13 +45,24 @@
 (defun add-pretty-lambda ()
   "Make some word or string show as pretty Unicode symbols.  See https://unicodelookup.com for more."
   (setq prettify-symbols-alist
-        '(
-          ("lambda" . 955)
-          ("delta" . 120517)
-          ("epsilon" . 120518)
-          ("->" . 8594)
-          ("<=" . 8804)
-          (">=" . 8805)
+        '(("lambda" . ?λ)
+          ("<-" . ?←)
+          ("->" . ?→)
+          ("->>" . ?↠)
+          ("=>" . ?⇒)
+          ("map" . ?↦)
+          ("/=" . ?≠)
+          ("!=" . ?≠)
+          ("==" . ?≡)
+          ("<=" . ?≤)
+          (">=" . ?≥)
+          ("=<<" . (?= (Br . Bl) ?≪))
+          (">>=" . (?≫ (Br . Bl) ?=))
+          ("<=<" . ?↢)
+          (">=>" . ?↣)
+          ("&&" . ?∧)
+          ("||" . ?∨)
+          ("not" . ?¬)
           )))
 (add-hook 'prog-mode-hook 'add-pretty-lambda)
 (add-hook 'org-mode-hook 'add-pretty-lambda)
@@ -117,6 +128,7 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (custom-set-variables '(x-select-enable-clipboard t))
+(setq blink-cursor-mode nil)
 
 
 (provide 'init-ui-config)

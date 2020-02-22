@@ -10,15 +10,17 @@
 (define-key evil-insert-state-map (kbd "C-n") 'next-line)
 (define-key evil-insert-state-map (kbd "C-p") 'previous-line)
 (define-key evil-insert-state-map (kbd "C-a") 'beginning-of-line)
+(define-key evil-insert-state-map (kbd "C-d") 'delete-char)
 (define-key evil-insert-state-map (kbd "C-e") 'end-of-line)
 (define-key evil-insert-state-map (kbd "C-k") 'kill-line)
 
-;; company
+;; Company
 (with-eval-after-load 'company
   (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
   (define-key company-active-map (kbd "<RET>") #'company-complete-selection)
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous)
   )
-
 
 ;; Leader def
 (leader-def
@@ -50,11 +52,12 @@
   "ee" '(flycheck-explain-error-at-point :wk "Explain error at point")
   "ev" '(flycheck-verify-setup :wk "Verify setup")
 
-  "f" '(:which-key "Files")
-  "ff" '(find-file :which-key "Find file")
-  "fr" '(counsel-recentf :which-key "Recent file")
-  "fR" '(rename-file :which-key "Rename file")
-  "fl" '(locate-file :which-key "Locate file")
+  "f" '(:wk "Files")
+  "ff" '(find-file :wk "Find file")
+  "fr" '(counsel-recentf :wk "Recent file")
+  "fR" '(rename-file :wk "Rename file")
+  "fl" '(locate-file :wk "Locate file")
+  "fp" '(+open-configuration-folder :wk ".emacs.d")
 
   "g" '(:wh "Git")
   "gs" '(magit-status :wk "Git status")

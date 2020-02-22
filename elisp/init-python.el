@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 00:08:22 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sat Feb 22 21:19:51 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
 ;; Compatibility: emacs-version >= 26.1
@@ -64,7 +64,7 @@
   (setq python-shell-completion-native-enable nil)
   :config
   (setq python-indent-offset 4)
-  (setq python-shell-interpreter "python")
+  (setq python-shell-interpreter "python3")
   (with-eval-after-load 'exec-path-from-shell
     (exec-path-from-shell-copy-env "PYTHONPATH"))
   ;; Live Coding in Python
@@ -92,10 +92,13 @@
 
 ;; LSPPythonPac
 (use-package lsp-python-ms
+  :hook (python-mode . (lambda () (require 'lsp-python-ms)))
   :after lsp-mode python
   :if (or *python3* *python*)
-  :custom
-  (lsp-python-executable-cmd "python")
+  ;; :custom
+  ;; (lsp-python-executable-cmd "python3")
+  :init
+  (setq lsp-python-executable-cmd "python3")
   :config
   (setq lsp-python-ms-dir "~/.local/mspyls/")
   )

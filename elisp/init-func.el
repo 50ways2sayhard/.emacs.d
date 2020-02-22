@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 11:30:46 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sat Feb 22 18:11:09 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
 ;; Compatibility: emacs-version >= 26.1
@@ -189,6 +189,11 @@ FACE defaults to inheriting from default and highlight."
   (require 'all-the-icons nil t))
 
 
+(defun +open-configuration-folder ()
+  "Open configuration folder."
+  (interactive)
+  (counsel-find-file "~/.emacs.d/")
+  )
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

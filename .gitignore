@@ -45,3 +45,4 @@ var/
 persp-confs/
 .persistent-scratch
 flycheck-init.el
+.DS_Store

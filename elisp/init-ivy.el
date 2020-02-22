@@ -522,7 +522,7 @@ This is for use in `ivy-re-builders-alist'."
   :config
   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
   :hook
-  (ivy-mode . ivy-posframe-enable)
+  (ivy-mode . ivy-posframe-mode)
   )
 
 (provide 'init-ivy)
