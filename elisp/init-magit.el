@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 10:56:35 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sun Feb 23 10:16:21 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
 ;; Compatibility: emacs-version >= 26.1
@@ -43,7 +43,10 @@
 ;; MagitPac
 (use-package magit
   :if *git*
-  :bind ("C-x g" . magit-status))
+  :bind ("C-x g" . magit-status)
+  :config
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  )
 ;; -MagitPac
 
 (defvar gitmoji--all-emoji
