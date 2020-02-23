@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 22:11:52 2020 (+0800)
+;; Last-Updated: Sun Feb 23 10:56:53 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -75,7 +75,6 @@
 
                        ;; Format and organize imports
                        (unless (derived-mode-p 'c-mode 'c++-mode)
-                         (add-hook 'before-save-hook #'lsp-format-buffer t t)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t)))))
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point)
