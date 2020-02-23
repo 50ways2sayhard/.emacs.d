@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Dec 25 02:33:09 2019 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sun Feb 23 10:06:24 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
 ;; Compatibility: emacs-version >= 26.1
@@ -16,7 +16,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; This initializes dired, super-save, disk-usage
+;; This initializes dired, disk-usage
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -76,17 +76,6 @@
 (use-package disk-usage
   :commands (disk-usage))
 ;; -DiskUsage
-
-;; SuperSave
-(use-package super-save
-  :diminish
-  :custom
-  (super-save-auto-save-when-idle t)
-  (auto-save-default nil)
-  (make-backup-files nil)
-  :config
-  (super-save-mode 1))
-;; -SuperSave
 
 ;; SaveAllBuffers
 (defun save-all-buffers ()
