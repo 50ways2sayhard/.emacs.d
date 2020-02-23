@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:01:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 10:40:23 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sun Feb 23 00:20:47 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d color-rg rg
 ;; Compatibility: emacs-version >= 26.1
@@ -51,7 +51,6 @@
 
 
 (use-package exec-path-from-shell
-  :if (featurep 'cocoa)
   :defer t
   :init
   (setq exec-path-from-shell-check-startup-files nil
