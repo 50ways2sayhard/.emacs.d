@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 11:34:57 2020 (+0800)
+;; Last-Updated: Sun Feb 23 15:42:49 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -88,7 +88,16 @@
         (py-isort-before-save)))
     (add-hook 'python-mode-hook
               (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
-    ))
+    )
+
+  (use-package importmagic
+    :defer t
+    :hook (python-mode . importmagic-mode)
+    :commands (importmagic-fix-imports importmagic-fix-symbol-at-point))
+
+  (use-package python-pytest
+    :defer t)
+  )
 
 ;; LSPPythonPac
 (use-package lsp-python-ms
