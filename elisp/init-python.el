@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 00:06:24 2020 (+0800)
+;; Last-Updated: Sun Feb 23 11:34:57 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -64,7 +64,7 @@
   (setq python-shell-completion-native-enable nil)
   :config
   (setq python-indent-offset 4)
-  ;; (setq python-shell-interpreter "python3")
+  (setq python-shell-interpreter "python3")
   (with-eval-after-load 'exec-path-from-shell
     (exec-path-from-shell-copy-env "PYTHONPATH"))
   ;; Live Coding in Python
@@ -87,7 +87,7 @@
                  (derived-mode-p 'python-mode))
         (py-isort-before-save)))
     (add-hook 'python-mode-hook
-              (add-hook 'before-save-hook #'+python/python-sort-imports))
+              (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
     ))
 
 ;; LSPPythonPac
@@ -95,12 +95,9 @@
   :hook (python-mode . (lambda () (require 'lsp-python-ms)))
   :after lsp-mode python
   :if (or *python3* *python*)
-  ;; :custom
-  ;; (lsp-python-executable-cmd "python3")
-  ;; :init
-  ;; (setq lsp-python-executable-cmd 'python-shell-interpreter)
-  :config
-  (setq lsp-python-ms-dir "~/.local/mspyls/")
+  :custom
+  (lsp-python-ms-dir "~/.local/mspyls/")
+  (lsp-python-executable-cmd "python3")
   )
 ;; -LSPPythonPac
 
