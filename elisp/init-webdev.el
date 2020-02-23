@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 00:21:48 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sun Feb 23 10:59:14 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
 ;; Compatibility: emacs-version >= 26.1
@@ -61,8 +61,8 @@
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-highlight-unused-variables-mode))
   :config
-  ;; Use default keybindings for lsp
   (setq js2-basic-offset 2)
+  (setq js-indent-level 2)
 
   (with-eval-after-load 'flycheck
     (when (or (executable-find "eslint_d")
@@ -86,7 +86,7 @@
   :mode ("\\.js\\'")
   :config
   (setq sgml-basic-offset 2)
-  (setq )
+  (setq js-indent-level 2)
   )
 
 
