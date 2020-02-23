@@ -3,8 +3,13 @@
 
 ;; evil mode
 (evil-define-key 'normal 'global
+  ;; Comment
   "gcc" 'evilnc-comment-or-uncomment-lines
-  "gcr" 'comment-or-uncomment-region)
+  "gcr" 'comment-or-uncomment-region
+
+  ;; goto
+  "gd" 'xref-find-definitions
+  )
 
 ;; Navigation
 (define-key evil-insert-state-map (kbd "C-n") 'next-line)
@@ -37,7 +42,7 @@
 
   "c" '(:wk "Code")
   "cD" '(lsp-ui-peek-find-references :wk "Jump to implementation")
-  "cd" '(evil-goto-definition :wk "Jump to definition")
+  "cd" '(lsp-ui-peek-find-definitions :wk "Jump to definition")
   "cf" '(format-all-buffer :wk "Format buffer")
   "ci" '(lsp-organize-imports :wk "Organize import")
   "cr" '(lsp-rename :wk "LSP rename")
