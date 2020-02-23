@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 00:06:24 2020 (+0800)
+;; Last-Updated: 日 2月 23 11:19:57 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -95,12 +95,9 @@
   :hook (python-mode . (lambda () (require 'lsp-python-ms)))
   :after lsp-mode python
   :if (or *python3* *python*)
-  ;; :custom
-  ;; (lsp-python-executable-cmd "python3")
-  ;; :init
-  ;; (setq lsp-python-executable-cmd 'python-shell-interpreter)
-  :config
-  (setq lsp-python-ms-dir "~/.local/mspyls/")
+  :custom
+  (lsp-python-ms-dir "~/.local/mspyls/")
+  (lsp-python-executable-cmd 'python-shell-interpreter)
   )
 ;; -LSPPythonPac
 
