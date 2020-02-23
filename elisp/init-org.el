@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 日 2月 23 14:37:42 2020 (+0800)
+;; Last-Updated: Sun Feb 23 14:51:39 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -55,10 +55,11 @@
   (org-todo-keywords
    '((sequence "TODO" "IN-PROGRESS" "REVIEW" "|" "DONE")))
   (org-agenda-window-setup 'other-window)
+  (org-directory (expand-file-name "~/Dropbox/org-notes"))
   :config
   (unless (version< org-version "9.2")
     (require 'org-tempo))
-  (when (file-directory-p "~/Dropbox/org-notes")
+  (when (file-directory-p org-directory)
     (setq org-agenda-files (list org-directory)))
 
   (defun org-export-turn-on-syntax-highlight ()
