@@ -390,7 +390,6 @@ This is for use in `ivy-re-builders-alist'."
             (counsel-rg . ivy-prescient-non-fuzzy)
             (counsel-pt . ivy-prescient-non-fuzzy)
             (counsel-grep . ivy-prescient-non-fuzzy)
-            (counsel-imenu . ivy-prescient-non-fuzzy)
             (counsel-yank-pop . ivy-prescient-non-fuzzy)
             (swiper . ivy-prescient-non-fuzzy)
             (swiper-isearch . ivy-prescient-non-fuzzy)
