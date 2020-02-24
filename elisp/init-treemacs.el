@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:56:12 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 00:37:57 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 一 2月 24 11:40:24 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d treemacs
 ;; Compatibility: emacs-version >= 26.1
@@ -51,6 +51,9 @@
          ("C-x t b"   . treemacs-bookmark)
          ("C-x t C-t" . treemacs-find-file)
          ("C-x t M-t" . treemacs-find-tag)
+         :map treemacs-mode-map
+         ("j" . treemacs-next-line)
+         ("k" . treemacs-previous-line)
          :map treemacs-mode-map
          ([mouse-1]   . treemacs-single-click-expand-action))
   :config
