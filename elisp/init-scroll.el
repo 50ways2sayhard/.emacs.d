@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug  8 16:07:50 2019 (-0400)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 一 2月 24 09:02:15 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
 ;; Compatibility: emacs-version >= 26.1
@@ -52,6 +52,11 @@
 (setq hscroll-step 1)
 (setq hscroll-margin 1)
 ;; -SmoothScroll
+
+(use-package smooth-scrolling
+  :config
+  (smooth-scrolling-mode 1)
+  )
 
 (provide 'init-scroll)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
