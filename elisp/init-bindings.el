@@ -5,6 +5,7 @@
 (evil-define-key 'normal 'global
   ;; Comment
   "gcc" 'evilnc-comment-or-uncomment-lines
+  "gcC" 'evilnc-comment-or-uncomment-to-the-line
   "gcr" 'comment-or-uncomment-region
 
   ;; goto
@@ -33,6 +34,7 @@
   "<SPC>" '(counsel-projectile :wk "Project Find File")
   ":" '(execute-extended-command :which-key "M-x")
   "/" '(evilnc-comment-or-uncomment-lines :wk "Comment line")
+  "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
 
   "b" '(:wk "Buffer")
   "b[" '(previous-buffer :wk "Previous buffer")
