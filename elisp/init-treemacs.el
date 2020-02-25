@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:56:12 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 2月 24 11:40:24 2020 (+0800)
+;; Last-Updated: 一 2月 24 12:09:58 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d treemacs
@@ -67,6 +67,7 @@
   :config
   (treemacs-follow-mode t)
   (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode t)
   (pcase (cons (not (null (executable-find "git")))
                (not (null (executable-find "python3"))))
     (`(t . t)
