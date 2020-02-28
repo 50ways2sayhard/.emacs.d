@@ -3,6 +3,8 @@
 
 ;; evil mode
 (evil-define-key 'normal 'global
+  "j" 'evil-next-visual-line
+  "k" 'evil-previous-visual-line
   ;; Comment
   "gcc" 'evilnc-comment-or-uncomment-lines
   "gcC" 'evilnc-comment-or-uncomment-to-the-line
@@ -13,20 +15,29 @@
   )
 
 ;; Navigation
-(define-key evil-insert-state-map (kbd "C-n") 'next-line)
-(define-key evil-insert-state-map (kbd "C-p") 'previous-line)
-(define-key evil-insert-state-map (kbd "C-a") 'beginning-of-line)
-(define-key evil-insert-state-map (kbd "C-d") 'delete-char)
-(define-key evil-insert-state-map (kbd "C-e") 'end-of-line)
-(define-key evil-insert-state-map (kbd "C-k") 'kill-line)
+(general-define-key
+ :states 'insert
+ :keymaps 'evil-insert-state-map
+ "C-n" 'next-line
+ "C-p" 'previous-line
+ "C-a" 'beginning-of-line
+ "C-d" 'delete-char
+ "C-e" 'end-of-line
+ "C-k" 'kill-line
+ )
 
 ;; Company
 (with-eval-after-load 'company
-  (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
-  (define-key company-active-map (kbd "<RET>") #'company-complete-selection)
-  (define-key company-active-map (kbd "C-n") #'company-select-next)
-  (define-key company-active-map (kbd "C-p") #'company-select-previous)
+  (general-define-key
+   :states 'insert
+   :keymaps 'company-active-map
+   "C-n" 'company-select-next
+   "C-p" 'company-select-previous
+   "<tab>" 'company-complete-common-or-cycle
+   )
+
   )
+
 
 ;; Leader def
 (leader-def
@@ -53,11 +64,13 @@
   "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
 
   "e" '(:wk "Error")
+  "eb" '(flycheck-buffer :wk "Check current buffer")
   "el" '(flycheck-list-errors :wk "List errors")
   "en" '(flycheck-next-error :wk "Next error")
   "ep" '(flycheck-previous-error :wk "Previous error")
   "ee" '(flycheck-explain-error-at-point :wk "Explain error at point")
   "ev" '(flycheck-verify-setup :wk "Verify setup")
+  "es" '(flycheck-select-checker :wk "Select checker")
 
   "f" '(:wk "Files")
   "ff" '(find-file :wk "Find file")
@@ -71,6 +84,7 @@
   "gb" '(magit-branch-checkout :wk "Git checkout")
   "gB" '(magit-blame :wk "Git blame")
   "gm" '(gitmoji-picker :wk "Gitmoji")
+  "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
   "gf" '(magit-fetch :wk "Git fetch")
   "gF" '(magit-pull :wk "Git pull")
 
@@ -83,8 +97,10 @@
   "o" '(:wk "Open")
   "op" '(treemacs :wk "Treemacs")
   "oy" '(my-youdao-search-at-point :wk "youdao")
-  "ot" '(shell-here :wk "Shell")
+  "oe" '(shell-here :wk "Shell")
   "og" '(google-this :wk "Google")
+  "ot" '(org-todo-list :wk "Org todos")
+  "ox" '(org-agenda :wk "Org agenda")
 
   "p" '(:wk "Project")
   "pp" '(projectile-switch-project :wk "Switch project")
@@ -136,4 +152,16 @@
   "mtl" '(python-pytest-last-failed :wk "Pytest last failed")
   )
 
+(leader-def
+  :states 'normal
+  :keymaps '(js2-mode-map rjsx-mode-map)
+  "mi" '(:wk "Imports")
+  "mif" '(import-js-fix :wk "Fix imports")
+  "mir" '(run-import-js :wk "Run import js")
+  "mii" '(import-js-import :wk "Import module")
+  )
+
 (provide 'init-bindings)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; init-bindings.el ends here

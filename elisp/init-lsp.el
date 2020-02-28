@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 10:56:53 2020 (+0800)
+;; Last-Updated: 四 2月 27 16:43:37 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -83,6 +83,7 @@
   :init
   ;; @see https://github.com/emacs-lsp/lsp-mode#performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
+  (add-hook 'rjsx-mode #'lsp-typescript-enable)
 
   (setq lsp-auto-guess-root t        ; Detect project root
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
