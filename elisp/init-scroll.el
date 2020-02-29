@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 2月 24 09:02:15 2020 (+0800)
+;; Last-Updated: 六 2月 29 09:33:30 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -46,8 +46,8 @@
 (setq scroll-down-aggressively 0.01)
 (setq auto-window-vscroll nil)
 (setq fast-but-imprecise-scrolling nil)
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
-(setq mouse-wheel-progressive-speed nil)
+(setq mouse-wheel-scroll-amount '(2 ((shift) . 1)))
+(setq mouse-wheel-progressive-speed t)
 ;; Horizontal Scroll
 (setq hscroll-step 1)
 (setq hscroll-margin 1)

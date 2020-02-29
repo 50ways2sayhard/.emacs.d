@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 2月 27 17:52:13 2020 (+0800)
+;; Last-Updated: 六 2月 29 15:06:01 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -61,6 +61,12 @@
   :init (setq origami-show-fold-header t)
   :config (face-spec-reset-face 'origami-fold-header-face)
   )
+
+(defun +scroll-to-center ()
+  (evil-scroll-line-to-center (line-number-at-pos))
+  )
+
+(advice-add #'save-buffer :after #'+scroll-to-center)
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

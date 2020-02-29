@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 21:04:03 2020 (+0800)
+;; Last-Updated: 五 2月 28 18:02:23 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -120,8 +120,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 
 (require 'init-crux)
 
-(require 'init-avy)
-
 (require 'init-winner)
 
 (require 'init-which-key)
@@ -172,8 +170,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 
 (require 'init-format)
 
-(require 'init-comment)
-
 (require 'init-edit)
 
 (require 'init-header)
@@ -196,8 +192,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 
 (require 'init-latex)
 
-(require 'init-ess)
-
 ;; Web Development
 (require 'init-webdev)
 
@@ -208,10 +202,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 
 (require 'init-erc)
 
-(require 'init-eww)
-
-(require 'init-mu4e)
-
 (require 'init-tramp)
 
 (require 'init-pdf)
@@ -221,8 +211,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (require 'init-pyim)
 
 (require 'init-epaint)
-
-(require 'init-games)
 
 (require 'init-zone)
 
@@ -237,7 +225,8 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 
 (require 'init-restart-emacs)
 
-(require 'init-pretty-code)
+(require 'init-direnv)
+
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init.el ends here

@@ -1,22 +1,31 @@
-;;; init-eww.el --- -*- lexical-binding: t -*-
+;;; init-direnv.el ---
 ;;
-;; Filename: init-eww.el
-;; Description: Configure Eww
-;; Author: Mingde (Matthew) Zeng
-;; Copyright (C) 2019 Mingde (Matthew) Zeng
-;; Created: Fri Mar 15 11:13:42 2019 (-0400)
-;; Version: 2.0.0
-;; Last-Updated: Tue Dec 24 12:18:07 2019 (-0500)
-;;           By: Mingde (Matthew) Zeng
-;; URL: https://github.com/MatthewZMD/.emacs.d
-;; Keywords: M-EMACS .emacs.d eww
-;; Compatibility: emacs-version >= 26.1
+;; Filename: init-direnv.el
+;; Description:
+;; Author: John
+;; Maintainer:
+;; Copyright (C) 2019 John
+;; Created: 五 2月 28 17:49:17 2020 (+0800)
+;; Version:
+;; Package-Requires: ()
+;; Last-Updated:
+;;           By:
+;;     Update #: 2
+;; URL:
+;; Doc URL:
+;; Keywords:
+;; Compatibility:
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
 ;;
-;; This initializes eww
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;; Change Log:
+;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -37,22 +46,11 @@
 ;;
 ;;; Code:
 
-(eval-when-compile
-  (require 'init-const))
-
-;; EWWPac
-(use-package eww
-  :ensure nil
-  :commands (eww)
-  :hook (eww-mode . (lambda ()
-                      "Rename EWW's buffer so sites open in new page."
-                      (rename-buffer "eww" t)))
+(use-package direnv
   :config
-  ;; I am using EAF-Browser instead of EWW
-  (unless *eaf-env*
-    (setq browse-url-browser-function 'eww-browse-url))) ; Hit & to browse url with system browser
-;; -EWWPac
+  (direnv-mode))
 
-(provide 'init-eww)
+(provide 'init-direnv)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; init-eww.el ends here
+;;; init-direnv.el ends here
