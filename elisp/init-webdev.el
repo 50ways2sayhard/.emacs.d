@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 2月 27 17:42:33 2020 (+0800)
+;; Last-Updated: 一 3月  2 18:00:59 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -60,6 +60,9 @@
                 ("node" . js2-jsx-mode))
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-highlight-unused-variables-mode))
+  :hook ((js2-mode . (lambda()
+                       (flycheck-add-mode 'javascript-eslint 'js2-mode)
+                       (flycheck-add-next-checker 'lsp '(t . javascript-eslint)))))
   :config
   (setq js2-basic-offset 2)
   (setq js-indent-level 2)
@@ -86,8 +89,7 @@
   :mode ("\\.js\\'")
   :config
   (setq sgml-basic-offset 2)
-  (setq js-indent-level 2)
-  )
+  (setq js-indent-level 2))
 
 (use-package import-js
   :hook ((js2-mode rjsx-mode) . run-import-js)
@@ -102,8 +104,11 @@
 
 ;; EmmetPac
 (use-package emmet-mode
-  :hook ((web-mode . emmet-mode)
-         (css-mode . emmet-mode)))
+  :ensure t
+  :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode)
+  :config
+  (add-hook 'emmet-mode-hook (lambda()
+                               (setq emmet-indent-after-insert t))))
 ;; -EmmetPac
 
 ;; InstantRenameTagPac
@@ -116,6 +121,13 @@
 (use-package json-mode
   :mode "\\.json\\'")
 ;; -JsonPac
+
+(use-package mode-local
+  :ensure t
+  :config
+  (setq-mode-local rjsx-mode emmet-expand-jsx-className? t)
+  (setq-mode-local web-mode emmet-expand-jsx-className? nil)
+  )
 
 
 (provide 'init-webdev)

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 2月 28 15:00:38 2020 (+0800)
+;; Last-Updated: 一 3月  2 12:01:14 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -119,8 +119,6 @@ If failed try to complete the common part with `company-complete-common'"
   (add-to-list 'company-backends #'company-tabnine)
 
   ;; Integrate company-tabnine with lsp-mode
-
-
   (defun company//sort-by-tabnine (candidates)
     (if (or (functionp company-backend)
             (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
@@ -141,6 +139,7 @@ If failed try to complete the common part with `company-complete-common'"
                (seq-take candidates-2 2)
                (seq-drop candidates-1 2)
                (seq-drop candidates-2 2))))))
+
 ;; -Companytabninepac
 
 
