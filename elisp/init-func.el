@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 11:29:24 2020 (+0800)
+;; Last-Updated: 三 3月  4 12:38:32 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -194,6 +194,17 @@ FACE defaults to inheriting from default and highlight."
   (interactive)
   (counsel-find-file "~/.emacs.d/")
   )
+
+(defun +flycheck-list-errors ()
+  (interactive)
+  (call-interactively 'flycheck-list-errors)
+  (select-window (get-buffer-window "*Flycheck errors*"))
+  )
+
+(defun doom-enlist (exp)
+  "Return EXP wrapped in a list, or as-is if already a list."
+  (declare (pure t) (side-effect-free t))
+  (if (listp exp) exp (list exp)))
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
