@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 8
+;;     Update #: 11
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -202,6 +202,9 @@ Otherwise it builds `prettify-code-symbols-alist' according to
   :and "&&" :or "||"
   :for "for"
   :return "return"
+  :int "parseInt" :float "parseFloat"
+  :>= ">="
+  :<= "<="
   ;; Other
   :yield "import")
 
