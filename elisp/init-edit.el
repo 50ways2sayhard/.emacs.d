@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 六 2月 29 15:06:01 2020 (+0800)
+;; Last-Updated: 三 3月 11 18:48:41 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -66,7 +66,8 @@
   (evil-scroll-line-to-center (line-number-at-pos))
   )
 
-(advice-add #'save-buffer :after #'+scroll-to-center)
+(advice-add #'format-all-buffer :after #'+scroll-to-center)
+(advice-add #'format-all-buffer--from-hook :after #'+scroll-to-center)
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
