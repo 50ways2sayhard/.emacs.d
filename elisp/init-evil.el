@@ -1,5 +1,4 @@
-(eval-when-compile
-  (require 'init-const))
+
 
 (use-package evil
   :ensure t
@@ -181,5 +180,6 @@
   :after evil
   :config
   (evil-collection-init))
+
 
 (provide 'init-evil)

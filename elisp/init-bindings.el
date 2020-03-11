@@ -14,6 +14,8 @@
   "gd" 'xref-find-definitions
   )
 
+(evil-ex-define-cmd "W" 'evil-write)
+
 ;; Navigation
 (general-define-key
  :states 'insert
@@ -104,6 +106,7 @@
   "ox" '(org-agenda :wk "Org agenda")
 
   "p" '(:wk "Project")
+  "pk" '(porjectile-kill-buffers :wk "Kill project buffers" )
   "pp" '(projectile-switch-project :wk "Switch project")
   "pf" '(counsel-projectile :wk "Find file in project")
   "pr" '(projectile-recentf :wk "Recent file in project")
