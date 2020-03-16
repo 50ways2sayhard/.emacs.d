@@ -106,7 +106,7 @@
   "ox" '(org-agenda :wk "Org agenda")
 
   "p" '(:wk "Project")
-  "pk" '(porjectile-kill-buffers :wk "Kill project buffers" )
+  "pk" '(projectile-kill-buffers :wk "Kill project buffers" )
   "pp" '(projectile-switch-project :wk "Switch project")
   "pf" '(counsel-projectile :wk "Find file in project")
   "pr" '(projectile-recentf :wk "Recent file in project")

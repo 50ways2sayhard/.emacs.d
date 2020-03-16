@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 00:19:28 2020 (+0800)
+;; Last-Updated: 三 3月 11 19:10:50 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -66,7 +66,7 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
   (doom-themes-treemacs-config)
-  (load-theme 'doom-nord t))
+  (load-theme 'doom-one t))
 ;; -DoomThemes
 
 
