@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月  2 18:02:33 2020 (+0800)
+;; Last-Updated: 三 3月 18 17:26:16 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -88,6 +88,7 @@
   (setq lsp-auto-guess-root t        ; Detect project root
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
         lsp-enable-indentation nil
+        lsp-prefer-capf t
         ;; lsp-diagnostic-package :none
         lsp-enable-on-type-formatting nil
         lsp-keymap-prefix "C-c l")
