@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:32:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Feb 21 23:53:41 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 3月 19 17:25:07 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d fonts
 ;; Compatibility: emacs-version >= 26.1

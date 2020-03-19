@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 3月 10 12:07:33 2020 (+0800)
+;; Last-Updated: 二 3月 17 11:46:35 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -196,6 +196,7 @@ FACE defaults to inheriting from default and highlight."
   )
 
 (defun +flycheck-list-errors ()
+  "Auto focus on flycheck list window."
   (interactive)
   (call-interactively 'flycheck-list-errors)
   (select-window (get-buffer-window "*Flycheck errors*"))
@@ -205,6 +206,21 @@ FACE defaults to inheriting from default and highlight."
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
+
+(defun +modeline-update-env-in-all-windows-h (&rest _)
+  "Update version strings in all buffers."
+  (dolist (window (window-list))
+    (with-selected-window window
+      (doom-modeline-update-env)
+      (force-mode-line-update))))
+
+(defun +modeline-clear-env-in-all-windows-h (&rest _)
+  "Blank out version strings in all buffers."
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (setq doom-modeline-env--version
+            (bound-and-true-p doom-modeline-load-string))))
+  (force-mode-line-update t))
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

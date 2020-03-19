@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Tue Apr 23 23:08:17 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Dec 14 20:56:21 2019 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 3月 19 09:26:10 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d yasnippet
 ;; Compatibility: emacs-version >= 26.1

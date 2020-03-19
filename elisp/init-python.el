@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月  2 18:01:36 2020 (+0800)
+;; Last-Updated: 四 3月 19 09:53:52 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -39,7 +39,9 @@
 
 (eval-when-compile
   (require 'init-flycheck)
-  (require 'init-const))
+  (require 'init-const)
+  (require 'init-func)
+  )
 
 ;; PythonConfig
 ;; (use-package python-mode
@@ -77,7 +79,12 @@
     :config
     (with-eval-after-load 'exec-path-from-shell
       (exec-path-from-shell-copy-env "WORKON_HOME"))
+    (add-hook 'pyvenv-post-activate-hooks #'+modeline-update-env-in-all-windows-h)
+    (add-hook 'pyvenv-pre-deactivate-hooks #'+modeline-clear-env-in-all-windows-h)
     (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
+    (add-to-list 'global-mode-string
+                 '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
+                 'append)
     )
 
   (use-package py-isort
@@ -109,9 +116,19 @@
   :if (or *python3* *python*)
   :custom
   (lsp-python-ms-dir "~/.local/mspyls/")
-  (lsp-python-executable-cmd "python3")
+  (lsp-python-executable-cmd "python")
   )
 ;; -LSPPythonPac
+
+(use-package poetry
+  :after python
+  )
+
+(use-package sphinx-doc
+  :after python
+  :config
+  (setq sphinx-doc-python-indent 4)
+  )
 
 (provide 'init-python)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

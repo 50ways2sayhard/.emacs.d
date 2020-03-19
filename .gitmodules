@@ -34,3 +34,6 @@
 [submodule "site-elisp/aweshell"]
 	path = site-elisp/aweshell
 	url = https://github.com/MatthewZMD/aweshell.git
+[submodule "site-elisp/nord-emacs"]
+	path = site-elisp/nord-emacs
+	url = https://github.com/arcticicestudio/nord-emacs

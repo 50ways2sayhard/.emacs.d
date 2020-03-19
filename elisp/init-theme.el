@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 3月 11 19:10:50 2020 (+0800)
+;; Last-Updated: 三 3月 18 14:39:16 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -45,11 +45,15 @@
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
+  (doom-modeline-buffer-file-name-style 'truncate-with-project)
   (doom-modeline-unicode-fallback t)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-env-version t)
   (doom-modeline-height 15)
+  (doom-modeline-buffer-modification-icon t)
+  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+  (doom-modeline-env-python-executable "python")
   :config
   (doom-modeline-mode))
 
@@ -66,9 +70,8 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
   (doom-themes-treemacs-config)
-  (load-theme 'doom-one t))
+  (load-theme 'nord t))
 ;; -DoomThemes
-
 
 (use-package hide-mode-line
   :hook (((completion-list-mode completion-in-region-mode) . hide-mode-line-mode)))
@@ -76,6 +79,16 @@
 ;; A minor-mode menu for mode-line
 (use-package minions
   :hook (doom-modeline-mode . minions-mode))
+
+(use-package nord-theme
+  :load-path (lambda () (expand-file-name "site-elisp/nord-theme" user-emacs-directory))
+  :after (doom-modeline diff-hl)
+  :config
+  (set-face-background 'mode-line "#242832")
+  (set-face-foreground 'diff-hl-change "#EBCB8B")
+  (set-face-foreground 'diff-hl-insert "#A3BE8C")
+  (set-face-foreground 'diff-hl-delete "#BF616A")
+  )
 
 
 (provide 'init-theme)

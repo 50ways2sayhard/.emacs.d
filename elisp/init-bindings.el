@@ -81,6 +81,7 @@
   "fR" '(rename-file :wk "Rename file")
   "fl" '(locate-file :wk "Locate file")
   "fp" '(+open-configuration-folder :wk ".emacs.d")
+  "fD" '(delete-file :wk "Delete file")
 
   "g" '(:wh "Git")
   "gs" '(magit-status :wk "Git status")
@@ -137,6 +138,8 @@
 (leader-def
   :states 'normal
   :keymaps 'python-mode-map
+  "md" '(sphinx-doc :wk "Docstring")
+
   "mv" '(:wk "Virtualenv")
   "mvw" '(pyvenv-workon :wk "Pyvenv workon")
   "mva" '(pyvenv-activate :wk "Pyvenv activate")
@@ -154,6 +157,14 @@
   "mtT" '(python-pytest-function-dwim :wk "Pytest function dwin")
   "mtr" '(python-pytest-repeat :wk "Pytest repeat")
   "mtl" '(python-pytest-last-failed :wk "Pytest last failed")
+
+  "mp" '(:wk "Poetry")
+  "mpv" '(poetry-venv-workon :wk "Poetry workon")
+  "mpV" '(poetry-venv-deactivate :wk "Poetry deactivate workon")
+  "mpp" '(poetry :wk "Poetry popup")
+  "mpa" '(poetry-add :wk "Poetry add dep")
+  "mpr" '(poetry-run :wk "Run poetry command")
+  "mpR" '(poetry-remove :wk "Poetry remove dep")
   )
 
 (leader-def

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Mar 15 18:37:33 2020 (+0800)
+;; Last-Updated: 二 3月 17 17:19:03 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -90,7 +90,7 @@
                                                     (t 140))))
 
   ;; Specify font for all unicode characters
-  (cl-loop for font in '("Symbola" "Apple Symbols" "Symbol" "icons-in-terminal")
+  (cl-loop for font in '("Apple Symbols" "Noto Color Emoji" "Symbol" "icons-in-terminal")
            when (font-installed-p font)
            return (set-fontset-font t 'unicode font nil 'prepend))
 
@@ -115,7 +115,6 @@
   (nyan-animate-nyancat t)
   :hook
   (doom-modeline-mode . nyan-mode))
-
 
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
