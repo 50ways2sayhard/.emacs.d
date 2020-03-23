@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 3月 18 14:39:16 2020 (+0800)
+;; Last-Updated: 五 3月 20 16:08:08 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -88,6 +88,14 @@
   (set-face-foreground 'diff-hl-change "#EBCB8B")
   (set-face-foreground 'diff-hl-insert "#A3BE8C")
   (set-face-foreground 'diff-hl-delete "#BF616A")
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (font-lock-add-keywords
+               nil
+               '(("^[[:space:]]*\\(@[^(#[:space:]\n]*\\)" 1 'font-lock-preprocessor-face)))))
+  (set-face-attribute 'font-lock-preprocessor-face nil
+                      :weight 'normal
+                      :foreground "#D08770")
   )
 
 
