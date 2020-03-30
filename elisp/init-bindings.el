@@ -48,6 +48,7 @@
   ":" '(execute-extended-command :which-key "M-x")
   "/" '(evilnc-comment-or-uncomment-lines :wk "Comment line")
   "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
+  "." '(snails :wk "Snails")
 
   "b" '(:wk "Buffer")
   "b[" '(previous-buffer :wk "Previous buffer")
