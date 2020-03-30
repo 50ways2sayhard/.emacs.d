@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 3月 18 18:02:52 2020 (+0800)
+;; Last-Updated: 一 3月 30 08:48:59 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -111,13 +111,15 @@ If failed try to complete the common part with `company-complete-common'"
   :hook
   (lsp-after-open . (lambda ()
                       (setq company-tabnine-max-num-results 3)
-                      (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-                      (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
+                      ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+                      ;; (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
                       ))
   (kill-emacs . company-tabnine-kill-process)
   :config
   ;; Enable TabNine on default
-  (add-to-list 'company-backends #'company-tabnine)
+  (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+  (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
+  ;; (add-to-list 'company-backends #'company-tabnine)
 
   ;; Integrate company-tabnine with lsp-mode
   (defun company//sort-by-tabnine (candidates)
@@ -143,6 +145,12 @@ If failed try to complete the common part with `company-complete-common'"
 
 ;; -Companytabninepac
 
+(use-package company-quickhelp
+  :defines company-quickhelp-delay
+  :bind (:map company-active-map
+              ([remap company-show-doc-buffer] . company-quickhelp-manual-begin))
+  :hook (global-company-mode . company-quickhelp-mode)
+  :init (setq company-quickhelp-delay 0.5))
 
 (provide 'init-company)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

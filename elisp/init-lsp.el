@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 3月 20 19:17:27 2020 (+0800)
+;; Last-Updated: 三 3月 25 12:48:10 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -89,9 +89,13 @@
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
         lsp-enable-indentation nil
         lsp-prefer-capf t
+        lsp-keep-workspace-alive nil
+        lsp-pyls-plugins-jedi-completion-include-params nil
+        lsp-pyls-plugins-jedi-enable nil
         ;; lsp-diagnostic-package :none
         lsp-enable-on-type-formatting nil
         lsp-keymap-prefix "C-c l")
+  (setq gc-cons-threshold 100000000)
 
   ;; For `lsp-clients'
   (setq lsp-clients-python-library-directories '("/usr/local/" "/usr/"))
