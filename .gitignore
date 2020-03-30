@@ -47,3 +47,4 @@ persp-confs/
 flycheck-init.el
 .DS_Store
 .local/
+straight/

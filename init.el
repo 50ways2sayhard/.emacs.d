@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 3月  4 12:43:05 2020 (+0800)
+;; Last-Updated: 一 3月 30 08:55:53 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -44,8 +44,8 @@
               (early-init-do-not-edit-d (expand-file-name "early-init-do-not-edit/" user-emacs-directory))
               (early-init-do-not-edit-f (expand-file-name "early-init.el" early-init-do-not-edit-d)))
          (and (version< emacs-version "27")
-            (or (not (file-exists-p early-init-do-not-edit-f))
-               (file-newer-than-file-p early-init-f early-init-do-not-edit-f)))
+              (or (not (file-exists-p early-init-do-not-edit-f))
+                  (file-newer-than-file-p early-init-f early-init-do-not-edit-f)))
          (make-directory early-init-do-not-edit-d t)
          (copy-file early-init-f early-init-do-not-edit-f t t t t)
          (add-to-list 'load-path early-init-do-not-edit-d)
@@ -94,8 +94,8 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
     (dolist (f (directory-files base))
       (let ((name (concat base "/" f)))
         (when (and (file-directory-p name)
-                 (not (equal f ".."))
-                 (not (equal f ".")))
+                   (not (equal f ".."))
+                   (not (equal f ".")))
           (unless (member base load-path)
             (add-to-list 'load-path name)))))))
 
@@ -230,6 +230,8 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (require 'init-ml)
 
 (require 'init-pretty-code)
+
+(require 'init-nox)
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

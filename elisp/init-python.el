@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 3月 27 11:33:13 2020 (+0800)
+;; Last-Updated: 一 3月 30 09:28:30 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -67,7 +67,8 @@
   :config
   (add-hook 'python-mode-hook (lambda()
                                 (flycheck-add-mode 'python-flake8 'python-mode)
-                                (flycheck-add-next-checker 'lsp '(t . python-flake8))))
+                                ;; (flycheck-add-next-checker 'lsp '(t . python-flake8))
+                                ))
   (setq python-indent-offset 4)
   (setq python-shell-interpreter "python3")
   (with-eval-after-load 'exec-path-from-shell
@@ -81,7 +82,7 @@
       (exec-path-from-shell-copy-env "WORKON_HOME"))
     (add-hook 'pyvenv-post-activate-hooks #'+modeline-update-env-in-all-windows-h)
     (add-hook 'pyvenv-pre-deactivate-hooks #'+modeline-clear-env-in-all-windows-h)
-    (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
+    ;; (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
     (add-to-list 'global-mode-string
                  '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
                  'append)
