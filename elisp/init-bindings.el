@@ -57,7 +57,7 @@
   "bd" '(kill-current-buffer :wk "Kill buffer")
 
   "c" '(:wk "Code")
-  "cD" '(lsp-ui-peek-find-references :wk "Jump to implementation")
+  "cD" '(xref-find-references :wk "Jump to implementation")
   "cd" '(lsp-ui-peek-find-definitions :wk "Jump to definition")
   "cf" '(format-all-buffer :wk "Format buffer")
   "ci" '(lsp-organize-imports :wk "Organize import")
@@ -65,6 +65,7 @@
   "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
   "co" '(lsp-ui-imenu :wk "Outline")
   "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
+  "ch" '(nox-show-doc :wk "Show doc")
 
   "e" '(:wk "Error")
   "eb" '(flycheck-buffer :wk "Check current buffer")

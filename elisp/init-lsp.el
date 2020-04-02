@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月 30 09:05:51 2020 (+0800)
+;; Last-Updated: 二 3月 31 13:35:25 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -67,7 +67,7 @@
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
-                        (unless (derived-mode-p 'python-mode 'js2-mode 'emacs-lisp-mode 'lisp-mode)
+                        (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'python-mode)
                           (lsp-deferred))))
          (lsp-mode . (lambda ()
                        ;; Integrate `which-key'
@@ -90,17 +90,29 @@
         lsp-enable-indentation nil
         lsp-prefer-capf t
         lsp-keep-workspace-alive nil
-        lsp-pyls-plugins-jedi-completion-include-params nil
-        lsp-pyls-plugins-jedi-enable nil
-        ;; lsp-diagnostic-package :none
+        lsp-idle-delay 0.5
         lsp-enable-on-type-formatting nil
-        lsp-keymap-prefix "C-c l")
+        lsp-diagnostic-package :none
+        lsp-flycheck-live-reporting nil
+        lsp-enable-snippet nil
+        lsp-enable-text-document-color nil
+        lsp-enable-symbol-highlighting nil
+        lsp-enable-on-type-formatting nil
+        lsp-eldoc-enable-hover nil
+        lsp-log-io nil
+        lsp-enable-folding nil
+        lsp-enable-on-type-formatting nil
+        lsp-enable-file-watchers nil
+        lsp-keymap-prefix "C-c l"
+        lsp-pyls-plugins-jedi-completion-include-params nil
+        )
   (setq gc-cons-threshold 100000000)
 
   ;; For `lsp-clients'
   (setq lsp-clients-python-library-directories '("/usr/local/" "/usr/"))
   (unless (executable-find "rls")
-    (setq lsp-rust-rls-server-command '("rustup" "run" "stable" "rls"))))
+    (setq lsp-rust-rls-server-command '("rustup" "run" "stable" "rls")))
+  )
 
 ;; LSPUI
 (use-package lsp-ui
