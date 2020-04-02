@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Apr 11 22:28:41 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Sep  7 00:52:17 2019 (-0400)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 4月  2 18:44:00 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d leetcode
 ;; Compatibility: emacs-version >= 26.1
@@ -42,7 +42,7 @@
 
 ;; LeetCodePac
 (use-package leetcode
-  :load-path (lambda () (expand-file-name "site-elisp/leetcode.el" user-emacs-directory))
+  :quelpa (leetcode :fetcher github :repo "kaiwk/leetcode.el")
   :commands (leetcode)
   :init
   (use-package graphql :defer t)

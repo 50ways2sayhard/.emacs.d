@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月 30 09:28:54 2020 (+0800)
+;; Last-Updated: 四 4月  2 18:47:32 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -114,7 +114,7 @@
 
 ;; InstantRenameTagPac
 (use-package instant-rename-tag
-  :load-path (lambda () (expand-file-name "site-elisp/instant-rename-tag" user-emacs-directory))
+  :quelpa (instant-rename-tag :fetcher github :repo "manateelazycat/instant-rename-tag")
   :bind ("C-z <" . instant-rename-tag))
 ;; -InstantRenameTagPac
 

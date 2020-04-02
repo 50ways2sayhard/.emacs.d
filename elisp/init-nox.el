@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 16
+;;     Update #: 29
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -49,13 +49,15 @@
 (use-package jsonrpc)
 
 (use-package nox
-  :straight (nox :type git :host github :repo "manateelazycat/nox")
-  :hook ((python-mode js2-mode js-mode) . nox-ensure)
+  :quelpa (nox :fetcher github :repo "manateelazycat/nox")
+  :hook ((python-mode) . nox-ensure)
   ;; :custom
   ;; (nox-stay-out-of '(company))
-  ;; (nox-put-doc-in-help-buffer t)
-  ;; (nox-auto-display-help-buffer t)
+  (nox-put-doc-in-help-buffer t)
+  (nox-auto-display-help-buffer t)
   :config
+  (setq nox-python-server "pyls")
+  ;; (setq nox-python-server-dir "~/.local/mspyls/")
   (defun push-tabnine ()
     (add-to-list 'company-transformers 'company//sort-by-tabnine t)
     (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))

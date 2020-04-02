@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:53:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月 30 08:51:21 2020 (+0800)
+;; Last-Updated: 四 4月  2 18:23:46 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d packages use-package
@@ -68,22 +68,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(unless (package-installed-p 'straight)
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-  (straight-use-package 'use-package)
-  )
-
 (eval-and-compile
   (setq use-package-always-ensure t)
   (setq use-package-expand-minimally t)
@@ -110,6 +94,23 @@
 ;; DimPac
 (use-package diminish)
 ;; -DimPac
+
+(setq quelpa-update-melpa-p nil)
+(if (require 'quelpa nil t)
+    (message "quelpa loaded")
+  (with-temp-buffer
+    (url-insert-file-contents
+     "https://framagit.org/steckerhalter/quelpa/raw/master/bootstrap.el")
+    (eval-buffer)))
+
+;; Install quelpa-use-package, which will install use-package as well
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://framagit.org/steckerhalter/quelpa-use-package.git"
+   :stable nil))
+(require 'quelpa-use-package)
+
 
 (provide 'init-package)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

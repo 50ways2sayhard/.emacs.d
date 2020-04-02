@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 3月 20 16:08:08 2020 (+0800)
+;; Last-Updated: 四 4月  2 18:42:17 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -81,7 +81,7 @@
   :hook (doom-modeline-mode . minions-mode))
 
 (use-package nord-theme
-  :load-path (lambda () (expand-file-name "site-elisp/nord-theme" user-emacs-directory))
+  :quelpa (nord-theme :fetcher github :repo "arcticicestudio/nord-emacs")
   :after (doom-modeline diff-hl)
   :config
   (set-face-background 'mode-line "#242832")

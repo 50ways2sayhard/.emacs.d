@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Sep 16 15:47:34 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Sep 16 16:17:43 2019 (-0400)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 4月  2 18:38:06 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d epaint
 ;; Compatibility: emacs-version >= 26.1
@@ -43,7 +43,7 @@
 ;; EPaintPac
 (use-package epaint
   :if *sys/gui*
-  :load-path (lambda () (expand-file-name "site-elisp/epaint" user-emacs-directory))
+  :quelpa (epaint :fetcher github :repo "chuntaro/epaint")
   :commands (epaint)
   :init
   (with-eval-after-load (quote epaint-context)

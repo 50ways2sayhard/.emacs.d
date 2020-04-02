@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Tue Jun  4 00:26:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jan 14 00:18:29 2020 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 4月  2 18:40:08 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d pdf-tools
 ;; Compatibility: emacs-version >= 26.1
@@ -42,7 +42,7 @@
 
 ;; EAFPac
 (use-package eaf
-  :load-path (lambda () (expand-file-name "site-elisp/emacs-application-framework" user-emacs-directory))
+  :quelpa (eaf :fetcher github :repo "manateelazycat/emacs-application-framework")
   :if *eaf-env*
   :custom
   (eaf-find-alternate-file-in-dired t)

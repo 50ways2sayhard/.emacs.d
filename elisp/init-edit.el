@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 3月 11 18:48:41 2020 (+0800)
+;; Last-Updated: 四 4月  2 18:36:57 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -16,7 +16,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; This initializes iedit, awesome-pair, delete-block
+;; This initializes iedit, delete-block
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -48,7 +48,7 @@
 
 ;; DeleteBlockPac
 (use-package delete-block
-  :load-path (lambda () (expand-file-name "site-elisp/delete-block" user-emacs-directory))
+  :quelpa (delete-block :fetcher github :repo "manateelazycat/delete-block")
   :bind
   (("M-d" . delete-block-forward)
    ("C-<backspace>" . delete-block-backward)
@@ -68,6 +68,19 @@
 
 (advice-add #'format-all-buffer :after #'+scroll-to-center)
 (advice-add #'format-all-buffer--from-hook :after #'+scroll-to-center)
+
+(use-package rime
+  :custom
+  (default-input-method "rime")
+  (rime-user-data-dir "~/.config/fcitx/rime")
+  (rime-show-candidate 'posframe)
+  (rime-librime-root "~/.local/librime/dist")
+  (rime-disable-predicates
+   '(rime-predicate-evil-mode-p
+     rime-predicate-after-alphabet-char-p
+     ))
+  (mode-line-mule-info '((:eval (rime-lighter))))
+  )
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

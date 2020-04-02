@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Tue Mar 19 09:20:19 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Oct  8 00:20:32 2019 (-0400)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 四 4月  2 18:44:45 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d shell shell-here
 ;; Compatibility: emacs-version >= 26.1
@@ -42,7 +42,7 @@
 
 ;; AweshellPac
 (use-package aweshell
-  :load-path (lambda () (expand-file-name "site-elisp/aweshell" user-emacs-directory))
+  :quelpa (aweshell :fetcher github :repo "MatthewZMD/aweshell")
   :commands (aweshell-new aweshell-dedicated-open)
   :bind
   (("M-#" . aweshell-dedicated-open)
@@ -59,7 +59,8 @@
 
 ;; MultiTermPac
 (use-package multi-term
-  :load-path (lambda () (expand-file-name "site-elisp/multi-term" user-emacs-directory))
+  ;; :load-path (lambda () (expand-file-name "site-elisp/multi-term" user-emacs-directory))
+  :quelpa (multi-term :fetcher github :repo "manateelazycat/multi-term")
   :commands (multi-term)
   :bind
   (("M-$" . multi-term)
