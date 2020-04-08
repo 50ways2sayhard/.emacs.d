@@ -499,12 +499,12 @@ This is for use in `ivy-re-builders-alist'."
 
 ;; Better experience with icons
 ;; Enable it before`ivy-rich-mode' for better performance
-; (use-package all-the-icons-ivy-rich
-;   :if (icons-displayable-p)
-;   :init (all-the-icons-ivy-rich-mode 1)
-;   :config
-;   (setq all-the-icons-ivy-rich-icon-size 0.9)
-;   )
+;; (use-package all-the-icons-ivy-rich
+;;   :if (icons-displayable-p)
+;;   :init (all-the-icons-ivy-rich-mode 1)
+;;   :config
+;;   (setq all-the-icons-ivy-rich-icon-size 0.9)
+;;   )
 
 ;; More friendly display transformer for Ivy
 (use-package ivy-rich

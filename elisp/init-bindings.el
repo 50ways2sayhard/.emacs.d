@@ -127,6 +127,11 @@
   "sp" '(counsel-projectile-rg :wk "Search project")
   "sT" '(load-theme :wk "Load theme")
 
+  "t" '(:wk "Todo")
+  "tn" '(hl-todo-next :wk "Next todo")
+  "tp" '(hl-todo-previous :wk "Previous todo")
+  "to" '(hl-todo-occur :wk "All todo")
+
   "w" '(:wk "Window")
   "wv" '(split-window-vertically :wk "Split window vertically")
   "wH" '(split-window-horizontally :wk "Split window horizontally")

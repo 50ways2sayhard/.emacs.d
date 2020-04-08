@@ -1,5 +1,5 @@
 
-
+;;; Code:
 (use-package evil
   :ensure t
   :hook (after-init . evil-mode)
@@ -26,9 +26,10 @@
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
-  (add-to-list 'evil-emacs-state-modes 'snails-mode)
-  (add-to-list 'evil-insert-state-modes 'treemacs-mode)
-  (add-to-list 'evil-emacs-state-modes 'company-mode)
+  (dolist (mode '(snails-mode treemacs-mode company-mode color-rg-mode hl-todo-mode))
+    (add-to-list 'evil-emacs-state-modes mode)
+    )
+
   (evil-declare-change-repeat 'company-complete)
   ;; (add-hook 'company-mode-hook #'evil-normalize-keymaps)
   ;; (add-hook 'evil-normal-state-entry-hook #'company-abort)
@@ -183,3 +184,4 @@
 
 
 (provide 'init-evil)
+;;; init-evil.el ends here
