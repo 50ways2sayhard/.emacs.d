@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 29
+;;     Update #: 32
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,7 +50,7 @@
 
 (use-package nox
   :quelpa (nox :fetcher github :repo "manateelazycat/nox")
-  :hook ((python-mode) . nox-ensure)
+  ;; :hook ((python-mode) . nox-ensure)
   ;; :custom
   ;; (nox-stay-out-of '(company))
   (nox-put-doc-in-help-buffer t)
