@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 23 10:16:21 2020 (+0800)
+;; Last-Updated: 五 4月 24 09:34:37 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -111,6 +111,7 @@
     ("Experimenting new things" . ":alembic:")
     ("Improving SEO" . ":mag:")
     ("Work about Kubernetes" . ":wheel_of_dharma:")
+    ("Catching errors" . ":goal_net:")
     ("Adding or updating types (Flow, TypeScript)" . ":label:")))
 
 (defun gitmoji-picker ()

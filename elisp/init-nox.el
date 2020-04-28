@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 32
+;;     Update #: 43
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -51,18 +51,21 @@
 (use-package nox
   :quelpa (nox :fetcher github :repo "manateelazycat/nox")
   ;; :hook ((python-mode) . nox-ensure)
-  ;; :custom
-  ;; (nox-stay-out-of '(company))
+  :custom
   (nox-put-doc-in-help-buffer t)
   (nox-auto-display-help-buffer t)
   :config
-  (setq nox-python-server "pyls")
-  ;; (setq nox-python-server-dir "~/.local/mspyls/")
+  ;; (setq nox-python-server "pyls")
+  (setq nox-python-server-dir "~/.local/mspyls/")
   (defun push-tabnine ()
     (add-to-list 'company-transformers 'company//sort-by-tabnine t)
     (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
     )
   (add-hook 'nox-managed-mode-hook #'push-tabnine)
+  (add-hook 'pyvenv-post-activate-hooks (lambda ()
+                                          (setq nox-python-path (concat python-shell-virtualenv-path "/bin/python"))
+                                          ))
+  (add-hook 'pyvenv-post-deactivate-hooks (lambda () (setq nox-python-path "/usr/bin/python")))
   )
 
 (provide 'init-nox)

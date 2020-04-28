@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:56:12 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 2月 24 12:09:58 2020 (+0800)
+;; Last-Updated: 四 4月 23 17:42:13 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d treemacs
@@ -80,6 +80,10 @@
     :after projectile
     :bind (:map projectile-command-map
                 ("h" . treemacs-projectile)))
+
+  (use-package treemacs-evil
+    :after evil
+    )
 
   (use-package treemacs-magit
     :after magit

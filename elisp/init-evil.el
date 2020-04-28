@@ -26,7 +26,7 @@
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
-  (dolist (mode '(snails-mode treemacs-mode company-mode color-rg-mode hl-todo-mode))
+  (dolist (mode '(snails-mode company-mode color-rg-mode hl-todo-mode))
     (add-to-list 'evil-emacs-state-modes mode)
     )
 
