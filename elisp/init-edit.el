@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月  2 18:36:57 2020 (+0800)
+;; Last-Updated: 三 4月 29 09:09:46 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -48,7 +48,7 @@
 
 ;; DeleteBlockPac
 (use-package delete-block
-  :quelpa (delete-block :fetcher github :repo "manateelazycat/delete-block")
+  :straight (:host github :repo "manateelazycat/delete-block" :depth 1)
   :bind
   (("M-d" . delete-block-forward)
    ("C-<backspace>" . delete-block-backward)

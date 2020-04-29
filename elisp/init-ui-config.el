@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 4月 22 17:21:15 2020 (+0800)
+;; Last-Updated: 三 4月 29 09:00:57 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -93,7 +93,7 @@
            return (set-fontset-font t 'unicode font nil 'prepend))
 
   ;; Specify font for Chinese characters
-  (cl-loop for font in '("Sarasa Mono SC" "Noto Sans CJK SC" "PingFang SC" "Microsoft Yahei")
+  (cl-loop for font in '("Sarasa Nerd" "Noto Sans CJK SC" "PingFang SC" "Microsoft Yahei")
            when (font-installed-p font)
            return (set-fontset-font t '(#x4e00 . #x9fff) font)))
 

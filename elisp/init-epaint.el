@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Sep 16 15:47:34 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月  2 18:38:06 2020 (+0800)
+;; Last-Updated: 三 4月 29 09:14:54 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d epaint
@@ -43,7 +43,7 @@
 ;; EPaintPac
 (use-package epaint
   :if *sys/gui*
-  :quelpa (epaint :fetcher github :repo "chuntaro/epaint")
+  :straight (:host github :repo "chuntaro/epaint")
   :commands (epaint)
   :init
   (with-eval-after-load (quote epaint-context)

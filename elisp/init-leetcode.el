@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Apr 11 22:28:41 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月  2 18:44:00 2020 (+0800)
+;; Last-Updated: 三 4月 29 09:09:07 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d leetcode
@@ -42,7 +42,7 @@
 
 ;; LeetCodePac
 (use-package leetcode
-  :quelpa (leetcode :fetcher github :repo "kaiwk/leetcode.el")
+  :straight (:host github :repo "kaiwk/leetcode.el")
   :commands (leetcode)
   :init
   (use-package graphql :defer t)

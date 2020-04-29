@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 43
+;;     Update #: 44
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -49,7 +49,7 @@
 (use-package jsonrpc)
 
 (use-package nox
-  :quelpa (nox :fetcher github :repo "manateelazycat/nox")
+  :straight (:host github :repo "manateelazycat/nox" :depth 1)
   ;; :hook ((python-mode) . nox-ensure)
   :custom
   (nox-put-doc-in-help-buffer t)

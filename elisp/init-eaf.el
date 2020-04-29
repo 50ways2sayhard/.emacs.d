@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Tue Jun  4 00:26:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月  2 18:58:35 2020 (+0800)
+;; Last-Updated: 三 4月 29 09:11:15 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d pdf-tools
@@ -40,31 +40,6 @@
 (eval-when-compile
   (require 'init-const))
 
-;; EAFPac
-;; (use-package eaf
-;;   :quelpa (eaf :fetcher github :repo "manateelazycat/emacs-application-framework")
-;;   :if *eaf-env*
-;;   :custom
-;;   (eaf-find-alternate-file-in-dired t)
-;;   (browse-url-browser-function 'eaf-open-browser) ;; Make EAF Browser my default browser
-;;   :config
-;;   (defalias 'browse-web #'eaf-open-browser)
-;;   (eaf-setq eaf-browser-default-zoom "1.25")
-;;   ;; I already bind "RET", "<mouse-2>", "^" to `dired-find-alternate-file' in `init-dired.el'.
-;;   ;; Comment this line out of you don't want to use EAF to open available files in dired.
-;;   ;; (global-set-key [remap dired-find-alternate-file] #'eaf-file-open-in-dired)
-;;   (eaf-bind-key open_link "C-M-s" eaf-browser-keybinding)
-;;   (eaf-bind-key scroll_up "RET" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key scroll_down_page "DEL" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key scroll_down_page "u" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key scroll_up_page "d" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key scroll_to_end "M->" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key scroll_to_home "M-<" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key quit-window "q" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key zoom_in "C-=" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key zoom_out "C--" eaf-pdf-viewer-keybinding)
-;;   (eaf-bind-key take_photo "p" eaf-camera-keybinding))
-;; -EAFPac
 
 (provide 'init-eaf)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
