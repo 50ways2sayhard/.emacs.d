@@ -23,6 +23,9 @@
         ;; to do highlighting them all.
         evil-ex-interactive-search-highlight 'selected-window)
 
+  :init
+  (setq evil-split-window-below t
+        evil-vsplit-window-right t)
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
