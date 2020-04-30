@@ -65,7 +65,7 @@
   "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
   "co" '(lsp-ui-imenu :wk "Outline")
   "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
-  "ch" '(nox-show-doc :wk "Show doc")
+  "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
 
   "e" '(:wk "Error")
   "eb" '(flycheck-buffer :wk "Check current buffer")
