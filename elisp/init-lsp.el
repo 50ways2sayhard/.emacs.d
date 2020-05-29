@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 4月 29 13:50:33 2020 (+0800)
+;; Last-Updated: 五 5月 22 17:23:23 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -48,21 +48,6 @@
   :bind (:map lsp-mode-map
               ([remap xref-find-apropos] . lsp-ivy-workspace-symbol)
               ("C-s-." . lsp-ivy-global-workspace-symbol)))
-
-;; LSPPac
-;; (use-package lsp-mode
-;;   :defer t
-;;   :commands lsp
-;;   :custom
-;;   (lsp-auto-guess-root nil)
-;;   (lsp-prefer-flymake nil) ; Use flycheck instead of flymake
-;;   (lsp-file-watch-threshold 2000)
-;;   (read-process-output-max (* 1024 1024))
-;;   :bind (:map lsp-mode-map ("C-c C-f" . lsp-format-buffer))
-;;   :hook ((java-mode python-mode go-mode
-;;                     js-mode js2-mode typescript-mode web-mode
-;;                     c-mode c++-mode objc-mode) . lsp))
-;; -LSPPac
 
 (use-package lsp-mode
   :diminish
@@ -130,11 +115,11 @@
          ("C-c u" . lsp-ui-imenu)
          ("M-i" . lsp-ui-doc-focus-frame))
   :custom
-  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-enable nil)
   (lsp-ui-doc-header t)
   (lsp-ui-doc-include-signature t)
   (lsp-ui-doc-border (face-foreground 'default))
-  (lsp-ui-sideline-enable nil)
+  (lsp-ui-sideline-enable t)
   (lsp-ui-sideline-ignore-duplicate t)
   (lsp-ui-sideline-show-code-actions nil)
   :preface
@@ -166,7 +151,13 @@
          ("<f9>" . dap-next)
          ("<M-f11>" . dap-step-in)
          ("C-M-<f11>" . dap-step-out)
-         ("<f7>" . dap-breakpoint-toggle))))
+         ("<f7>" . dap-breakpoint-toggle)))
+  :hook ((after-init . dap-mode)
+         (dap-mode . dap-ui-mode)
+         (python-mode . (lambda () (require 'dap-python)))
+         ((js-mode js2-mode) . (lambda () (require 'dap-chrome)))
+         )
+  )
 ;; -DAPPac
 
 (provide 'init-lsp)

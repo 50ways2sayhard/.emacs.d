@@ -1,16 +1,16 @@
-;;; init-nox.el ---
+;;; init-dockerfile.el ---
 ;;
-;; Filename: init-nox.el
+;; Filename: init-dockerfile.el
 ;; Description:
 ;; Author: John
 ;; Maintainer:
 ;; Copyright (C) 2019 John
-;; Created: 一 3月 30 08:52:26 2020 (+0800)
+;; Created: 五 5月 15 19:00:51 2020 (+0800)
 ;; Version:
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 50
+;;     Update #: 2
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,30 +46,12 @@
 ;;
 ;;; Code:
 
-(use-package jsonrpc)
-
-(use-package nox
-  :straight (:host github :repo "manateelazycat/nox" :depth 1)
-  ;; :hook ((python-mode) . nox-ensure)
-  :custom
-  (nox-put-doc-in-help-buffer t)
-  (nox-auto-display-help-buffer t)
-  :config
-  (setq nox-python-server "pyls")
-  ;; (setq nox-python-server-dir "~/.local/mspyls/")
-  (defun push-tabnine ()
-    (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-    (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
-    )
-  (add-hook 'nox-managed-mode-hook #'push-tabnine)
-  ;; (add-hook 'pyvenv-post-activate-hooks (lambda ()
-  ;;                                         (setq nox-python-path (concat python-shell-virtualenv-path "/bin/python"))
-  ;;                                         ))
-  ;; (add-hook 'pyvenv-post-deactivate-hooks (lambda () (setq nox-python-path "/usr/bin/python")))
+(use-package dockerfile-mode
+  :mode ("Dockerfile\\'" . dockerfile-mode)
   )
 
-(provide 'init-nox)
+(provide 'init-dockerfile)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; init-nox.el ends here
+;;; init-dockerfile.el ends here

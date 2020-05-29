@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 11
+;;     Update #: 12
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -189,7 +189,7 @@ Otherwise it builds `prettify-code-symbols-alist' according to
   :for "for"
   :return "return" :yield "yield")
 
-(set-pretty-symbols! '(js2-mode rjsx-mode web-mode)
+(set-pretty-symbols! '(js-mode js2-mode rjsx-mode web-mode)
   ;; Functional
   :def "function"
   :lambda "() =>"

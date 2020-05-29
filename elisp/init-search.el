@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:01:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 4月 29 09:11:29 2020 (+0800)
+;; Last-Updated: 二 5月 26 15:48:37 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d color-rg rg
@@ -44,7 +44,6 @@
 
 ;; ColorRGPac
 (use-package color-rg
-  ;; :load-path (lambda () (expand-file-name "site-elisp/color-rg" user-emacs-directory))
   :straight (:host github :repo "manateelazycat/color-rg")
   :if *rg*
   :bind ("C-M-s" . color-rg-search-input))
@@ -55,7 +54,7 @@
   :defer t
   :init
   (setq exec-path-from-shell-check-startup-files nil
-        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy")
+        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy" "http_proxy" "all_proxy" "LD_LIBRARY_PATH")
         exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 

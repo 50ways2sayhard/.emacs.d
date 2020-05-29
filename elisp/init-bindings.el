@@ -125,6 +125,8 @@
   "sf" '(locate :wk "Locate file")
   "si" '(imenu :wk "Jump to symbol")
   "sp" '(counsel-projectile-rg :wk "Search project")
+  "sP" '(color-rg-search-project :wk "Color-rg Search project")
+  "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
   "sT" '(load-theme :wk "Load theme")
 
   "t" '(:wk "Todo")
