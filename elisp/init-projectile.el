@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:10:23 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Jan 27 01:03:56 2020 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: 五 6月  5 12:05:38 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d projectile
 ;; Compatibility: emacs-version >= 26.1

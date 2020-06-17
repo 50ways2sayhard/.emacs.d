@@ -114,6 +114,7 @@
   "pf" '(counsel-projectile :wk "Find file in project")
   "pr" '(projectile-recentf :wk "Recent file in project")
   "pt" '(magit-todos-list :wk "List project tasks")
+  "pS" '(projectile-save-project-buffers :wk "Save project buffers")
 
   "q" '(:wk "Quit")
   "qq" '(kill-emacs :wk "Quit")

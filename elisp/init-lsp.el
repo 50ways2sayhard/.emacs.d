@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 5月 22 17:23:23 2020 (+0800)
+;; Last-Updated: 五 6月 12 09:50:43 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -92,11 +92,6 @@
         lsp-pyls-plugins-jedi-completion-include-params nil
         )
   (setq gc-cons-threshold 100000000)
-
-  ;; For `lsp-clients'
-  (setq lsp-clients-python-library-directories '("/usr/local/" "/usr/"))
-  (unless (executable-find "rls")
-    (setq lsp-rust-rls-server-command '("rustup" "run" "stable" "rls")))
   )
 
 ;; LSPUI
@@ -134,11 +129,11 @@
   :config
   (add-to-list 'lsp-ui-doc-frame-parameters '(right-fringe . 8))
   (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
-  ;; WORKAROUND Hide mode-line of the lsp-ui-imenu buffer
-  ;; ;; https://github.com/emacs-lsp/lsp-ui/issues/243
-  (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
-    (setq mode-line-format nil))
-  )
+  (add-hook 'after-load-theme-hook
+            (lambda ()
+              (setq lsp-ui-doc-border (face-foreground 'default))
+              (set-face-background 'lsp-ui-doc-background
+                                   (face-background 'tooltip)))))
 ;; -LSPUI
 
 ;; DAPPac

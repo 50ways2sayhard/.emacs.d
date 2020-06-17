@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:08:22 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 3月  2 18:01:46 2020 (+0800)
+;; Last-Updated: 一 6月  1 11:01:03 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d flycheck
@@ -48,7 +48,7 @@
   :custom
   (flycheck-global-modes
    '(not text-mode outline-mode fundamental-mode org-mode
-       diff-mode shell-mode eshell-mode term-mode))
+         diff-mode shell-mode eshell-mode term-mode))
   (flycheck-emacs-lisp-load-path 'inherit)
   (flycheck-indication-mode 'right-fringe)
   :init

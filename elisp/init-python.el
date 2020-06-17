@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 5月 21 09:46:24 2020 (+0800)
+;; Last-Updated: 三 6月 10 11:34:54 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -57,7 +57,6 @@
 
 
 (use-package python
-  :ensure nil
   :hook (inferior-python-mode . (lambda ()
                                   (process-query-on-exit-flag
                                    (get-process "Python"))))
@@ -69,8 +68,10 @@
                                 (flycheck-add-mode 'python-flake8 'python-mode)
                                 ;; (flycheck-add-next-checker 'lsp '(t . python-flake8))
                                 ))
+  (when (and (executable-find "python3")
+             (string= python-shell-interpreter "python"))
+    (setq python-shell-interpreter "python3"))
   (setq python-indent-offset 4)
-  (setq python-shell-interpreter "python")
   (with-eval-after-load 'exec-path-from-shell
     (exec-path-from-shell-copy-env "PYTHONPATH"))
   ;; Live Coding in Python
@@ -117,23 +118,23 @@
   :after lsp-mode python
   :if (or *python3* *python*)
   :custom
-  (lsp-python-ms-nupkg-channel "beta")
-  (lsp-python-ms-dir "~/.local/mspyls/")
+  ;; (lsp-python-ms-nupkg-channel "beta")
+  ;; (lsp-python-ms-dir "~/.local/mspyls/")
   (lsp-python-executable-cmd "python")
-  ;; :config
-  ;; (defun find-vscode-mspyls-executable ()
-  ;;   (let* ((wildcards ".vscode/extensions/ms-python.python-*/languageServer*/Microsoft.Python.LanguageServer")
-  ;;          (dir-and-ext (if *sys/win32*
-  ;;                           (cons (getenv "USERPROFILE") ".exe")
-  ;;                         (cons (getenv "HOME") nil)))
-  ;;          (cmd (concat (file-name-as-directory (car dir-and-ext))
-  ;;                       wildcards (cdr dir-and-ext))))
-  ;;     (file-expand-wildcards cmd t)))
+  :config
+  (defun find-vscode-mspyls-executable ()
+    (let* ((wildcards ".vscode/extensions/ms-python.python-*/languageServer*/Microsoft.Python.LanguageServer")
+           (dir-and-ext (if *sys/win32*
+                            (cons (getenv "USERPROFILE") ".exe")
+                          (cons (getenv "HOME") nil)))
+           (cmd (concat (file-name-as-directory (car dir-and-ext))
+                        wildcards (cdr dir-and-ext))))
+      (file-expand-wildcards cmd t)))
 
-  ;; (setq lsp-python-ms-executable
-  ;;       (car (find-vscode-mspyls-executable)))
-  ;; (setq lsp-python-ms-dir
-  ;;       (file-name-directory lsp-python-ms-executable))
+  (setq lsp-python-ms-executable
+        (car (find-vscode-mspyls-executable)))
+  (setq lsp-python-ms-dir
+        (file-name-directory lsp-python-ms-executable))
   )
 ;; -LSPPythonPac
 
