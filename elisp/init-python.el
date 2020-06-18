@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 6月 10 11:34:54 2020 (+0800)
+;; Last-Updated: 四 6月 18 11:37:35 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -42,19 +42,6 @@
   (require 'init-const)
   (require 'init-func)
   )
-
-;; PythonConfig
-;; (use-package python-mode
-;;   :ensure nil
-;;   :after flycheck
-;;   :mode "\\.py\\'"
-;;   :custom
-;;   (python-indent-offset 4)
-;;   (flycheck-python-pycompile-executable "python3")
-;;   (python-shell-interpreter "python3"))
-;; -PythonConfig
-
-
 
 (use-package python
   :hook (inferior-python-mode . (lambda ()
@@ -106,7 +93,10 @@
   (use-package importmagic
     :defer t
     :hook (python-mode . importmagic-mode)
-    :commands (importmagic-fix-imports importmagic-fix-symbol-at-point))
+    :commands (importmagic-fix-imports importmagic-fix-symbol-at-point)
+    :config
+    (setq importmagic-python-interpreter "python")
+    )
 
   (use-package python-pytest
     :defer t)
@@ -118,23 +108,9 @@
   :after lsp-mode python
   :if (or *python3* *python*)
   :custom
-  ;; (lsp-python-ms-nupkg-channel "beta")
-  ;; (lsp-python-ms-dir "~/.local/mspyls/")
+  (lsp-python-ms-nupkg-channel "beta")
+  (lsp-python-ms-dir "~/.local/mspyls/")
   (lsp-python-executable-cmd "python")
-  :config
-  (defun find-vscode-mspyls-executable ()
-    (let* ((wildcards ".vscode/extensions/ms-python.python-*/languageServer*/Microsoft.Python.LanguageServer")
-           (dir-and-ext (if *sys/win32*
-                            (cons (getenv "USERPROFILE") ".exe")
-                          (cons (getenv "HOME") nil)))
-           (cmd (concat (file-name-as-directory (car dir-and-ext))
-                        wildcards (cdr dir-and-ext))))
-      (file-expand-wildcards cmd t)))
-
-  (setq lsp-python-ms-executable
-        (car (find-vscode-mspyls-executable)))
-  (setq lsp-python-ms-dir
-        (file-name-directory lsp-python-ms-executable))
   )
 ;; -LSPPythonPac
 
