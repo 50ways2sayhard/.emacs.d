@@ -128,6 +128,7 @@
 
   (setq counsel-find-file-at-point t
         counsel-yank-pop-separator "\n────────\n")
+  (setq counsel-find-file-ignore-regexp "\\.pyc\\'")
 
   ;; Use the faster search tool: ripgrep (`rg')
   (when (executable-find "rg")
