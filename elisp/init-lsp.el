@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 6月 12 09:50:43 2020 (+0800)
+;; Last-Updated: 二 7月 14 13:49:04 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -59,7 +59,7 @@
                        (lsp-enable-which-key-integration)
 
                        ;; Format and organize imports
-                       (unless (derived-mode-p 'c-mode 'c++-mode)
+                       (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t)))))
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point)
@@ -83,15 +83,29 @@
         lsp-enable-text-document-color nil
         lsp-enable-symbol-highlighting nil
         lsp-enable-on-type-formatting nil
-        lsp-eldoc-enable-hover nil
         lsp-log-io nil
         lsp-enable-folding nil
         lsp-enable-on-type-formatting nil
         lsp-enable-file-watchers nil
         lsp-keymap-prefix "C-c l"
         lsp-pyls-plugins-jedi-completion-include-params nil
+        lsp-eldoc-render-all nil
         )
   (setq gc-cons-threshold 100000000)
+
+  :config
+  (setq lsp-pylance-ms-executable "~/.local/pylance.sh")
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection (lambda () lsp-pylance-ms-executable)
+                                          (lambda () (f-exists? lsp-pylance-ms-executable)))
+    :major-modes '(python-mode)
+    :server-id 'mspylance
+    :priority 3
+    :initialized-fn (lambda (workspace)
+                      (with-lsp-workspace workspace
+                        (lsp--set-configuration (lsp-configuration-section "python"))))
+    ))
   )
 
 ;; LSPUI

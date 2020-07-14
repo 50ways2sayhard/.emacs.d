@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 6月 18 11:37:35 2020 (+0800)
+;; Last-Updated: 五 7月  3 16:52:07 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -103,15 +103,15 @@
   )
 
 ;; LSPPythonPac
-(use-package lsp-python-ms
-  :hook (python-mode . (lambda () (require 'lsp-python-ms)))
-  :after lsp-mode python
-  :if (or *python3* *python*)
-  :custom
-  (lsp-python-ms-nupkg-channel "beta")
-  (lsp-python-ms-dir "~/.local/mspyls/")
-  (lsp-python-executable-cmd "python")
-  )
+;; (use-package lsp-python-ms
+;;   :hook (python-mode . (lambda () (require 'lsp-python-ms)))
+;;   :after lsp-mode python
+;;   :if (or *python3* *python*)
+;;   :custom
+;;   (lsp-python-ms-nupkg-channel "beta")
+;;   (lsp-python-ms-dir "~/.local/mspyls/")
+;;   (lsp-python-executable-cmd "python")
+;;   )
 ;; -LSPPythonPac
 
 (use-package poetry
