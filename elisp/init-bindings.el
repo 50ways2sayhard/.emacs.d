@@ -97,6 +97,7 @@
   "j" '(:wk "Jump")
   "jj" '(evil-avy-goto-char :wk "Jump to character")
   "jl" '(evil-avy-goto-line :wk "Jump to line")
+  "jJ" '(evil-avy-goto-char-2 :wk "Jump to character 2")
 
   "m" '(:wk "Local leader")
 
@@ -177,6 +178,7 @@
   "mpR" '(poetry-remove :wk "Poetry remove dep")
   )
 
+;; JS
 (leader-def
   :states 'normal
   :keymaps '(js2-mode-map rjsx-mode-map)
@@ -184,6 +186,9 @@
   "mif" '(import-js-fix :wk "Fix imports")
   "mir" '(run-import-js :wk "Run import js")
   "mii" '(import-js-import :wk "Import module")
+  "mdf" '(js-doc-insert-function-doc :wk "Insert function doc")
+  "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
+  "mdt" '(js-doc-insert-tag :wk "Insert tag")
   )
 
 (provide 'init-bindings)
