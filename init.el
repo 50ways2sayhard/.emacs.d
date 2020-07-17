@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 6月 17 15:02:41 2020 (+0800)
+;; Last-Updated: 四 7月 16 11:41:07 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -175,6 +175,8 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (require 'init-header)
 
 (require 'init-ein)
+
+(require 'lsp-pyright)
 
 (require 'init-lsp)
 
