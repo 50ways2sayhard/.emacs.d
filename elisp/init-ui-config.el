@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 5月 26 14:09:01 2020 (+0800)
+;; Last-Updated: 一 8月 10 17:05:52 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -67,7 +67,7 @@
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 ;; Display column numbers in modeline
 (column-number-mode 1)
-(setq display-line-numbers-type 'relative)
+(setq display-line-nujbers-type 'relative)
 ;; -DisLineNum
 
 ;; DisTimeBat
@@ -76,13 +76,13 @@
 ;; -DisTimeBat
 
 ;;Font
-
 (when (display-graphic-p)
   ;; Set default font
-  (cl-loop for font in '("JetBrains Mono" "SauceCodePro Nerd Font")
+  (cl-loop for font in '("SFMono Nerd Font" "JetBrains Mono" "SauceCodePro Nerd Font")
            when (font-installed-p font)
            return (set-face-attribute 'default nil
                                       :font font
+                                      :weight 'semi-bold
                                       :height (cond (*sys/mac* 140)
                                                     (*sys/win32* 140)
                                                     (t 140))))
