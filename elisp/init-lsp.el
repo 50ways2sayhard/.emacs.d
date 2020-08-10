@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 7月 17 11:27:45 2020 (+0800)
+;; Last-Updated: 四 8月  6 17:13:58 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -66,14 +66,17 @@
               ([remap xref-find-definitions] . lsp-find-definition)
               ([remap xref-find-references] . lsp-find-references))
   :init
-  ;; @see https://github.com/emacs-lsp/lsp-mode#performance
+  ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
   (add-hook 'rjsx-mode #'lsp-typescript-enable)
 
   (setq lsp-auto-guess-root t        ; Detect project root
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
         lsp-enable-indentation nil
-        lsp-prefer-capf t
+        lsp-signature-auto-activate nil
+        lsp-modeline-code-actions-enable nil
+        lsp-enable-semantic-highlighting nil
+        ;; lsp-prefer-capf t
         lsp-keep-workspace-alive nil
         lsp-idle-delay 0.5
         lsp-enable-on-type-formatting nil
@@ -88,14 +91,21 @@
         lsp-enable-on-type-formatting nil
         lsp-enable-file-watchers nil
         lsp-keymap-prefix "C-c l"
-        lsp-pyls-plugins-jedi-completion-include-params nil
         lsp-eldoc-render-all nil
         )
   (setq gc-cons-threshold 100000000)
 
   :config
-  (setq lsp-pyright-use-library-code-for-types t)
-  (setq lsp-pyright-disable-organize-imports t)
+  (use-package lsp-pyright
+    :straight (:host github :repo "emacs-lsp/lsp-pyright")
+    :after lsp-mode python
+    :config
+    (setq lsp-pyright-use-library-code-for-types t)
+    (setq lsp-pyright-venv ".venv")
+    )
+  ;; (setq lsp-pyright-use-library-code-for-types t)
+  ;; (setq lsp-pyright-venv ".venv")
+  ;; (setq lsp-pyright-disable-organize-imports t)
   ;; (setq lsp-pylance-ms-executable "~/.local/pylance.sh")
   ;; (lsp-register-client
   ;;  (make-lsp-client
