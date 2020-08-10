@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 5月 11 15:42:56 2020 (+0800)
+;; Last-Updated: 四 8月  6 16:10:12 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -63,11 +63,10 @@
         company-idle-delay 0
         company-echo-delay (if (display-graphic-p) nil 0)
         company-minimum-prefix-length 2
-        company-require-match nil
+        company-require-match 'never
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
-        ;; company-backends '(company-capf)
         company-frontends '(company-pseudo-tooltip-frontend
                             company-echo-metadata-frontend))
   (unless *clangd* (delete 'company-clang company-backends))
