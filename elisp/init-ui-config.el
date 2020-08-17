@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 8月 10 17:05:52 2020 (+0800)
+;; Last-Updated: 二 8月 11 16:05:07 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -67,7 +67,7 @@
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 ;; Display column numbers in modeline
 (column-number-mode 1)
-(setq display-line-nujbers-type 'relative)
+(setq display-line-numbers-type 'relative)
 ;; -DisLineNum
 
 ;; DisTimeBat
