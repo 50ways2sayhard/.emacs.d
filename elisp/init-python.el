@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 7月  3 16:52:07 2020 (+0800)
+;; Last-Updated: 一 8月 17 11:25:51 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -70,8 +70,8 @@
       (exec-path-from-shell-copy-env "WORKON_HOME"))
     (add-hook 'pyvenv-post-activate-hooks #'+modeline-update-env-in-all-windows-h)
     (add-hook 'pyvenv-pre-deactivate-hooks #'+modeline-clear-env-in-all-windows-h)
-    (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
-    (add-hook 'pyvenv-post-deactivate-hooks (lambda () (lsp-restart-workspace)))
+    ;; (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
+    ;; (add-hook 'pyvenv-post-deactivate-hooks (lambda () (lsp-restart-workspace)))
     (add-to-list 'global-mode-string
                  '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
                  'append)
@@ -88,14 +88,6 @@
         (py-isort-before-save)))
     (add-hook 'python-mode-hook
               (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
-    )
-
-  (use-package importmagic
-    :defer t
-    :hook (python-mode . importmagic-mode)
-    :commands (importmagic-fix-imports importmagic-fix-symbol-at-point)
-    :config
-    (setq importmagic-python-interpreter "python")
     )
 
   (use-package python-pytest
