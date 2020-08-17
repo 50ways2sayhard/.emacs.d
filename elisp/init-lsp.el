@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 8月  6 17:13:58 2020 (+0800)
+;; Last-Updated: 二 8月 11 09:55:06 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -97,11 +97,10 @@
 
   :config
   (use-package lsp-pyright
-    :straight (:host github :repo "emacs-lsp/lsp-pyright")
     :after lsp-mode python
     :config
-    (setq lsp-pyright-use-library-code-for-types t)
-    (setq lsp-pyright-venv ".venv")
+    (setq lsp-pyright-venv-path ".venv")
+    (setq lsp-pyright-multi-root nil)
     )
   ;; (setq lsp-pyright-use-library-code-for-types t)
   ;; (setq lsp-pyright-venv ".venv")
