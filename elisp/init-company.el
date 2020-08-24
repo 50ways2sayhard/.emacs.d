@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 8月  6 16:10:12 2020 (+0800)
+;; Last-Updated: 四 8月 20 10:16:13 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -152,7 +152,6 @@ If failed try to complete the common part with `company-complete-common'"
   :init (setq company-quickhelp-delay 0.5))
 
 (use-package company-box
-  :straight (:host github :repo "sebastiencs/company-box")
   :init
   (setq company-box-backends-colors nil
         company-box-show-single-candidate t
