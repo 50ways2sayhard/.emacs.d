@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 8月 11 09:55:06 2020 (+0800)
+;; Last-Updated: 四 8月 20 15:14:24 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -96,12 +96,6 @@
   (setq gc-cons-threshold 100000000)
 
   :config
-  (use-package lsp-pyright
-    :after lsp-mode python
-    :config
-    (setq lsp-pyright-venv-path ".venv")
-    (setq lsp-pyright-multi-root nil)
-    )
   ;; (setq lsp-pyright-use-library-code-for-types t)
   ;; (setq lsp-pyright-venv ".venv")
   ;; (setq lsp-pyright-disable-organize-imports t)
@@ -117,6 +111,15 @@
   ;;                     (with-lsp-workspace workspace
   ;;                       (lsp--set-configuration (lsp-configuration-section "python"))))
   ;;   ))
+  )
+
+(use-package lsp-pyright
+  :hook (python-mode . (lambda () (require 'lsp-pyright)))
+  :init (when (executable-find "python3")
+          (setq lsp-pyright-python-executable-cmd "python3"))
+  :config
+  (setq lsp-pyright-venv-path ".venv")
+  (setq lsp-pyright-multi-root nil)
   )
 
 ;; LSPUI
