@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 8月 11 16:05:07 2020 (+0800)
+;; Last-Updated: 四 8月 20 17:21:06 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -70,15 +70,10 @@
 (setq display-line-numbers-type 'relative)
 ;; -DisLineNum
 
-;; DisTimeBat
-(display-time-mode 1)
-(display-battery-mode 1)
-;; -DisTimeBat
-
 ;;Font
 (when (display-graphic-p)
   ;; Set default font
-  (cl-loop for font in '("SFMono Nerd Font" "JetBrains Mono" "SauceCodePro Nerd Font")
+  (cl-loop for font in '("CaskaydiaCove Nerd Font Mono" "SFMono Nerd Font" "JetBrains Mono")
            when (font-installed-p font)
            return (set-face-attribute 'default nil
                                       :font font
