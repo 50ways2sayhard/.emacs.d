@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 12
+;;     Update #: 32
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -156,20 +156,7 @@ FACE defaults to inheriting from default and highlight."
     :init (setq highlight-indent-guides-method 'character
                 highlight-indent-guides-responsive 'top)
     :config
-    ;; Don't display indentations while editing with `company'
-    (with-eval-after-load 'company
-      (add-hook 'company-completion-started-hook
-                (lambda (&rest _)
-                  "Trun off indentation highlighting."
-                  (when highlight-indent-guides-mode
-                    (highlight-indent-guides-mode -1))))
-      (add-hook 'company-after-completion-hook
-                (lambda (&rest _)
-                  "Trun on indentation highlighting."
-                  (when (and (derived-mode-p 'prog-mode)
-                             (not highlight-indent-guides-mode))
-                    (highlight-indent-guides-mode 1)))))
-
+    (setq highlight-indent-guides-character ?\x2506)
     ;; Don't display first level of indentation
     (defun my-indent-guides-for-all-but-first-column (level responsive display)
       (unless (< level 1)
