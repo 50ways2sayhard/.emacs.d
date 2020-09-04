@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 9月  2 11:00:03 2020 (+0800)
+;; Last-Updated: 五 9月  4 17:36:54 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -62,7 +62,7 @@
         company-show-numbers t
         company-idle-delay 0
         company-echo-delay (if (display-graphic-p) nil 0)
-        company-minimum-prefix-length 2
+        company-minimum-prefix-length 1
         company-require-match 'never
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
