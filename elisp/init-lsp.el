@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 8月 20 15:14:24 2020 (+0800)
+;; Last-Updated: 一 9月  7 10:00:11 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -120,6 +120,7 @@
   :config
   (setq lsp-pyright-venv-path ".venv")
   (setq lsp-pyright-multi-root nil)
+  (setq lsp-pyright-use-library-code-for-types t)
   )
 
 ;; LSPUI
