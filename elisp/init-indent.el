@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:29:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Dec  3 21:41:41 2019 (-0500)
-;;           By: User Account1
+;; Last-Updated: 四 10月 15 14:55:52 2020 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d highlight-indent-guides indentation
 ;; Compatibility: emacs-version >= 26.1
@@ -44,7 +44,7 @@
 (use-package highlight-indent-guides
   :if *sys/gui*
   :diminish
-  :hook ((prog-mode web-mode nxml-mode) . highlight-indent-guides-mode)
+  :hook ((python-mode web-mode nxml-mode) . highlight-indent-guides-mode)
   :custom
   (highlight-indent-guides-method 'character)
   (highlight-indent-guides-responsive 'top)
@@ -64,9 +64,9 @@
 (c-set-offset (quote cpp-macro) 0 nil)
 (add-hook 'after-change-major-mode-hook
           (lambda () (if (equal electric-indent-mode 't)
-                    (when (derived-mode-p 'text-mode)
-                      (electric-indent-mode -1))
-                  (electric-indent-mode 1))))
+                         (when (derived-mode-p 'text-mode)
+                           (electric-indent-mode -1))
+                       (electric-indent-mode 1))))
 ;; -IndentConfig
 
 (provide 'init-indent)

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 9月  4 17:36:54 2020 (+0800)
+;; Last-Updated: 五 10月 16 19:03:51 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -66,6 +66,7 @@
         company-require-match 'never
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
+        company-backends '(company-capf company-files)
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
         company-frontends '(company-pseudo-tooltip-frontend
                             company-echo-metadata-frontend))
@@ -102,45 +103,39 @@ If failed try to complete the common part with `company-complete-common'"
 (use-package company-tabnine
   :defer 1
   :custom
-  (company-tabnine-max-num-results 9)
+  (company-tabnine-max-num-results 3)
   :bind
   (("M-q" . company-other-backend)
    ("C-z t" . company-tabnine)
    )
   :hook
-  (lsp-after-open . (lambda ()
-                      (setq company-tabnine-max-num-results 3)
-                      ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-                      ;; (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
-                      ))
+  (lsp-after-open . (lambda () (unless (derived-mode-p 'js-mode)
+                            (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+                            (add-to-list 'company-backends '(company-capf :with company-tabnine :separate)))))
   (kill-emacs . company-tabnine-kill-process)
   :config
   ;; Enable TabNine on default
   (add-to-list 'company-transformers 'company//sort-by-tabnine t)
   (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
-  ;; (add-to-list 'company-backends #'company-tabnine)
 
-  ;; Integrate company-tabnine with lsp-mode
   (defun company//sort-by-tabnine (candidates)
     (if (or (functionp company-backend)
-            (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
+            (not (and (listp company-backend) (memq 'company-tabnine company-backends))))
         candidates
       (let ((candidates-table (make-hash-table :test #'equal))
-            candidates-1
-            candidates-2)
+            candidates-lsp
+            candidates-tabnine)
         (dolist (candidate candidates)
           (if (eq (get-text-property 0 'company-backend candidate)
                   'company-tabnine)
               (unless (gethash candidate candidates-table)
-                (push candidate candidates-2))
-            (push candidate candidates-1)
+                (push candidate candidates-tabnine))
+            (push candidate candidates-lsp)
             (puthash candidate t candidates-table)))
-        (setq candidates-1 (nreverse candidates-1))
-        (setq candidates-2 (nreverse candidates-2))
-        (nconc (seq-take candidates-1 2)
-               (seq-take candidates-2 2)
-               (seq-drop candidates-1 2)
-               (seq-drop candidates-2 2))))))
+        (setq candidates-lsp (nreverse candidates-lsp))
+        (setq candidates-tabnine (nreverse candidates-tabnine))
+        (nconc (seq-take candidates-tabnine 3)
+               (seq-take candidates-lsp 6))))))
 
 ;; -Companytabninepac
 
@@ -148,9 +143,10 @@ If failed try to complete the common part with `company-complete-common'"
   :diminish
   :defines company-box-icons-all-the-icons
   :hook (company-mode . company-box-mode)
+  :if (display-graphic-p)
   :init
   (setq company-box-backends-colors nil
-        company-box-highlight-prefix t)
+        company-box-doc-delay 0.3)
   :config
   (with-no-warnings
     ;; Prettify icons
@@ -199,6 +195,15 @@ If failed try to complete the common part with `company-complete-common'"
             (Template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15)))
           company-box-icons-alist 'company-box-icons-all-the-icons))
   )
+
+(use-package company-quickhelp
+  :defines company-quickhelp-delay
+  :if (display-graphic-p)
+  :bind (:map company-active-map
+              ([remap company-show-doc-buffer] . company-quickhelp-manual-begin))
+  ;; :hook (global-company-mode . company-quickhelp-mode)
+  :init (setq company-quickhelp-delay 0.5))
+
 
 (provide 'init-company)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

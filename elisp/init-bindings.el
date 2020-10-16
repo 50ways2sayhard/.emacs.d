@@ -181,11 +181,13 @@
 ;; JS
 (leader-def
   :states 'normal
-  :keymaps '(js2-mode-map rjsx-mode-map)
+  :keymaps '(js-mode-map js2-mode-map rjsx-mode-map)
   "mi" '(:wk "Imports")
   "mif" '(import-js-fix :wk "Fix imports")
   "mir" '(run-import-js :wk "Run import js")
   "mii" '(import-js-import :wk "Import module")
+
+  "md" '(:wk "Docs")
   "mdf" '(js-doc-insert-function-doc :wk "Insert function doc")
   "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
   "mdt" '(js-doc-insert-tag :wk "Insert tag")

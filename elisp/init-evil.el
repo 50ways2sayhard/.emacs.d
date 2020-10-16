@@ -29,13 +29,11 @@
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
-  (dolist (mode '(snails-mode company-mode color-rg-mode hl-todo-mode))
+  (dolist (mode '(snails-mode company-mode color-rg-mode hl-todo-mode smerge-mode))
     (add-to-list 'evil-emacs-state-modes mode)
     )
 
   (evil-declare-change-repeat 'company-complete)
-  ;; (add-hook 'company-mode-hook #'evil-normalize-keymaps)
-  ;; (add-hook 'evil-normal-state-entry-hook #'company-abort)
   (unless noninteractive
     (setq save-silently t))
   )
@@ -190,8 +188,8 @@
 
   ;; Keybindings tweaks
   (evil-collection-define-key 'normal 'occur-mode-map
-    ;; consistent with ivy
-    (kbd "C-c C-e") 'occur-edit-mode)
+                              ;; consistent with ivy
+                              (kbd "C-c C-e") 'occur-edit-mode)
   :custom
   (evil-collection-calendar-want-org-bindings t)
   (evil-collection-company-use-tng t)
