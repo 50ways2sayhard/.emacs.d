@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 10月 16 19:03:51 2020 (+0800)
+;; Last-Updated: 一 10月 19 13:37:50 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -109,9 +109,10 @@ If failed try to complete the common part with `company-complete-common'"
    ("C-z t" . company-tabnine)
    )
   :hook
-  (lsp-after-open . (lambda () (unless (derived-mode-p 'js-mode)
+  (lsp-after-open . (lambda () (unless (derived-mode-p 'js-mode 'js2-mode 'rjsx-mode)
                             (add-to-list 'company-transformers 'company//sort-by-tabnine t)
                             (add-to-list 'company-backends '(company-capf :with company-tabnine :separate)))))
+  ((js-mode js2-mode rjsx-mode) . (lambda () (setq company-backends '(company-capf))))
   (kill-emacs . company-tabnine-kill-process)
   :config
   ;; Enable TabNine on default
