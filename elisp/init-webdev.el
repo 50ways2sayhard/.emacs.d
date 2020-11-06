@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 10月 19 09:41:24 2020 (+0800)
+;; Last-Updated: 五 11月  6 09:44:32 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -52,56 +52,55 @@
 ;; -WebModePac
 
 ;; ;; Js2Pac
-(use-package js2-mode
-  :defines flycheck-javascript-eslint-executable
-  :mode (("\\.js\\'" . js2-mode)
-         ("\\.jsx\\'" . js2-jsx-mode))
-  :interpreter (("node" . js2-mode)
-                ("node" . js2-jsx-mode))
-  :hook ((js2-mode . js2-imenu-extras-mode)
-         (js2-mode . js2-highlight-unused-variables-mode))
-  :hook ((js2-mode . (lambda()
-                       (flycheck-add-mode 'javascript-eslint 'js2-mode)
-                       ;; (flycheck-add-next-checker 'lsp '(t . javascript-eslint))
-                       )))
-  :config
-  (setq js2-basic-offset 2)
-  (setq js-indent-level 2)
+;; (use-package js2-mode
+;;   :defines flycheck-javascript-eslint-executable
+;;   :mode (("\\.js\\'" . js2-mode)
+;;          ("\\.jsx\\'" . js2-jsx-mode))
+;;   :interpreter (("node" . js2-mode)
+;;                 ("node" . js2-jsx-mode))
+;;   :hook ((js2-mode . js2-imenu-extras-mode)
+;;          (js2-mode . js2-highlight-unused-variables-mode))
+;;   :hook ((js2-mode . (lambda()
+;;                        (flycheck-add-mode 'javascript-eslint 'js2-mode)
+;;                        ;; (flycheck-add-next-checker 'lsp '(t . javascript-eslint))
+;;                        )))
+;;   :config
+;;   (setq js2-basic-offset 2)
+;;   (setq js-indent-level 2)
 
-  (with-eval-after-load 'flycheck
-    (when (or (executable-find "eslint_d")
-              (executable-find "eslint")
-              (executable-find "jshint"))
-      (setq js2-mode-show-strict-warnings nil))
-    (when (executable-find "eslint_d")
-      ;; https://github.com/mantoni/eslint_d.js
-      ;; npm -i -g eslint_d
-      (setq flycheck-javascript-eslint-executable "eslint_d")))
+;;   (with-eval-after-load 'flycheck
+;;     (when (or (executable-find "eslint_d")
+;;               (executable-find "eslint")
+;;               (executable-find "jshint"))
+;;       (setq js2-mode-show-strict-warnings nil))
+;;     (when (executable-find "eslint_d")
+;;       ;; https://github.com/mantoni/eslint_d.js
+;;       ;; npm -i -g eslint_d
+;;       (setq flycheck-javascript-eslint-executable "eslint_d")))
 
-  (use-package js2-refactor
-    :diminish
-    :hook (js2-mode . js2-refactor-mode)
-    :config (js2r-add-keybindings-with-prefix "C-c C-m"))
-  (use-package js-doc)
-  )
+;;   (use-package js2-refactor
+;;     :diminish
+;;     :hook (js2-mode . js2-refactor-mode)
+;;     :config (js2r-add-keybindings-with-prefix "C-c C-m"))
+;;   (use-package js-doc)
+;;   )
 ;; ;; -Js2Pac
 
 
-(use-package rjsx-mode
-  :ensure t
-  :mode ("\\.js\\'")
-  :config
-  (setq sgml-basic-offset 2)
-  (setq js-indent-level 2))
+;; (use-package rjsx-mode
+;;   :ensure t
+;;   :mode ("\\.js\\'")
+;;   :config
+;;   (setq sgml-basic-offset 2)
+;;   (setq js-indent-level 2))
 
 (setq js-indent-level 2)
-;; (with-eval-after-load 'flycheck
-;;   (when (or (executable-find "eslint_d")
-;;             (executable-find "eslint")
-;;             )
-;;     (setq js2-mode-show-strict-warnings nil))
-;;   (when (executable-find "eslint_d")
-;;     flycheck-javascript-eslint-executable "eslint_d"))
+(with-eval-after-load 'flycheck
+  (when (or (executable-find "eslint_d")
+            (executable-find "eslint")
+            ))
+  (when (executable-find "eslint_d")
+    flycheck-javascript-eslint-executable "eslint_d"))
 
 (use-package js-doc)
 
@@ -110,6 +109,15 @@
   :mode "\\.ts\\'"
   :commands (typescript-mode))
 ;; -TypeScriptPac
+
+(use-package tide
+  ;; :hook (js-mode . setup-tide-mode)
+
+  :config
+  (defun setup-tide-mode ()
+    (tide-setup)
+    (tide-hl-identifier-mode +1))
+  )
 
 ;; EmmetPac
 (use-package emmet-mode
