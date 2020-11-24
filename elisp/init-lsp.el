@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 10月 15 15:11:18 2020 (+0800)
+;; Last-Updated: 二 11月 24 14:03:13 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -75,13 +75,12 @@
         lsp-enable-indentation nil
         lsp-signature-auto-activate nil
         lsp-modeline-code-actions-enable nil
+        lsp-modeline-workspace-status-enable nil
         lsp-enable-semantic-highlighting nil
-        ;; lsp-prefer-capf t
         lsp-keep-workspace-alive nil
+        lsp-diagnostics-provider :flycheck
         lsp-idle-delay 0.5
         lsp-enable-on-type-formatting nil
-        lsp-diagnostic-package :none
-        lsp-flycheck-live-reporting nil
         lsp-enable-snippet nil
         lsp-enable-text-document-color nil
         lsp-enable-symbol-highlighting nil
@@ -97,13 +96,22 @@
   )
 
 (use-package lsp-pyright
-  :hook (python-mode . (lambda () (require 'lsp-pyright)))
-  :init (when (executable-find "python3")
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (add-hook 'after-save-hook #'lsp-pyright-format-buffer)
+                         ))
+  :init
+  (when (executable-find "python3")
           (setq lsp-pyright-python-executable-cmd "python3"))
-  :config
   (setq lsp-pyright-venv-path ".venv")
   (setq lsp-pyright-multi-root nil)
   (setq lsp-pyright-use-library-code-for-types t)
+
+  (defun lsp-pyright-format-buffer ()
+    (interactive)
+    (when (and (executable-find "black") buffer-file-name)
+      (call-process "black" nil nil nil "-q" buffer-file-name))
+    )
   )
 
 ;; LSPUI
@@ -212,7 +220,13 @@
               lsp-ui-imenu-colors `(,(face-foreground 'font-lock-keyword-face)
                                     ,(face-foreground 'font-lock-string-face)
                                     ,(face-foreground 'font-lock-constant-face)
-                                    ,(face-foreground 'font-lock-variable-name-face))))
+                                    ,(face-foreground 'font-lock-variable-name-face)))
+  :config
+  (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
+  (add-hook 'after-load-theme-hook (lambda ()
+                                     (setq lsp-ui-doc-border (face-foreground 'font-lock-comment-face))
+                                     (set-face-background 'lsp-ui-doc-background (face-background 'tooltip))))
+  )
 
 ;; DAPPac
 (use-package dap-mode
