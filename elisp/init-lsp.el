@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 11月 24 14:03:13 2020 (+0800)
+;; Last-Updated: Thu Nov 26 10:26:45 2020 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -78,7 +78,7 @@
         lsp-modeline-workspace-status-enable nil
         lsp-enable-semantic-highlighting nil
         lsp-keep-workspace-alive nil
-        lsp-diagnostics-provider :flycheck
+        lsp-diagnostics-provider :none
         lsp-idle-delay 0.5
         lsp-enable-on-type-formatting nil
         lsp-enable-snippet nil
