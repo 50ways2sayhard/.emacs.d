@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 52
+;;     Update #: 58
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,22 +50,12 @@
 
 (use-package nox
   :straight (:host github :repo "manateelazycat/nox" :depth 1)
-  ;; :hook ((python-mode) . nox-ensure)
+  ;; :hook ((js-mode rjsx-mode) . nox-ensure)
   :custom
   (nox-put-doc-in-help-buffer t)
   (nox-auto-display-help-buffer t)
   :config
-  (setq nox-python-server "pyls")
-  ;; (setq nox-python-server-dir "~/.local/mspyls/")
-  (defun push-tabnine ()
-    (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-    (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
-    )
-  (add-hook 'nox-managed-mode-hook #'push-tabnine)
-  ;; (add-hook 'pyvenv-post-activate-hooks (lambda ()
-  ;;                                         (setq nox-python-path (concat python-shell-virtualenv-path "/bin/python"))
-  ;;                                         ))
-  ;; (add-hook 'pyvenv-post-deactivate-hooks (lambda () (setq nox-python-path "/usr/bin/python")))
+  (setq nox-python-server "pyright")
   )
 
 (provide 'init-nox)
