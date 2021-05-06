@@ -52,9 +52,6 @@
     )
   )
 
-(use-package evil-magit
-  :if (executable-find "git"))
-
 (use-package evil-easymotion
   :ensure t
   :commands evilem-create evilem-default-keybindings
@@ -167,8 +164,8 @@
              evil-visualstar/begin-search-backward)
   :init
   (evil-define-key* 'visual 'global
-                    "*" #'evil-visualstar/begin-search-forward
-                    "#" #'evil-visualstar/begin-search-backward))
+    "*" #'evil-visualstar/begin-search-forward
+    "#" #'evil-visualstar/begin-search-backward))
 
 
 ;;
@@ -178,25 +175,17 @@
   :ensure t
   :commands evil-outer-xml-attr evil-inner-xml-attr)
 
+
 (use-package evil-collection
   :ensure t
-  :hook (evil-mode . evil-collection-init)
-  :config
-  ;; Disable `evil-collection' in certain modes
-  (dolist (ig-mode '())
-    (setq evil-collection-mode-list (remove ig-mode evil-collection-mode-list)))
-
-  ;; Keybindings tweaks
-  (evil-collection-define-key 'normal 'occur-mode-map
-                              ;; consistent with ivy
-                              (kbd "C-c C-e") 'occur-edit-mode)
+  :after evil
   :custom
-  (evil-collection-calendar-want-org-bindings t)
-  (evil-collection-company-use-tng t)
-  (evil-collection-outline-bind-tab-p t)
   (evil-collection-term-sync-state-and-mode-p nil)
-  (evil-collection-setup-minibuffer nil)
-  (evil-collection-setup-debugger-keys nil))
+  (evil-collection-setup-debugger-keys nil)
+  :config
+  (evil-collection-init)
+  (setq evil-want-keybinding nil)
+  )
 
 
 (provide 'init-evil)
