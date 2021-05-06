@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 10月 12 11:55:15 2020 (+0800)
+;; Last-Updated: Fri May  7 12:02:09 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -102,8 +102,15 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (update-to-load-path (expand-file-name "elisp" user-emacs-directory))
 ;; -LoadPath
 
+;; InitPrivate
+;; Load init-custom.el if it exists
+(when (file-exists-p (expand-file-name "init-custom.el" user-emacs-directory))
+   (load-file (expand-file-name "init-custom.el" user-emacs-directory)))
+;; -InitPrivate
+
 ;; Constants
 
+(require 'init-custom)
 (require 'init-const)
 
 ;; Packages
@@ -222,6 +229,8 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (require 'init-dockerfile)
 
 (require 'init-shackle)
+
+(require 'init-tree-sitter)
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
