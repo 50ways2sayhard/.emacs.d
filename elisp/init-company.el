@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 10月 26 14:12:06 2020 (+0800)
+;; Last-Updated: Fri May  7 00:26:51 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -40,6 +40,7 @@
 (eval-when-compile
   (require 'init-const))
 
+
 ;; ComPac
 (use-package company
   :diminish "C"
@@ -52,6 +53,7 @@
          ("C-p" . company-select-previous)
          ("C-n" . company-select-next)
          ("<tab>" . company-complete-common-or-cycle)
+         ("TAB" . company-complete-common-or-cycle)
          ("<backtab>" . my-company-yasnippet)
          :map company-search-map
          ("C-p" . company-select-previous)
@@ -68,10 +70,10 @@
         company-dabbrev-downcase nil
         company-backends '(company-capf company-files)
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
-        company-frontends '(company-pseudo-tooltip-frontend
-                            company-echo-metadata-frontend))
+        )
   (unless *clangd* (delete 'company-clang company-backends))
   (global-company-mode 1)
+  (company-tng-mode 1)
   (defun smarter-yas-expand-next-field-complete ()
     "Try to `yas-expand' and `yas-next-field' at current cursor position.
 

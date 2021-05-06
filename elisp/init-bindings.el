@@ -28,18 +28,6 @@
  "C-k" 'kill-line
  )
 
-;; Company
-(with-eval-after-load 'company
-  (general-define-key
-   :states 'insert
-   :keymaps 'company-active-map
-   "C-n" 'company-select-next
-   "C-p" 'company-select-previous
-   "<tab>" 'company-complete-common-or-cycle
-   )
-
-  )
-
 
 ;; Leader def
 (leader-def
