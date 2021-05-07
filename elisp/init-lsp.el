@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:14:41 2021 (+0800)
+;; Last-Updated: Fri May  7 12:17:16 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -93,48 +93,6 @@
         )
   (setq gc-cons-threshold 100000000)
   )
-
-;; LSPUI
-;; (use-package lsp-ui
-;;   :after lsp-mode
-;;   :diminish
-;;   :commands lsp-ui-mode
-;;   :custom-face
-;;   (lsp-ui-doc-background ((t (:background nil))))
-;;   (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
-;;   :bind (("C-c d" . lsp-ui-doc-show)
-;;          ("C-c D" . lsp-ui-doc-hide)
-;;          :map lsp-ui-mode-map
-;;          ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-;;          ([remap xref-find-references] . lsp-ui-peek-find-references)
-;;          ("C-c u" . lsp-ui-imenu)
-;;          ("M-i" . lsp-ui-doc-focus-frame))
-;;   :custom
-;;   (lsp-ui-doc-enable nil)
-;;   (lsp-ui-doc-header t)
-;;   (lsp-ui-doc-include-signature t)
-;;   (lsp-ui-doc-border (face-foreground 'default))
-;;   (lsp-ui-sideline-enable t)
-;;   (lsp-ui-sideline-ignore-duplicate t)
-;;   (lsp-ui-sideline-show-code-actions nil)
-;;   :preface
-;;   (defun my/toggle-lsp-ui-doc ()
-;;     (interactive)
-;;     (if lsp-ui-doc-mode
-;;         (progn
-;;           (lsp-ui-doc-mode -1)
-;;           (lsp-ui-doc--hide-frame))
-;;       (lsp-ui-doc-mode 1))
-;;     )
-;;   :config
-;;   (add-to-list 'lsp-ui-doc-frame-parameters '(right-fringe . 8))
-;;   (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
-;;   (add-hook 'after-load-theme-hook
-;;             (lambda ()
-;;               (setq lsp-ui-doc-border (face-foreground 'default))
-;;               (set-face-background 'lsp-ui-doc-background
-;;                                    (face-background 'tooltip)))))
-;; -LSPUI
 
 (use-package lsp-ui
   :custom-face
