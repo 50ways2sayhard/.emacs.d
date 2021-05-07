@@ -187,6 +187,7 @@
   (setq evil-want-keybinding nil)
   )
 
+(use-package evil-indent-plus)
 
 (provide 'init-evil)
 ;;; init-evil.el ends here
