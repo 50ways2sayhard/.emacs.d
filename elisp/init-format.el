@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:27:40 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 11月 23 17:11:50 2020 (+0800)
+;; Last-Updated: Fri May  7 12:40:50 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d format-all
@@ -39,7 +39,9 @@
 
 ;; FormatAllPac
 (use-package format-all
-  ;; :hook ((prog-mode web-mode) . format-all-mode)
+  :hook ((prog-mode web-mode) . format-all-ensure-formatter)
+  :hook ((prog-mode web-mode) . format-all-mode)
+  :init
   )
 ;; -FormatAllPac
 
