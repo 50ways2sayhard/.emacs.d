@@ -29,9 +29,28 @@
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
+  (put 'evil-define-key* 'lisp-indent-function 'defun)
   (dolist (mode '(snails-mode company-mode color-rg-mode hl-todo-mode smerge-mode))
     (add-to-list 'evil-emacs-state-modes mode)
     )
+  ;; stop copying each visual state move to the clipboard:
+  ;; https://bitbucket.org/lyro/evil/issue/336/osx-visual-state-copies-the-region-on
+  ;; grokked from:
+  ;; http://stackoverflow.com/questions/15873346/elisp-rename-macro
+  (advice-add #'evil-visual-update-x-selection :override #'ignore)
+
+  ;; Start help-with-tutorial in emacs state
+  (advice-add #'help-with-tutorial :after (lambda (&rest _) (evil-emacs-state +1)))
+
+  ;; Allows you to click buttons without initiating a selection
+  (define-key evil-motion-state-map [down-mouse-1] nil)
+
+  ;; Force *message* buffer into evil-normal-state to use <spc>
+  ;; HACK: donot know why `evil-emacs-state`
+  (with-current-buffer "*Messages*"
+    (evil-emacs-state))
+  (add-hook 'messages-buffer-mode-hook #'(lambda ()
+                                           (evil-emacs-state)))
 
   (evil-declare-change-repeat 'company-complete)
   (unless noninteractive
@@ -41,16 +60,6 @@
 ;;
 ;;; Packages
 
-
-(use-package general
-  :ensure t
-  :config
-  (general-create-definer leader-def
-    :states '(normal insert visual emacs)
-    :prefix "SPC"
-    :non-normal-prefix "C-,"
-    )
-  )
 
 (use-package evil-easymotion
   :ensure t
@@ -69,16 +78,32 @@
 
 
 (use-package evil-embrace
-  :ensure t
   :commands embrace-add-pair embrace-add-pair-regexp
   :hook (LaTeX-mode . embrace-LaTeX-mode-hook)
   :hook (org-mode . embrace-org-mode-hook)
-  :hook ((ruby-mode enh-ruby-mode) . embrace-ruby-mode-hook)
   :hook (emacs-lisp-mode . embrace-emacs-lisp-mode-hook)
   :hook ((c++-mode rustic-mode csharp-mode java-mode swift-mode typescript-mode)
          . +evil-embrace-angle-bracket-modes-hook-h)
   :config
+  (require 'evil/+embrace)
   (setq evil-embrace-show-help-p nil)
+
+  (with-eval-after-load 'evil-surround
+    (evil-embrace-enable-evil-surround-integration))
+
+  (defun +evil-embrace-latex-mode-hook-h ()
+    (embrace-add-pair-regexp ?l "\\[a-z]+{\" \"}" #'+evil--embrace-latex))
+
+  (defun +evil-embrace-lisp-mode-hook-h ()
+    ;; Avoid `embrace-add-pair-regexp' because it would overwrite the default
+    ;; `f' rule, which we want for other modes
+    (push (cons ?f (make-embrace-pair-struct
+                    :key ?f
+                    :read-function #'+evil--embrace-elisp-fn
+                    :left-regexp "([^ ]+ \"
+                    :right-regexp \")"))
+          embrace--pairs-list))
+
 
 
   (defun +evil-embrace-angle-bracket-modes-hook-h ()
@@ -92,7 +117,8 @@
         (make-embrace-pair-struct
          :key ?\\
          :left-regexp "\\[[{(]"
-         :right-regexp "\\[]})]")))
+         :right-regexp "\\[]})]"))
+  )
 
 
 (use-package evil-escape

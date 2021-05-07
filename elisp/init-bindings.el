@@ -1,5 +1,21 @@
 (eval-when-compile
-  (require 'init-const))
+  (require 'init-const)
+  (require 'init-func)
+  )
+
+(use-package general
+  :after evil
+  :ensure
+  :config
+  (general-create-definer leader-def
+    :states '(normal visual emacs motion)
+    :keymaps 'override
+    :prefix "SPC"
+    )
+  (general-create-definer local-leader-def
+    :states '(normal visual emacs motion)
+    :keymaps 'override
+    :prefix ",")
 
 ;; evil mode
 (evil-define-key 'normal 'global
@@ -12,6 +28,7 @@
 
   ;; goto
   "gd" 'xref-find-definitions
+  "/" 'swiper
   )
 
 (evil-ex-define-cmd "W" 'evil-write)
@@ -32,11 +49,11 @@
 ;; Leader def
 (leader-def
   :keymaps 'override
-  "<SPC>" '(counsel-projectile :wk "Project Find File")
+  "<SPC>" '(counsel-projectile-rg :wk "Project Find File")
   ":" '(execute-extended-command :which-key "M-x")
   "/" '(evilnc-comment-or-uncomment-lines :wk "Comment line")
   "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
-  "." '(snails :wk "Snails")
+  "." '(swiper-all :wk "Swiper")
 
   "b" '(:wk "Buffer")
   "b[" '(previous-buffer :wk "Previous buffer")
@@ -106,7 +123,7 @@
 
 
   "s" '(:wk "Search")
-  "sb" '(swiper :wk "Search buffer")
+  "sb" '(swiper-all :wk "Search buffer")
   "sf" '(locate :wk "Locate file")
   "si" '(imenu :wk "Jump to symbol")
   "sp" '(counsel-projectile-rg :wk "Search project")
@@ -190,18 +207,7 @@
     )
   )
 
-(with-eval-after-load 'tide
-  (leader-def
-    :states 'normal
-    :keymaps '(js-mode-map js2-mode-map rjsx-mode-map)
-
-    "cd" '(tide-jump-to-definition :wk "Jump to definition")
-    "cf" '(tide-format :wk "Format buffer")
-    "ci" '(tide-organize-imports :wk "Organize import")
-    "cr" '(tide-rename-symbol :wk "LSP rename")
-    )
-  )
-
+)
 (provide 'init-bindings)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
