@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:12:47 2021 (+0800)
+;; Last-Updated: Fri May  7 18:44:14 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -105,134 +105,71 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 ;; InitPrivate
 ;; Load init-custom.el if it exists
 (when (file-exists-p (expand-file-name "init-custom.el" user-emacs-directory))
-   (load-file (expand-file-name "init-custom.el" user-emacs-directory)))
+  (load-file (expand-file-name "init-custom.el" user-emacs-directory)))
 ;; -InitPrivate
 
 ;; Constants
-
-(require 'init-custom)
 (require 'init-const)
-
-;; Packages
 
 ;; Package Management
 (require 'init-package)
 
 ;; Global Functionalities
 (require 'init-global-config)
-
 (require 'init-func)
-
+(require 'init-evil)
 (require 'init-search)
-
-(require 'init-crux)
-
+(when (featurep 'native-compile) ;;FIXME: tree-sitter not work in M1 now.
+  (require 'init-tree-sitter))
+(require 'init-ivy)
 (require 'init-winner)
-
 (require 'init-which-key)
-
 (require 'init-popup-kill-ring)
-
 (require 'init-undo-tree)
-
 (require 'init-discover-my-major)
-
-(require 'init-ace-window)
-
-(require 'init-shell)
-
 (require 'init-dired)
-
 (require 'init-buffer)
 
 ;; User Interface Enhancements
 (require 'init-ui-config)
-
 (require 'init-theme)
-
 (require 'init-dashboard)
-
 (require 'init-fonts)
-
 (require 'init-scroll)
-
 (require 'init-hydra)
+(require 'init-pretty-code)
+(require 'init-highlight)
 
 ;; General Programming
 (require 'init-magit)
-
 (require 'init-projectile)
-
 (require 'init-treemacs)
-
 (require 'init-yasnippet)
-
 (require 'init-flycheck)
-
-(require 'init-dumb-jump)
-
 (require 'init-parens)
-
 (require 'init-indent)
-
-(require 'init-quickrun)
-
 (require 'init-format)
-
 (require 'init-edit)
-
 (require 'init-header)
-
-(require 'init-ein)
-
 (require 'init-lsp)
-
 (require 'init-company)
 
 ;; Programming
-
 (require 'init-cc)
-
 (require 'init-python)
-
 (require 'init-latex)
-
 (require 'init-javascript)
-
-;; Web Development
 (require 'init-webdev)
-
-;; Miscellaneous
-(require 'init-org)
-
-(require 'init-tramp)
-
-(require 'init-leetcode)
-
-
-(require 'init-evil)
-
-(require 'init-bindings)
-
-(require 'init-ivy)
-
-(require 'init-highlight)
-
-(require 'init-restart-emacs)
-
 (require 'init-direnv)
-
 (require 'init-ml)
-
-(require 'init-pretty-code)
-
-(require 'init-nox)
-
 (require 'init-dockerfile)
 
-(require 'init-shackle)
 
-(require 'init-tree-sitter)
+;; Miscellaneous
+(require 'init-bindings)
+(require 'init-org)
+(require 'init-restart-emacs)
+(require 'init-shackle)
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
