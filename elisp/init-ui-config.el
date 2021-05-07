@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Sep  9 23:49:27 2020 (+0800)
+;; Last-Updated: Fri May  7 12:01:43 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -38,7 +38,8 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'init-const))
+  (require 'init-const)
+  (require 'init-func))
 
 
 (mouse-avoidance-mode 'exile)
@@ -70,30 +71,6 @@
 (setq display-line-numbers-type 'relative)
 ;; -DisLineNum
 
-;;Font
-(when (display-graphic-p)
-  ;; Set default font
-  (cl-loop for font in '("CaskaydiaCove Nerd Font Mono" "SFMono Nerd Font" "JetBrains Mono")
-           when (font-installed-p font)
-           return (set-face-attribute 'default nil
-                                      :font font
-                                      :weight (cond (*sys/mac* 'normal)
-                                                    (t 'semi-bold))
-                                      :height (cond (*sys/mac* 160)
-                                                    (*sys/win32* 140)
-                                                    (t 140))))
-
-  ;; Specify font for all unicode characters
-  (cl-loop for font in '("Apple Symbols" "Noto Color Emoji" "Symbol" "icons-in-terminal")
-           when (font-installed-p font)
-           return (set-fontset-font t 'unicode font nil 'prepend))
-
-  ;; Specify font for Chinese characters
-  (cl-loop for font in '("Sarasa Nerd" "Noto Sans CJK SC" "PingFang SC" "Microsoft Yahei")
-           when (font-installed-p font)
-           return (set-fontset-font t '(#x4e00 . #x9fff) font)))
-
-
 (setq mac-command-modifier 'meta) ; make cmd key do Meta
 (setq mac-option-modifier 'super) ; make opt key do Super
 (setq mac-control-modifier 'control) ; make Control key do Control
@@ -102,13 +79,6 @@
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (custom-set-variables '(x-select-enable-clipboard t))
 (setq blink-cursor-mode nil)
-
-(use-package nyan-mode
-  :custom
-  (nyan-cat-face-number 4)
-  (nyan-animate-nyancat t)
-  :hook
-  (doom-modeline-mode . nyan-mode))
 
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
