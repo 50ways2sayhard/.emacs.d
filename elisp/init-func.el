@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月 30 14:50:59 2020 (+0800)
+;; Last-Updated: Fri May  7 12:12:12 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -221,6 +221,40 @@ FACE defaults to inheriting from default and highlight."
       (setq doom-modeline-env--version
             (bound-and-true-p doom-modeline-load-string))))
   (force-mode-line-update t))
+
+
+(defvar my-load-user-customized-major-mode-hook t)
+(defvar my-force-buffer-file-temp-p nil)
+(defun is-buffer-file-temp ()
+  "If (buffer-file-name) is nil or a temp file or HTML file converted from org file."
+  (interactive)
+  (let* ((f (buffer-file-name)) (rlt t))
+    (cond
+     ((not my-load-user-customized-major-mode-hook)
+      (setq rlt t))
+
+     ((and (buffer-name) (string-match "\\* Org SRc" (buffer-name)))
+      ;; org-babel edit inline code block need calling hook
+      (setq rlt nil))
+
+     ((null f)
+      (setq rlt t))
+
+     ((string-match (concat "^" temporary-file-directory) f)
+      ;; file is create from temp directory
+      (setq rlt t))
+
+     ((and (string-match "\.html$" f)
+           (file-exists-p (replace-regexp-in-string "\.html$" ".org" f)))
+      ;; file is a html file exported from org-mode
+      (setq rlt t))
+
+     (my-force-buffer-file-temp-p
+      (setq rlt t))
+
+     (t
+      (setq rlt nil)))
+    rlt))
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
