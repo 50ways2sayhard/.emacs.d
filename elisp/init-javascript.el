@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 15
+;;     Update #: 17
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -121,7 +121,7 @@
     ;; counsel/ivy is more generic and powerful for refactoring
     ;; js2-mode has its own syntax linter
 
-   ;; call js-doc commands through `counsel-M-x'!
+    ;; call js-doc commands through `counsel-M-x'!
 
     ;; @see https://github.com/mooz/js2-mode/issues/350
     (setq forward-sexp-function nil)))
@@ -144,6 +144,11 @@
   :commands (typescript-mode))
 ;; -TypeScriptPac
 
+(use-package vue-mode
+  :mode "\\.vue\\'"
+  :config
+  (add-hook 'vue-mode-hook #'lsp)
+  )
 
 
 (provide 'init-javascript)
