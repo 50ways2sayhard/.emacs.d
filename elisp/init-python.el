@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 一 8月 17 11:25:51 2020 (+0800)
+;; Last-Updated: Fri May  7 12:15:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -94,18 +94,6 @@
     :defer t)
   )
 
-;; LSPPythonPac
-;; (use-package lsp-python-ms
-;;   :hook (python-mode . (lambda () (require 'lsp-python-ms)))
-;;   :after lsp-mode python
-;;   :if (or *python3* *python*)
-;;   :custom
-;;   (lsp-python-ms-nupkg-channel "beta")
-;;   (lsp-python-ms-dir "~/.local/mspyls/")
-;;   (lsp-python-executable-cmd "python")
-;;   )
-;; -LSPPythonPac
-
 (use-package poetry
   :after python
   )
@@ -114,6 +102,21 @@
   :after python
   :config
   (setq sphinx-doc-python-indent 4)
+  )
+
+
+(use-package lsp-pyright
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         ))
+  :init
+  (when (executable-find "python3")
+    (setq lsp-pyright-python-executable-cmd "python3"))
+  (setq lsp-pyright-venv-path ".venv")
+  (setq lsp-pyright-multi-root nil)
+  (setq lsp-pyright-use-library-code-for-types t)
+  (setq lsp-pyright-auto-search-paths nil)
+  (setq lsp-pyright-auto-import-completions nil)
   )
 
 (provide 'init-python)

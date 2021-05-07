@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Nov 26 10:26:45 2020 (+0800)
+;; Last-Updated: Fri May  7 12:14:41 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -76,9 +76,8 @@
         lsp-signature-auto-activate nil
         lsp-modeline-code-actions-enable nil
         lsp-modeline-workspace-status-enable nil
-        lsp-enable-semantic-highlighting nil
+        lsp-semantic-tokens-enable nil
         lsp-keep-workspace-alive nil
-        lsp-diagnostics-provider :none
         lsp-idle-delay 0.5
         lsp-enable-on-type-formatting nil
         lsp-enable-snippet nil
@@ -93,25 +92,6 @@
         lsp-eldoc-render-all nil
         )
   (setq gc-cons-threshold 100000000)
-  )
-
-(use-package lsp-pyright
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (add-hook 'after-save-hook #'lsp-pyright-format-buffer)
-                         ))
-  :init
-  (when (executable-find "python3")
-          (setq lsp-pyright-python-executable-cmd "python3"))
-  (setq lsp-pyright-venv-path ".venv")
-  (setq lsp-pyright-multi-root nil)
-  (setq lsp-pyright-use-library-code-for-types t)
-
-  (defun lsp-pyright-format-buffer ()
-    (interactive)
-    (when (and (executable-find "black") buffer-file-name)
-      (call-process "black" nil nil nil "-q" buffer-file-name))
-    )
   )
 
 ;; LSPUI
