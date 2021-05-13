@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:32:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:02:46 2021 (+0800)
+;; Last-Updated: Mon May 10 10:29:52 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d fonts
@@ -49,7 +49,7 @@
                                       :font font
                                       :height (cond (*sys/mac* 150)
                                                     (*sys/win32* 110)
-                                                    (t 150))))
+                                                    (t 140))))
 
   ;; Specify font for all unicode characters
   (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
