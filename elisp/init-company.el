@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 00:26:51 2021 (+0800)
+;; Last-Updated: Mon May 10 14:31:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -40,6 +40,74 @@
 (eval-when-compile
   (require 'init-const))
 
+;;;###autoload
+(defvar +company-backend-alist
+  '((text-mode company-tabnine company-yasnippet company-dabbrev)
+    (prog-mode company-files company-capf company-yasnippet)
+    (conf-mode company-capf company-dabbrev-code company-yasnippet))
+  "An alist matching modes to company backends. The backends for any mode is
+built from this.")
+
+;;;###autodef
+(defun set-company-backend! (modes &rest backends)
+  "Prepends BACKENDS (in order) to `company-backends' in MODES.
+MODES should be one symbol or a list of them, representing major or minor modes.
+This will overwrite backends for MODES on consecutive uses.
+If the car of BACKENDS is nil, unset the backends for MODES.
+Examples:
+  (set-company-backend! 'js2-mode
+    'company-tide 'company-yasnippet)
+  (set-company-backend! 'sh-mode
+    '(company-shell :with company-yasnippet))
+  (set-company-backend! '(c-mode c++-mode)
+    '(:separate company-irony-c-headers company-irony))
+  (set-company-backend! 'sh-mode nil)  ; unsets backends for sh-mode"
+  (declare (indent defun))
+  (dolist (mode (doom-enlist modes))
+    (if (null (car backends))
+        (setq +company-backend-alist
+              (delq (assq mode +company-backend-alist)
+                    +company-backend-alist))
+      (setf (alist-get mode +company-backend-alist)
+            backends))))
+
+
+;;
+;;; Library
+
+(defun +company--backends ()
+  (let (backends)
+    (let ((mode major-mode)
+          (modes (list major-mode)))
+      (while (setq mode (get mode 'derived-mode-parent))
+        (push mode modes))
+      (dolist (mode modes)
+        (dolist (backend (append (cdr (assq mode +company-backend-alist))
+                                 (default-value 'company-backends)))
+          (push backend backends)))
+      (delete-dups
+       (append (cl-loop for (mode . backends) in +company-backend-alist
+                        if (or (eq major-mode mode)  ; major modes
+                               (and (boundp mode)
+                                    (symbol-value mode))) ; minor modes
+                        append backends)
+               (nreverse backends))))))
+
+
+;;
+;;; Hooks
+
+;;;###autoload
+(defun +company-init-backends-h ()
+  "Set `company-backends' for the current buffer."
+  (if (not company-mode)
+      (remove-hook 'change-major-mode-after-body-hook #'+company-init-backends-h 'local)
+    (unless (eq major-mode 'fundamental-mode)
+      (setq-local company-backends (+company--backends)))
+    (add-hook 'change-major-mode-after-body-hook #'+company-init-backends-h nil 'local)))
+
+(put '+company-init-backends-h 'permanent-local-hook t)
+
 
 ;; ComPac
 (use-package company
@@ -71,6 +139,7 @@
         company-backends '(company-capf company-files)
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
         )
+  (add-hook 'company-mode-hook #'+company-init-backends-h)
   (unless *clangd* (delete 'company-clang company-backends))
   (global-company-mode 1)
   (company-tng-mode 1)
@@ -102,29 +171,23 @@ If failed try to complete the common part with `company-complete-common'"
   :init (company-prescient-mode 1))
 
 ;; CompanyTabNinePac
+;; TODO: whether or not to use tabnine for lsp or even prog-mode.
 (use-package company-tabnine
+  :straight (:host github :repo "theFool32/company-tabnine" :depth 1)
   :defer 1
+  :after company
   :custom
   (company-tabnine-max-num-results 3)
-  :bind
-  (("M-q" . company-other-backend)
-   ("C-z t" . company-tabnine)
-   )
   :hook
-  ;; (lsp-after-open . (lambda () (unless (derived-mode-p 'js-mode 'js2-mode 'rjsx-mode)
-  ;;                           (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-  ;;                           (add-to-list 'company-backends '(company-capf :with company-tabnine :separate)))))
-  ;; ((js-mode js2-mode rjsx-mode) . (lambda () (setq company-backends '(company-capf))
-  ;;                                   (setq company-transformers nil)))
   (kill-emacs . company-tabnine-kill-process)
   :config
   ;; Enable TabNine on default
-  ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-  ;; (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
+  ;; (add-to-list 'company-backends #'company-tabnine)
 
+  ;; Integrate company-tabnine with lsp-mode
   (defun company//sort-by-tabnine (candidates)
     (if (or (functionp company-backend)
-            (not (and (listp company-backend) (memq 'company-tabnine company-backends))))
+            (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
         candidates
       (let ((candidates-table (make-hash-table :test #'equal))
             candidates-lsp
@@ -138,9 +201,11 @@ If failed try to complete the common part with `company-complete-common'"
             (puthash candidate t candidates-table)))
         (setq candidates-lsp (nreverse candidates-lsp))
         (setq candidates-tabnine (nreverse candidates-tabnine))
-        (nconc (seq-take candidates-tabnine 3)
-               (seq-take candidates-lsp 6))))))
-
+        (nconc (seq-take candidates-lsp 2)
+               (seq-take candidates-tabnine 2)
+               (seq-drop candidates-lsp 2)
+               (seq-drop candidates-tabnine 2)
+               )))))
 ;; -Companytabninepac
 
 (use-package company-box
