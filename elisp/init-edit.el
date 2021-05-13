@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 00:28:45 2021 (+0800)
+;; Last-Updated: Thu May 13 10:21:44 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -67,16 +67,29 @@
   (default-input-method "rime")
   (rime-user-data-dir "~/.config/rime")
   (rime-show-candidate 'posframe)
-  (rime-posframe-properties (list :font "Sarasa Nerd"
+  (rime-posframe-properties (list :font "Sarasa Mono SC Nerd"
                                   :internal-border-width 10))
   (rime-disable-predicates
    '(rime-predicate-evil-mode-p
      rime-predicate-after-alphabet-char-p
      rime-predicate-prog-in-code-p
-     ;; rime-predicate-after-ascii-char-p
+     rime-predicate-after-ascii-char-p
      rime-predicate-space-after-cc-p))
   (mode-line-mule-info '((:eval (rime-lighter))))
   )
+
+(use-package editorconfig
+  :config
+  (editorconfig-mode 1))
+
+(defun nuke_trailing()
+  (add-hook 'write-file-hooks 'delete-trailing-whitespace)
+  (global-visual-line-mode 1)
+  )
+
+(add-hook 'prog-mode-hook 'nuke_trailing)
+(add-hook 'text-mode-hook 'nuke_trailing)
+
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
