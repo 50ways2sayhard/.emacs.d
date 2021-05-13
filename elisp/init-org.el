@@ -277,6 +277,10 @@
   )
 ;; -OrgPac
 
+;; OrgDownload
+(use-package org-download)
+;; -OrgDownload
+
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-org.el ends here
