@@ -65,6 +65,12 @@
     "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
     "cf" '(format-all-buffer :wk "Format buffer")
     "cD" '(xref-find-references :wk "Jump to implementation")
+    "cd" '(lsp-ui-peek-find-definitions :wk "Jump to definition")
+    "ci" '(lsp-organize-imports :wk "Organize import")
+    "cr" '(lsp-rename :wk "LSP rename")
+    "co" '(lsp-ui-imenu :wk "Outline")
+    "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
+    "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
 
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
@@ -191,21 +197,6 @@
     "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
     "mdt" '(js-doc-insert-tag :wk "Insert tag")
     )
-
-  (with-eval-after-load 'lsp
-    (leader-def
-      :states 'normal
-      :keymaps '(prog-mode web-mode)
-
-      "cd" '(lsp-ui-peek-find-definitions :wk "Jump to definition")
-      "ci" '(lsp-organize-imports :wk "Organize import")
-      "cr" '(lsp-rename :wk "LSP rename")
-      "co" '(lsp-ui-imenu :wk "Outline")
-      "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
-      "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
-      )
-    )
-
   )
 (provide 'init-bindings)
 
