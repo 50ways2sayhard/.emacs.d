@@ -44,12 +44,15 @@
   (font-lock-comment-face ((t (:foreground "#828282"))))
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'"
-   "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'")
+   "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2))
 ;; -WebModePac
+
+(use-package css-mode
+  :mode ("\\.css\\'" "\\.wxss\\'"))
 
 
 ;; EmmetPac
@@ -78,12 +81,6 @@
   (setq-mode-local rjsx-mode emmet-expand-jsx-className? t)
   (setq-mode-local web-mode emmet-expand-jsx-className? nil)
   )
-
-(use-package prettier-js
-  :diminish
-  :hook ((js-mode js2-mode json-mode web-mode css-mode sgml-mode html-mode)
-         .
-         prettier-js-mode))
 
 (use-package scss-mode)
 (use-package mmm-mode)
