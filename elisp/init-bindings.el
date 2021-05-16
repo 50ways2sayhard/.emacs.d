@@ -48,9 +48,9 @@
   ;; Leader def
   (leader-def
     :keymaps 'override
-    "<SPC>" '(counsel-projectile-rg :wk "Project Find File")
+    "<SPC>" '(counsel-projectile-find-file :wk "Project Find File")
     ":" '(execute-extended-command :which-key "M-x")
-    "/" '(evilnc-comment-or-uncomment-lines :wk "Comment line")
+    "/" '(counsel-projectile-rg :wk "Search in project")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(swiper-all :wk "Swiper")
 
