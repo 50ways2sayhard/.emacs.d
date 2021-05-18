@@ -273,6 +273,17 @@
     "pd" 'org-priority-down
     "pp" 'org-priority
     "pu" 'org-priority-up
+
+
+    "x" '(:wk "Download")
+    "xc" 'org-download-clipboard
+    "xd" 'org-download-delete
+    "xi" 'org-download-image
+    "xy" 'org-download-yank
+    "xe" 'org-download-edit
+    "xr" 'org-download-rename-at-point
+    "xR" 'org-download-rename-last-file
+    "xs" 'org-download-screenshot
     )
   )
 ;; -OrgPac
