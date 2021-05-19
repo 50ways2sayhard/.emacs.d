@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 18:55:05 2021 (+0800)
+;; Last-Updated: Wed May 19 10:42:46 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -291,6 +291,23 @@
 ;; OrgDownload
 (use-package org-download)
 ;; -OrgDownload
+
+(use-package plantuml-mode
+  :config
+  (setq org-plantuml-jar-path (expand-file-name "plantuml.jar" user-emacs-directory))
+  (setq plantuml-default-exec-mode 'jar)
+  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+  (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+  (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
+
+                                        ; Make babel results blocks lowercase
+  (setq org-babel-results-keyword "results")
+
+  (defun bh/display-inline-images ()
+    (condition-case nil
+        (org-display-inline-images)
+      (error nil)))
+  )
 
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
