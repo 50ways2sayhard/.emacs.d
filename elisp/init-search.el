@@ -52,6 +52,7 @@
 
 (use-package exec-path-from-shell
   :defer t
+  :unless *sys/win32*
   :init
   (setq exec-path-from-shell-check-startup-files nil
         exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy" "http_proxy" "all_proxy" "LD_LIBRARY_PATH")
