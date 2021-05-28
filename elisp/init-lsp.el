@@ -54,6 +54,7 @@
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
                           (lsp-deferred))))
+         (web-mode . (lambda() (setq-local lsp-enable-imenu t)))
          (lsp-mode . (lambda ()
                        ;; Integrate `which-key'
                        (lsp-enable-which-key-integration)
@@ -79,6 +80,7 @@
         lsp-semantic-tokens-enable nil
         lsp-keep-workspace-alive nil
         lsp-idle-delay 0.5
+        lsp-enable-imenu nil
         lsp-enable-on-type-formatting nil
         lsp-enable-snippet nil
         lsp-enable-text-document-color nil
