@@ -501,7 +501,9 @@ This is for use in `ivy-re-builders-alist'."
 ;; Better experience with icons
 ;; Enable it before`ivy-rich-mode' for better performance
 (use-package all-the-icons-ivy-rich
-  :hook (ivy-mode . all-the-icons-ivy-rich-mode)
+  :if (icons-displayable-p)
+  :after ivy
+  :init (all-the-icons-ivy-rich-mode 1)
   :config
   (setq all-the-icons-ivy-rich-icon-size 0.9))
 
