@@ -144,13 +144,6 @@
   :commands (typescript-mode))
 ;; -TypeScriptPac
 
-(use-package vue-mode
-  :mode "\\.vue\\'"
-  :config
-  (add-hook 'vue-mode-hook #'lsp)
-  )
-
-
 (provide 'init-javascript)
 
 

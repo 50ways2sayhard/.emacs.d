@@ -503,13 +503,11 @@ This is for use in `ivy-re-builders-alist'."
 (use-package all-the-icons-ivy-rich
   :hook (ivy-mode . all-the-icons-ivy-rich-mode)
   :config
-  (setq all-the-icons-ivy-rich-icon-size 0.9)
-  )
+  (setq all-the-icons-ivy-rich-icon-size 0.9))
 
 ;; More friendly display transformer for Ivy
 (use-package ivy-rich
-  :hook (;; Must load after `counsel-projectile'
-         (counsel-projectile-mode . ivy-rich-mode)
+  :hook ((counsel-projectile-mode . ivy-rich-mode) ; MUST after `counsel-projectile'
          (ivy-rich-mode . (lambda ()
                             "Use abbreviate in `ivy-rich-mode'."
                             (setq ivy-virtual-abbreviate

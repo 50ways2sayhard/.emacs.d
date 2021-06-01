@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 18:44:14 2021 (+0800)
+;; Last-Updated: Tue Jun  1 18:23:31 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -117,11 +117,11 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 ;; Global Functionalities
 (require 'init-global-config)
 (require 'init-func)
+(require 'init-ivy)
 (require 'init-evil)
 (require 'init-search)
 (when (featurep 'native-compile) ;;FIXME: tree-sitter not work in M1 now.
   (require 'init-tree-sitter))
-(require 'init-ivy)
 (require 'init-winner)
 (require 'init-which-key)
 (require 'init-popup-kill-ring)
@@ -163,6 +163,7 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 (require 'init-direnv)
 (require 'init-ml)
 (require 'init-dockerfile)
+(require 'init-dart)
 
 
 ;; Miscellaneous
