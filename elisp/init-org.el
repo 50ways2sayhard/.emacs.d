@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed May 19 10:42:46 2021 (+0800)
+;; Last-Updated: Wed Jun  2 23:34:01 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -140,8 +140,7 @@
     "," 'org-switchb
     ;; "." 'org-goto
 
-    "." 'counsel-org-goto
-    "/" 'counsel-org-goto-all
+    "." 'consult-org-heading
 
     "A" 'org-archive-subtree
     "e" 'org-export-dispatch
@@ -219,8 +218,7 @@
     "D" 'archive-done-tasks
 
     "g" '(:wk "goto")
-    "gg" 'counsel-org-goto
-    "gG" 'counsel-org-goto-all
+    "gg" 'consult-org-heading
     "gc" 'org-clock-goto
     "gi" 'org-id-goto
     "gr" 'org-refile-goto-last-stored

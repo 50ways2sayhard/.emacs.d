@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:12:12 2021 (+0800)
+;; Last-Updated: Thu Jun  3 00:36:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -192,7 +192,7 @@ FACE defaults to inheriting from default and highlight."
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
-  (find-file "~/.emacs.d/"))
+  (consult-find "~/.emacs.d/"))
 
 (defun +flycheck-list-errors ()
   "Auto focus on flycheck list window."

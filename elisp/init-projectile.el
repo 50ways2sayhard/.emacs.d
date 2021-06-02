@@ -45,8 +45,6 @@
   :bind
   ("C-c p" . projectile-command-map)
   ("C-z p" . projectile-add-known-project)
-  :custom
-  (projectile-completion-system 'ivy)
   :config
   (projectile-mode 1)
   (when (and *sys/win32* *tr*)
