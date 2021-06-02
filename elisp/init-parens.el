@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:17:13 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun May 23 14:53:35 2021 (+0800)
+;; Last-Updated: Wed Jun  2 12:23:37 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d parenthesis smartparens delete-block
@@ -41,9 +41,40 @@
   (require 'init-global-config))
 
 (use-package elec-pair
-  :ensure nil
   :hook (after-init . electric-pair-mode)
   :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
+
+(use-package awesome-pair
+  :straight (:host github :repo "manateelazycat/awesome-pair")
+  :hook (prog-mode . awesome-pair-mode)
+  :config
+  (define-key awesome-pair-mode-map (kbd "(") 'awesome-pair-open-round)
+  (define-key awesome-pair-mode-map (kbd "[") 'awesome-pair-open-bracket)
+  (define-key awesome-pair-mode-map (kbd "{") 'awesome-pair-open-curly)
+  (define-key awesome-pair-mode-map (kbd ")") 'awesome-pair-close-round)
+  (define-key awesome-pair-mode-map (kbd "]") 'awesome-pair-close-bracket)
+  (define-key awesome-pair-mode-map (kbd "}") 'awesome-pair-close-curly)
+  (define-key awesome-pair-mode-map (kbd "=") 'awesome-pair-equal)
+
+  (define-key awesome-pair-mode-map (kbd "%") 'awesome-pair-match-paren)
+  (define-key awesome-pair-mode-map (kbd "\"") 'awesome-pair-double-quote)
+
+  (define-key awesome-pair-mode-map (kbd "SPC") 'awesome-pair-space)
+
+  (define-key awesome-pair-mode-map (kbd "M-o") 'awesome-pair-backward-delete)
+  (define-key awesome-pair-mode-map (kbd "C-d") 'awesome-pair-forward-delete)
+  (define-key awesome-pair-mode-map (kbd "C-k") 'awesome-pair-kill)
+
+  (define-key awesome-pair-mode-map (kbd "M-\"") 'awesome-pair-wrap-double-quote)
+  (define-key awesome-pair-mode-map (kbd "M-[") 'awesome-pair-wrap-bracket)
+  (define-key awesome-pair-mode-map (kbd "M-{") 'awesome-pair-wrap-curly)
+  (define-key awesome-pair-mode-map (kbd "M-(") 'awesome-pair-wrap-round)
+  (define-key awesome-pair-mode-map (kbd "M-)") 'awesome-pair-unwrap)
+
+  (define-key awesome-pair-mode-map (kbd "M-p") 'awesome-pair-jump-right)
+  (define-key awesome-pair-mode-map (kbd "M-n") 'awesome-pair-jump-left)
+  (define-key awesome-pair-mode-map (kbd "M-:") 'awesome-pair-jump-out-pair-and-newline)
+  )
 
 (provide 'init-parens)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -3,6 +3,8 @@
   (require 'init-func)
   )
 
+(global-set-key (kbd "<escape>") 'keyboard-quit)
+
 (use-package general
   :after evil
   :ensure
@@ -48,16 +50,16 @@
   ;; Leader def
   (leader-def
     :keymaps 'override
-    "<SPC>" '(counsel-projectile-find-file :wk "Project Find File")
+    "<SPC>" '(consult-projectile :wk "Project Find File")
     ":" '(execute-extended-command :which-key "M-x")
-    "/" '(counsel-projectile-rg :wk "Search in project")
+    "/" '(consult-ripgrep :wk "Search in project")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(swiper-all :wk "Swiper")
 
     "b" '(:wk "Buffer")
     "b[" '(previous-buffer :wk "Previous buffer")
     "b]" '(next-buffer :wk "Next buffer")
-    "bb" '(ivy-switch-buffer :wk "Switch buffer")
+    "bb" '(consult-buffer :wk "Switch buffer")
     "bd" '(kill-current-buffer :wk "Kill buffer")
 
 
@@ -83,7 +85,7 @@
 
     "f" '(:wk "Files")
     "ff" '(find-file :wk "Find file")
-    "fr" '(counsel-recentf :wk "Recent file")
+    "fr" '(recentf-open-files :wk "Recent file")
     "fR" '(rename-file :wk "Rename file")
     "fl" '(locate-file :wk "Locate file")
     "fp" '(+open-configuration-folder :wk ".emacs.d")
@@ -117,7 +119,7 @@
     "p" '(:wk "Project")
     "pk" '(projectile-kill-buffers :wk "Kill project buffers" )
     "pp" '(projectile-switch-project :wk "Switch project")
-    "pf" '(counsel-projectile :wk "Find file in project")
+    "pf" '(consult-projectile :wk "Find file in project")
     "pr" '(projectile-recentf :wk "Recent file in project")
     "pt" '(magit-todos-list :wk "List project tasks")
     "pS" '(projectile-save-project-buffers :wk "Save project buffers")
@@ -131,7 +133,7 @@
     "sb" '(swiper-all :wk "Search buffer")
     "sf" '(locate :wk "Locate file")
     "si" '(imenu :wk "Jump to symbol")
-    "sp" '(counsel-projectile-rg :wk "Search project")
+    "sp" '(consult-ripgrep :wk "Search project")
     "sP" '(color-rg-search-project :wk "Color-rg Search project")
     "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
     "sT" '(load-theme :wk "Load theme")

@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 136
+;;     Update #: 164
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -63,6 +63,7 @@
  ((string-equal my-mini-buffer-completion "selectrum")
   (use-package selectrum
     :config
+    (use-package posframe)
     (selectrum-mode +1)
     (defun selectrum-up-directory ()
       (interactive)
@@ -73,83 +74,74 @@
     )
   ))
 
-(use-package counsel
-  :disabled
-  :hook (after-init . counsel-mode)
-  :bind (:map counsel-mode-map
-              ([remap swiper] . counsel-grep-or-swiper)
-              ([remap swiper-backward] . counsel-grep-or-swiper-backward)
-              ([remap dired] . counsel-dired)
-              ([remap set-variable] . counsel-set-variable)
-              ([remap insert-char] . counsel-unicode-char)
-              ([remap recentf-open-files] . counsel-recentf)
-
-              ("C-x j"   . counsel-mark-ring)
-              ("C-h F"   . counsel-faces)
-
-              ("C-c B" . counsel-bookmarked-directory)
-              ("C-c L" . counsel-load-library)
-              ("C-c O" . counsel-find-file-extern)
-              ("C-c P" . counsel-package)
-              ("C-c R" . counsel-list-processes)
-              ("C-c f" . counsel-find-library)
-              ("C-c g" . counsel-grep)
-              ("C-c h" . counsel-command-history)
-              ("C-c i" . counsel-git)
-              ("C-c j" . counsel-git-grep)
-              ("C-c o" . counsel-outline)
-              ("C-c r" . counsel-rg)
-              ("C-c z" . counsel-fzf)
-
-              ("C-c c B" . counsel-bookmarked-directory)
-              ("C-c c F" . counsel-faces)
-              ("C-c c L" . counsel-load-library)
-              ("C-c c O" . counsel-find-file-extern)
-              ("C-c c P" . counsel-package)
-              ("C-c c R" . counsel-list-processes)
-              ("C-c c a" . counsel-apropos)
-              ("C-c c e" . counsel-colors-emacs)
-              ("C-c c f" . counsel-find-library)
-              ("C-c c g" . counsel-grep)
-              ("C-c c h" . counsel-command-history)
-              ("C-c c i" . counsel-git)
-              ("C-c c j" . counsel-git-grep)
-              ("C-c c l" . counsel-locate)
-              ("C-c c m" . counsel-minibuffer-history)
-              ("C-c c o" . counsel-outline)
-              ("C-c c p" . counsel-pt)
-              ("C-c c r" . counsel-rg)
-              ("C-c c s" . counsel-ag)
-              ("C-c c t" . counsel-load-theme)
-              ("C-c c u" . counsel-unicode-char)
-              ("C-c c w" . counsel-colors-web)
-              ("C-c c v" . counsel-set-variable)
-              ("C-c c z" . counsel-fzf)
-
-              :map counsel-find-file-map
-              ("C-w" . counsel-up-directory)
-              )
+(use-package consult
+  :straight (:host github :repo "minad/consult")
+  :after projectile
+  :bind (
+         ([remap recentf-open-files] . consult-recent-file)
+         ([remap imenu] . consult-imenu)
+         ("C-x r x" . consult-register)
+         ("C-x r b" . consult-bookmark)
+         ("C-c k" . consult-kmacro)
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complet-command
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ("M-g o" . consult-outline)
+         ("M-g h" . consult-org-heading)
+         ("M-g a" . consult-org-agenda)
+         ("M-g m" . consult-mark)
+         ("C-x b" . consult-buffer)
+         ("<help> a" . consult-apropos)            ;; orig. apropos-command
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-project-imenu)
+         ("M-g e" . consult-error)
+         ;; M-s bindings (search-map)
+         ("M-s f" . consult-find)
+         ("M-s L" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s m" . consult-multi-occur)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch)
+         ("M-g l" . consult-line)
+         ("M-s m" . consult-multi-occur)
+         ("C-x c o" . consult-multi-occur)
+         ("C-x c SPC" . consult-mark)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)
+         )
   :init
-  (setq enable-recursive-minibuffers t)
-  (setq swiper-action-recenter t)
+  (setq register-preview-delay 0
+        register-preview-function #'consult-register-format)
+  :config
+  (setq consult-project-root-function #'projectile-project-root)
+  (setq consult-narrow-key "<"))
 
-  (setq counsel-find-file-at-point t
-        counsel-yank-pop-separator "\n────────\n")
+(use-package consult-projectile
+  :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
 
-  ;; Use the faster search tool: ripgrep (`rg')
-  (when (executable-find "rg")
-    (setq counsel-grep-base-command "rg -S --no-heading --line-number --color never %s %s")
-    (when (and *sys/mac* (executable-find "gls"))
-      (setq counsel-find-file-occur-use-find nil
-            counsel-find-file-occur-cmd
-            "gls -a | grep -i -E '%s' | tr '\\n' '\\0' | xargs -0 gls -d --group-directories-first")))
-
-  )
+(use-package consult-lsp
+  :straight (:host github :repo "gagbo/consult-lsp")
+  :after lsp)
 
 (use-package orderless
   :custom (completion-styles '(orderless))
   :config
   (savehist-mode)
+  (setq orderless-skip-highlighting (lambda () selectrum-is-active))
   (setq selectrum-refine-candidates-function #'orderless-filter)
   (setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
   )
@@ -157,41 +149,36 @@
 (use-package marginalia
   :hook (after-init . marginalia-mode))
 
-(use-package mini-frame
-  :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
-  :hook (after-init . mini-frame-mode)
-  :commands (mini-frame-mode)
-  :custom
-  (mini-frame-show-parameters `((left . 0.5)
-                                (top . ,(/ (frame-pixel-height) 2))
-                                (background-mode 'dark)
-                                (foreground-color . "#bbc2cf")
-                                (background-color . "#242730")
-                                (min-width . 80)
-                                (min-height . ,(if (member this-command
-                                                           '(swiper
-                                                             swiper-backward swiper-all
-                                                             swiper-isearch swiper-isearch-backward
-                                                             counsel-grep-or-swiper counsel-grep-or-swiper-backward))
-                                                   16
-                                                 0))
-                                (width . 0.8)
-                                ))
-
-
-  (mini-frame-advice-functions '(read-from-minibuffer
-                                 read-string
-                                 completing-read))
-  :config
-  (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
-    (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
-    (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-forward)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-backward)
-    )
-
-  )
+;; (use-package mini-frame
+;;   :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
+;;   :hook (after-init . mini-frame-mode)
+;;   :commands (mini-frame-mode)
+;;   :custom
+;;   (mini-frame-show-parameters `((left . 0.5)
+;;                                 (top . ,(/ (frame-pixel-height) 2))
+;;                                 (background-mode 'dark)
+;;                                 (foreground-color . "#bbc2cf")
+;;                                 (background-color . "#242730")
+;;                                 (min-width . 80)
+;;                                 (min-height . ,(if (member this-command
+;;                                                            '(swiper
+;;                                                              swiper-backward swiper-all
+;;                                                              swiper-isearch swiper-isearch-backward
+;;                                                              counsel-grep-or-swiper counsel-grep-or-swiper-backward))
+;;                                                    16
+;;                                                  0))
+;;                                 (width . 0.8)))
+;;   ;; (mini-frame-advice-functions '(read-from-minibuffer
+;;   ;;                                read-string
+;;   ;;                                completing-read))
+;;   :config
+;;   (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
+;;     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
+;;     (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
+;;     (add-to-list 'mini-frame-ignore-commands 'evil-ex)
+;;     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-forward)
+;;     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-backward))
+;;   )
 
 (provide 'init-mini-buffer)
 
