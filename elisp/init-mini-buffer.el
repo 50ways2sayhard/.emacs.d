@@ -103,23 +103,29 @@
           (dired (file-name-directory (minibuffer-contents)))
           (exit-minibuffer))))
 
-    (defun selectrum-fido-ret ()
-      "Exit minibuffer or enter directory, like `ido-mode'."
+    (defun selectrum-fido-enter-dir ()
       (interactive)
-      (let* ((dir (and (eq (selectrum--get-meta 'category) 'file)
-                       (file-name-directory (minibuffer-contents))))
-             (current (selectrum-get-current-candidate))
-             (probe (and dir current
-                         (expand-file-name (directory-file-name current) dir))))
-        (cond ((and probe (file-directory-p probe) (not (string= current "./")))
-               (selectrum-insert-current-candidate))
-              (t
-               (selectrum-select-current-candidate)))))
+      (let ((candidate (selectrum-get-current-candidate)))
+        (if (and (eq (selectrum--get-meta 'category) 'file)
+                 (file-directory-p candidate)
+                 (not (string-equal candidate "~/")))
+            (selectrum-insert-current-candidate)
+          (insert "/"))))
+
+    (defun selectrum-fido-do-backward-updir ()
+      (interactive)
+      (if (and (eq (char-before) ?/)
+               (eq (selectrum--get-meta 'category) 'file))
+          (save-excursion
+            (goto-char (1- (point)))
+            (when (search-backward "/" (point-min) t)
+              (delete-region (1+ (point)) (point-max))))))
 
 
-    (define-key selectrum-minibuffer-map (kbd "RET") 'selectrum-fido-ret)
     (define-key selectrum-minibuffer-map (kbd "DEL") 'selectrum-fido-backward-updir)
+    (define-key selectrum-minibuffer-map (kbd "/") 'selectrum-fido-enter-dir)
     (define-key selectrum-minibuffer-map (kbd "C-d") 'selectrum-fido-delete-char)
+    (define-key selectrum-minibuffer-map (kbd "C-w") 'selectrum-fido-do-backward-updir)
     )
   ))
 
