@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 01:17:16 2021 (+0800)
+;; Last-Updated: Thu Jun  3 23:49:11 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -93,8 +93,8 @@ window that already exists in that direction. It will split otherwise."
                               (`left 'right)
                               ((or `up `above) 'down)
                               ((or `down `below) 'up)))))
-        (unless magit-display-buffer-noselect
-          (select-window window))
+          (unless magit-display-buffer-noselect
+            (select-window window))
         (let ((window (split-window nil nil direction)))
           (when (and (not magit-display-buffer-noselect)
                      (memq direction '(right down below)))
@@ -188,7 +188,8 @@ window that already exists in that direction. It will split otherwise."
          (candidates (mapcar (lambda (cell)
                                (cons (format "%s — %s" (cdr cell) (car cell)) (concat (cdr cell) " ")))
                              choices)))
-    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))))
+    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))
+    (evil-insert-state)))
 
 (use-package magit-todos)
 
