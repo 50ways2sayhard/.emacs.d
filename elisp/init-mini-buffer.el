@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 279
+;;     Update #: 322
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -277,14 +277,8 @@ When the number of characters in a buffer exceeds this threshold,
                                      (foreground-color . "#bbc2cf")
                                      (background-color . "#242730")
                                      (min-width . 80)
-                                     (min-height . ,(if (member this-command
-                                                                '(swiper
-                                                                  swiper-backward swiper-all
-                                                                  swiper-isearch swiper-isearch-backward
-                                                                  counsel-grep-or-swiper counsel-grep-or-swiper-backward))
-                                                        16
-                                                      0))
                                      (width . 0.8)))
+  (setq mini-frame-create-lazy nil)
   (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
     (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
