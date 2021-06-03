@@ -194,6 +194,17 @@ FACE defaults to inheriting from default and highlight."
   (interactive)
   (find-file (read-file-name ".emacs.d: " "~/.emacs.d/elisp/")))
 
+(defun +my-rename-file ()
+  "Put current buffer file to top."
+  (interactive)
+  (rename-file (read-file-name "Move from: " default-directory buffer-file-name)
+               (read-file-name "Move to:" default-directory)))
+
+(defun +my-delete-file ()
+  "Put current buffer file to top."
+  (interactive)
+  (delete-file (read-file-name "Delete: " default-directory buffer-file-name)))
+
 (defun +flycheck-list-errors ()
   "Auto focus on flycheck list window."
   (interactive)

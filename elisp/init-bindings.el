@@ -86,9 +86,9 @@
     "f" '(:wk "Files")
     "ff" '(find-file :wk "Find file")
     "fr" '(recentf-open-files :wk "Recent file")
-    "fR" '(rename-file :wk "Rename file")
+    "fR" '(+my-rename-file :wk "Rename file")
     "fp" '(+open-configuration-folder :wk ".emacs.d")
-    "fD" '(delete-file :wk "Delete file")
+    "fD" '(+my-delete-file :wk "Delete file")
     "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
 
     "g" '(:wh "Git")
