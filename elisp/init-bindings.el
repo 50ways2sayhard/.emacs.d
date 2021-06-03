@@ -128,7 +128,6 @@
 
 
     "s" '(:wk "Search")
-    "sb" '(swiper-all :wk "Search buffer")
     "sf" '(locate :wk "Locate file")
     "si" '(imenu :wk "Jump to symbol")
     "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")

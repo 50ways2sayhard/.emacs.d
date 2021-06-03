@@ -117,7 +117,6 @@ If you experience freezing, decrease this.  If you experience stuttering, increa
 ;; Global Functionalities
 (require 'init-global-config)
 (require 'init-func)
-;; (require 'init-ivy)
 (require 'init-mini-buffer)
 (require 'init-evil)
 (require 'init-search)
