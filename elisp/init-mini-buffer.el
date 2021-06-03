@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 258
+;;     Update #: 279
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -65,6 +65,11 @@
     :config
     (global-set-key (kbd "C-c C-r") #'selectrum-repeat)
     (selectrum-mode +1)
+    (use-package selectrum-prescient
+      :init
+      (setq selectrum-prescient-enable-filtering nil)
+      (selectrum-prescient-mode +1)
+      (prescient-persist-mode +1))
 
     (autoload 'ffap-file-at-point "ffap")
     (add-hook 'completion-at-point-functions
@@ -222,7 +227,6 @@ When the number of characters in a buffer exceeds this threshold,
   :after lsp)
 
 (use-package orderless
-  :custom (completion-styles '(orderless))
   :demand t
   :config
   (savehist-mode)
@@ -233,8 +237,6 @@ When the number of characters in a buffer exceeds this threshold,
     (cond
      ;; Ensure that $ works with Consult commands, which add disambiguation suffixes
      ((string-suffix-p "$" pattern) `(orderless-regexp . ,(concat (substring pattern 0 -1) "[\x100000-\x10FFFD]*$")))
-     ;; File extensions
-     ((string-match-p "\\`\\.." pattern) `(orderless-regexp . ,(concat "\\." (substring pattern 1) "[\x100000-\x10FFFD]*$")))
      ;; Ignore single !
      ((string= "!" pattern) `(orderless-literal . ""))
      ;; Without literal
@@ -266,6 +268,7 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
+  :if *sys/mac*
   :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
@@ -300,10 +303,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   ;; Configure Orderless
   (setq affe-regexp-function #'orderless-pattern-compiler
-        affe-highlight-function #'orderless-highlight-matches)
-
-  ;; Manual preview key for `affe-grep'
-  (consult-customize affe-grep :preview-key (kbd "M-.")))
+        affe-highlight-function #'orderless-highlight-matches))
 
 (provide 'init-mini-buffer)
 
