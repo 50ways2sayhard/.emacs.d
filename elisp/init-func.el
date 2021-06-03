@@ -192,7 +192,7 @@ FACE defaults to inheriting from default and highlight."
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
-  (consult-find "~/.emacs.d/"))
+  (find-file (read-file-name ".emacs.d: " "~/.emacs.d/elisp/")))
 
 (defun +flycheck-list-errors ()
   "Auto focus on flycheck list window."
