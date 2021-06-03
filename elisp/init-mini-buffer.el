@@ -295,6 +295,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 
 (use-package affe
+  :straight (:host github :repo "minad/affe")
   :after orderless
   :config
   ;; Configure Orderless
