@@ -47,87 +47,72 @@
 ;;; Code:
 
 
-(eval-when-compile
-  (require 'init-custom))
-
-(cond
- ((string-equal my-mini-buffer-completion "vertico")
-  (use-package vertico
-    :straight (:type git :host github :repo "minad/vertico" :branch "main")
+(use-package selectrum
+  :config
+  (global-set-key (kbd "C-c C-r") #'selectrum-repeat)
+  (selectrum-mode +1)
+  (use-package selectrum-prescient
     :init
-    (vertico-mode)
-    :config
-    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-    (setq vertico-cycle t))
+    (setq selectrum-prescient-enable-filtering nil)
+    (selectrum-prescient-mode +1)
+    (prescient-persist-mode +1))
+
+  (autoload 'ffap-file-at-point "ffap")
+  (add-hook 'completion-at-point-functions
+            (defun complete-path-at-point+ ()
+              (let ((fn (ffap-file-at-point))
+                    (fap (thing-at-point 'filename)))
+                (when (and (or fn
+                               (equal "/" fap))
+                           (save-excursion
+                             (search-backward fap (line-beginning-position) t)))
+                  (list (match-beginning 0)
+                        (match-end 0)
+                        #'completion-file-name-table)))) 'append)
+  (defun selectrum-fido-backward-updir ()
+    "Delete char before or go up directory, like `ido-mode'."
+    (interactive)
+    (if (and (eq (char-before) ?/)
+             (eq (selectrum--get-meta 'category) 'file))
+        (save-excursion
+          (goto-char (1- (point)))
+          (when (search-backward "/" (point-min) t)
+            (delete-region (1+ (point)) (point-max))))
+      (call-interactively 'backward-delete-char)))
+
+  (defun selectrum-fido-delete-char ()
+    "Delete char or maybe call `dired', like `ido-mode'."
+    (interactive)
+    (let ((end (point-max)))
+      (if (or (< (point) end) (not (eq (selectrum--get-meta 'category) 'file)))
+          (call-interactively 'delete-char)
+        (dired (file-name-directory (minibuffer-contents)))
+        (exit-minibuffer))))
+
+  (defun selectrum-fido-enter-dir ()
+    (interactive)
+    (let ((candidate (selectrum-get-current-candidate)))
+      (if (and (eq (selectrum--get-meta 'category) 'file)
+               (file-directory-p candidate)
+               (not (string-equal candidate "~/")))
+          (selectrum-insert-current-candidate)
+        (insert "/"))))
+
+  (defun selectrum-fido-do-backward-updir ()
+    (interactive)
+    (if (and (eq (char-before) ?/)
+             (eq (selectrum--get-meta 'category) 'file))
+        (save-excursion
+          (goto-char (1- (point)))
+          (when (search-backward "/" (point-min) t)
+            (delete-region (1+ (point)) (point-max))))))
+
+
+  (define-key selectrum-minibuffer-map (kbd "DEL") 'selectrum-fido-backward-updir)
+  (define-key selectrum-minibuffer-map (kbd "/") 'selectrum-fido-enter-dir)
+  (define-key selectrum-minibuffer-map (kbd "C-d") 'selectrum-fido-delete-char)
+  (define-key selectrum-minibuffer-map (kbd "C-w") 'selectrum-fido-do-backward-updir)
   )
- ((string-equal my-mini-buffer-completion "selectrum")
-  (use-package selectrum
-    :config
-    (global-set-key (kbd "C-c C-r") #'selectrum-repeat)
-    (selectrum-mode +1)
-    (use-package selectrum-prescient
-      :init
-      (setq selectrum-prescient-enable-filtering nil)
-      (selectrum-prescient-mode +1)
-      (prescient-persist-mode +1))
-
-    (autoload 'ffap-file-at-point "ffap")
-    (add-hook 'completion-at-point-functions
-              (defun complete-path-at-point+ ()
-                (let ((fn (ffap-file-at-point))
-                      (fap (thing-at-point 'filename)))
-                  (when (and (or fn
-                                 (equal "/" fap))
-                             (save-excursion
-                               (search-backward fap (line-beginning-position) t)))
-                    (list (match-beginning 0)
-                          (match-end 0)
-                          #'completion-file-name-table)))) 'append)
-    (defun selectrum-fido-backward-updir ()
-      "Delete char before or go up directory, like `ido-mode'."
-      (interactive)
-      (if (and (eq (char-before) ?/)
-               (eq (selectrum--get-meta 'category) 'file))
-          (save-excursion
-            (goto-char (1- (point)))
-            (when (search-backward "/" (point-min) t)
-              (delete-region (1+ (point)) (point-max))))
-        (call-interactively 'backward-delete-char)))
-
-    (defun selectrum-fido-delete-char ()
-      "Delete char or maybe call `dired', like `ido-mode'."
-      (interactive)
-      (let ((end (point-max)))
-        (if (or (< (point) end) (not (eq (selectrum--get-meta 'category) 'file)))
-            (call-interactively 'delete-char)
-          (dired (file-name-directory (minibuffer-contents)))
-          (exit-minibuffer))))
-
-    (defun selectrum-fido-enter-dir ()
-      (interactive)
-      (let ((candidate (selectrum-get-current-candidate)))
-        (if (and (eq (selectrum--get-meta 'category) 'file)
-                 (file-directory-p candidate)
-                 (not (string-equal candidate "~/")))
-            (selectrum-insert-current-candidate)
-          (insert "/"))))
-
-    (defun selectrum-fido-do-backward-updir ()
-      (interactive)
-      (if (and (eq (char-before) ?/)
-               (eq (selectrum--get-meta 'category) 'file))
-          (save-excursion
-            (goto-char (1- (point)))
-            (when (search-backward "/" (point-min) t)
-              (delete-region (1+ (point)) (point-max))))))
-
-
-    (define-key selectrum-minibuffer-map (kbd "DEL") 'selectrum-fido-backward-updir)
-    (define-key selectrum-minibuffer-map (kbd "/") 'selectrum-fido-enter-dir)
-    (define-key selectrum-minibuffer-map (kbd "C-d") 'selectrum-fido-delete-char)
-    (define-key selectrum-minibuffer-map (kbd "C-w") 'selectrum-fido-do-backward-updir)
-    )
-  ))
 
 (use-package consult
   :straight (:host github :repo "minad/consult")

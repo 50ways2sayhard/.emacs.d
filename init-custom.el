@@ -50,9 +50,6 @@
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
 
-(defvar my-mini-buffer-completion "selectrum"  ;; not used currently since selectrum is not usable
-  "vertico or selectrum")
-
 (provide 'init-custom)
 
 
