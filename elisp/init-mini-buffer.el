@@ -300,7 +300,8 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   ;; Configure Orderless
   (setq affe-regexp-function #'orderless-pattern-compiler
-        affe-highlight-function #'orderless-highlight-matches))
+        affe-highlight-function #'orderless-highlight-matches
+        affe-find-command "fd --color=never --full-path"))
 
 (provide 'init-mini-buffer)
 
