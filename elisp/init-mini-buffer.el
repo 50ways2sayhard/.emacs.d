@@ -155,9 +155,21 @@
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-command "fd --color=never --full-path ARG OPTS")
 
+  (defun my-consult-set-evil-search-pattern (&optional condition)
+    (let ((re
+           (cond
+            ((string-equal condition "rg") (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
+            ((or t (string-equal condition "line")) (car consult--line-history))
+            )))
+      (add-to-history 'evil-ex-search-history re)
+      (setq evil-ex-search-pattern (list re t t))
+      (setq evil-ex-search-direction 'forward)))
+
+  ;; simulate swiper
   (defun consult-line-symbol-at-point ()
     (interactive)
-    (consult-line (thing-at-point 'symbol)))
+    (consult-line (thing-at-point 'symbol))
+    (my-consult-set-evil-search-pattern))
 
   (defcustom noct-consult-ripgrep-or-line-limit 300000
     "Buffer size threshold for `noct-consult-ripgrep-or-line'.
@@ -165,6 +177,7 @@ When the number of characters in a buffer exceeds this threshold,
 `consult-ripgrep' will be used instead of `consult-line'."
     :type 'integer)
 
+  ;; simulate counsel-grep-or-swiper
   (defun noct-consult-ripgrep-or-line ()
     "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
     (interactive)
@@ -176,7 +189,9 @@ When the number of characters in a buffer exceeds this threshold,
             (<= (buffer-size)
                 (/ noct-consult-ripgrep-or-line-limit
                    (if (eq major-mode 'org-mode) 4 1))))
-        (consult-line)
+        (progn (consult-line)
+               (my-consult-grep-set-evil-search-pattern))
+
       (when (file-writable-p buffer-file-name)
         (save-buffer))
       (let ((consult-ripgrep-command
@@ -196,37 +211,13 @@ When the number of characters in a buffer exceeds this threshold,
                      ;; defaults
                      "-e ARG OPTS "
                      (shell-quote-argument buffer-file-name))))
-        (consult-ripgrep))))
-
-  (autoload 'org-buffer-list "org")
-  (defvar org-buffer-source
-    `(:name     "Org"
-                :narrow   ?o
-                :category buffer
-                :state    ,#'consult--buffer-state
-                :hidden   t
-                :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
-  (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
-
-
-  (projectile-load-known-projects)
-  (setq my/consult-source-projectile-projects
-        `(:name "Projectile projects"
-                :narrow   ?P
-                :category project
-                :action   ,#'projectile-switch-project-by-name
-                :items    ,projectile-known-projects))
-  (add-to-list 'consult-buffer-sources my/consult-source-projectile-projects 'append)
+        (consult-ripgrep)
+        (my-consult-grep-set-evil-search-pattern))))
 
   ;; Configure initial narrowing per command
-  (defvar consult-initial-narrow-config
-    '((consult-buffer . ?b)))
-
-  ;; Add initial narrowing hook
-  (defun consult-initial-narrow ()
-    (when-let (key (alist-get this-command consult-initial-narrow-config))
-      (setq unread-command-events (append unread-command-events (list key 32)))))
-  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
+  (dolist (src consult-buffer-sources)
+    (unless (eq src 'consult--source-buffer)
+      (set src (plist-put (symbol-value src) :hidden t)))))
 
 (use-package consult-lsp
   :straight (:host github :repo "gagbo/consult-lsp")
