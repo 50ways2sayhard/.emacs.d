@@ -46,7 +46,7 @@
 ;;
 ;;; Code:
 
-(defvar org-base-dir "~/org")
+(defvar org-base-dir "~/org/")
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
 

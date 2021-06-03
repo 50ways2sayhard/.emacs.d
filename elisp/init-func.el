@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jun  3 00:36:53 2021 (+0800)
+;; Last-Updated: Fri Jun  4 00:22:00 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -198,12 +198,16 @@ FACE defaults to inheriting from default and highlight."
   "Put current buffer file to top."
   (interactive)
   (rename-file (read-file-name "Move from: " default-directory buffer-file-name)
-               (read-file-name "Move to:" default-directory)))
+               (read-file-name "Move to:" default-directory))) ;; TODO: auto kill old buffer
+
 
 (defun +my-delete-file ()
   "Put current buffer file to top."
   (interactive)
-  (delete-file (read-file-name "Delete: " default-directory buffer-file-name)))
+  (delete-file
+   (read-file-name "Delete: " default-directory buffer-file-name))
+  (unless (file-exists-p (buffer-file-name))
+    (kill-current-buffer)))
 
 (defun +flycheck-list-errors ()
   "Auto focus on flycheck list window."

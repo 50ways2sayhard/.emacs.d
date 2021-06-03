@@ -143,8 +143,8 @@
   (defun my-consult-set-evil-search-pattern (&optional condition)
     (let ((re
            (cond
-            ((string-equal condition "rg") (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
-            ((or t (string-equal condition "line")) (car consult--line-history))
+            ((eq condition 'rg) (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
+            ((or t (eq condition 'line)) (car consult--line-history))
             )))
       (add-to-history 'evil-ex-search-history re)
       (setq evil-ex-search-pattern (list re t t))

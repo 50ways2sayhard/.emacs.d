@@ -32,6 +32,7 @@
     "gd" 'xref-find-definitions
 
     "/" 'consult-line-symbol-at-point
+    "'" 'noct-consult-ripgrep-or-line
     )
 
   (evil-ex-define-cmd "W" 'evil-write)
