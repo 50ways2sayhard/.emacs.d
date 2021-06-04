@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 335
+;;     Update #: 347
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -177,7 +177,7 @@ When the number of characters in a buffer exceeds this threshold,
                 (/ noct-consult-ripgrep-or-line-limit
                    (if (eq major-mode 'org-mode) 4 1))))
         (progn (consult-line)
-               (my-consult-grep-set-evil-search-pattern))
+               (my-consult-set-evil-search-pattern))
 
       (when (file-writable-p buffer-file-name)
         (save-buffer))
@@ -199,7 +199,7 @@ When the number of characters in a buffer exceeds this threshold,
                      "-e ARG OPTS "
                      (shell-quote-argument buffer-file-name))))
         (consult-ripgrep)
-        (my-consult-grep-set-evil-search-pattern))))
+        (my-consult-set-evil-search-pattern 'rg))))
 
   ;; Configure initial narrowing per command
   (dolist (src consult-buffer-sources)
@@ -247,6 +247,7 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
+  :if *sys/mac*
   :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
