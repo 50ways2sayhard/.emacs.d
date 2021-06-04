@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 322
+;;     Update #: 335
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -247,17 +247,20 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
-  :if *sys/mac*
   :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
   :config
   (setq resize-mini-frames t)
+  (unless *sys/mac*
+    (setq mini-frame-standalone t))
+  (setq mini-frame-internal-border-color "gray80")
   (setq mini-frame-show-parameters `((left . 0.5)
                                      (top . ,(/ (frame-pixel-height) 2))
                                      (background-mode 'dark)
                                      (foreground-color . "#bbc2cf")
                                      (background-color . "#242730")
+                                     (internal-border-width . 1)
                                      (min-width . 80)
                                      (width . 0.8)))
   (setq mini-frame-create-lazy nil)
