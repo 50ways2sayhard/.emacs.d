@@ -91,6 +91,7 @@
     "fp" '(+open-configuration-folder :wk ".emacs.d")
     "fD" '(+my-delete-file :wk "Delete file")
     "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
+    "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
 
     "g" '(:wh "Git")
     "gs" '(magit-status :wk "Git status")
@@ -149,6 +150,8 @@
     "wk" '(evil-window-up :wk "Focus window up")
     "wh" '(evil-window-left :wk "Focus window left")
     "wl" '(evil-window-right :wk "Focus window right")
+
+    "x" '(org-capture :wk "Org capture")
     )
 
   ;; Python

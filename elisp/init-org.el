@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jun  2 23:34:01 2021 (+0800)
+;; Last-Updated: Fri Jun  4 17:34:57 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -83,35 +83,40 @@
   (+org-init-agenda-h)
   (+org-init-capture-defaults-h)
 
-  ;; org screenshot for macos
-  (require 'org/+screenshot)
-
   (setq org-log-into-drawer "LOGBOOK")
-  (setq org-agenda-files (list +org-capture-file-inbox
-                               +org-capture-file-gtd
+  (setq org-agenda-files (list +org-capture-file-gtd
                                +org-capture-file-tickler))
   (setq org-refile-targets '((+org-capture-file-gtd :level . 1)
                              (+org-capture-file-someday :level . 1)
                              (+org-capture-file-tickler :level . 1)))
   (setq org-log-into-drawer t)
-  (setq org-tag-alist '(("lab" . ?L) ("academic" . ?a) ("life" . ?l) ("paper" . ?p) ("emacs" . ?e)))
+  (setq org-tag-alist '(("demand" . ?d) ("code" . ?a) ("life" . ?l) ("document" . ?p) ("emacs" . ?e)))
+  (setq org-use-fast-todo-selection t)
   (setq org-capture-templates
-        '(("t" "Todo [inbox]" entry
-           (file+headline +org-capture-file-inbox "Tasks")
-           "* TODO %?\n%i" :prepend t :kill-buffer t)
+        '(("t" "Todo" entry
+           (file+headline +org-capture-file-gtd "Next Actions")
+           "* TODO %i%? \n:LOGBOOK: \n:CREATED: %U \n:END:" :prepend t :kill-buffer t)
           ("w" "Waiting for" entry
            (file+headline +org-capture-file-tickler "Tickler")
            "* %?\n%i" :prepend t :kill-buffer t)
           ("n" "Note" entry
            (file+headline +org-capture-file-note "Notes")
            "* %u %?\n%i" :prepend t :kill-buffer t)
+          ("m" "Maybe" entry
+           (file+headline +org-capture-file-someday "Some day/maybe")
+           "* %?\n%i" :prepend t :kill-buffer t)
           ("i" "Idea" entry
            (file+headline +org-capture-file-idea "Ideas")
            "* %u %?\n%i" :prepend t :kill-buffer t)
           )
         org-todo-keywords
-        '((sequence "TODO(t!)" "|" "DONE(d!)" "CANCELLED(c!)"))
+        '((sequence "TODO(t!)" "DOING(i!)" "|" "DONE(d!)" "ABORT(a!)"))
         ;; org-agenda-window-setup 'other-window
+        org-todo-keyword-faces '(("DOING" . warning)
+                                 ("ABORT" . error))
+        org-priority-faces '((?A . error)
+                             (?B . warning)
+                             (?C . success))
         )
 
   (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
@@ -128,9 +133,12 @@
   (evil-set-initial-state 'org-agenda-mode 'motion)
   (general-define-key :states '(normal insert)
                       :keymaps 'org-mode-map
-                      "C-<ret>" #'+org/insert-item-below
-                      "C-S-<ret>" #'+org/insert-item-above
+                      "C-<return>" #'+org/insert-item-below
+                      "C-S-<return>" #'+org/insert-item-above
                       )
+  (general-define-key :states '(normal)
+                      :keymaps 'org-mode-map
+                      "<return>" #'+org/dwim-at-point)
 
   (local-leader-def
     :keymaps 'org-mode-map
@@ -287,7 +295,10 @@
 ;; -OrgPac
 
 ;; OrgDownload
-(use-package org-download)
+(use-package org-download
+  :custom
+  (org-download-image-dir "img/")
+  (org-download-heading-lvl nil))
 ;; -OrgDownload
 
 (use-package plantuml-mode
@@ -306,6 +317,10 @@
         (org-display-inline-images)
       (error nil)))
   )
+
+(use-package evil-org
+  :hook (org-mode . evil-org-mode)
+  :hook (org-capture-mode . evil-insert-state))
 
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

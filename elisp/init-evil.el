@@ -1,13 +1,14 @@
 
 ;;; Code:
+
 (use-package evil
-  :ensure t
   :hook (after-init . evil-mode)
   :demand t
   :init
   (setq evil-want-keybinding nil)
   :preface
   (setq evil-want-visual-char-semi-exclusive t
+        evil-want-C-i-jump 'nil
         evil-ex-search-vim-style-regexp t
         evil-ex-substitute-global t
         evil-ex-visual-char-range t  ; column range for ex commands
@@ -18,21 +19,19 @@
         evil-normal-state-cursor 'box
         evil-insert-state-cursor 'bar
         evil-visual-state-cursor 'hollow
-        blink-cursor-mode 'nil
+        evil-want-keybinding 'nil
         ;; Only do highlighting in selected window so that Emacs has less work
         ;; to do highlighting them all.
-        evil-ex-interactive-search-highlight 'selected-window)
-
-  :init
-  (setq evil-split-window-below t
+        evil-ex-interactive-search-highlight 'selected-window
+        evil-split-window-below t
         evil-vsplit-window-right t)
+
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
+  (evil-mode 1)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
-  (dolist (mode '(snails-mode company-mode color-rg-mode hl-todo-mode smerge-mode))
-    (add-to-list 'evil-emacs-state-modes mode)
-    )
+
   ;; stop copying each visual state move to the clipboard:
   ;; https://bitbucket.org/lyro/evil/issue/336/osx-visual-state-copies-the-region-on
   ;; grokked from:
@@ -52,13 +51,18 @@
   (add-hook 'messages-buffer-mode-hook #'(lambda ()
                                            (evil-emacs-state)))
 
+  (general-define-key :keymaps 'evil-window-map
+                      "C-h" 'evil-window-left
+                      "C-j" 'evil-window-down
+                      "C-k" 'evil-window-up
+                      "C-l" 'evil-window-right)
   (evil-declare-change-repeat 'company-complete)
   (unless noninteractive
     (setq save-silently t))
   )
-
-;;
 ;;; Packages
+
+
 
 
 (use-package evil-easymotion
@@ -203,14 +207,11 @@
 
 
 (use-package evil-collection
-  :ensure t
   :after evil
-  :custom
-  (evil-collection-term-sync-state-and-mode-p nil)
-  (evil-collection-setup-debugger-keys nil)
+  :init
+  (setq evil-want-keybinding nil)
   :config
   (evil-collection-init)
-  (setq evil-want-keybinding nil)
   )
 
 (use-package evil-indent-plus)
