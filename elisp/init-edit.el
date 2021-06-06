@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu May 13 10:21:44 2021 (+0800)
+;; Last-Updated: Sat Jun  5 22:49:37 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -65,7 +65,6 @@
 (use-package rime
   :custom
   (default-input-method "rime")
-  (rime-user-data-dir "~/.config/rime")
   (rime-show-candidate 'posframe)
   (rime-posframe-properties (list :font "Sarasa Mono SC Nerd"
                                   :internal-border-width 10))
@@ -76,7 +75,10 @@
      rime-predicate-after-ascii-char-p
      rime-predicate-space-after-cc-p))
   (mode-line-mule-info '((:eval (rime-lighter))))
-  )
+  :config
+  (cond (*sys/mac* (setq rime-user-data-dir "~/Library/Rime"
+                         rime-librime-root "~/.local/share/librime/dist/"))
+        (*sys/linux* (setq rime-user-data-dir "~/.config/rime"))))
 
 (use-package editorconfig
   :config
