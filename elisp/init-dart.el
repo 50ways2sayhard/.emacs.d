@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 12
+;;     Update #: 14
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -60,9 +60,13 @@
   :hook (dart-mode . lsp))
 
 (use-package flutter
+  :defer t
   :after dart-mode
   :bind (:map dart-mode-map
-              ("C-M-x" . #'flutter-run-or-hot-reload)))
+              ("C-M-x" . #'flutter-run-or-hot-reload))
+  :custom
+  (flutter-sdk-path "/usr/local/flutter/")
+  )
 
 (use-package hover :ensure t)
 
