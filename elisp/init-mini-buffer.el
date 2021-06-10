@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 347
+;;     Update #: 348
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -51,7 +51,7 @@
 
 (use-package selectrum
   :config
-  (global-set-key (kbd "C-c C-r") #'selectrum-repeat)
+  (global-set-key (kbd "C-c r") #'selectrum-repeat)
   (selectrum-mode +1)
   (use-package selectrum-prescient
     :init
@@ -117,7 +117,6 @@
   )
 
 (use-package consult
-  :straight (:host github :repo "minad/consult")
   :after projectile
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
@@ -207,7 +206,6 @@ When the number of characters in a buffer exceeds this threshold,
       (set src (plist-put (symbol-value src) :hidden t)))))
 
 (use-package consult-lsp
-  :straight (:host github :repo "gagbo/consult-lsp")
   :after lsp)
 
 (use-package orderless
