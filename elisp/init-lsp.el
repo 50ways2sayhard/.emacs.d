@@ -42,13 +42,6 @@
   (require 'init-const))
 
 
-;; ;; Ivy integration
-(use-package lsp-ivy
-  :after lsp-mode
-  :bind (:map lsp-mode-map
-              ([remap xref-find-apropos] . lsp-ivy-workspace-symbol)
-              ("C-s-." . lsp-ivy-global-workspace-symbol)))
-
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
@@ -63,9 +56,7 @@
                        (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t)))))
   :bind (:map lsp-mode-map
-              ("C-c C-d" . lsp-describe-thing-at-point)
-              ([remap xref-find-definitions] . lsp-find-definition)
-              ([remap xref-find-references] . lsp-find-references))
+              ("C-c C-d" . lsp-describe-thing-at-point))
   :init
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
