@@ -195,16 +195,17 @@ FACE defaults to inheriting from default and highlight."
   (find-file (read-file-name ".emacs.d: " "~/.emacs.d/elisp/")))
 
 (defun +my-rename-file()
-  "Rename file while using current file defaultly."
+  "Rename file while using current file as default."
   (interactive)
   (let ((file-from (read-file-name "Move from: " default-directory buffer-file-name))
         (file-to (read-file-name "Move to:" default-directory)))
     (rename-file file-from file-to)
-    (when (string= (file-truename file-from) (buffer-file-name))
-      (set-visited-file-name file-to)
-      (rename-buffer file-to)
-      (save-buffer))))
-
+    (when (string= (file-truename file-from) (file-truename (buffer-file-name)))
+      ;; (set-visited-file-name file-to)
+      ;; (rename-buffer file-to)
+      ;; (save-buffer)
+      (kill-buffer)
+      (find-file file-to))))
 
 (defun +my-delete-file ()
   "Put current buffer file to top."
