@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 348
+;;     Update #: 349
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -246,7 +246,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package mini-frame
   :if *sys/mac*
-  :straight (:type git :host github :repo "muffinmad/emacs-mini-frame")
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
   :config
@@ -273,7 +272,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 
 (use-package affe
-  :straight (:host github :repo "minad/affe")
   :after orderless
   :config
   ;; Configure Orderless
