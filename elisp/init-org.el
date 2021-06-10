@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Jun  4 17:34:57 2021 (+0800)
+;; Last-Updated: Wed Jun  9 11:24:19 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -56,7 +56,8 @@
       (org-archive-subtree))))
 (use-package org
   :ensure nil
-  :hook (org-mode . org-indent-mode)
+  :hook ((org-mode . org-indent-mode)
+         (org-mode . +org-update-cookies-h))
   :custom
   (org-log-done 'time)
   (org-export-backends (quote (ascii html icalendar latex md odt)))
@@ -67,6 +68,7 @@
   (org-babel-python-command "python3")
   (org-bullets-bullet-list '("#"))
   (org-tags-column -77)
+  (org-capture-bookmark nil)
 
   :config
   (add-hook (quote hack-local-variables-hook)
