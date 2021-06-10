@@ -324,6 +324,13 @@
   :hook (org-mode . evil-org-mode)
   :hook (org-capture-mode . evil-insert-state))
 
+(use-package valign
+  :after org
+  :defer t
+  :bind (([remap org-table-align] . valign-table))
+  :hook (org-mode . valign-mode)
+  )
+
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-org.el ends here
