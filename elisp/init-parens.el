@@ -41,8 +41,19 @@
   (require 'init-global-config))
 
 (use-package elec-pair
+  :ensure nil
+  :ensure nil
   :hook (after-init . electric-pair-mode)
-  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
+  :hook (after-init . electric-pair-mode)
+  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+  :config
+  ;; disable <> auto pairing in electric-pair-mode for org-mode
+  (add-hook 'org-mode-hook
+            '(lambda ()
+               (setq-local electric-pair-inhibit-predicate
+                           `(lambda (c)
+                              (if (char-equal c ?<) t
+                                (,electric-pair-inhibit-predicate c)))))))
 
 (use-package awesome-pair
   :straight (:host github :repo "manateelazycat/awesome-pair")
