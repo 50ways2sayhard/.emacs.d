@@ -167,38 +167,39 @@ When the number of characters in a buffer exceeds this threshold,
   (defun noct-consult-ripgrep-or-line ()
     "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
     (interactive)
-    (if (or (not buffer-file-name)
-            (buffer-narrowed-p)
-            (ignore-errors
-              (file-remote-p buffer-file-name))
-            (jka-compr-get-compression-info buffer-file-name)
-            (<= (buffer-size)
-                (/ noct-consult-ripgrep-or-line-limit
-                   (if (eq major-mode 'org-mode) 4 1))))
-        (progn (consult-line)
-               (my-consult-set-evil-search-pattern))
+    (evil-without-repeat
+      (if (or (not buffer-file-name)
+              (buffer-narrowed-p)
+              (ignore-errors
+                (file-remote-p buffer-file-name))
+              (jka-compr-get-compression-info buffer-file-name)
+              (<= (buffer-size)
+                  (/ noct-consult-ripgrep-or-line-limit
+                     (if (eq major-mode 'org-mode) 4 1))))
+          (progn (consult-line)
+                 (my-consult-set-evil-search-pattern))
 
-      (when (file-writable-p buffer-file-name)
-        (save-buffer))
-      (let ((consult-ripgrep-command
-             (concat "rg "
-                     "--null "
-                     "--line-buffered "
-                     "--color=ansi "
-                     "--max-columns=250 "
-                     "--no-heading "
-                     "--line-number "
-                     ;; adding these to default
-                     "--smart-case "
-                     "--hidden "
-                     "--max-columns-preview "
-                     ;; add back filename to get parsing to work
-                     "--with-filename "
-                     ;; defaults
-                     "-e ARG OPTS "
-                     (shell-quote-argument buffer-file-name))))
-        (consult-ripgrep)
-        (my-consult-set-evil-search-pattern 'rg))))
+        (when (file-writable-p buffer-file-name)
+          (save-buffer))
+        (let ((consult-ripgrep-command
+               (concat "rg "
+                       "--null "
+                       "--line-buffered "
+                       "--color=ansi "
+                       "--max-columns=250 "
+                       "--no-heading "
+                       "--line-number "
+                       ;; adding these to default
+                       "--smart-case "
+                       "--hidden "
+                       "--max-columns-preview "
+                       ;; add back filename to get parsing to work
+                       "--with-filename "
+                       ;; defaults
+                       "-e ARG OPTS "
+                       (shell-quote-argument buffer-file-name))))
+          (consult-ripgrep)
+          (my-consult-set-evil-search-pattern 'rg)))))
 
   ;; Configure initial narrowing per command
   (dolist (src consult-buffer-sources)
