@@ -276,6 +276,13 @@ FACE defaults to inheriting from default and highlight."
       (setq rlt nil)))
     rlt))
 
+(defun +my-imenu ()
+  "consult-outline in org-mode else imenu"
+  (interactive)
+  (if (derived-mode-p 'org-mode)
+      (consult-outline)
+    (consult-imenu)))
+
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-func.el ends here

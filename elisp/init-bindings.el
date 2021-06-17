@@ -130,7 +130,7 @@
     "s" '(:wk "Search")
     "sa" '(consult-org-agenda :wk "Search agenda")
     "sf" '(locate :wk "Locate file")
-    "si" '(imenu :wk "Jump to symbol")
+    "si" '(+my-imenu :wk "Jump to symbol")
     "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")
     "sp" '(affe-grep :wk "Search project")
     "sP" '(color-rg-search-project :wk "Color-rg Search project")
