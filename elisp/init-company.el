@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jun 17 21:53:31 2021 (+0800)
+;; Last-Updated: Thu Jun 17 22:20:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -222,11 +222,9 @@ If failed try to complete the common part with `company-complete-common'"
 ;; -Companytabninepac
 
 (use-package company-quickhelp
-  :defines company-quickhelp-delay
-  :if (display-graphic-p)
   :bind (:map company-active-map
               ([remap company-show-doc-buffer] . company-quickhelp-manual-begin)
-              ("C-c d" . company-quickhelp-manual-begin))
+              ("C-c d" . company-show-doc-buffer))
   :hook (global-company-mode . company-quickhelp-mode)
   :init (setq company-quickhelp-delay 0.5))
 
