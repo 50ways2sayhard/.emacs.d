@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 六 2月 29 09:33:30 2020 (+0800)
+;; Last-Updated: Thu Jun 17 22:14:57 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -53,9 +53,12 @@
 (setq hscroll-margin 1)
 ;; -SmoothScroll
 
-(use-package smooth-scrolling
-  :config
-  (smooth-scrolling-mode 1)
+(use-package good-scroll
+  :diminish
+  :hook (after-init . good-scroll-mode)
+  :init
+  (global-set-key [next] #'good-scroll-up-full-screen)
+  (global-set-key [prior] #'good-scroll-down-full-screen)
   )
 
 (provide 'init-scroll)
