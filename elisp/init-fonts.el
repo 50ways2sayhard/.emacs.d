@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:32:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue May 18 11:56:17 2021 (+0800)
+;; Last-Updated: Sat Jun  5 16:10:59 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d fonts
@@ -42,14 +42,14 @@
 
 (when (display-graphic-p)
   ;; Set default font
-  (cl-loop for font in '("Hack NF" "Source Code Pro" "Fira Code"
+  (cl-loop for font in '("Spot Mono" "CaskaydiaCove Nerd Font" "Fira Code"
                          "Menlo" "Monaco" "DejaVu Sans Mono" "Consolas")
            when (font-installed-p font)
            return (set-face-attribute 'default nil
                                       :font font
-                                      :height (cond (*sys/mac* 150)
+                                      :height (cond (*sys/mac* 160)
                                                     (*sys/win32* 110)
-                                                    (t 130))))
+                                                    (t 150))))
 
   ;; Specify font for all unicode characters
   (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
