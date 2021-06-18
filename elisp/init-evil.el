@@ -216,5 +216,10 @@
 
 (use-package evil-indent-plus)
 
+(use-package evil-matchit
+  :after evil
+  :init
+  (global-evil-matchit-mode))
+
 (provide 'init-evil)
 ;;; init-evil.el ends here
