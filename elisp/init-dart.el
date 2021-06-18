@@ -64,8 +64,9 @@
   :after dart-mode
   :bind (:map dart-mode-map
               ("C-M-x" . #'flutter-run-or-hot-reload))
-  :custom
-  (flutter-sdk-path "/usr/local/flutter/")
+  :config
+  (if *sys/linux*
+      (setq flutter-sdk-path "/usr/share/flutter/"))
   )
 
 (use-package hover :ensure t)
