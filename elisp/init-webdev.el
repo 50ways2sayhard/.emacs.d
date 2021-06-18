@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May 28 10:31:09 2021 (+0800)
+;; Last-Updated: Wed Jun 16 11:15:55 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -50,9 +50,9 @@
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
-  (setq web-mode-style-padding 0
-        web-mode-script-padding 0
-        web-mode-block-padding 0))
+  (setq web-mode-style-padding 0)
+  (setq web-mode-script-padding 0)
+  (setq web-mode-block-padding 0))
 ;; -WebModePac
 
 (use-package css-mode
@@ -80,21 +80,6 @@
 (use-package json-mode
   :mode "\\.json\\'")
 ;; -JsonPac
-
-(use-package mode-local
-  :ensure t
-  :config
-  (setq-mode-local rjsx-mode emmet-expand-jsx-className? t)
-  (setq-mode-local web-mode emmet-expand-jsx-className? nil)
-  )
-
-(use-package scss-mode)
-(use-package mmm-mode)
-(use-package css-in-js
-  :straight (:host github :repo "orzechowskid/css-in-js.el" :depth 1)
-  :config
-  (setq css-in-js-enable-indentation nil)
-  )
 
 (provide 'init-webdev)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
