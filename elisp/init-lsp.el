@@ -54,7 +54,9 @@
 
                        ;; Format and organize imports
                        (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode)
-                         (add-hook 'before-save-hook #'lsp-organize-imports t t)))))
+                         (add-hook 'before-save-hook #'lsp-organize-imports t t))
+                       (if (derived-mode-p 'dart-mode)
+                           (add-hook 'before-save-hook #'lsp-format-buffer)))))
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point))
   :init
