@@ -85,9 +85,7 @@
   (editorconfig-mode 1))
 
 (defun nuke_trailing()
-  (add-hook 'write-file-hooks 'delete-trailing-whitespace)
-  (global-visual-line-mode 1)
-  )
+  (add-hook 'write-file-hooks 'delete-trailing-whitespace))
 
 (add-hook 'prog-mode-hook 'nuke_trailing)
 (add-hook 'text-mode-hook 'nuke_trailing)

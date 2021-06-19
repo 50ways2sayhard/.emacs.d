@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:01:43 2021 (+0800)
+;; Last-Updated: Sat Jun 19 16:49:02 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -79,7 +79,12 @@
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (custom-set-variables '(x-select-enable-clipboard t))
 (setq blink-cursor-mode nil)
+(setq word-wrap t
+      word-wrap-by-category t
+      require-final-newline t)
 
+(add-hook 'prog-mode-hook #'(lambda () (visual-line-mode)))
+(add-hook 'text-mode-hook #'(lambda () (visual-line-mode)))
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-ui-config.el ends here
