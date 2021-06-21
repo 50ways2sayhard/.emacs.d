@@ -142,7 +142,6 @@ Examples:
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
         )
   (add-hook 'company-mode-hook #'+company-init-backends-h)
-  (unless *clangd* (delete 'company-clang company-backends))
   (global-company-mode 1)
   (company-tng-mode 1)
   (defun smarter-yas-expand-next-field-complete ()
@@ -223,6 +222,7 @@ If failed try to complete the common part with `company-complete-common'"
 ;; -Companytabninepac
 
 (use-package company-box
+  :if *sys/mac*
   :diminish
   :defines company-box-icons-all-the-icons
   :hook (company-mode . company-box-mode)
