@@ -97,6 +97,12 @@
     :hook (js2-mode . js2-refactor-mode)
     :config (js2r-add-keybindings-with-prefix "C-c C-m"))
   (use-package js-doc)
+
+  (local-leader-def
+    :keymaps 'js-mode-map
+    "t" 'js-doc-insert-tag
+    "f" 'js-doc-insert-function-doc
+    "F" 'js-doc-insert-file-doc)
   )
 
 (with-eval-after-load 'js-mode
