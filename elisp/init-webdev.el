@@ -52,7 +52,8 @@
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-style-padding 0)
   (setq web-mode-script-padding 0)
-  (setq web-mode-block-padding 0))
+  (setq web-mode-block-padding 0)
+  (setq web-mode-enable-comment-annotation t))
 ;; -WebModePac
 
 (use-package css-mode
