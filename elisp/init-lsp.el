@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun May 16 11:56:44 2021 (+0800)
+;; Last-Updated: Thu Jun 24 14:59:23 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -53,7 +53,7 @@
                        (lsp-enable-which-key-integration)
 
                        ;; Format and organize imports
-                       (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode)
+                       (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t))
                        (if (derived-mode-p 'dart-mode)
                            (add-hook 'before-save-hook #'lsp-format-buffer)))))
@@ -71,6 +71,7 @@
         lsp-modeline-code-actions-enable nil
         lsp-modeline-workspace-status-enable nil
         lsp-semantic-tokens-enable nil
+        lsp-diagnostics-provider nil
         lsp-keep-workspace-alive nil
         lsp-idle-delay 0.5
         lsp-enable-imenu nil
@@ -78,10 +79,8 @@
         lsp-enable-snippet nil
         lsp-enable-text-document-color nil
         lsp-enable-symbol-highlighting nil
-        lsp-enable-on-type-formatting nil
         lsp-log-io nil
         lsp-enable-folding nil
-        lsp-enable-on-type-formatting nil
         lsp-enable-file-watchers nil
         lsp-keymap-prefix "C-c l"
         lsp-eldoc-render-all nil
