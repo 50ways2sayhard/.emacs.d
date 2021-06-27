@@ -45,8 +45,8 @@
 ;; ColorRGPac
 (use-package color-rg
   :straight (:host github :repo "manateelazycat/color-rg")
-  :if *rg*
-  :bind ("C-M-s" . color-rg-search-input))
+  ;; :if *rg*
+  :bind ("C-M-s" . color-rg-search-input-in-project))
 ;; -ColorRGPac
 
 
