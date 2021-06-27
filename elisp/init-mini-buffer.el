@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 349
+;;     Update #: 355
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -48,6 +48,10 @@
 
 ;; Completion styles
 (setq completion-styles '(basic partial-completion substring initials flex))
+
+(setq max-mini-window-height 20)
+(setq minibuffer-prompt-properties;minibuffer prompt 只读，且不允许光标进入其中
+      '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
 
 (use-package selectrum
   :config
@@ -278,7 +282,12 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Configure Orderless
   (setq affe-regexp-function #'orderless-pattern-compiler
         affe-highlight-function #'orderless-highlight-matches
-        affe-find-command "fd --color=never --full-path"))
+        affe-find-command "fd -HI -t f")
+  (defun +affe-at-point (&optional dir initial)
+    (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
+                                    (symbol-name s))))
+    (affe-grep dir initial))
+  (global-set-key (kbd "M-?") '+affe-at-point))
 
 (provide 'init-mini-buffer)
 

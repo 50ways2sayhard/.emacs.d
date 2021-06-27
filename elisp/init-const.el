@@ -111,6 +111,21 @@
   "Check basic requirements for EAF to run.")
 ;; -Consts
 
+;;;###autoload
+(defun doom-project-p (&optional dir)
+  "Return t if DIR (defaults to `default-directory') is a valid project."
+  (and (doom-project-root dir)
+       t))
+
+;;;###autoload
+(defun doom-project-root (&optional dir)
+  "Return the project root of DIR (defaults to `default-directory').
+Returns nil if not in a project."
+  (let ((projectile-project-root
+         (unless dir (bound-and-true-p projectile-project-root)))
+        projectile-require-project-root)
+    (projectile-project-root dir)))
+
 (provide 'init-const)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-const.el ends here
