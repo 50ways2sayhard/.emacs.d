@@ -110,7 +110,7 @@
     "m" '(:wk "Local leader")
 
     "o" '(:wk "Open")
-    "op" '(treemacs :wk "Treemacs")
+    "op" '(+treemacs/toggle :wk "Treemacs")
     "oy" '(my-youdao-search-at-point :wk "youdao")
     "oe" '(shell-here :wk "Shell")
     "og" '(google-this :wk "Google")
