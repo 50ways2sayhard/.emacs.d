@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Jun 25 10:15:21 2021 (+0800)
+;; Last-Updated: Mon Jun 28 16:10:31 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -92,7 +92,7 @@
                              (+org-capture-file-someday :level . 1)
                              (+org-capture-file-tickler :level . 1)))
   (setq org-log-into-drawer t)
-  (setq org-tag-alist '(("demand" . ?d) ("code" . ?a) ("life" . ?l) ("document" . ?p) ("emacs" . ?e)))
+  (setq org-tag-alist '(("demand" . ?d) ("code" . ?a) ("life" . ?l) ("document" . ?p) ("emacs" . ?e) ("bug" . ?b) ("okr" . ?o)))
   (setq org-use-fast-todo-selection t)
   (setq org-capture-templates
         '(("t" "Todo" entry
