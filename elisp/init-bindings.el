@@ -131,6 +131,8 @@
 
     "s" '(:wk "Search")
     "sa" '(consult-org-agenda :wk "Search agenda")
+    "sd" '(+devdocs-lookup-at-point :wk "Devdocs lookup")
+    "sD" '(+devdocs-search-at-point :wk "Devdocs search")
     "sf" '(locate :wk "Locate file")
     "si" '(+my-imenu :wk "Jump to symbol")
     "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")

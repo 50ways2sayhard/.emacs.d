@@ -50,3 +50,4 @@ flycheck-init.el
 .local/
 straight/
 quelpa/
+devdocs/

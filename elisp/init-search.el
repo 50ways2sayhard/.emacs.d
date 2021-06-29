@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:01:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 二 5月 26 15:48:37 2020 (+0800)
+;; Last-Updated: Tue Jun 29 17:52:52 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d color-rg rg
@@ -86,6 +86,18 @@
 
 
 (use-package google-this)
+
+(use-package devdocs
+  :config
+  (add-hook 'web-mode-hook (
+                            lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
+  (defun +devdocs-lookup-at-point()
+    (interactive)
+    (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
+  (defun +devdocs-search-at-point()
+    (interactive)
+    (devdocs-search (thing-at-point 'symbol)))
+  )
 
 
 (provide 'init-search)
