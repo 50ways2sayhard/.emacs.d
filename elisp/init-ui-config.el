@@ -85,6 +85,9 @@
 
 (add-hook 'prog-mode-hook #'(lambda () (visual-line-mode)))
 (add-hook 'text-mode-hook #'(lambda () (visual-line-mode)))
+
+(setq split-width-threshold 0
+      split-height-threshold nil)
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-ui-config.el ends here
