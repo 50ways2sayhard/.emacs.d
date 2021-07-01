@@ -71,7 +71,7 @@
         lsp-modeline-code-actions-enable nil
         lsp-modeline-workspace-status-enable nil
         lsp-semantic-tokens-enable nil
-        lsp-diagnostics-provider nil
+        lsp-diagnostics-provider :none
         lsp-keep-workspace-alive nil
         lsp-idle-delay 0.5
         lsp-enable-imenu nil
@@ -85,6 +85,8 @@
         lsp-keymap-prefix "C-c l"
         lsp-eldoc-render-all nil
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
+        lsp-modeline-code-actions-enable nil
+        lsp-modeline-diagnostics-enable nil
         )
   (setq gc-cons-threshold 100000000)
   )
@@ -147,6 +149,7 @@
          ("M-RET" . lsp-ui-sideline-apply-code-actions))
   :hook (lsp-mode . lsp-ui-mode)
   :init (setq lsp-ui-sideline-show-diagnostics nil
+              lsp-ui-sideline-show-code-actions nil
               lsp-ui-sideline-ignore-duplicate t
               lsp-ui-doc-position 'at-point
               lsp-ui-doc-border (face-foreground 'font-lock-comment-face)
