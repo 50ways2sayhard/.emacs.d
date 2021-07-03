@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 6月 12 15:47:13 2020 (+0800)
+;; Last-Updated: Sun Jul  4 07:36:50 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -64,12 +64,20 @@
   :custom
   (doom-themes-treemacs-theme "doom-colors")
   :config
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
   ;; flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
   (doom-themes-treemacs-config)
-  (load-theme 'doom-one t))
+  (load-theme 'doom-one t)
+  (custom-set-faces
+   `(font-lock-comment-face ((t (:italic t))))
+   `(font-lock-comment-delimiter-face ((t (:italic t))))
+   `(font-lock-doc-face ((t (:italic t))))
+   )
+  )
 ;; -DoomThemes
 
 (use-package hide-mode-line
