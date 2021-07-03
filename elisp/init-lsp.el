@@ -88,6 +88,9 @@
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
         )
+  (setq lsp-typescript-implementations-code-lens-enabled t
+        lsp-typescript-references-code-lens-enabled t
+        lsp-typescript-suggest-complete-function-calls t)
   (setq gc-cons-threshold 100000000)
   )
 
