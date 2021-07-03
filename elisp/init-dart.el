@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 14
+;;     Update #: 25
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,8 +52,14 @@
 
 (use-package dart-mode
   :mode ("\\.dart\\'")
-  :hook (dart-mode . flutter-test-mode)
-  (setq dart-format-on-save t))
+  :hook (dart-mode . (lambda ()
+                       (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)))
+  :config
+  (setq dart-format-on-save t)
+  (with-eval-after-load 'flutter
+    (local-leader-def
+      :keymaps 'flutter-mode-map
+      "r" 'flutter-run-or-hot-reload)))
 
 (use-package lsp-dart
   :ensure t
@@ -65,6 +71,7 @@
   :bind (:map dart-mode-map
               ("C-M-x" . #'flutter-run-or-hot-reload))
   :config
+  (setq-local lsp-diagnostics-provider :flycheck)
   (if *sys/linux*
       (setq flutter-sdk-path "/usr/share/flutter/"))
   )
