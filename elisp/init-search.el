@@ -55,7 +55,7 @@
   :unless *sys/win32*
   :init
   (setq exec-path-from-shell-check-startup-files nil
-        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy" "http_proxy" "all_proxy" "LD_LIBRARY_PATH")
+        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy" "http_proxy" "all_proxy" "NO_PROXY" "LD_LIBRARY_PATH")
         exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
