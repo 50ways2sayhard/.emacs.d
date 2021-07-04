@@ -76,9 +76,20 @@
      rime-predicate-space-after-cc-p))
   (mode-line-mule-info '((:eval (rime-lighter))))
   :config
+  (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
+  (define-key rime-active-mode-map (kbd "M-j") 'rime-inline-ascii)
   (cond (*sys/mac* (setq rime-user-data-dir "~/Library/Rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
-        (*sys/linux* (setq rime-user-data-dir "~/.config/rime"))))
+        (*sys/linux* (setq rime-user-data-dir "~/.config/rime")))
+  (defun +rime-sync ()
+    ;; HACK: force emacs-rime to use userdb.
+    ;; I am not sure if it is safe as the deploy may delete the old userdb.
+    (interactive)
+    (when rime--lib-loaded
+      (let ((lock-name (concat rime-user-data-dir "/luna_pinyin.userdb/LOCK")))
+        (when (file-exists-p lock-name)
+          (delete-file lock-name)
+          (rime-deploy))))))
 
 (use-package editorconfig
   :config
