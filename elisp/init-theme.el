@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Jul  4 07:36:50 2021 (+0800)
+;; Last-Updated: Sun Jul  4 08:06:48 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -73,10 +73,9 @@
   (doom-themes-treemacs-config)
   (load-theme 'doom-one t)
   (custom-set-faces
-   `(font-lock-comment-face ((t (:italic t))))
-   `(font-lock-comment-delimiter-face ((t (:italic t))))
-   `(font-lock-doc-face ((t (:italic t))))
-   )
+   `(font-lock-comment-face ((t (:slant italic))))
+   `(font-lock-comment-delimiter-face ((t (:slant italic))))
+   `(font-lock-doc-face ((t (:slant italic)))))
   )
 ;; -DoomThemes
 
