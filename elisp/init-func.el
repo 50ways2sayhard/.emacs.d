@@ -283,6 +283,25 @@ FACE defaults to inheriting from default and highlight."
       (consult-outline)
     (consult-imenu)))
 
+;;;###autoload
+(defun +default/newline-above ()
+  "Insert an indented new line before the current one."
+  (interactive)
+  (if (featurep 'evil)
+      (call-interactively 'evil-open-above)
+    (beginning-of-line)
+    (save-excursion (newline))
+    (indent-according-to-mode)))
+
+;;;###autoload
+(defun +default/newline-below ()
+  "Insert an indented new line after the current one."
+  (interactive)
+  (if (featurep 'evil)
+      (call-interactively 'evil-open-below)
+    (end-of-line)
+    (newline-and-indent)))
+
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-func.el ends here

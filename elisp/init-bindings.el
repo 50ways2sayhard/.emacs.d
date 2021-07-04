@@ -36,6 +36,10 @@
   (evil-ex-define-cmd "W" 'evil-write)
   (general-def "<escape>" 'keyboard-quit)
   (general-def "C-;" 'embrace-commander)
+  (general-def [C-return] '+default/newline-below)
+  (general-def "C-RET" '+default/newline-below)
+  (general-def [C-S-return] '+default/newline-above)
+  (general-def "C-S-RET" '+default/newline-above)
 
   ;; Navigation
   (general-define-key
