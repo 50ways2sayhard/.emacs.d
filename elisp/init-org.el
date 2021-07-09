@@ -136,7 +136,7 @@
   (general-define-key :states '(normal insert)
                       :keymaps 'org-mode-map
                       "C-<return>" #'+org/insert-item-below
-                      "C-S-<return>" #'+org/insert-item-above
+                      "C-S-<return>" #'org-insert-subheading
                       )
   (general-define-key :states '(normal)
                       :keymaps 'org-mode-map
