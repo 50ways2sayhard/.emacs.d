@@ -114,7 +114,6 @@
     "m" '(:wk "Local leader")
 
     "o" '(:wk "Open")
-    "op" '(+treemacs/toggle :wk "Treemacs")
     "oy" '(my-youdao-search-at-point :wk "youdao")
     "oe" '(shell-here :wk "Shell")
     "og" '(google-this :wk "Google")
@@ -145,10 +144,12 @@
     "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
     "sT" '(load-theme :wk "Load theme")
 
-    "t" '(:wk "Todo")
-    "tn" '(hl-todo-next :wk "Next todo")
-    "tp" '(hl-todo-previous :wk "Previous todo")
-    "to" '(hl-todo-occur :wk "All todo")
+    "t" '(:wk "Toggle")
+    "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
+    "td" '(toggle-debug-on-error :wk "Toggle debug on error")
+    "tt" '(+treemacs/toggle :wk "Treemacs")
+    "tj" '(lsp-treemacs-symbols-toggle :wk "LSP Treemacs")
+    "ti" '(imenu-list-smart-toggle :wk "imenu-list")
 
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
