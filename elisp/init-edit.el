@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Jun  5 22:49:37 2021 (+0800)
+;; Last-Updated: Fri Jul  9 20:37:26 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -89,7 +89,11 @@
       (let ((lock-name (concat rime-user-data-dir "/luna_pinyin.userdb/LOCK")))
         (when (file-exists-p lock-name)
           (delete-file lock-name)
-          (rime-deploy))))))
+          (rime-deploy)))))
+  (defun activate-default-input-method ()
+    (interactive)
+    (activate-input-method default-input-method))
+  (add-hook 'text-mode-hook 'activate-default-input-method))
 
 (use-package editorconfig
   :config
