@@ -76,8 +76,8 @@
      rime-predicate-space-after-cc-p))
   (mode-line-mule-info '((:eval (rime-lighter))))
   :config
-  (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
-  (define-key rime-active-mode-map (kbd "M-j") 'rime-inline-ascii)
+  (define-key rime-mode-map (kbd "M-k") 'rime-force-enable)
+  (define-key rime-mode-map (kbd "M-j") 'rime-inline-ascii)
   (cond (*sys/mac* (setq rime-user-data-dir "~/Library/Rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
         (*sys/linux* (setq rime-user-data-dir "~/.config/rime")))
