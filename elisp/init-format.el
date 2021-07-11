@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:27:40 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jun 22 09:27:54 2021 (+0800)
+;; Last-Updated: Sun Jul 11 18:05:17 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d format-all
@@ -44,7 +44,8 @@
                            (format-all-ensure-formatter)
                            (format-all-mode)
                            )))
-  :init
+  :config
+  (add-hook 'format-all-after-format-functions (lambda (a b) (call-interactively 'recenter)))
   )
 ;; -FormatAllPac
 
