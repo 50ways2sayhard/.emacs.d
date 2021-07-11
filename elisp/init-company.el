@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Jun 18 19:48:56 2021 (+0800)
+;; Last-Updated: Sun Jul 11 14:26:56 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -138,10 +138,11 @@ Examples:
         company-require-match 'never
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
-        company-backends '(company-capf company-files)
+        company-backends '(company-files company-capf)
         company-global-modes '(not erc-mode message-mode help-mode gud-mode eshell-mode shell-mode)
         )
   (add-hook 'company-mode-hook #'+company-init-backends-h)
+  (add-to-list 'company-transformers #'delete-dups)
   (global-company-mode 1)
   (company-tng-mode 1)
   (defun smarter-yas-expand-next-field-complete ()
@@ -174,8 +175,6 @@ If failed try to complete the common part with `company-complete-common'"
         (setq +completion-styles nil)))
 
     (add-hook 'company-completion-started-hook #'set-company-completion-style)
-    ;; (add-hook 'company-completion-cancelled-hook #'restore-company-completion-style)
-    ;; (add-hook 'company-completion-finished-hook #'restore-company-completion-style)
     (add-hook 'evil-normal-state-entry-hook #'restore-company-completion-style))
   )
 ;; -ComPac
@@ -193,10 +192,7 @@ If failed try to complete the common part with `company-complete-common'"
   (company-tabnine-max-num-results 3)
   :hook
   (kill-emacs . company-tabnine-kill-process)
-  :config
-  ;; Enable TabNine on default
-  ;; (add-to-list 'company-backends #'company-tabnine)
-
+  :init
   ;; Integrate company-tabnine with lsp-mode
   (defun company//sort-by-tabnine (candidates)
     (if (or (functionp company-backend)
@@ -217,8 +213,33 @@ If failed try to complete the common part with `company-complete-common'"
         (nconc (seq-take candidates-lsp 2)
                (seq-take candidates-tabnine 2)
                (seq-drop candidates-lsp 2)
-               (seq-drop candidates-tabnine 2)
-               )))))
+               (seq-drop candidates-tabnine 2)))))
+
+  (defun company-tabnine-toggle (&optional enable)
+    "Enable/Disable TabNine. If ENABLE is non-nil, definitely enable it."
+    (interactive)
+    (if (or enable (not (memq 'company-tabnine company-backends)))
+        (progn
+          (add-hook 'lsp-after-open-hook #'lsp-after-open-tabnine)
+          (add-to-list 'company-backends #'company-tabnine)
+          (when (bound-and-true-p lsp-mode) (lsp-after-open-tabnine))
+          (message "TabNine enabled."))
+      (setq company-backends (delete 'company-tabnine company-backends))
+      (setq company-backends (delete '(company-capf :with company-tabnine :separate) company-backends))
+      (remove-hook 'lsp-after-open-hook #'lsp-after-open-tabnine)
+      (company-tabnine-kill-process)
+      (message "TabNine disabled.")))
+
+  (defun lsp-after-open-tabnine ()
+    "Hook to attach to `lsp-after-open'."
+    (setq-local company-tabnine-max-num-results 3)
+    (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+    (add-to-list 'company-backends '(company-capf :with company-tabnine :separate))
+    )
+
+  :config
+  (company-tabnine-toggle t)
+  )
 ;; -Companytabninepac
 
 (use-package company-box
