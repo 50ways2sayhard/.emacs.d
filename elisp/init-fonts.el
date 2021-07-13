@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:32:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jun 24 15:28:45 2021 (+0800)
+;; Last-Updated: Tue Jul 13 11:38:44 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d fonts
@@ -40,16 +40,38 @@
 (eval-when-compile
   (require 'init-const))
 
+;; FontsList
+(defvar font-list '(("Cascadia Code" . 13) ("Hack" . 13) ("Inconsolata" . 13) ("Fira Code" . 13) ("SF Mono" . 13))
+  "List of fonts and sizes.  The first one available will be used.")
+;; -FontsList
+
+;; FontFun
+(defun change-font ()
+  "Interactively change a font from a list a available fonts."
+  (interactive)
+  (let* (available-fonts font-name font-size font-setting)
+    (dolist (font font-list (setq available-fonts (nreverse available-fonts)))
+      (when (member (car font) (font-family-list))
+        (push font available-fonts)))
+    (if (not available-fonts)
+        (message "No fonts from the chosen set are available")
+      (if (called-interactively-p 'interactive)
+          (let* ((chosen (assoc-string (completing-read "What font to use? " available-fonts nil t) available-fonts)))
+            (setq font-name (car chosen) font-size (read-number "Font size: " (cdr chosen))))
+        (setq font-name (caar available-fonts) font-size (cdar available-fonts)))
+      (setq font-setting (format "%s-%d" font-name font-size))
+      (set-frame-font font-setting nil t)
+      (add-to-list 'default-frame-alist (cons 'font font-setting)))))
+
 (when (display-graphic-p)
   ;; Set default font
-  (cl-loop for font in '("Spot Mono" "Cascadia Code" "Fira Code"
-                         "Menlo" "Monaco" "DejaVu Sans Mono" "Consolas")
+  (cl-loop for font in '("Fira Code" "Cascadia Code" "SF Mono" "Fira Code")
            when (font-installed-p font)
            return (set-face-attribute 'default nil
                                       :font font
                                       :height (cond (*sys/mac* 160)
                                                     (*sys/win32* 110)
-                                                    (t 160))))
+                                                    (t 130))))
 
   ;; Specify font for all unicode characters
   (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
