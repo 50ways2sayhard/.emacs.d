@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Jul  4 08:06:48 2021 (+0800)
+;; Last-Updated: Tue Jul 13 11:35:08 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -54,7 +54,8 @@
   (doom-modeline-buffer-modification-icon t)
   (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
   :config
-  (doom-modeline-mode))
+  (doom-modeline-mode)
+  (display-time))
 
 
 ;; DoomThemes
