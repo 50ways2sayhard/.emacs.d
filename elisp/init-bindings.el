@@ -131,7 +131,6 @@
     "qq" '(kill-emacs :wk "Quit")
     "qr" '(restart-emacs :wk "Restart")
 
-
     "s" '(:wk "Search")
     "sa" '(consult-org-agenda :wk "Search agenda")
     "sd" '(+devdocs-lookup-at-point :wk "Devdocs lookup")
@@ -145,6 +144,7 @@
     "sT" '(load-theme :wk "Load theme")
 
     "t" '(:wk "Toggle")
+    "tc" '(calendar :wk "Toggle calendar")
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "tt" '(+treemacs/toggle :wk "Treemacs")
