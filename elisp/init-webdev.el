@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Jul  4 08:17:37 2021 (+0800)
+;; Last-Updated: Fri Jul 16 14:48:12 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -45,14 +45,38 @@
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'"
    "\\.vue\\'")
+  :custom
+  (web-mode-style-padding 0)
+  (web-mode-script-padding 0)
+  (web-mode-block-padding 0)
+  (web-mode-part-padding 0)
+  :init
+  (defun my/web-vue-setup()
+    (setq web-mode-style-padding 0
+          web-mode-script-padding 0
+          web-mode-block-padding 0
+          web-mode-part-padding 0))
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
-  (setq web-mode-style-padding 0)
-  (setq web-mode-script-padding 0)
-  (setq web-mode-block-padding 0)
-  (setq web-mode-enable-comment-annotation t))
+  (setq web-mode-enable-comment-annotation t)
+  (setq web-mode-enable-comment-interpolation t)
+  (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-comment-formats '(("java" . "//") ("javascript" . "//") ("php" . "//")))
+  (with-eval-after-load 'flycheck
+    (flycheck-add-mode 'javascript-eslint 'web-mode))
+  (modify-syntax-entry ?' "\"" web-mode-syntax-table)
+  (modify-syntax-entry ?` "\"" web-mode-syntax-table)
+  ;; "-" as word so company completes kabeb-case
+  (modify-syntax-entry ?_ "w" web-mode-syntax-table)
+  (modify-syntax-entry ?- "w" web-mode-syntax-table)
+  (modify-syntax-entry ?# "_" web-mode-syntax-table)
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (cond ((equal web-mode-content-type "vue")
+                     (my/web-vue-setup)))))
+  )
 ;; -WebModePac
 
 (use-package css-mode
