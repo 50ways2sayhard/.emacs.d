@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:32:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jul 13 11:38:44 2021 (+0800)
+;; Last-Updated: Thu Jul 15 14:23:19 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d fonts
@@ -63,9 +63,9 @@
       (set-frame-font font-setting nil t)
       (add-to-list 'default-frame-alist (cons 'font font-setting)))))
 
-(when (display-graphic-p)
+(defun my-apply-font ()
   ;; Set default font
-  (cl-loop for font in '("Fira Code" "Cascadia Code" "SF Mono" "Fira Code")
+  (cl-loop for font in '("SF Mono" "Cascadia Code" "Fira Code")
            when (font-installed-p font)
            return (set-face-attribute 'default nil
                                       :font font
@@ -81,8 +81,18 @@
   ;; Specify font for Chinese characters
   (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
            when (font-installed-p font)
-           return (set-fontset-font t '(#x4e00 . #x9fff) font))
-  )
+           return (set-fontset-font t '(#x4e00 . #x9fff) font)))
+
+(when (display-graphic-p)
+  (my-apply-font))
+
+;; 解决client模式下的字体问题
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (select-frame frame)
+            (if (window-system frame)
+                (my-apply-font))))
+
 
 ;; ATIPac
 ;; (use-package all-the-icons :if *sys/gui*)
