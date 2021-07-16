@@ -8,7 +8,6 @@
   (setq evil-want-keybinding nil)
   :preface
   (setq evil-want-visual-char-semi-exclusive t
-        evil-want-C-i-jump 'nil
         evil-ex-search-vim-style-regexp t
         evil-ex-substitute-global t
         evil-ex-visual-char-range t  ; column range for ex commands
@@ -24,7 +23,8 @@
         ;; to do highlighting them all.
         evil-ex-interactive-search-highlight 'selected-window
         evil-split-window-below t
-        evil-vsplit-window-right t)
+        evil-vsplit-window-right t
+        evil-undo-system 'undo-redo)
 
   :config
   (setcdr evil-insert-state-map nil)
