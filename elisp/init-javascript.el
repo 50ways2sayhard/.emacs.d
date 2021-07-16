@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 17
+;;     Update #: 20
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -61,9 +61,7 @@
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-highlight-unused-variables-mode))
   :hook ((js2-mode . (lambda()
-                       (flycheck-add-mode 'javascript-eslint 'js2-mode)
-                       ;; (flycheck-add-next-checker 'lsp '(t . javascript-eslint))
-                       )))
+                       (flycheck-add-mode 'javascript-eslint 'js2-mode))))
   :config
   (setq-default js2-use-font-lock-faces t
                 js2-mode-must-byte-compile nil
