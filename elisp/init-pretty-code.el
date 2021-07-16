@@ -253,7 +253,7 @@ Otherwise it builds `prettify-code-symbols-alist' according to
   :ellipsis      "..."
   :arrow_right   "->"
   :arrow_left    "<-"
-  :title         "#+title:"
+  :title         "#+TITLE:"
   :subtitle      "#+subtitle:"
   :author        "#+author:"
   :date          "#+date:"
