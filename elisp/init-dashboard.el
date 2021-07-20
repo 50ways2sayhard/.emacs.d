@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 19:10:53 2021 (+0800)
+;; Last-Updated: Tue Jul 20 09:53:02 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
@@ -73,6 +73,7 @@
                                                :height 1.1
                                                :v-adjust -0.05
                                                :face 'error))
+  (dashboard-page-separator "\n\f\n")
   :custom-face
   (dashboard-heading ((t (:inherit (font-lock-string-face bold)))))
   (dashboard-banner-logo-title ((t (:family "CaskaydiaCove Nerd Font" :height 200))))
