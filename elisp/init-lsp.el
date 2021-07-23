@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jul 15 19:15:35 2021 (+0800)
+;; Last-Updated: Sat Jul 24 00:18:27 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -56,7 +56,11 @@
                        (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t))
                        (if (derived-mode-p 'dart-mode)
-                           (add-hook 'before-save-hook #'lsp-format-buffer)))))
+                           (add-hook 'before-save-hook #'lsp-format-buffer))))
+         (flycheck-mode . (lambda ()
+                            (if (derived-mode-p 'web-mode 'js-mode)
+                                (flycheck-add-next-checker 'lsp 'javascript-eslint))))
+         )
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point))
   :init
@@ -71,7 +75,7 @@
         lsp-modeline-code-actions-enable nil
         lsp-modeline-workspace-status-enable nil
         lsp-semantic-tokens-enable nil
-        lsp-diagnostics-provider :none
+        lsp-diagnostics-provider :flycheck
         lsp-keep-workspace-alive nil
         lsp-signature-auto-activate t
         lsp-idle-delay 0.5
