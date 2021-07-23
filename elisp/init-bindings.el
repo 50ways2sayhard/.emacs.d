@@ -76,7 +76,7 @@
     "ci" '(lsp-organize-imports :wk "Organize import")
     "cr" '(lsp-rename :wk "LSP rename")
     "co" '(lsp-ui-imenu :wk "Outline")
-    "cJ" '(lsp-ivy-global-workspace-symbol :wk "Jump to Symbol in workspace")
+    "cJ" '(consult-lsp-symbols :wk "Jump to Symbol in workspace")
     "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
 
     "e" '(:wk "Error")

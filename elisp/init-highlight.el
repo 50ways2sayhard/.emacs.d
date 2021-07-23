@@ -148,8 +148,6 @@ FACE defaults to inheriting from default and highlight."
 (when (display-graphic-p)
   (use-package highlight-indent-guides
     :diminish
-    :functions (ivy-cleanup-string
-                my-ivy-cleanup-indentation)
     :commands highlight-indent-guides--highlighter-default
     :functions my-indent-guides-for-all-but-first-column
     ;; :hook (prog-mode . highlight-indent-guides-mode)
@@ -162,24 +160,7 @@ FACE defaults to inheriting from default and highlight."
       (unless (< level 1)
         (highlight-indent-guides--highlighter-default level responsive display)))
     (setq highlight-indent-guides-highlighter-function
-          #'my-indent-guides-for-all-but-first-column)
-
-    ;; Don't display indentations in `swiper'
-    ;; https://github.com/DarthFennec/highlight-indent-guides/issues/40
-    (with-eval-after-load 'ivy
-      (defun my-ivy-cleanup-indentation (str)
-        "Clean up indentation highlighting in ivy minibuffer."
-        (let ((pos 0)
-              (next 0)
-              (limit (length str))
-              (prop 'highlight-indent-guides-prop))
-          (while (and pos next)
-            (setq next (text-property-not-all pos limit prop nil str))
-            (when next
-              (setq pos (text-property-any next limit prop nil str))
-              (ignore-errors
-                (remove-text-properties next pos '(display nil face nil) str))))))
-      (advice-add #'ivy-cleanup-string :after #'my-ivy-cleanup-indentation))))
+          #'my-indent-guides-for-all-but-first-column)))
 
 ;; Colorize color names in buffers
 (use-package rainbow-mode
