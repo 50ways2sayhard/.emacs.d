@@ -59,7 +59,9 @@
   (with-eval-after-load 'flutter
     (local-leader-def
       :keymaps 'flutter-mode-map
-      "r" 'flutter-run-or-hot-reload)))
+      "r" 'flutter-run-or-hot-reload))
+  (with-eval-after-load 'lsp
+    (setq-local lsp-diagnostics-provider :flycheck)))
 
 (use-package lsp-dart
   :ensure t
