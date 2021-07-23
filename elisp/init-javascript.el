@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 20
+;;     Update #: 27
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,17 +54,15 @@
 (use-package js2-mode
   :ensure t
   :defines flycheck-javascript-eslint-executable
-  :mode (("\\.js\\'" . js2-mode)
-         ("\\.jsx\\'" . js2-jsx-mode))
-  :interpreter (("node" . js2-mode)
-                ("node" . js2-jsx-mode))
-  :hook ((js2-mode . js2-imenu-extras-mode)
+  :hook ((js-mode . js2-minor-mode)
+         (js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-highlight-unused-variables-mode))
   :hook ((js2-mode . (lambda()
                        (flycheck-add-mode 'javascript-eslint 'js2-mode))))
   :config
   (setq-default js2-use-font-lock-faces t
                 js2-mode-must-byte-compile nil
+                forward-sexp-function nil
                 ;; {{ comment indention in modern frontend development
                 javascript-indent-level 2
                 js-indent-level 2
@@ -90,17 +88,14 @@
       ;; npm -i -g eslint_d
       (setq flycheck-javascript-eslint-executable "eslint_d")))
 
-  (use-package js2-refactor
-    :diminish
-    :hook (js2-mode . js2-refactor-mode)
-    :config (js2r-add-keybindings-with-prefix "C-c C-m"))
   (use-package js-doc)
 
-  (local-leader-def
-    :keymaps 'js-mode-map
-    "t" 'js-doc-insert-tag
-    "f" 'js-doc-insert-function-doc
-    "F" 'js-doc-insert-file-doc)
+  (with-eval-after-load 'general
+    (local-leader-def
+      :keymaps 'js-mode-map
+      "t" 'js-doc-insert-tag
+      "f" 'js-doc-insert-function-doc
+      "F" 'js-doc-insert-file-doc))
   )
 
 (with-eval-after-load 'js-mode
@@ -116,30 +111,6 @@
   (define-key js2-mode-map (kbd "C-c C-o") nil)
   (define-key js2-mode-map (kbd "C-c C-w") nil))
 
-(defun my-js2-mode-setup()
-  "Set up javascript."
-  (unless (is-buffer-file-temp)
-    ;; if use node.js we need nice output
-    (js2-imenu-extras-mode)
-    (setq mode-name "JS2")
-    ;; counsel/ivy is more generic and powerful for refactoring
-    ;; js2-mode has its own syntax linter
-
-    ;; call js-doc commands through `counsel-M-x'!
-
-    ;; @see https://github.com/mooz/js2-mode/issues/350
-    (setq forward-sexp-function nil)))
-
-(add-hook 'js2-mode-hook 'my-js2-mode-setup)
-;; }}
-
-(use-package rjsx-mode
-  :ensure t
-  :mode ("\\.js\\'")
-  :config
-  (define-key rjsx-mode-map "<" nil)
-  (setq sgml-basic-offset 2)
-  (setq js-indent-level 2))
 
 
 ;; TypeScriptPac
