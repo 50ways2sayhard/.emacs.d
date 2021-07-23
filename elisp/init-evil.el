@@ -24,7 +24,10 @@
         evil-ex-interactive-search-highlight 'selected-window
         evil-split-window-below t
         evil-vsplit-window-right t
-        evil-undo-system 'undo-redo)
+        evil-undo-system 'undo-redo
+        evil-want-C-w-delete nil
+        evil-want-fine-undo t
+        )
 
   :config
   (setcdr evil-insert-state-map nil)
@@ -128,6 +131,7 @@
 
 
 (use-package evil-escape
+  :straight (:host github :repo "hlissner/evil-escape")
   :ensure t
   :hook (after-init . evil-escape-mode)
   :commands evil-escape
