@@ -153,6 +153,7 @@
 (require 'init-header)
 (require 'init-lsp)
 (require 'init-company)
+(require 'init-prog)
 
 ;; Programming
 (require 'init-cc)

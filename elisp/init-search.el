@@ -87,19 +87,6 @@
 
 (use-package google-this)
 
-(use-package devdocs
-  :config
-  (add-hook 'web-mode-hook (
-                            lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
-  (defun +devdocs-lookup-at-point()
-    (interactive)
-    (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
-  (defun +devdocs-search-at-point()
-    (interactive)
-    (devdocs-search (thing-at-point 'symbol)))
-  )
-
-
 (provide 'init-search)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-search.el ends here
