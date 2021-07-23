@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Jul 24 00:18:27 2021 (+0800)
+;; Last-Updated: Sat Jul 24 02:23:59 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -47,7 +47,6 @@
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
                           (lsp-deferred))))
-         (web-mode . (lambda() (setq-local lsp-enable-imenu t)))
          (lsp-mode . (lambda ()
                        ;; Integrate `which-key'
                        (lsp-enable-which-key-integration)
@@ -56,17 +55,12 @@
                        (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
                          (add-hook 'before-save-hook #'lsp-organize-imports t t))
                        (if (derived-mode-p 'dart-mode)
-                           (add-hook 'before-save-hook #'lsp-format-buffer))))
-         (flycheck-mode . (lambda ()
-                            (if (derived-mode-p 'web-mode 'js-mode)
-                                (flycheck-add-next-checker 'lsp 'javascript-eslint))))
-         )
+                           (add-hook 'before-save-hook #'lsp-format-buffer)))))
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point))
   :init
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
-  (add-hook 'rjsx-mode #'lsp-typescript-enable)
 
   (setq lsp-auto-guess-root nil        ; Detect project root
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
@@ -92,6 +86,7 @@
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
+        lsp-completion-provider :none
         )
   (setq lsp-typescript-implementations-code-lens-enabled t
         lsp-typescript-references-code-lens-enabled t
@@ -101,76 +96,23 @@
 
 (use-package lsp-ui
   :custom-face
-  (lsp-ui-sideline-code-action ((t (:inherit warning))))
-  :pretty-hydra
-  ((:title (pretty-hydra-title "LSP UI" 'faicon "rocket" :face 'all-the-icons-green)
-           :color amaranth :quit-key "q")
-   ("Doc"
-    (("d e" (progn
-              (lsp-ui-doc-enable (not lsp-ui-doc-mode))
-              (setq lsp-ui-doc-enable (not lsp-ui-doc-enable)))
-      "enable" :toggle lsp-ui-doc-mode)
-     ("d s" (setq lsp-ui-doc-include-signature (not lsp-ui-doc-include-signature))
-      "signature" :toggle lsp-ui-doc-include-signature)
-     ("d t" (setq lsp-ui-doc-position 'top)
-      "top" :toggle (eq lsp-ui-doc-position 'top))
-     ("d b" (setq lsp-ui-doc-position 'bottom)
-      "bottom" :toggle (eq lsp-ui-doc-position 'bottom))
-     ("d p" (setq lsp-ui-doc-position 'at-point)
-      "at point" :toggle (eq lsp-ui-doc-position 'at-point))
-     ("d f" (setq lsp-ui-doc-alignment 'frame)
-      "align frame" :toggle (eq lsp-ui-doc-alignment 'frame))
-     ("d w" (setq lsp-ui-doc-alignment 'window)
-      "align window" :toggle (eq lsp-ui-doc-alignment 'window)))
-    "Sideline"
-    (("s e" (progn
-              (lsp-ui-sideline-enable (not lsp-ui-sideline-mode))
-              (setq lsp-ui-sideline-enable (not lsp-ui-sideline-enable)))
-      "enable" :toggle lsp-ui-sideline-mode)
-     ("s h" (setq lsp-ui-sideline-show-hover (not lsp-ui-sideline-show-hover))
-      "hover" :toggle lsp-ui-sideline-show-hover)
-     ("s d" (setq lsp-ui-sideline-show-diagnostics (not lsp-ui-sideline-show-diagnostics))
-      "diagnostics" :toggle lsp-ui-sideline-show-diagnostics)
-     ("s s" (setq lsp-ui-sideline-show-symbol (not lsp-ui-sideline-show-symbol))
-      "symbol" :toggle lsp-ui-sideline-show-symbol)
-     ("s c" (setq lsp-ui-sideline-show-code-actions (not lsp-ui-sideline-show-code-actions))
-      "code actions" :toggle lsp-ui-sideline-show-code-actions)
-     ("s i" (setq lsp-ui-sideline-ignore-duplicate (not lsp-ui-sideline-ignore-duplicate))
-      "ignore duplicate" :toggle lsp-ui-sideline-ignore-duplicate))
-    "Action"
-    (("h" backward-char "←")
-     ("j" next-line "↓")
-     ("k" previous-line "↑")
-     ("l" forward-char "→")
-     ("C-a" mwim-beginning-of-code-or-line nil)
-     ("C-e" mwim-end-of-code-or-line nil)
-     ("C-b" backward-char nil)
-     ("C-n" next-line nil)
-     ("C-p" previous-line nil)
-     ("C-f" forward-char nil)
-     ("M-b" backward-word nil)
-     ("M-f" forward-word nil)
-     ("c" lsp-ui-sideline-apply-code-actions "apply code actions"))))
-  :bind (("C-c u" . lsp-ui-imenu)
-         :map lsp-ui-mode-map
-         ("C-M-l" . lsp-ui-hydra/body)
-         ("M-RET" . lsp-ui-sideline-apply-code-actions))
+  (lsp-ui-doc-background ((t (:background nil))))
+  (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
   :hook (lsp-mode . lsp-ui-mode)
-  :init (setq lsp-ui-sideline-show-diagnostics nil
-              lsp-ui-sideline-show-code-actions nil
-              lsp-ui-sideline-ignore-duplicate t
-              lsp-ui-doc-position 'at-point
-              lsp-ui-doc-border (face-foreground 'font-lock-comment-face)
-              lsp-ui-imenu-colors `(,(face-foreground 'font-lock-keyword-face)
-                                    ,(face-foreground 'font-lock-string-face)
-                                    ,(face-foreground 'font-lock-constant-face)
-                                    ,(face-foreground 'font-lock-variable-name-face)))
+  :custom
+  (lsp-ui-doc-header nil)
+  (lsp-ui-doc-include-signature nil)
+  (lsp-ui-doc-enable nil)
+  (lsp-ui-doc-border (face-foreground 'default))
+  (lsp-ui-sideline-enable nil)
+  (lsp-ui-sideline-ignore-duplicate t)
+  (lsp-ui-sideline-show-code-actions nil)
+  (lsp-ui-sideline-show-diagnostics nil)
+  (lsp-ui-doc-position 'at-point)
   :config
   (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
-  (add-hook 'after-load-theme-hook (lambda ()
-                                     (setq lsp-ui-doc-border (face-foreground 'font-lock-comment-face))
-                                     (set-face-background 'lsp-ui-doc-background (face-background 'tooltip))))
-  )
+  (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
+    (setq mode-line-format nil)))
 
 ;; DAPPac
 (use-package dap-mode
