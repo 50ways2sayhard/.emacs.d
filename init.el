@@ -170,7 +170,6 @@
 (require 'init-bindings)
 (require 'init-org)
 (require 'init-restart-emacs)
-(require 'init-shackle)
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
