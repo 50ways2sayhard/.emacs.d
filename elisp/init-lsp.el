@@ -86,11 +86,14 @@
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
-        lsp-completion-provider :none
-        )
+        lsp-completion-provider :none)
   (setq lsp-typescript-implementations-code-lens-enabled t
         lsp-typescript-references-code-lens-enabled t
-        lsp-typescript-suggest-complete-function-calls t)
+        lsp-typescript-suggest-complete-function-calls t
+
+        lsp-eslint-auto-fix-on-save t
+        lsp-eslint-library-choices-file (concat user-emacs-directory ".local/cache/lsp-eslint-choices")
+        )
   (setq gc-cons-threshold 100000000)
   )
 
