@@ -78,25 +78,12 @@
                 js2-enter-indents-newline nil
                 js2-bounce-indent-p t)
 
-  (with-eval-after-load 'flycheck
-    (when (or (executable-find "eslint_d")
-              (executable-find "eslint")
-              (executable-find "jshint"))
-      (setq js2-mode-show-strict-warnings nil))
-    (when (executable-find "eslint_d")
-      ;; https://github.com/mantoni/eslint_d.js
-      ;; npm -i -g eslint_d
-      (setq flycheck-javascript-eslint-executable "eslint_d")))
-
   (use-package js-doc)
 
   (with-eval-after-load 'general
     (local-leader-def
       :keymaps 'js-mode-map
-      "t" 'js-doc-insert-tag
-      "f" 'js-doc-insert-function-doc
-      "F" 'js-doc-insert-file-doc))
-  )
+      "f" 'lsp-eslint-fix-all)))
 
 (with-eval-after-load 'js-mode
   ;; '$' is part of variable name like '$item'
