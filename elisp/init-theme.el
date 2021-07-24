@@ -87,6 +87,11 @@
 (use-package minions
   :hook (doom-modeline-mode . minions-mode))
 
+(use-package poke-line
+  :ensure t
+  :config
+  (poke-line-global-mode 1)
+  (setq-default poke-line-pokemon "gengar"))
 
 (provide 'init-theme)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
