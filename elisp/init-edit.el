@@ -105,6 +105,9 @@
 (add-hook 'prog-mode-hook 'nuke_trailing)
 (add-hook 'text-mode-hook 'nuke_trailing)
 
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
