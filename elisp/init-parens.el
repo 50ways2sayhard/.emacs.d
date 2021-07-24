@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:17:13 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jun  2 12:23:37 2021 (+0800)
+;; Last-Updated: Sat Jul 24 11:28:26 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d parenthesis smartparens delete-block
@@ -53,7 +53,9 @@
                (setq-local electric-pair-inhibit-predicate
                            `(lambda (c)
                               (if (char-equal c ?<) t
-                                (,electric-pair-inhibit-predicate c)))))))
+                                (,electric-pair-inhibit-predicate c))))))
+  (add-to-list 'electric-pair-pairs '(?< . ?>))
+  (add-to-list 'electric-pair-pairs '(?` . ?`)))
 
 (use-package awesome-pair
   :straight (:host github :repo "manateelazycat/awesome-pair")
