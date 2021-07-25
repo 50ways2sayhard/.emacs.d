@@ -77,6 +77,13 @@
     "cr" '(lsp-rename :wk "LSP rename")
     "co" '(lsp-ui-imenu :wk "Outline")
     "cJ" '(consult-lsp-symbols :wk "Jump to Symbol in workspace")
+    "cp" '(citre-peek :wk "Citre peek")
+    "ca" '(citre-ace-peek :wk "Citre ace peek")
+    "cj" '(citre-jump+ :wk "Citre jump")
+    "ck" '(citre-jump-back :wk "Citre jump back")
+    "cu" '(citre-update-this-tags-file :wk "Citre update this tag")
+    "cU" '(citre-update-tags-file :wk "Citre update tag")
+
     "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
 
     "e" '(:wk "Error")

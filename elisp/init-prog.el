@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 1
+;;     Update #: 19
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -61,14 +61,12 @@
 
 
 (use-package citre
-  :disabled
-  :straight (:type git :host github :repo "universal-ctags/citre")
-  :bind (("C-x c j" . citre-jump+)
-         ("C-x c k" . citre-jump-back)
-         ("C-x c p" . citre-peek)
-         ("C-x c a" . citre-ace-peek))
+  ;; :disabled
   :hook (prog-mode . citre-auto-enable-citre-mode)
+  :custom
+  (citre-default-create-tags-file-location 'global-cache)
   :config
+  (require 'citre-config)
   (defun citre-jump+ ()
     (interactive)
     (condition-case _
@@ -77,7 +75,45 @@
 
   (with-eval-after-load 'projectile
     (setq citre-project-root-function #'projectile-project-root))
-  )
+  ;; Integrate with `lsp-mode' and `eglot'
+  (define-advice xref--create-fetcher (:around (fn &rest args) fallback)
+    (let ((fetcher (apply fn args))
+          (citre-fetcher
+           (let ((xref-backend-functions '(citre-xref-backend t)))
+             (ignore xref-backend-functions)
+             (apply fn args))))
+      (lambda ()
+        (or (with-demoted-errors "%s, fallback to citre"
+              (funcall fetcher))
+            (funcall citre-fetcher)))))
+
+  (defun lsp-citre-capf-function ()
+    "A capf backend that tries lsp first, then Citre."
+    (let ((lsp-result
+           ('lsp-mode
+            (and (fboundp #'lsp-completion-at-point)
+                 (lsp-completion-at-point))))
+          (if (and lsp-result
+                   (try-completion
+                    (buffer-substring (nth 0 lsp-result)
+                                      (nth 1 lsp-result))
+                    (nth 2 lsp-result)))
+              lsp-result
+            (citre-completion-at-point))))
+
+    (defun enable-lsp-citre-capf-backend ()
+      "Enable the lsp + Citre capf backend in current buffer."
+      (add-hook 'completion-at-point-functions #'lsp-citre-capf-function nil t))
+
+    (add-hook 'citre-mode-hook #'enable-lsp-citre-capf-backend))
+
+  (defun my--push-point-to-xref-marker-stack (&rest r)
+    (xref-push-marker-stack (point-marker)))
+  (dolist (func '(find-function
+                  consult-imenu
+                  projectile-grep
+                  citre-jump))
+    (advice-add func :before 'my--push-point-to-xref-marker-stack)))
 
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
