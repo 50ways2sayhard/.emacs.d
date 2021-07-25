@@ -160,6 +160,9 @@
     "wl" '(evil-window-right :wk "Focus window right")
 
     "x" '(org-capture :wk "Org capture")
+
+
+    "=" '(er/expand-region :wk "Expand Region")
     )
 
   ;; Python
