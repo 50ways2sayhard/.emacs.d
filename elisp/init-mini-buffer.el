@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 355
+;;     Update #: 359
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -288,6 +288,10 @@ When the number of characters in a buffer exceeds this threshold,
                                     (symbol-name s))))
     (affe-grep dir initial))
   (global-set-key (kbd "M-?") '+affe-at-point))
+
+(use-package all-the-icons-completion
+  :straight (:host github :repo "iyefrat/all-the-icons-completion")
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup))
 
 (provide 'init-mini-buffer)
 
