@@ -226,6 +226,9 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package consult-lsp
   :after lsp)
 
+(use-package consult-flycheck
+  :after flycheck)
+
 (use-package orderless
   :demand t
   :config

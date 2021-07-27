@@ -89,6 +89,7 @@
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
     "el" '(+flycheck-list-errors :wk "List errors")
+    "ef" '(consult-flycheck :wk "Find error")
     "en" '(flycheck-next-error :wk "Next error")
     "ep" '(flycheck-previous-error :wk "Previous error")
     "ee" '(flycheck-explain-error-at-point :wk "Explain error at point")
