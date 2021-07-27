@@ -55,7 +55,7 @@
       (goto-char (line-beginning-position))
       (org-archive-subtree))))
 (use-package org
-  :ensure nil
+  :straight nil
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h))
   :custom

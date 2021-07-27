@@ -44,7 +44,7 @@
 
 ;; AUCTeXPac
 (use-package tex
-  :ensure auctex
+  :straight auctex
   :defer t
   :custom
   (TeX-auto-save t)

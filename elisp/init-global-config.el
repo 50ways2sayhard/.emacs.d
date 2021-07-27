@@ -108,7 +108,6 @@ The original function deletes trailing whitespace of the current line."
 
 ;; History
 (use-package recentf
-  :ensure nil
   :hook (after-init . recentf-mode)
   :custom
   (recentf-auto-cleanup "05:00am")

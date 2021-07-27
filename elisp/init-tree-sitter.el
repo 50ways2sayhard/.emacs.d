@@ -48,11 +48,11 @@
 
 
 (use-package tree-sitter
-  :config
-  (use-package tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  :hook ((python-mode js-mode) . tree-sitter-hl-mode)
   )
+
+(use-package tree-sitter-langs
+  :after tree-sitter)
 
 (provide 'init-tree-sitter)
 

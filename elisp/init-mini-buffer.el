@@ -53,6 +53,45 @@
 (setq minibuffer-prompt-properties;minibuffer prompt 只读，且不允许光标进入其中
       '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
 
+
+(defun selectrum-fido-backward-updir ()
+  "Delete char before or go up directory, like `ido-mode'."
+  (interactive)
+  (if (and (eq (char-before) ?/)
+           (eq (selectrum--get-meta 'category) 'file))
+      (save-excursion
+        (goto-char (1- (point)))
+        (when (search-backward "/" (point-min) t)
+          (delete-region (1+ (point)) (point-max))))
+    (call-interactively 'backward-delete-char)))
+
+(defun selectrum-fido-delete-char ()
+  "Delete char or maybe call `dired', like `ido-mode'."
+  (interactive)
+  (let ((end (point-max)))
+    (if (or (< (point) end) (not (eq (selectrum--get-meta 'category) 'file)))
+        (call-interactively 'delete-char)
+      (dired (file-name-directory (minibuffer-contents)))
+      (exit-minibuffer))))
+
+(defun selectrum-fido-enter-dir ()
+  (interactive)
+  (let ((candidate (selectrum-get-current-candidate)))
+    (if (and (eq (selectrum--get-meta 'category) 'file)
+             (file-directory-p candidate)
+             (not (string-equal candidate "~/")))
+        (selectrum-insert-current-candidate)
+      (insert "/"))))
+
+(defun selectrum-fido-do-backward-updir ()
+  (interactive)
+  (if (and (eq (char-before) ?/)
+           (eq (selectrum--get-meta 'category) 'file))
+      (save-excursion
+        (goto-char (1- (point)))
+        (when (search-backward "/" (point-min) t)
+          (delete-region (1+ (point)) (point-max))))))
+
 (use-package selectrum
   :config
   (global-set-key (kbd "C-c r") #'selectrum-repeat)
@@ -75,44 +114,6 @@
                   (list (match-beginning 0)
                         (match-end 0)
                         #'completion-file-name-table)))) 'append)
-  (defun selectrum-fido-backward-updir ()
-    "Delete char before or go up directory, like `ido-mode'."
-    (interactive)
-    (if (and (eq (char-before) ?/)
-             (eq (selectrum--get-meta 'category) 'file))
-        (save-excursion
-          (goto-char (1- (point)))
-          (when (search-backward "/" (point-min) t)
-            (delete-region (1+ (point)) (point-max))))
-      (call-interactively 'backward-delete-char)))
-
-  (defun selectrum-fido-delete-char ()
-    "Delete char or maybe call `dired', like `ido-mode'."
-    (interactive)
-    (let ((end (point-max)))
-      (if (or (< (point) end) (not (eq (selectrum--get-meta 'category) 'file)))
-          (call-interactively 'delete-char)
-        (dired (file-name-directory (minibuffer-contents)))
-        (exit-minibuffer))))
-
-  (defun selectrum-fido-enter-dir ()
-    (interactive)
-    (let ((candidate (selectrum-get-current-candidate)))
-      (if (and (eq (selectrum--get-meta 'category) 'file)
-               (file-directory-p candidate)
-               (not (string-equal candidate "~/")))
-          (selectrum-insert-current-candidate)
-        (insert "/"))))
-
-  (defun selectrum-fido-do-backward-updir ()
-    (interactive)
-    (if (and (eq (char-before) ?/)
-             (eq (selectrum--get-meta 'category) 'file))
-        (save-excursion
-          (goto-char (1- (point)))
-          (when (search-backward "/" (point-min) t)
-            (delete-region (1+ (point)) (point-max))))))
-
 
   (define-key selectrum-minibuffer-map (kbd "DEL") 'selectrum-fido-backward-updir)
   (define-key selectrum-minibuffer-map (kbd "/") 'selectrum-fido-enter-dir)
@@ -122,6 +123,7 @@
 
 (use-package consult
   :after projectile
+  :straight (:host github :repo "minad/consult")
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -135,6 +137,7 @@
          ("M-s e" . consult-isearch))
   :init
   (use-package consult-projectile
+    :after consult
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
   :config
   (autoload 'projectile-project-root "projectile")
@@ -144,6 +147,16 @@
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-command "fd --color=never --full-path ARG OPTS")
+
+  (autoload 'org-buffer-list "org")
+  (defvar org-buffer-source
+    `(:name     "Org"
+                :narrow   ?o
+                :category buffer
+                :state    ,#'consult--buffer-state
+                :hidden   t
+                :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
+  (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
 
   (defun my-consult-set-evil-search-pattern (&optional condition)
     (let ((re
@@ -278,6 +291,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package affe
   :after orderless
+  :defer t
   :config
   ;; Configure Orderless
   (setq affe-regexp-function #'orderless-pattern-compiler

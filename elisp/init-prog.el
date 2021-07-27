@@ -48,6 +48,7 @@
 
 
 (use-package devdocs
+  :commands (devdocs-lookup-at-point devdocs-search-at-point)
   :config
   (add-hook 'web-mode-hook (
                             lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
@@ -114,6 +115,9 @@
                   projectile-grep
                   citre-jump))
     (advice-add func :before 'my--push-point-to-xref-marker-stack)))
+
+(use-package imenu-list
+  :defer t)
 
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -41,8 +41,6 @@
   (require 'init-global-config))
 
 (use-package elec-pair
-  :ensure nil
-  :ensure nil
   :hook (after-init . electric-pair-mode)
   :hook (after-init . electric-pair-mode)
   :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)

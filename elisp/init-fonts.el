@@ -65,33 +65,35 @@
 
 (defun my-apply-font ()
   ;; Set default font
-  (cl-loop for font in '("SF Mono" "Cascadia Code" "Fira Code")
-           when (font-installed-p font)
-           return (set-face-attribute 'default nil
-                                      :font font
-                                      :height (cond (*sys/mac* 160)
-                                                    (*sys/win32* 110)
-                                                    (t 130))))
+  ;; (cl-loop for font in '("SF Mono" "Cascadia Code" "Fira Code")
+  ;;          when (font-installed-p font)
+  ;;          return (set-face-attribute 'default nil
+  ;;                                     :font font
+  ;;                                     :height (cond (*sys/mac* 160)
+  ;;                                                   (*sys/win32* 110)
+  ;;                                                   (t 130))))
+  (set-face-attribute 'default nil
+                      :font "SF Mono"
+                      :height (cond (*sys/mac* 150)
+                                    (t 140)))
+
 
   ;; Specify font for all unicode characters
-  (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
-           when (font-installed-p font)
-           return(set-fontset-font t 'unicode font nil 'prepend))
+  ;; (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
+  ;;          when (font-installed-p font)
+  ;;          return(set-fontset-font t 'unicode font nil 'prepend))
+  (set-fontset-font t 'unicode "Apple Color Emoji" nil 'prepend)
 
   ;; Specify font for Chinese characters
-  (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
-           when (font-installed-p font)
-           return (set-fontset-font t '(#x4e00 . #x9fff) font)))
+  ;; (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
+  ;;          when (font-installed-p font)
+  ;;          return (set-fontset-font t '(#x4e00 . #x9fff) font)))
+  (set-fontset-font t '(#x4e00 . #x9fff) "Sarasa Mono SC Nerd")
 
-(when (display-graphic-p)
-  (my-apply-font))
+  (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend)
+  )
 
-;; 解决client模式下的字体问题
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (select-frame frame)
-            (if (window-system frame)
-                (my-apply-font))))
+(add-hook 'after-init-hook #'my-apply-font)
 
 
 ;; ATIPac

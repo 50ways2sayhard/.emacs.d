@@ -42,6 +42,7 @@
 
 ;; ProjPac
 (use-package projectile
+  :defer 1
   :bind
   ("C-c p" . projectile-command-map)
   ("C-z p" . projectile-add-known-project)

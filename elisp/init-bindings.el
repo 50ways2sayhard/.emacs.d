@@ -4,7 +4,7 @@
   )
 
 (use-package general
-  :after evil
+  ;; :after evil
   :ensure
   :config
   (general-create-definer leader-def

@@ -51,64 +51,39 @@
         ))
 ;; -MelpaPackages
 
-;; ConfigurePackageManager
-(unless (bound-and-true-p package--initialized)
-  (setq package-enable-at-startup nil)          ; To prevent initializing twice
-  (package-initialize))
+(setq straight--process-log nil
+      straight-vc-git-default-clone-depth 1
+      straight-use-package-by-default t
+      ;; straight-check-for-modifications '(check-on-save find-when-checking)
+      straight-check-for-modifications nil
+      )
 
-;; set use-package-verbose to t for interpreted .emacs,
-;; and to nil for byte-compiled .emacs.elc.
-(eval-and-compile
-  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
-;; -ConfigurePackageManager
+(unless (featurep 'straight)
+  (defvar bootstrap-version)
 
-;; ConfigureUsePackage
-;; Install use-package if not installed
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+  (let ((bootstrap-file (concat user-emacs-directory
+                                "straight/repos/straight.el/bootstrap.el"))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage)))
+;; -Straight
 
-(eval-and-compile
-  (setq use-package-always-ensure t)
-  (setq use-package-expand-minimally t)
-  (setq use-package-compute-statistics t)
-  (setq use-package-enable-imenu-support t))
+(setq use-package-enable-imenu-support t
+      use-package-verbose (not (bound-and-true-p byte-compile-current-file))
+      use-package-expand-minimally t
+      use-package-compute-statistics t)
+(straight-use-package 'use-package)
 
-(eval-when-compile
-  (require 'use-package)
-  (require 'bind-key))
-;; -ConfigureUsePackage
-
-;; AutoPackageUpdate
-(use-package auto-package-update
-  :if (not (daemonp))
-  :custom
-  (auto-package-update-interval 7) ;; in days
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
-;; -AutoPackageUpdate
 
 ;; DimPac
 (use-package diminish)
 ;; -DimPac
-
-;; Straight
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-;; -Straight
 
 (provide 'init-package)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -39,7 +39,8 @@
 
 ;; DiredPackage
 (use-package dired
-  :ensure nil
+  :straight nil
+  :defer t
   :bind
   (("C-x C-j" . dired-jump)
    ("C-x j" . dired-jump-other-window))
@@ -82,8 +83,10 @@
   "Instead of `save-buffer', save all opened buffers by calling `save-some-buffers' with ARG t."
   (interactive)
   (save-some-buffers t))
-(global-set-key (kbd "C-x C-s") nil)
-(global-set-key (kbd "C-x C-s") #'save-all-buffers)
+(with-eval-after-load 'general
+  (general-def "C-x C-s" nil)
+  (general-def "C-x C-s" 'save-all-buffers)
+  )
 ;; -SaveAllBuffers
 
 (provide 'init-dired)
