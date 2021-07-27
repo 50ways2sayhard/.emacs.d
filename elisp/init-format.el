@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:27:40 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Jul 11 18:05:17 2021 (+0800)
+;; Last-Updated: Tue Jul 27 21:41:17 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d format-all
@@ -39,6 +39,7 @@
 
 ;; FormatAllPac
 (use-package format-all
+  :straight (:host github :repo "50ways2sayhard/emacs-format-all-the-code")
   :hook ((prog-mode) . (lambda ()
                          (unless (derived-mode-p 'web-mode 'dart-mode 'js-mode)
                            (format-all-ensure-formatter)
@@ -46,6 +47,7 @@
                            )))
   :config
   (add-hook 'format-all-after-format-functions (lambda (a b) (call-interactively 'recenter)))
+  (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
   )
 ;; -FormatAllPac
 
