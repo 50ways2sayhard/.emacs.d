@@ -116,6 +116,7 @@
 (require 'init-discover-my-major)
 (require 'init-dired)
 (require 'init-buffer)
+(require 'init-bindings)
 
 ;; User Interface Enhancements
 (require 'init-ui-config)
@@ -155,7 +156,6 @@
 
 
 ;; Miscellaneous
-(require 'init-bindings)
 (require 'init-org)
 (require 'init-restart-emacs)
 (require 'init-shackle)
