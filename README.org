@@ -1,0 +1,28 @@
+* Emacs for own use
+
++ Fast. Less than 1s to start up.
++ =lsp= and =company= for completion.
++ =selectrum= and =consult= for searching.
++ =tree-sitter= for symbol highlighting.
++ Optimized for =Vue= developing.
++ Tested with Emacs@28 with native-comp on macOS/WSL.
+
+** Installation
+*** Installing Emacs
+Follow [[https://github.com/jimeh/build-emacs-for-macos][build-emacs-for-macos]] to compile Emacs.
+#+BEGIN_SRC bash
+./build-emacs-for-macos --no-xwidgets --native-full-aot
+#+END_SRC
+*** Installing this configuration
+#+BEGIN_SRC bash
+cd ~
+mv .emacs.d .emacs.d.bak
+git clone --recurse-submodules -j8 https://github.com/50ways2sayhard/.emacs.d.git
+cd .emacs.d
+#+END_SRC
+
+** Reference
+- [[https://github.com/seagle0128/.emacs.d][seagle0128/.emacs.d]]
+- [[https://github.com/MatthewZMD/.emacs.d][MatthewZMD/.emacs.d]]
+- [[https://github.com/theFool32/.emacs.d][theFool32/.emacs.d]]
+- [[https://github.com/hlissner/doom-emacs][hlissner/doom-emacs]]
