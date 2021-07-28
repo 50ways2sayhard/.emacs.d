@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jun  3 23:49:11 2021 (+0800)
+;; Last-Updated: Wed Jul 28 11:53:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -42,7 +42,7 @@
 
 (defvar +magit-open-windows-in-direction 'right
   "What direction to open new windows from the status buffer.
-For example, diffs and log buffers. Accepts `left', `right', `up', and `down'.")
+  For example, diffs and log buffers. Accepts `left', `right', `up', and `down'.")
 (defun +magit-display-buffer-fn (buffer)
   "Same as `magit-display-buffer-traditional', except...
 - If opened from a commit window, it will open below it.
@@ -205,7 +205,7 @@ window that already exists in that direction. It will split otherwise."
 (use-package magit-todos)
 
 (use-package smerge-mode
-  :ensure nil
+  :straight nil
   :diminish
   :pretty-hydra
   ((:title (pretty-hydra-title "Smerge" 'octicon "diff")
@@ -244,8 +244,8 @@ window that already exists in that direction. It will split otherwise."
                             (smerge-mode 1)))))
          (magit-diff-visit-file . (lambda ()
                                     (when smerge-mode
-                                      (hydra-smerge/body))))))
-
+                                      (hydra-smerge/body)))))
+  )
 
 (provide 'init-magit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

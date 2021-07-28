@@ -61,6 +61,7 @@
     "/" '(affe-grep :wk "Search in project")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(noct-consult-ripgrep-or-line :wk "Swiper")
+    "`" '(selectrum-repeat :wk "Repeat last search")
 
     "b" '(:wk "Buffer")
     "b[" '(previous-buffer :wk "Previous buffer")
@@ -220,6 +221,17 @@
     "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
     "mdt" '(js-doc-insert-tag :wk "Insert tag")
     )
+
+  (local-leader-def
+    :states 'normal
+    :keymap 'smerge-mode
+    "n" '(smerge-next :wk "Next conflict")
+    "p" '(smerge-prev :wk "Previous conflict")
+    "RET" '(smerge-keep-current :wk "Accept current")
+    "l" '(smerge-keep-lower :wk "Keep lower")
+    "u" '(smerge-keep-upper :wk "Keep upper")
+    "m" '(smerge-keep-mine :wk "Keep mine")
+    "A" '(smerge-keep-all :wk "Keep all"))
   )
 (provide 'init-bindings)
 
