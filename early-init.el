@@ -39,7 +39,9 @@
 ;;; Code:
 
 ;; DeferGC
-(setq gc-cons-threshold 100000000)
+;; (setq gc-cons-threshold 100000000)
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.5)
 ;; -DeferGC
 
 ;; UnsetPES

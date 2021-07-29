@@ -174,10 +174,24 @@ The original function deletes trailing whitespace of the current line."
 (add-to-list 'auto-mode-alist '("\\.args\\'" . text-mode))
 ;; -SmallConfigs
 
+(unless *sys/mac*
+  (setq command-line-ns-option-alist nil))
+(unless *sys/linux*
+  (setq command-line-x-option-alist nil))
+;; Increase how much is read from processes in a single chunk (default is 4kb)
+(setq read-process-output-max #x10000)  ; 64kb
+
+;; Don't ping things that look like domain names.
+(setq ffap-machine-p-known 'reject)
+
 (use-package gcmh
-  :config
-  (gcmh-mode)
-  (setq gcmh-high-cons-threshold (* 64 1024 1024)))
+  :diminish
+  :init
+  ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
+  (setq gcmh-idle-delay 5
+        gcmh-high-cons-threshold #x1000000)
+  (gcmh-mode 1)
+  )
 
 (provide 'init-global-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

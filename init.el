@@ -39,38 +39,15 @@
 
 (load (concat user-emacs-directory "early-init") nil t)
 
-;; ;; BetterGC
-;; (defvar better-gc-cons-threshold 67108864 ; 64mb
-;;   "The default value to use for `gc-cons-threshold'.
-
-;; If you experience freezing, decrease this.  If you experience stuttering, increase this.")
-
-;; (add-hook 'emacs-startup-hook
-;;           (lambda ()
-;;             (setq gc-cons-threshold better-gc-cons-threshold)
-;;             (setq file-name-handler-alist file-name-handler-alist-original)
-;;             (makunbound 'file-name-handler-alist-original)))
-;; ;; -BetterGC
-
-;; ;; AutoGC
-;; (add-hook 'emacs-startup-hook
-;;           (lambda ()
-;;             (if (boundp 'after-focus-change-function)
-;;                 (add-function :after after-focus-change-function
-;;                               (lambda ()
-;;                                 (unless (frame-focus-state)
-;;                                   (garbage-collect))))
-;;               (add-hook 'after-focus-change-function 'garbage-collect))
-;;             (defun gc-minibuffer-setup-hook ()
-;;               (setq gc-cons-threshold (* better-gc-cons-threshold 2)))
-
-;;             (defun gc-minibuffer-exit-hook ()
-;;               (garbage-collect)
-;;               (setq gc-cons-threshold better-gc-cons-threshold))
-
-;;             (add-hook 'minibuffer-setup-hook #'gc-minibuffer-setup-hook)
-;;             (add-hook 'minibuffer-exit-hook #'gc-minibuffer-exit-hook)))
-;; ;; -AutoGC
+;; Speed up startup
+(setq auto-mode-case-fold nil)
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.5)
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            "Recover GC values after startup."
+            (setq gc-cons-threshold 800000
+                  gc-cons-percentage 0.1)))
 
 ;; LoadPath
 (defun update-to-load-path (folder)
