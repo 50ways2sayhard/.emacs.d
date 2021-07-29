@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Jul 24 02:23:59 2021 (+0800)
+;; Last-Updated: Thu Jul 29 09:45:59 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -65,15 +65,11 @@
   (setq lsp-auto-guess-root nil        ; Detect project root
         lsp-keep-workspace-alive nil ; Auto-kill LSP server
         lsp-enable-indentation nil
-        lsp-signature-auto-activate nil
-        lsp-modeline-code-actions-enable nil
-        lsp-modeline-workspace-status-enable nil
         lsp-semantic-tokens-enable nil
         lsp-diagnostics-provider :flycheck
-        lsp-keep-workspace-alive nil
         lsp-signature-auto-activate t
         lsp-idle-delay 0.5
-        lsp-enable-imenu nil
+        lsp-enable-imenu t
         lsp-enable-on-type-formatting nil
         lsp-enable-snippet nil
         lsp-enable-text-document-color nil
@@ -82,10 +78,12 @@
         lsp-enable-folding nil
         lsp-enable-file-watchers nil
         lsp-keymap-prefix "C-c l"
-        lsp-eldoc-render-all nil
+        lsp-eldoc-enable-hover t
+        lsp-eldoc-render-all t
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
+        lsp-modeline-workspace-status-enable nil
         lsp-completion-provider :none)
   (setq lsp-typescript-implementations-code-lens-enabled t
         lsp-typescript-references-code-lens-enabled t
