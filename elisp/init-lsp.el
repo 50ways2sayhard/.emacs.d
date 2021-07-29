@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jul 29 09:45:59 2021 (+0800)
+;; Last-Updated: Thu Jul 29 10:04:27 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -79,7 +79,7 @@
         lsp-enable-file-watchers nil
         lsp-keymap-prefix "C-c l"
         lsp-eldoc-enable-hover t
-        lsp-eldoc-render-all t
+        lsp-eldoc-render-all nil
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
@@ -102,8 +102,8 @@
   :hook (lsp-mode . lsp-ui-mode)
   :custom
   (lsp-ui-doc-header nil)
-  (lsp-ui-doc-include-signature nil)
-  (lsp-ui-doc-enable nil)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-enable t)
   (lsp-ui-doc-border (face-foreground 'default))
   (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-ignore-duplicate t)
