@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 24
+;;     Update #: 27
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -114,8 +114,8 @@ Pretty symbols can be unset for emacs-lisp-mode with:
     :or            "∨"
     :for           "∀"
     :some          "∃"
-    :return        "⟼"
-    :yield         "⟻"
+    :return        "↦"
+    :yield         "↤"
     ;; Other
     :<=  8804
     :>=  8805

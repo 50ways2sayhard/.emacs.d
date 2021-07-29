@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 5
+;;     Update #: 7
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -49,6 +49,8 @@
 
 (use-package tree-sitter
   :hook ((python-mode js-mode) . tree-sitter-hl-mode)
+  :custom-face
+  (tree-sitter-hl-face:property '((default :inherit font-lock-constant-face :slant nil)))
   )
 
 (use-package tree-sitter-langs
