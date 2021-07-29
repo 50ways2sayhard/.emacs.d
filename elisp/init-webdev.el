@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Jul 24 11:01:49 2021 (+0800)
+;; Last-Updated: Thu Jul 29 09:21:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -82,6 +82,13 @@
             (lambda ()
               (cond ((equal web-mode-content-type "vue")
                      (my/web-vue-setup)))))
+
+  (local-leader-def
+    :keymaps 'web-mode-map
+    "d" '(web-mode-element-vanish :wk "Remove current element")
+    "D" '(web-mode-element-kill :wk "Remove region")
+    "r" '(instant-rename-tag :wk "Rename current tag")
+    )
   )
 ;; -WebModePac
 
@@ -103,6 +110,7 @@
 ;; InstantRenameTagPac
 (use-package instant-rename-tag
   :straight (:host github :repo "manateelazycat/instant-rename-tag" :depth 1)
+  :commands instant-rename-tag
   :bind ("C-z <" . instant-rename-tag))
 ;; -InstantRenameTagPac
 
