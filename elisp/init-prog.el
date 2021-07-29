@@ -62,7 +62,7 @@
 
 
 (use-package citre
-  ;; :disabled
+  :straight (:host github :repo "universal-ctags/citre")
   :hook (prog-mode . citre-auto-enable-citre-mode)
   :custom
   (citre-default-create-tags-file-location 'global-cache)

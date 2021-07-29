@@ -227,6 +227,7 @@ When the number of characters in a buffer exceeds this threshold,
   :after lsp)
 
 (use-package consult-flycheck
+  :straight (:host github :repo "minad/consult-flycheck")
   :after flycheck)
 
 (use-package orderless
@@ -293,6 +294,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 
 (use-package affe
+  :straight (:host github :repo "minad/affe")
   :after orderless
   :defer t
   :config
