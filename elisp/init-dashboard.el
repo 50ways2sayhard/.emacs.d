@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jul 20 09:53:02 2021 (+0800)
+;; Last-Updated: Thu Jul 29 11:28:32 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
@@ -42,13 +42,6 @@
   :demand
   :diminish (dashboard-mode page-break-lines-mode)
   :functions (all-the-icons-faicon all-the-icons-material winner-undo widget-forward)
-  :bind
-  (("C-z d" . open-dashboard)
-   :map dashboard-mode-map
-   (("n" . dashboard-next-line)
-    ("p" . dashboard-previous-line)
-    ("N" . dashboard-next-section)
-    ("F" . dashboard-previous-section)))
   :hook (dashboard-mode . (lambda () (setq-local frame-title-format "")))
   :custom
   (dashboard-banner-logo-title "EMACS - Enjoy Programming & Writing")
