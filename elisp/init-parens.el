@@ -52,7 +52,6 @@
                            `(lambda (c)
                               (if (char-equal c ?<) t
                                 (,electric-pair-inhibit-predicate c))))))
-  (add-to-list 'electric-pair-pairs '(?< . ?>))
   (add-to-list 'electric-pair-pairs '(?` . ?`)))
 
 (use-package awesome-pair
