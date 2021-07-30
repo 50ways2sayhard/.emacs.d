@@ -105,7 +105,7 @@
 ;; EmmetPac
 (use-package emmet-mode
   :ensure t
-  :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode js-mode)
+  :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode)
   :bind (:map web-mode-map
               ("C-j" . emmet-expand-yas))
   :config

@@ -46,7 +46,7 @@
                            (format-all-mode)
                            )))
   :config
-  (add-hook 'format-all-after-format-functions (lambda (a b) (call-interactively 'recenter)))
+  (add-hook 'format-all-after-format-functions (lambda (a b) (call-interactively 'recenter-top-bottom)))
   (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
   )
 ;; -FormatAllPac
