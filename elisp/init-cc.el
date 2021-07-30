@@ -71,12 +71,6 @@
   :init (modern-c++-font-lock-global-mode t))
 ;; -CPPFontLockPac
 
-;; GoPac
-(use-package go-mode
-  :mode "\\.go\\'"
-  :hook (before-save . gofmt-before-save))
-;; -GoPac
-
 (provide 'init-cc)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-cc.el ends here
