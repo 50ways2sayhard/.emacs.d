@@ -47,17 +47,22 @@
 ;;; Code:
 
 
+;;;###autoload
+(defun +devdocs-lookup-at-point()
+  (interactive)
+  (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
+
+;;;###autoload
+(defun +devdocs-search-at-point()
+  (interactive)
+  (devdocs-search (thing-at-point 'symbol)))
+
+
 (use-package devdocs
   :commands (devdocs-lookup-at-point devdocs-search-at-point)
   :config
   (add-hook 'web-mode-hook (
                             lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
-  (defun +devdocs-lookup-at-point()
-    (interactive)
-    (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
-  (defun +devdocs-search-at-point()
-    (interactive)
-    (devdocs-search (thing-at-point 'symbol)))
   )
 
 
