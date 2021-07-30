@@ -57,7 +57,11 @@
     (with-eval-after-load 'general
       (local-leader-def
         :keymaps 'web-mode-map
-        "f" 'lsp-eslint-fix-all)))
+        "f" 'lsp-eslint-fix-all))
+    (make-local-variable 'before-save-hook)
+    (with-eval-after-load 'lsp-eslint
+      (add-hook 'before-save-hook 'lsp-eslint-fix-all))
+    )
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -102,6 +106,8 @@
 (use-package emmet-mode
   :ensure t
   :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode js-mode)
+  :bind (:map web-mode-map
+              ("C-j" . emmet-expand-yas))
   :config
   (add-hook 'emmet-mode-hook (lambda()
                                (setq emmet-indent-after-insert t))))

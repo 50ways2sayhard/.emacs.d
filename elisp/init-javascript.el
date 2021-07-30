@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 27
+;;     Update #: 28
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -79,6 +79,9 @@
                 js2-bounce-indent-p t)
 
   (use-package js-doc)
+  (with-eval-after-load 'lsp-eslint
+    (make-local-variable 'before-save-hook)
+    (add-hook 'before-save-hook 'lsp-eslint-fix-all))
 
   (with-eval-after-load 'general
     (local-leader-def
