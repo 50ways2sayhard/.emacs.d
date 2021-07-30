@@ -62,6 +62,8 @@
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(noct-consult-ripgrep-or-line :wk "Swiper")
     "`" '(selectrum-repeat :wk "Repeat last search")
+    "[" '(previous-buffer :wk "Previous buffer")
+    "]" '(next-buffer :wk "Next buffer")
 
     "b" '(:wk "Buffer")
     "b[" '(previous-buffer :wk "Previous buffer")

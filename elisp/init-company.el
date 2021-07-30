@@ -173,7 +173,7 @@ Examples:
 
   (general-define-key
    :keymaps '(company-active-map evil-insert-state-map)
-   "C-j" 'smarter-yas-expand-next-field-complete)
+   "C-h" 'smarter-yas-expand-next-field-complete)
   (general-def 'insert
     :prefix "C-x"
     "C-f" 'company-files)
