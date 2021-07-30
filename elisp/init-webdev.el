@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jul 29 09:21:53 2021 (+0800)
+;; Last-Updated: Fri Jul 30 19:04:08 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -59,6 +59,8 @@
         :keymaps 'web-mode-map
         "f" 'lsp-eslint-fix-all))
     (make-local-variable 'before-save-hook)
+    (make-local-variable 'lsp-enable-imenu)
+    (setq lsp-enable-imenu t)
     (with-eval-after-load 'lsp-eslint
       (add-hook 'before-save-hook 'lsp-eslint-fix-all))
     )

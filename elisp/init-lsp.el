@@ -69,7 +69,7 @@
         lsp-diagnostics-provider :flycheck
         lsp-signature-auto-activate t
         lsp-idle-delay 0.5
-        lsp-enable-imenu t
+        lsp-enable-imenu nil
         lsp-enable-on-type-formatting nil
         lsp-enable-snippet nil
         lsp-enable-text-document-color nil
