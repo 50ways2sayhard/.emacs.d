@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 359
+;;     Update #: 360
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -237,7 +237,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq orderless-skip-highlighting (lambda () selectrum-is-active))
   (setq selectrum-refine-candidates-function #'orderless-filter)
   (setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
-  (setq orderless-matching-styles '(orderless-regexp orderless-literal orderless-initialism ))
+  (setq orderless-matching-styles '(orderless-regexp orderless-literal orderless-initialism completion--regex-pinyin))
   (defun without-if-$! (pattern _index _total)
     (when (or (string-prefix-p "$" pattern) ;如果以! 或$ 开头，则表示否定，即不包含此关键字
               (string-prefix-p "!" pattern))
@@ -250,6 +250,8 @@ When the number of characters in a buffer exceeds this threshold,
               (string-suffix-p "-" pattern)
               (string-suffix-p ";" pattern))
       `(orderless-literal . ,(substring pattern 0 -1))))
+  (defun completion--regex-pinyin (str)
+    (orderless-regexp (pinyinlib-build-regexp-string str)))
   (setq orderless-style-dispatchers '(literal-if-= flex-if-comma without-if-$!))
   (setq completion-styles (cons 'orderless completion-styles)
         completion-category-defaults nil
