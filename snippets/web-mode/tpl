@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: template
+# key: tpl
+# --
+<template>
+$0
+</template>
+
+<script type="text/javascript">
+export default {
+
+}
+</script>
+
+<style lang="less">
+
+</style>
