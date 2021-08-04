@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 31
+;;     Update #: 43
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,16 +54,16 @@
 (use-package js2-mode
   :ensure t
   :defines flycheck-javascript-eslint-executable
-  :mode (("\\.js\\'" . js2-mode)
-         ("\\.jsx\\'" . js2-jsx-mode))
-  :interpreter (("node" . js2-mode)
-                ("node" . js2-jsx-mode))
-  :hook ((js2-mode . js2-imenu-extras-mode)
-         (js2-mode . js2-highlight-unused-variables-mode))
-  :hook ((js2-mode . (lambda()
-                       (flycheck-add-mode 'javascript-eslint 'js2-mode))))
+  ;; :mode (("\\.js\\'" . js2-mode)
+  ;;        ("\\.jsx\\'" . js2-jsx-mode))
+  ;; :interpreter (("node" . js2-mode)
+  ;;               ("node" . js2-jsx-mode))
+  :hook ((js-mode . (lambda () ()
+                      (js2-minor-mode)
+                      (js2-imenu-extras-mode)
+                      (js2-highlight-unused-variables-mode)
+                      )))
   :config
-  (setq mode-name "JS2")
   (setq-default js2-use-font-lock-faces t
                 js2-mode-must-byte-compile nil
                 forward-sexp-function nil
@@ -83,13 +83,13 @@
                 js2-bounce-indent-p t)
 
   (use-package js-doc)
+  (make-local-variable 'before-save-hook)
   (with-eval-after-load 'lsp-eslint
-    (make-local-variable 'before-save-hook)
     (add-hook 'before-save-hook 'lsp-eslint-fix-all))
 
   (with-eval-after-load 'general
     (local-leader-def
-      :keymaps 'js2-mode-map
+      :keymaps '(js2-mode-map js-mode-map)
       "f" 'lsp-eslint-fix-all)))
 
 (with-eval-after-load 'js-mode
