@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug  4 17:51:48 2021 (+0800)
+;; Last-Updated: Thu Aug  5 18:11:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -157,7 +157,7 @@ Examples:
   ;; Don't use company in the following modes
   (company-global-modes '(not shell-mode))
   ;; Trigger completion immediately.
-  (company-idle-delay 0.1)
+  (company-idle-delay 0)
   ;; Number the candidates (use M-1, M-2 etc to select completions).
   (company-show-numbers nil)
   ;; (company-tooltip-minimum-width 80)
@@ -246,6 +246,20 @@ Examples:
 
   :config
   (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+  (setq company-tabnine--disable-next-transform nil)
+  (defun my-company--transform-candidates (func &rest args)
+    (if (not company-tabnine--disable-next-transform)
+        (apply func args)
+      (setq company-tabnine--disable-next-transform nil)
+      (car args)))
+
+  (defun my-company-tabnine (func &rest args)
+    (when (eq (car args) 'candidates)
+      (setq company-tabnine--disable-next-transform t))
+    (apply func args))
+
+  (advice-add #'company--transform-candidates :around #'my-company--transform-candidates)
+  (advice-add #'company-tabnine :around #'my-company-tabnine)
   )
 ;; -CompanyTabNinePac
 
