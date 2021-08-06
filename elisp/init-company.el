@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug  5 18:11:07 2021 (+0800)
+;; Last-Updated: Fri Aug  6 15:58:12 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -173,6 +173,7 @@ Examples:
   :config
   (setq company-backends '(company-files company-dabbrev))
   (global-company-mode 1)
+  (add-to-list 'company-transformers #'delete-dups)
 
   (general-define-key
    :keymaps '(company-active-map evil-insert-state-map)
@@ -245,21 +246,7 @@ Examples:
                ))))
 
   :config
-  (add-to-list 'company-transformers 'company//sort-by-tabnine t)
-  (setq company-tabnine--disable-next-transform nil)
-  (defun my-company--transform-candidates (func &rest args)
-    (if (not company-tabnine--disable-next-transform)
-        (apply func args)
-      (setq company-tabnine--disable-next-transform nil)
-      (car args)))
-
-  (defun my-company-tabnine (func &rest args)
-    (when (eq (car args) 'candidates)
-      (setq company-tabnine--disable-next-transform t))
-    (apply func args))
-
-  (advice-add #'company--transform-candidates :around #'my-company--transform-candidates)
-  (advice-add #'company-tabnine :around #'my-company-tabnine)
+  ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
   )
 ;; -CompanyTabNinePac
 
