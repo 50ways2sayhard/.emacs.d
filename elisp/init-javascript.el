@@ -62,6 +62,7 @@
                       (js2-minor-mode)
                       (js2-imenu-extras-mode)
                       (js2-highlight-unused-variables-mode)
+                      (setq-local imenu-create-index-function 'js2-mode-create-imenu-index)
                       )))
   :config
   (setq-default js2-use-font-lock-faces t
