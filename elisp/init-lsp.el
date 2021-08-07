@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jul 29 10:04:27 2021 (+0800)
+;; Last-Updated: Fri Aug  6 23:55:59 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -84,6 +84,8 @@
         lsp-modeline-code-actions-enable nil
         lsp-modeline-diagnostics-enable nil
         lsp-modeline-workspace-status-enable nil
+        lsp-headerline-breadcrumb-enable nil
+        lsp-completion-show-detail nil
         lsp-completion-provider :none)
   (setq lsp-typescript-implementations-code-lens-enabled t
         lsp-typescript-references-code-lens-enabled t
