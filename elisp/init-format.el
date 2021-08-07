@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:27:40 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jul 27 21:41:17 2021 (+0800)
+;; Last-Updated: Sat Aug  7 00:02:31 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d format-all
@@ -46,7 +46,6 @@
                            (format-all-mode)
                            )))
   :config
-  (add-hook 'format-all-after-format-functions (lambda (a b) (recenter-top-bottom)))
   (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
   )
 ;; -FormatAllPac
