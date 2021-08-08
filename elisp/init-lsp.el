@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Aug  8 15:00:03 2021 (+0800)
+;; Last-Updated: Sun Aug  8 18:09:03 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -70,7 +70,7 @@
         lsp-log-io nil
         lsp-enable-folding nil
         lsp-enable-file-watchers nil
-        lsp-keymap-prefix "C-c l"
+        lsp-keymap-prefix nil
         lsp-eldoc-enable-hover t
         lsp-eldoc-render-all nil
         lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
@@ -93,12 +93,12 @@
     (lsp-enable-which-key-integration)
     (+lsp-optimization-mode +1)
 
-    (set-lookup-handlers! 'lsp-mode
-      :definition #'+lsp-lookup-definition-handler
-      :references #'+lsp-lookup-references-handler
-      :documentation '(lsp-describe-thing-at-point :async t)
-      :implementations '(lsp-find-implementation :async t)
-      :type-definition #'lsp-find-type-definition)
+    ;; (set-lookup-handlers! 'lsp-mode
+    ;;   :definition #'+lsp-lookup-definition-handler
+    ;;   :references #'+lsp-lookup-references-handler
+    ;;   :documentation '(lsp-describe-thing-at-point :async t)
+    ;;   :implementations '(lsp-find-implementation :async t)
+    ;;   :type-definition #'lsp-find-type-definition)
 
     ;; Format and organize imports
     (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
@@ -115,7 +115,7 @@
   :custom
   (lsp-ui-doc-header nil)
   (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-enable nil)
   (lsp-ui-doc-border (face-foreground 'default))
   (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-ignore-duplicate t)
