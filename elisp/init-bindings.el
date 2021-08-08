@@ -28,6 +28,7 @@
 
     ;; goto
     "gd" 'xref-find-definitions
+    "gD" 'xref-find-references
 
     "/" 'consult-line-symbol-at-point
     "'" 'noct-consult-ripgrep-or-line
