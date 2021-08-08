@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug  6 23:55:59 2021 (+0800)
+;; Last-Updated: Sun Aug  8 11:24:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -50,6 +50,7 @@
          (lsp-mode . (lambda ()
                        ;; Integrate `which-key'
                        (lsp-enable-which-key-integration)
+                       (+lsp-optimization-mode +1)
 
                        ;; Format and organize imports
                        (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
@@ -59,6 +60,7 @@
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point))
   :init
+  (require 'lsp/+optimization)
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
 

@@ -188,8 +188,10 @@ The original function deletes trailing whitespace of the current line."
   :diminish
   :init
   ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
-  (setq gcmh-idle-delay 5
-        gcmh-high-cons-threshold #x1000000)
+  ;; (setq gcmh-idle-delay 5
+  ;;       gcmh-high-cons-threshold #x1000000)
+  (setq gcmh-idle-delay 0.5
+        gcmh-high-cons-threshold (* 16 1024 1024))
   (gcmh-mode 1)
   )
 
