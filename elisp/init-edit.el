@@ -78,7 +78,7 @@
   :config
   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
-  (cond (*sys/mac* (setq rime-user-data-dir "~/Library/Rime"
+  (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
         (*sys/linux* (setq rime-user-data-dir "~/.config/rime")))
   (defun +rime-sync ()
