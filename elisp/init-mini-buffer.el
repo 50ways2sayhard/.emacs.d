@@ -93,6 +93,7 @@
           (delete-region (1+ (point)) (point-max))))))
 
 (use-package selectrum
+  :hook (+self/first-input . selectrum-mode)
   :config
   (global-set-key (kbd "C-c r") #'selectrum-repeat)
   (selectrum-mode +1)
@@ -259,7 +260,7 @@ When the number of characters in a buffer exceeds this threshold,
   )
 
 (use-package marginalia
-  :hook (after-init . marginalia-mode)
+  :hook (+self/first-input . marginalia-mode)
   :config
   (setq marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light))
   (advice-add #'marginalia-cycle :after

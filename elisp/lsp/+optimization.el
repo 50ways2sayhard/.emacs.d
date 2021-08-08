@@ -77,6 +77,27 @@
       (gcmh-set-high-threshold)
       (setq +lsp--optimization-init-p t))))
 
+;;;###autoload
+(defun +lsp-lookup-definition-handler ()
+  "Find definition of the symbol at point using LSP."
+  (interactive)
+  (when-let (loc (lsp-request "textDocument/definition"
+                              (lsp--text-document-position-params)))
+    (lsp-show-xrefs (lsp--locations-to-xref-items loc) nil nil)
+    'deferred))
+
+;;;###autoload
+(defun +lsp-lookup-references-handler (&optional include-declaration)
+  "Find project-wide references of the symbol at point using LSP."
+  (interactive "P")
+  (when-let
+      (loc (lsp-request "textDocument/references"
+                        (append (lsp--text-document-position-params)
+                                (list
+                                 :context `(:includeDeclaration
+                                            ,(lsp-json-bool include-declaration))))))
+    (lsp-show-xrefs (lsp--locations-to-xref-items loc) nil t)
+    'deferred))
 
 
 (provide 'lsp/+optimization)

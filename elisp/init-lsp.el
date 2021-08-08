@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Aug  8 11:40:30 2021 (+0800)
+;; Last-Updated: Sun Aug  8 15:00:03 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -47,16 +47,7 @@
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
                           (lsp-deferred))))
-         (lsp-mode . (lambda ()
-                       ;; Integrate `which-key'
-                       (lsp-enable-which-key-integration)
-                       (+lsp-optimization-mode +1)
-
-                       ;; Format and organize imports
-                       (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
-                         (add-hook 'before-save-hook #'lsp-organize-imports t t))
-                       (if (derived-mode-p 'dart-mode)
-                           (add-hook 'before-save-hook #'lsp-format-buffer)))))
+         (lsp-mode . +my-lsp-setup))
   :bind (:map lsp-mode-map
               ("C-c C-d" . lsp-describe-thing-at-point))
   :init
@@ -96,6 +87,24 @@
         lsp-eslint-auto-fix-on-save t
         lsp-eslint-library-choices-file (concat user-emacs-directory ".local/cache/lsp-eslint-choices")
         )
+
+  (defun +my-lsp-setup ()
+    ;; Integrate `which-key'
+    (lsp-enable-which-key-integration)
+    (+lsp-optimization-mode +1)
+
+    (set-lookup-handlers! 'lsp-mode
+      :definition #'+lsp-lookup-definition-handler
+      :references #'+lsp-lookup-references-handler
+      :documentation '(lsp-describe-thing-at-point :async t)
+      :implementations '(lsp-find-implementation :async t)
+      :type-definition #'lsp-find-type-definition)
+
+    ;; Format and organize imports
+    (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
+      (add-hook 'before-save-hook #'lsp-organize-imports t t))
+    (if (derived-mode-p 'dart-mode)
+        (add-hook 'before-save-hook #'lsp-format-buffer)))
   )
 
 (use-package lsp-ui

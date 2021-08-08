@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jun  1 18:23:31 2021 (+0800)
+;; Last-Updated: Sun Aug  8 16:44:24 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -72,6 +72,12 @@
   (load-file (expand-file-name "init-custom.el" user-emacs-directory)))
 ;; -InitPrivate
 
+(defvar +self/first-input-hook nil)
+(add-hook 'pre-command-hook #'(lambda ()
+                                (when +self/first-input-hook
+                                  (run-hooks '+self/first-input-hook)
+                                  (setq +self/first-input-hook nil))))
+
 ;; Constants
 (require 'init-const)
 
@@ -116,6 +122,7 @@
 (require 'init-format)
 (require 'init-edit)
 (require 'init-header)
+(require 'init-lookup)
 (require 'init-lsp)
 (require 'init-company)
 (require 'init-prog)
