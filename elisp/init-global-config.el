@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Jul 16 09:12:49 2021 (+0800)
+;; Last-Updated: Sun Aug  8 17:54:50 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -185,15 +185,14 @@ The original function deletes trailing whitespace of the current line."
 (setq ffap-machine-p-known 'reject)
 
 (use-package gcmh
+  :hook (+self/first-input . gcmh-mode)
   :diminish
   :init
   ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
   ;; (setq gcmh-idle-delay 5
   ;;       gcmh-high-cons-threshold #x1000000)
   (setq gcmh-idle-delay 0.5
-        gcmh-high-cons-threshold (* 16 1024 1024))
-  (gcmh-mode 1)
-  )
+        gcmh-high-cons-threshold (* 16 1024 1024)))
 
 (provide 'init-global-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
