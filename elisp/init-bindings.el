@@ -41,6 +41,7 @@
   (general-def "C-RET" '+default/newline-below)
   (general-def [C-S-return] '+default/newline-above)
   (general-def "C-S-RET" '+default/newline-above)
+  (general-def "M-?" '+affe-at-point)
 
   ;; Navigation
   (general-define-key
