@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Aug  1 11:11:38 2021 (+0800)
+;; Last-Updated: Tue Aug 10 17:45:20 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -66,8 +66,6 @@
   :custom
   (default-input-method "rime")
   (rime-show-candidate 'posframe)
-  (rime-posframe-properties (list :font "Sarasa Mono SC Nerd"
-                                  :internal-border-width 10))
   (rime-disable-predicates
    '(rime-predicate-evil-mode-p
      rime-predicate-after-alphabet-char-p
@@ -80,7 +78,7 @@
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
   (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
-        (*sys/linux* (setq rime-user-data-dir "~/.config/rime")))
+        (*sys/linux* (setq rime-user-data-dir "~/.rime")))
   (defun +rime-sync ()
     ;; HACK: force emacs-rime to use userdb.
     ;; I am not sure if it is safe as the deploy may delete the old userdb.
