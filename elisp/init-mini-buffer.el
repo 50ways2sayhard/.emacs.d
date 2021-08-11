@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 365
+;;     Update #: 370
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -296,21 +296,20 @@ When the number of characters in a buffer exceeds this threshold,
   )
 
 
-;;;###autoload
-(defun +affe-at-point (&optional dir initial)
-  (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
-                                  (symbol-name s))))
-  (affe-grep dir initial))
-
 (use-package affe
   :straight (:host github :repo "minad/affe")
   :after orderless
   :defer t
+  :commands +affe-at-point
   :config
   ;; Configure Orderless
   (setq affe-regexp-function #'orderless-pattern-compiler
         affe-highlight-function #'orderless-highlight-matches
-        affe-find-command "fd -HI -t f"))
+        affe-find-command "fd -HI -t f")
+  (defun +affe-at-point (&optional dir initial)
+    (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
+                                    (symbol-name s))))
+    (affe-grep dir initial)))
 
 (use-package all-the-icons-completion
   :straight (:host github :repo "iyefrat/all-the-icons-completion")
