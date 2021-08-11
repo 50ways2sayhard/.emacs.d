@@ -41,7 +41,7 @@
   (general-def "C-RET" '+default/newline-below)
   (general-def [C-S-return] '+default/newline-above)
   (general-def "C-S-RET" '+default/newline-above)
-  (general-def "M-?" '+affe-at-point)
+  (general-def "M-?" '+consult-ripgrep-at-point)
 
   ;; Navigation
   (general-define-key
@@ -60,7 +60,7 @@
     :keymaps 'override
     "<SPC>" '(consult-projectile :wk "Project Find File")
     ":" '(execute-extended-command :which-key "M-x")
-    "/" '(affe-grep :wk "Search in project")
+    "/" '(consult-ripgrep :wk "Search in project")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(noct-consult-ripgrep-or-line :wk "Swiper")
     "`" '(selectrum-repeat :wk "Repeat last search")
@@ -151,7 +151,7 @@
     "sf" '(locate :wk "Locate file")
     "si" '(+my-imenu :wk "Jump to symbol")
     "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")
-    "sp" '(affe-grep :wk "Search project")
+    "sp" '(consult-ripgrep :wk "Search project")
     "sP" '(color-rg-search-project :wk "Color-rg Search project")
     "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
     "sT" '(load-theme :wk "Load theme")

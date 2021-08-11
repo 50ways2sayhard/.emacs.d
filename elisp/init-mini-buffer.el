@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 ;;; init-selectrum.el ---
 ;;
 ;; Filename: init-selectrum.el
@@ -10,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 370
+;;     Update #: 377
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -125,6 +127,7 @@
 (use-package consult
   :after projectile
   :straight (:host github :repo "minad/consult")
+  :commands +consult-ripgrep-at-point
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -222,7 +225,20 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Configure initial narrowing per command
   (dolist (src consult-buffer-sources)
     (unless (eq src 'consult--source-buffer)
-      (set src (plist-put (symbol-value src) :hidden t)))))
+      (set src (plist-put (symbol-value src) :hidden t))))
+
+  (defun +consult-ripgrep-at-point (&optional dir initial)
+    (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
+                                    (symbol-name s))))
+    (consult-ripgrep dir initial))
+
+  (defun consult--orderless-regexp-compiler (input type &rest _config)
+    (setq input (orderless-pattern-compiler input))
+    (cons
+     (mapcar (lambda (r) (consult--convert-regexp r type)) input)
+     (lambda (str) (orderless--highlight input str))))
+  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
+  )
 
 (use-package consult-lsp
   :after lsp)
@@ -294,22 +310,6 @@ When the number of characters in a buffer exceeds this threshold,
     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-forward)
     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-backward))
   )
-
-
-(use-package affe
-  :straight (:host github :repo "minad/affe")
-  :after orderless
-  :defer t
-  :commands +affe-at-point
-  :config
-  ;; Configure Orderless
-  (setq affe-regexp-function #'orderless-pattern-compiler
-        affe-highlight-function #'orderless-highlight-matches
-        affe-find-command "fd -HI -t f")
-  (defun +affe-at-point (&optional dir initial)
-    (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
-                                    (symbol-name s))))
-    (affe-grep dir initial)))
 
 (use-package all-the-icons-completion
   :straight (:host github :repo "iyefrat/all-the-icons-completion")
