@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri May  7 12:15:53 2021 (+0800)
+;; Last-Updated: Thu Aug 12 18:20:27 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -92,10 +92,6 @@
 
   (use-package python-pytest
     :defer t)
-  )
-
-(use-package poetry
-  :after python
   )
 
 (use-package sphinx-doc

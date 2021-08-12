@@ -161,7 +161,6 @@
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "tt" '(+treemacs/toggle :wk "Treemacs")
-    "tj" '(lsp-treemacs-symbols :wk "LSP Treemacs")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
 
     "w" '(:wk "Window")

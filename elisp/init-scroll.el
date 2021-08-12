@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug  5 17:50:05 2021 (+0800)
+;; Last-Updated: Thu Aug 12 18:14:35 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -58,14 +58,6 @@
 
 (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
       mouse-wheel-scroll-amount-horizontal 1)
-
-(use-package good-scroll
-  :diminish
-  ;; :hook (after-init . good-scroll-mode)
-  :init
-  ;; (global-set-key [next] #'good-scroll-up-full-screen)
-  ;; (global-set-key [prior] #'good-scroll-down-full-screen)
-  )
 
 (provide 'init-scroll)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

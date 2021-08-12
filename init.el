@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Aug  8 16:44:24 2021 (+0800)
+;; Last-Updated: Thu Aug 12 18:20:42 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -128,7 +128,6 @@
 (require 'init-prog)
 
 ;; Programming
-(require 'init-cc)
 (require 'init-python)
 (require 'init-latex)
 (require 'init-javascript)

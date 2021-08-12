@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 377
+;;     Update #: 379
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -239,13 +239,6 @@ When the number of characters in a buffer exceeds this threshold,
      (lambda (str) (orderless--highlight input str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
   )
-
-(use-package consult-lsp
-  :after lsp)
-
-(use-package consult-flycheck
-  :straight (:host github :repo "minad/consult-flycheck")
-  :after flycheck)
 
 (use-package orderless
   :demand t

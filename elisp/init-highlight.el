@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 33
+;;     Update #: 34
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -141,24 +141,6 @@ FACE defaults to inheriting from default and highlight."
     (when (derived-mode-p 'prog-mode)
       (symbol-overlay-mode 1)))
   (advice-add #'deactivate-mark :after #'turn-on-symbol-overlay))
-
-;; Highlight indentions
-(when (display-graphic-p)
-  (use-package highlight-indent-guides
-    :diminish
-    :commands highlight-indent-guides--highlighter-default
-    :functions my-indent-guides-for-all-but-first-column
-    ;; :hook (prog-mode . highlight-indent-guides-mode)
-    :init (setq highlight-indent-guides-method 'character
-                highlight-indent-guides-responsive 'top)
-    :config
-    (setq highlight-indent-guides-character ?\x2506)
-    ;; Don't display first level of indentation
-    (defun my-indent-guides-for-all-but-first-column (level responsive display)
-      (unless (< level 1)
-        (highlight-indent-guides--highlighter-default level responsive display)))
-    (setq highlight-indent-guides-highlighter-function
-          #'my-indent-guides-for-all-but-first-column)))
 
 ;; Colorize color names in buffers
 (use-package rainbow-mode

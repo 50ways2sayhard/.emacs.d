@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:29:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 10月 15 14:55:52 2020 (+0800)
+;; Last-Updated: Thu Aug 12 18:24:32 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d highlight-indent-guides indentation
@@ -40,18 +40,6 @@
 (eval-when-compile
   (require 'init-const))
 
-;; HighLightIndentPac
-(use-package highlight-indent-guides
-  :if *sys/gui*
-  :diminish
-  :hook ((python-mode web-mode nxml-mode) . highlight-indent-guides-mode)
-  :custom
-  (highlight-indent-guides-method 'character)
-  (highlight-indent-guides-responsive 'top)
-  (highlight-indent-guides-delay 0)
-  (highlight-indent-guides-auto-character-face-perc 7))
-;; -HighLightIndentPac
-
 ;; IndentConfig
 (setq-default indent-tabs-mode nil)
 (setq-default indent-line-function 'insert-tab)
@@ -64,9 +52,9 @@
 (c-set-offset (quote cpp-macro) 0 nil)
 (add-hook 'after-change-major-mode-hook
           (lambda () (if (equal electric-indent-mode 't)
-                         (when (derived-mode-p 'text-mode)
-                           (electric-indent-mode -1))
-                       (electric-indent-mode 1))))
+                    (when (derived-mode-p 'text-mode)
+                      (electric-indent-mode -1))
+                  (electric-indent-mode 1))))
 ;; -IndentConfig
 
 (provide 'init-indent)

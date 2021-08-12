@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Aug  9 11:05:32 2021 (+0800)
+;; Last-Updated: Thu Aug 12 16:46:52 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -39,7 +39,8 @@
 
 
 (eval-when-compile
-  (require 'init-const))
+  (require 'init-const)
+  (require 'lsp/+optimization))
 
 
 (use-package lsp-mode
@@ -79,6 +80,7 @@
         lsp-modeline-workspace-status-enable nil
         lsp-headerline-breadcrumb-enable nil
         lsp-completion-show-detail nil
+        lsp-completion-no-cache t
         lsp-completion-provider :none)
   (setq lsp-typescript-implementations-code-lens-enabled t
         lsp-typescript-references-code-lens-enabled t
@@ -127,24 +129,6 @@
   (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
     (setq mode-line-format nil)))
 
-;; DAPPac
-(use-package dap-mode
-  :diminish
-  :bind
-  (:map dap-mode-map
-        (("<f12>" . dap-debug)
-         ("<f8>" . dap-continue)
-         ("<f9>" . dap-next)
-         ("<M-f11>" . dap-step-in)
-         ("C-M-<f11>" . dap-step-out)
-         ("<f7>" . dap-breakpoint-toggle)))
-  :hook ((after-init . dap-mode)
-         (dap-mode . dap-ui-mode)
-         (python-mode . (lambda () (require 'dap-python)))
-         ((js-mode js2-mode) . (lambda () (require 'dap-chrome)))
-         )
-  )
-;; -DAPPac
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

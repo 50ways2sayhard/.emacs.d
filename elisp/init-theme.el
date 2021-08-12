@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Jul 13 11:35:08 2021 (+0800)
+;; Last-Updated: Thu Aug 12 18:18:37 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -73,25 +73,12 @@
   (doom-themes-org-config)
   (doom-themes-treemacs-config)
   (load-theme 'doom-one t)
-  (custom-set-faces
-   `(font-lock-comment-face ((t (:slant italic))))
-   `(font-lock-comment-delimiter-face ((t (:slant italic))))
-   `(font-lock-doc-face ((t (:slant italic)))))
+  ;; (custom-set-faces
+  ;;  `(font-lock-comment-face ((t (:slant italic))))
+  ;;  `(font-lock-comment-delimiter-face ((t (:slant italic))))
+  ;;  `(font-lock-doc-face ((t (:slant italic)))))
   )
 ;; -DoomThemes
-
-(use-package hide-mode-line
-  :hook (((completion-list-mode completion-in-region-mode) . hide-mode-line-mode)))
-
-;; A minor-mode menu for mode-line
-(use-package minions
-  :hook (doom-modeline-mode . minions-mode))
-
-(use-package poke-line
-  :ensure t
-  :config
-  (poke-line-global-mode 1)
-  (setq-default poke-line-pokemon "gengar"))
 
 (provide 'init-theme)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

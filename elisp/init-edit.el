@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Aug 10 17:45:20 2021 (+0800)
+;; Last-Updated: Thu Aug 12 18:16:11 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -38,13 +38,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'init-global-config))
-
-;; IEditPac
-(use-package iedit
-  :bind ("C-z ," . iedit-mode)
-  :diminish)
-;; -IEditPac
-
 
 ;; DeleteBlockPac
 (use-package delete-block
@@ -106,6 +99,8 @@
 (use-package expand-region)
 
 (use-package pinyinlib)
+
+(use-package undo-fu)
 
 
 (provide 'init-edit)
