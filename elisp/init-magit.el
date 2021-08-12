@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jul 28 22:38:01 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:47:06 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -109,6 +109,7 @@ window that already exists in that direction. It will split otherwise."
 
 ;; MagitPac
 (use-package magit
+  :defer t
   :if *git*
   :bind ("C-x g" . magit-status)
   :config
@@ -202,39 +203,13 @@ window that already exists in that direction. It will split otherwise."
     (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))
     (evil-insert-state)))
 
-(use-package magit-todos)
+(use-package magit-todos
+  :after magit)
 
 (use-package smerge-mode
+  :after magit
   :straight nil
   :diminish
-  :pretty-hydra
-  ((:title (pretty-hydra-title "Smerge" 'octicon "diff")
-           :color pink :quit-key "q")
-   ("Move"
-    (("n" smerge-next "next")
-     ("p" smerge-prev "previous"))
-    "Keep"
-    (("b" smerge-keep-base "base")
-     ("u" smerge-keep-upper "upper")
-     ("l" smerge-keep-lower "lower")
-     ("a" smerge-keep-all "all")
-     ("RET" smerge-keep-current "current")
-     ("C-m" smerge-keep-current "current"))
-    "Diff"
-    (("<" smerge-diff-base-upper "upper/base")
-     ("=" smerge-diff-upper-lower "upper/lower")
-     (">" smerge-diff-base-lower "upper/lower")
-     ("R" smerge-refine "refine")
-     ("E" smerge-ediff "ediff"))
-    "Other"
-    (("C" smerge-combine-with-next "combine")
-     ("r" smerge-resolve "resolve")
-     ("k" smerge-kill-current "kill")
-     ("ZZ" (lambda ()
-             (interactive)
-             (save-buffer)
-             (bury-buffer))
-      "Save and bury buffer" :exit t))))
   :bind (:map smerge-mode-map
               ("C-c m" . smerge-mode-hydra/body))
   :hook ((find-file . (lambda ()

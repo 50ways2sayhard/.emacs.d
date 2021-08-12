@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 34
+;;     Update #: 37
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -147,7 +147,7 @@ FACE defaults to inheriting from default and highlight."
   :diminish
   :bind (:map help-mode-map
               ("w" . rainbow-mode))
-  :hook ((html-mode php-mode) . rainbow-mode)
+  :hook ((web-mode) . rainbow-mode)
   :config
   ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
   ;; @see https://emacs.stackexchange.com/questions/36420
@@ -235,7 +235,7 @@ FACE defaults to inheriting from default and highlight."
 ;; Highlight some operations
 (use-package volatile-highlights
   :diminish
-  :hook (after-init . volatile-highlights-mode)
+  :hook (+self/first-input . volatile-highlights-mode)
   :config
   (when (fboundp 'pulse-momentary-highlight-region)
     (defun my-vhl-pulse (beg end &optional _buf face)
@@ -245,7 +245,6 @@ FACE defaults to inheriting from default and highlight."
 
 ;; Pulse current line
 (use-package pulse
-  :ensure nil
   :custom-face
   (pulse-highlight-start-face ((t (:inherit region))))
   (pulse-highlight-face ((t (:inherit region))))

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug  6 15:58:12 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:30:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -200,14 +200,8 @@ Examples:
   )
 ;; -ComPac
 (use-package company-prescient
+  :after company
   :init (company-prescient-mode 1))
-
-
-;; (use-package company-box
-;;   :after company
-;;   :hook (company-mode . company-box-mode)
-;;   :custom
-;;   (company-box-doc-delay 0.3))
 
 ;; CompanyTabNinePac
 (use-package company-tabnine

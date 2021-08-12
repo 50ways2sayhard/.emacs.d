@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 25
+;;     Update #: 26
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -77,8 +77,6 @@
   (if *sys/linux*
       (setq flutter-sdk-path "/usr/share/flutter/"))
   )
-
-(use-package hover :ensure t)
 
 (provide 'init-dart)
 

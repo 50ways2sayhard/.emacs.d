@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Jul 29 11:28:32 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:14:36 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
@@ -130,8 +130,8 @@
 
 ;; PBLPac
 (use-package page-break-lines
-  :diminish
-  :init (global-page-break-lines-mode))
+  :hook (dashboard-mode . page-break-lines-mode)
+  :diminish)
 ;; -PBLPac
 
 (provide 'init-dashboard)

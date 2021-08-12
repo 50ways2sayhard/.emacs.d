@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 379
+;;     Update #: 385
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -125,9 +125,9 @@
   )
 
 (use-package consult
-  :after projectile
+  :after orderless
   :straight (:host github :repo "minad/consult")
-  :commands +consult-ripgrep-at-point
+  :commands +consult-ripgrep-at-point noct-consult-ripgrep-or-line
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -241,6 +241,7 @@ When the number of characters in a buffer exceeds this threshold,
   )
 
 (use-package orderless
+  :after marginalia
   :demand t
   :config
   (savehist-mode)

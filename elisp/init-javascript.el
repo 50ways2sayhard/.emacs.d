@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 43
+;;     Update #: 63
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -51,62 +51,45 @@
   (require 'init-func)
   )
 
-(use-package js2-mode
-  :ensure t
-  :defines flycheck-javascript-eslint-executable
-  ;; :mode (("\\.js\\'" . js2-mode)
-  ;;        ("\\.jsx\\'" . js2-jsx-mode))
-  ;; :interpreter (("node" . js2-mode)
-  ;;               ("node" . js2-jsx-mode))
-  :hook ((js-mode . (lambda () ()
-                      (js2-minor-mode)
-                      (js2-imenu-extras-mode)
-                      (js2-highlight-unused-variables-mode)
-                      (setq-local imenu-create-index-function 'js2-mode-create-imenu-index)
-                      )))
-  :config
-  (setq-default js2-use-font-lock-faces t
-                js2-mode-must-byte-compile nil
-                forward-sexp-function nil
-                ;; {{ comment indention in modern frontend development
-                javascript-indent-level 2
-                js-indent-level 2
-                css-indent-offset 2
-                typescript-indent-level 2
-                ;; }}
-                js2-strict-trailing-comma-warning nil ; it's encouraged to use trailing comma in ES6
-                js2-idle-timer-delay 0.5 ; NOT too big for real time syntax check
-                js2-auto-indent-p nil
-                js2-indent-on-enter-key nil ; annoying instead useful
-                js2-skip-preprocessor-directives t
-                js2-strict-inconsistent-return-warning nil ; return <=> return null
-                js2-enter-indents-newline nil
-                js2-bounce-indent-p t)
-
-  (use-package js-doc)
-  (make-local-variable 'before-save-hook)
-  (with-eval-after-load 'lsp-eslint
-    (add-hook 'before-save-hook 'lsp-eslint-fix-all))
-
+(defun my-js-setup()
+  ;; '$' is part of variable name like '$item'
+  (modify-syntax-entry ?$ "w" js-mode-syntax-table)
+  (use-package js-doc :defer t)
+  (use-package js2-mode
+    :defines flycheck-javascript-eslint-executable
+    :commands js2-mode-create-imenu-index
+    :config
+    (setq-default js2-mode-must-byte-compile nil
+                  forward-sexp-function nil
+                  ;; {{ comment indention in modern frontend development
+                  javascript-indent-level 2
+                  js-indent-level 2
+                  css-indent-offset 2
+                  typescript-indent-level 2
+                  ;; }}
+                  js2-strict-trailing-comma-warning nil ; it's encouraged to use trailing comma in ES6
+                  js2-idle-timer-delay 0.5 ; NOT too big for real time syntax check
+                  js2-auto-indent-p nil
+                  js2-indent-on-enter-key nil ; annoying instead useful
+                  js2-skip-preprocessor-directives t
+                  js2-strict-inconsistent-return-warning nil ; return <=> return null
+                  js2-enter-indents-newline nil
+                  js2-bounce-indent-p t))
   (with-eval-after-load 'general
     (local-leader-def
       :keymaps '(js2-mode-map js-mode-map)
-      "f" 'lsp-eslint-fix-all)))
+      "f" 'lsp-eslint-fix-all))
+  (js2-minor-mode)
+  (js2-imenu-extras-mode)
+  (js2-highlight-unused-variables-mode)
+  (setq-local imenu-create-index-function 'js2-mode-create-imenu-index)
 
-(with-eval-after-load 'js-mode
-  ;; '$' is part of variable name like '$item'
-  (modify-syntax-entry ?$ "w" js-mode-syntax-table))
+  (make-local-variable 'before-save-hook)
+  (with-eval-after-load 'lsp-eslint
+    (add-hook 'before-save-hook 'lsp-eslint-fix-all))
+  )
 
-(with-eval-after-load 'js2-mode
-  ;; I hate the hotkeys to hide things
-  (define-key js2-mode-map (kbd "C-c C-e") nil)
-  (define-key js2-mode-map (kbd "C-c C-s") nil)
-  (define-key js2-mode-map (kbd "C-c C-f") nil)
-  (define-key js2-mode-map (kbd "C-c C-t") nil)
-  (define-key js2-mode-map (kbd "C-c C-o") nil)
-  (define-key js2-mode-map (kbd "C-c C-w") nil))
-
-
+(add-hook 'js-mode-hook #'my-js-setup)
 
 ;; TypeScriptPac
 (use-package typescript-mode

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 18:16:11 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:32:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -41,6 +41,7 @@
 
 ;; DeleteBlockPac
 (use-package delete-block
+  :defer
   :straight (:host github :repo "manateelazycat/delete-block" :depth 1)
   :bind
   (("M-d" . delete-block-forward)
@@ -56,6 +57,7 @@
   )
 
 (use-package rime
+  :defer t
   :custom
   (default-input-method "rime")
   (rime-show-candidate 'posframe)
@@ -65,7 +67,6 @@
      rime-predicate-prog-in-code-p
      rime-predicate-after-ascii-char-p
      rime-predicate-space-after-cc-p))
-  (mode-line-mule-info '((:eval (rime-lighter))))
   :config
   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
@@ -99,8 +100,6 @@
 (use-package expand-region)
 
 (use-package pinyinlib)
-
-(use-package undo-fu)
 
 
 (provide 'init-edit)

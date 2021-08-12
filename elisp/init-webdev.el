@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug  4 16:10:58 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:05:28 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -105,7 +105,7 @@
 
 ;; EmmetPac
 (use-package emmet-mode
-  :ensure t
+  :defer t
   :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode)
   :bind (:map web-mode-map
               ("C-j" . emmet-expand-yas))
@@ -116,6 +116,7 @@
 
 ;; InstantRenameTagPac
 (use-package instant-rename-tag
+  :defer t
   :straight (:host github :repo "manateelazycat/instant-rename-tag" :depth 1)
   :commands instant-rename-tag
   :bind ("C-z <" . instant-rename-tag))

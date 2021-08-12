@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 18:20:42 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:53:35 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -92,7 +92,6 @@
 (require 'init-search)
 (when (featurep 'native-compile) ;;FIXME: tree-sitter not work in M1 now.
   (require 'init-tree-sitter))
-(require 'init-winner)
 (require 'init-which-key)
 (require 'init-popup-kill-ring)
 (require 'init-undo-tree)
@@ -104,10 +103,9 @@
 ;; User Interface Enhancements
 (require 'init-ui-config)
 (require 'init-theme)
-(require 'init-dashboard)
 (require 'init-fonts)
+(require 'init-dashboard)
 (require 'init-scroll)
-(require 'init-hydra)
 (require 'init-pretty-code)
 (require 'init-highlight)
 
@@ -132,7 +130,6 @@
 (require 'init-latex)
 (require 'init-javascript)
 (require 'init-webdev)
-(require 'init-direnv)
 (require 'init-ml)
 (require 'init-dockerfile)
 (require 'init-dart)

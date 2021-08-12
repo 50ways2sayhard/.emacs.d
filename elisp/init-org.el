@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Jun 28 16:10:31 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:13:17 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -121,15 +121,7 @@
                              (?C . success))
         )
 
-  (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
-  ;; TocOrgPac
-  (use-package toc-org
-    :after org
-    :hook (org-mode . toc-org-enable)
-    :config (setq toc-org-hrefify-default "gh")
-    )
-  ;; -TocOrgPac
-
+  ;; (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
 
   ;; binding
   (evil-set-initial-state 'org-agenda-mode 'motion)
@@ -298,12 +290,14 @@
 
 ;; OrgDownload
 (use-package org-download
+  :defer t
   :custom
   (org-download-image-dir "img/")
   (org-download-heading-lvl nil))
 ;; -OrgDownload
 
 (use-package plantuml-mode
+  :defer t
   :config
   (setq org-plantuml-jar-path (expand-file-name "plantuml.jar" user-emacs-directory))
   (setq plantuml-default-exec-mode 'jar)
@@ -319,10 +313,6 @@
         (org-display-inline-images)
       (error nil)))
   )
-
-(use-package evil-org
-  :hook (org-mode . evil-org-mode)
-  :hook (org-capture-mode . evil-insert-state))
 
 (use-package valign
   :after org

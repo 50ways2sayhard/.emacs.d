@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 18:20:27 2021 (+0800)
+;; Last-Updated: Thu Aug 12 20:00:56 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -38,12 +38,11 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'init-flycheck)
   (require 'init-const)
-  (require 'init-func)
-  )
+  (require 'init-func))
 
 (use-package python
+  :mode "\\.py\\'"
   :hook (inferior-python-mode . (lambda ()
                                   (process-query-on-exit-flag
                                    (get-process "Python"))))
@@ -53,29 +52,12 @@
   :config
   (add-hook 'python-mode-hook (lambda()
                                 (flycheck-add-mode 'python-flake8 'python-mode)
-                                ;; (flycheck-add-next-checker 'lsp '(t . python-flake8))
                                 ))
-  (when (and (executable-find "python3")
-             (string= python-shell-interpreter "python"))
-    (setq python-shell-interpreter "python3"))
   (setq python-indent-offset 4)
-  (with-eval-after-load 'exec-path-from-shell
-    (exec-path-from-shell-copy-env "PYTHONPATH"))
-  ;; Live Coding in Python
-  (use-package live-py-mode)
+  (setq python-shell-interpreter "python3")
 
   (use-package pyvenv
-    :config
-    (with-eval-after-load 'exec-path-from-shell
-      (exec-path-from-shell-copy-env "WORKON_HOME"))
-    (add-hook 'pyvenv-post-activate-hooks #'+modeline-update-env-in-all-windows-h)
-    (add-hook 'pyvenv-pre-deactivate-hooks #'+modeline-clear-env-in-all-windows-h)
-    ;; (add-hook 'pyvenv-post-activate-hooks (lambda () (lsp-restart-workspace)))
-    ;; (add-hook 'pyvenv-post-deactivate-hooks (lambda () (lsp-restart-workspace)))
-    (add-to-list 'global-mode-string
-                 '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
-                 'append)
-    )
+    :defer t)
 
   (use-package py-isort
     :defer t
@@ -88,20 +70,10 @@
         (py-isort-before-save)))
     (add-hook 'python-mode-hook
               (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
-    )
-
-  (use-package python-pytest
-    :defer t)
-  )
-
-(use-package sphinx-doc
-  :after python
-  :config
-  (setq sphinx-doc-python-indent 4)
-  )
-
+    ))
 
 (use-package lsp-pyright
+  :after lsp-mode
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          ))

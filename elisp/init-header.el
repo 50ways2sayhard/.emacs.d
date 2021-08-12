@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:32:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 三 4月 29 09:11:43 2020 (+0800)
+;; Last-Updated: Thu Aug 12 19:52:40 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d header2
@@ -39,6 +39,7 @@
 
 ;; Header2Pac
 (use-package header2
+  :defer t
   :straight (:host github :repo "emacsmirror/header2")
   :custom
   (header-copyright-notice (concat "Copyright (C) 2019 " (user-full-name) "\n"))
