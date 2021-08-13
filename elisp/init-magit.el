@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 20:47:06 2021 (+0800)
+;; Last-Updated: Fri Aug 13 10:54:05 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -114,6 +114,8 @@ window that already exists in that direction. It will split otherwise."
   :bind ("C-x g" . magit-status)
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
+  (global-auto-revert-mode -1)
+  (magit-auto-revert-mode -1)
   )
 ;; -MagitPac
 
