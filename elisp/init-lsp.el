@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 16:46:52 2021 (+0800)
+;; Last-Updated: Fri Aug 13 11:50:54 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -88,7 +88,11 @@
 
         lsp-eslint-auto-fix-on-save t
         lsp-eslint-library-choices-file (concat user-emacs-directory ".local/cache/lsp-eslint-choices")
-        )
+
+        lsp-vetur-format-enable nil
+        lsp-vetur-validation-style nil
+        lsp-vetur-validation-script nil
+        lsp-vetur-validation-template nil)
 
   (defun +my-lsp-setup ()
     ;; Integrate `which-key'
