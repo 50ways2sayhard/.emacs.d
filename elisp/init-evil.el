@@ -30,7 +30,6 @@
         )
 
   :config
-  (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
   (evil-mode 1)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
@@ -63,9 +62,6 @@
                         "C-k" 'evil-window-up
                         "C-l" 'evil-window-right)
     )
-  (evil-declare-change-repeat 'company-complete)
-  (unless noninteractive
-    (setq save-silently t))
 
   (require 'evil/+packages))
 ;;; Packages

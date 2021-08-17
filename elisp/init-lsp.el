@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Aug 17 18:42:54 2021 (+0800)
+;; Last-Updated: Tue Aug 17 21:20:50 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -60,11 +60,24 @@
   (if (derived-mode-p 'dart-mode)
       (add-hook 'before-save-hook #'lsp-format-buffer)))
 
+(defun my-connect-lsp (&optional no-reconnect)
+  "Connect lsp server.  If NO-RECONNECT is t, don't shutdown existing lsp connection."
+  (interactive "P")
+  (when (and (not no-reconnect)
+             (fboundp 'lsp-disconnect))
+    (lsp-disconnect))
+  (when (and buffer-file-name
+             (not (member (file-name-extension buffer-file-name)
+                          '("json"))))
+    (unless (and (boundp 'lsp-mode) lsp-mode)
+      (if (derived-mode-p 'js2-mode) (setq-local lsp-enable-imenu nil))
+      (lsp-deferred))))
+
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
-                          (lsp-deferred))))
+                          (my-connect-lsp))))
          ;; (lsp-mode . my-lsp-setup)
          )
   :init
@@ -76,14 +89,15 @@
   (with-no-warnings
     (setq lsp-auto-guess-root nil        ; Detect project root
           lsp-keep-workspace-alive nil ; Auto-kill LSP server
+          lsp-restart 'auto-restart
           lsp-enable-indentation nil
           lsp-semantic-tokens-enable nil
-          lsp-diagnostics-provider :flycheck
+          ;; lsp-diagnostics-provider :flycheck
+          lsp-diagnostics-provider :none
           lsp-signature-auto-activate t
           lsp-idle-delay 0.5
           lsp-enable-imenu nil
           lsp-enable-on-type-formatting nil
-          lsp-enable-snippet nil
           lsp-enable-text-document-color nil
           lsp-enable-symbol-highlighting nil
           lsp-log-io nil
@@ -99,7 +113,6 @@
           lsp-headerline-breadcrumb-enable nil
           lsp-enable-links nil
           lsp-completion-show-detail nil
-          lsp-completion-no-cache t
           lsp-completion-provider :none)
     (setq lsp-typescript-implementations-code-lens-enabled t
           lsp-typescript-references-code-lens-enabled t
@@ -112,6 +125,7 @@
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
           lsp-vetur-validation-template nil)
+
     ;; don't ping LSP lanaguage server too frequently
     (defvar lsp-on-touch-time 0)
     (defadvice lsp-on-change (around lsp-on-change-hack activate)
