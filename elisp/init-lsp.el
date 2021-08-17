@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Aug 17 14:37:30 2021 (+0800)
+;; Last-Updated: Tue Aug 17 18:42:54 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -97,6 +97,7 @@
           lsp-modeline-diagnostics-enable nil
           lsp-modeline-workspace-status-enable nil
           lsp-headerline-breadcrumb-enable nil
+          lsp-enable-links nil
           lsp-completion-show-detail nil
           lsp-completion-no-cache t
           lsp-completion-provider :none)
@@ -110,7 +111,16 @@
           lsp-vetur-format-enable nil
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
-          lsp-vetur-validation-template nil))
+          lsp-vetur-validation-template nil)
+    ;; don't ping LSP lanaguage server too frequently
+    (defvar lsp-on-touch-time 0)
+    (defadvice lsp-on-change (around lsp-on-change-hack activate)
+      ;; don't run `lsp-on-change' too frequently
+      (when (> (- (float-time (current-time))
+                  lsp-on-touch-time) 30) ;; 30 seconds
+        (setq lsp-on-touch-time (float-time (current-time)))
+        ad-do-it))
+    )
   )
 
 (use-package lsp-ui
