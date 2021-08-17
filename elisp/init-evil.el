@@ -30,6 +30,7 @@
         )
 
   :config
+  (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
   (evil-mode 1)
   (put 'evil-define-key* 'lisp-indent-function 'defun)

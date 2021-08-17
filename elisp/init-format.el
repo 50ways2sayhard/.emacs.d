@@ -41,7 +41,7 @@
 (use-package format-all
   :straight (:host github :repo "50ways2sayhard/emacs-format-all-the-code")
   :hook ((prog-mode) . (lambda ()
-                         (unless (derived-mode-p 'web-mode 'dart-mode 'js-mode)
+                         (unless (derived-mode-p 'web-mode 'dart-mode 'js-mode 'vue-mode)
                            (format-all-ensure-formatter)
                            (format-all-mode)
                            )))

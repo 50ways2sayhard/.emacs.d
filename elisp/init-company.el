@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Aug 17 18:13:13 2021 (+0800)
+;; Last-Updated: Wed Aug 18 00:26:39 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -78,6 +78,7 @@ If failed try to complete the common part with `company-complete-common'"
 (defvar +company-backend-alist
   '((text-mode company-tabnine company-yasnippet company-dabbrev)
     (prog-mode company-files (company-capf :with company-tabnine :with company-yasnippet-unless-member-access :separate))
+    (vue-mode company-files (company-capf :with company-tabnine :with company-yasnippet-unless-member-access :separate))
     (conf-mode company-capf company-dabbrev-code company-yasnippet))
   "An alist matching modes to company backends. The backends for any mode is
 built from this.")

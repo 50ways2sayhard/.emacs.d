@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Aug 17 21:20:50 2021 (+0800)
+;; Last-Updated: Wed Aug 18 01:22:24 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -55,8 +55,8 @@
   (+lsp-optimization-mode +1)
 
   ;; Format and organize imports
-  (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  ;; (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
+  ;;   (add-hook 'before-save-hook #'lsp-organize-imports t t))
   (if (derived-mode-p 'dart-mode)
       (add-hook 'before-save-hook #'lsp-format-buffer)))
 
@@ -124,17 +124,8 @@
           lsp-vetur-format-enable nil
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
-          lsp-vetur-validation-template nil)
+          lsp-vetur-validation-template nil))
 
-    ;; don't ping LSP lanaguage server too frequently
-    (defvar lsp-on-touch-time 0)
-    (defadvice lsp-on-change (around lsp-on-change-hack activate)
-      ;; don't run `lsp-on-change' too frequently
-      (when (> (- (float-time (current-time))
-                  lsp-on-touch-time) 30) ;; 30 seconds
-        (setq lsp-on-touch-time (float-time (current-time)))
-        ad-do-it))
-    )
   )
 
 (use-package lsp-ui
