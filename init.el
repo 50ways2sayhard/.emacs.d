@@ -94,7 +94,7 @@
   (require 'init-tree-sitter))
 (require 'init-which-key)
 (require 'init-popup-kill-ring)
-(require 'init-undo-tree)
+;; (require 'init-undo-tree)
 (require 'init-discover-my-major)
 (require 'init-dired)
 (require 'init-buffer)
