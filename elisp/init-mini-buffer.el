@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 385
+;;     Update #: 405
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -285,15 +285,11 @@ When the number of characters in a buffer exceeds this threshold,
   :commands (mini-frame-mode)
   :config
   (setq resize-mini-frames t)
-  (unless *sys/mac*
-    (setq mini-frame-standalone t))
-  (setq mini-frame-internal-border-color "gray80")
   (setq mini-frame-show-parameters `((left . 0.5)
                                      (top . ,(/ (frame-pixel-height) 2))
                                      (background-mode 'dark)
                                      (foreground-color . "#bbc2cf")
                                      (background-color . "#242730")
-                                     (internal-border-width . 1)
                                      (min-width . 80)
                                      (width . 0.8)))
   (setq mini-frame-create-lazy nil)
@@ -301,6 +297,10 @@ When the number of characters in a buffer exceeds this threshold,
     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
     (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
     (add-to-list 'mini-frame-ignore-commands 'evil-ex)
+    (add-to-list 'mini-frame-ignore-commands 'org-time-stamp)
+    (add-to-list 'mini-frame-ignore-commands 'org-deadline)
+    (add-to-list 'mini-frame-ignore-commands 'org-schedule)
+    (add-to-list 'mini-frame-ignore-commands 'pp-eval-expression)
     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-forward)
     (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-backward))
   )

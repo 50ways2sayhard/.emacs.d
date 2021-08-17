@@ -114,7 +114,6 @@ window that already exists in that direction. It will split otherwise."
   :bind ("C-x g" . magit-status)
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
-  (global-auto-revert-mode -1)
   (magit-auto-revert-mode -1)
   )
 ;; -MagitPac

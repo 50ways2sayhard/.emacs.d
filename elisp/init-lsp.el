@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug 13 11:50:54 2021 (+0800)
+;; Last-Updated: Tue Aug 17 14:37:30 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -43,74 +43,74 @@
   (require 'lsp/+optimization))
 
 
+;;;###autoload
+(defun +lsp-clear-cache ()
+  (lsp-completion--clear-cache))
+
+
+;;;###autoload
+(defun my-lsp-setup ()
+  ;; Integrate `which-key'
+  (lsp-enable-which-key-integration)
+  (+lsp-optimization-mode +1)
+
+  ;; Format and organize imports
+  (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (if (derived-mode-p 'dart-mode)
+      (add-hook 'before-save-hook #'lsp-format-buffer)))
+
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
                           (lsp-deferred))))
-         (lsp-mode . +my-lsp-setup))
-  :bind (:map lsp-mode-map
-              ("C-c C-d" . lsp-describe-thing-at-point))
+         ;; (lsp-mode . my-lsp-setup)
+         )
   :init
   (require 'lsp/+optimization)
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
   (setq read-process-output-max (* 1024 1024)) ;; 1MB
+  (add-hook 'lsp-mode-hook #'my-lsp-setup)
 
-  (setq lsp-auto-guess-root nil        ; Detect project root
-        lsp-keep-workspace-alive nil ; Auto-kill LSP server
-        lsp-enable-indentation nil
-        lsp-semantic-tokens-enable nil
-        lsp-diagnostics-provider :flycheck
-        lsp-signature-auto-activate t
-        lsp-idle-delay 0.5
-        lsp-enable-imenu nil
-        lsp-enable-on-type-formatting nil
-        lsp-enable-snippet nil
-        lsp-enable-text-document-color nil
-        lsp-enable-symbol-highlighting nil
-        lsp-log-io nil
-        lsp-enable-folding nil
-        lsp-enable-file-watchers nil
-        lsp-keymap-prefix nil
-        lsp-eldoc-enable-hover t
-        lsp-eldoc-render-all nil
-        lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
-        lsp-modeline-code-actions-enable nil
-        lsp-modeline-diagnostics-enable nil
-        lsp-modeline-workspace-status-enable nil
-        lsp-headerline-breadcrumb-enable nil
-        lsp-completion-show-detail nil
-        lsp-completion-no-cache t
-        lsp-completion-provider :none)
-  (setq lsp-typescript-implementations-code-lens-enabled t
-        lsp-typescript-references-code-lens-enabled t
-        lsp-typescript-suggest-complete-function-calls t
+  (with-no-warnings
+    (setq lsp-auto-guess-root nil        ; Detect project root
+          lsp-keep-workspace-alive nil ; Auto-kill LSP server
+          lsp-enable-indentation nil
+          lsp-semantic-tokens-enable nil
+          lsp-diagnostics-provider :flycheck
+          lsp-signature-auto-activate t
+          lsp-idle-delay 0.5
+          lsp-enable-imenu nil
+          lsp-enable-on-type-formatting nil
+          lsp-enable-snippet nil
+          lsp-enable-text-document-color nil
+          lsp-enable-symbol-highlighting nil
+          lsp-log-io nil
+          lsp-enable-folding nil
+          lsp-enable-file-watchers nil
+          lsp-keymap-prefix nil
+          lsp-eldoc-enable-hover t
+          lsp-eldoc-render-all nil
+          lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
+          lsp-modeline-code-actions-enable nil
+          lsp-modeline-diagnostics-enable nil
+          lsp-modeline-workspace-status-enable nil
+          lsp-headerline-breadcrumb-enable nil
+          lsp-completion-show-detail nil
+          lsp-completion-no-cache t
+          lsp-completion-provider :none)
+    (setq lsp-typescript-implementations-code-lens-enabled t
+          lsp-typescript-references-code-lens-enabled t
+          lsp-typescript-suggest-complete-function-calls t
 
-        lsp-eslint-auto-fix-on-save t
-        lsp-eslint-library-choices-file (concat user-emacs-directory ".local/cache/lsp-eslint-choices")
+          lsp-eslint-auto-fix-on-save t
+          lsp-eslint-library-choices-file (concat user-emacs-directory ".local/cache/lsp-eslint-choices")
 
-        lsp-vetur-format-enable nil
-        lsp-vetur-validation-style nil
-        lsp-vetur-validation-script nil
-        lsp-vetur-validation-template nil)
-
-  (defun +my-lsp-setup ()
-    ;; Integrate `which-key'
-    (lsp-enable-which-key-integration)
-    (+lsp-optimization-mode +1)
-
-    ;; (set-lookup-handlers! 'lsp-mode
-    ;;   :definition #'+lsp-lookup-definition-handler
-    ;;   :references #'+lsp-lookup-references-handler
-    ;;   :documentation '(lsp-describe-thing-at-point :async t)
-    ;;   :implementations '(lsp-find-implementation :async t)
-    ;;   :type-definition #'lsp-find-type-definition)
-
-    ;; Format and organize imports
-    (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
-      (add-hook 'before-save-hook #'lsp-organize-imports t t))
-    (if (derived-mode-p 'dart-mode)
-        (add-hook 'before-save-hook #'lsp-format-buffer)))
+          lsp-vetur-format-enable nil
+          lsp-vetur-validation-style nil
+          lsp-vetur-validation-script nil
+          lsp-vetur-validation-template nil))
   )
 
 (use-package lsp-ui

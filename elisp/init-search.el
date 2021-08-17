@@ -79,8 +79,6 @@
       (youdao-dictionary-search-at-point))))
 
 
-(use-package google-this)
-
 (provide 'init-search)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-search.el ends here

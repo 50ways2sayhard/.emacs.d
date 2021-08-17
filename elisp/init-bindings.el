@@ -129,7 +129,6 @@
     "o" '(:wk "Open")
     "oy" '(my-youdao-search-at-point :wk "youdao")
     "oe" '(shell-here :wk "Shell")
-    "og" '(google-this :wk "Google")
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
 

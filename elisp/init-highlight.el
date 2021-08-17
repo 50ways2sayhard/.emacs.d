@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 37
+;;     Update #: 38
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -147,7 +147,7 @@ FACE defaults to inheriting from default and highlight."
   :diminish
   :bind (:map help-mode-map
               ("w" . rainbow-mode))
-  :hook ((web-mode) . rainbow-mode)
+  ;; :hook ((web-mode) . rainbow-mode)
   :config
   ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
   ;; @see https://emacs.stackexchange.com/questions/36420
