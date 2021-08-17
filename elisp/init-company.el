@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Aug 16 16:49:59 2021 (+0800)
+;; Last-Updated: Tue Aug 17 18:13:13 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -239,7 +239,7 @@ Examples:
                ))))
 
   :config
-  ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+  (add-to-list 'company-transformers 'company//sort-by-tabnine t)
   )
 ;; -CompanyTabNinePac
 
