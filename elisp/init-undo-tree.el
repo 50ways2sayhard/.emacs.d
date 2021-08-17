@@ -38,14 +38,17 @@
 ;;; Code:
 
 ;; UndoTreePac
-(use-package undo-tree
-  :defer t
-  :diminish undo-tree-mode
-  :init (global-undo-tree-mode)
-  :custom
-  (undo-tree-visualizer-diff t)
-  (undo-tree-visualizer-timestamps t))
+;; (use-package undo-tree
+;;   :defer t
+;;   :diminish undo-tree-mode
+;;   :init (global-undo-tree-mode)
+;;   :custom
+;;   (undo-tree-visualizer-diff t)
+;;   (undo-tree-visualizer-timestamps t))
 ;; -UndoTreePac
+
+(use-package undo-fu
+  :defer t)
 
 (provide 'init-undo-tree)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

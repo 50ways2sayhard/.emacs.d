@@ -24,7 +24,7 @@
         evil-ex-interactive-search-highlight 'selected-window
         evil-split-window-below t
         evil-vsplit-window-right t
-        evil-undo-system 'undo-redo
+        evil-undo-system 'undo-fu
         evil-want-C-w-delete nil
         evil-want-fine-undo t
         )
