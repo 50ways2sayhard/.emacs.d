@@ -41,12 +41,13 @@
   (require 'init-global-config)
   (require 'init-const))
 
-
 ;; ColorRGPac
 (use-package color-rg
-  :defer t
+  :commands (color-rg-search-input color-rg-search-project color-rg-search-symbol-in-project)
   :straight (:host github :repo "manateelazycat/color-rg")
-  :bind ("C-M-s" . color-rg-search-input-in-project))
+  :if *rg*
+  :init
+  (setq color-rg-mac-load-path-from-shell nil))
 ;; -ColorRGPac
 
 
