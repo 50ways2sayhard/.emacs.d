@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 18 01:22:24 2021 (+0800)
+;; Last-Updated: Wed Aug 18 20:06:32 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -127,27 +127,6 @@
           lsp-vetur-validation-template nil))
 
   )
-
-(use-package lsp-ui
-  :custom-face
-  (lsp-ui-doc-background ((t (:background nil))))
-  (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-header nil)
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-border (face-foreground 'default))
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-ignore-duplicate t)
-  (lsp-ui-sideline-show-code-actions nil)
-  (lsp-ui-sideline-show-diagnostics nil)
-  (lsp-ui-doc-position 'at-point)
-  :config
-  (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
-  (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
-    (setq mode-line-format nil)))
-
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
