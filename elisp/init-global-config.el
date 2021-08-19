@@ -191,7 +191,7 @@ The original function deletes trailing whitespace of the current line."
   ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
   ;; (setq gcmh-idle-delay 5
   ;;       gcmh-high-cons-threshold #x1000000)
-  (setq gcmh-idle-delay 0.5
+  (setq gcmh-idle-delay 5
         gcmh-high-cons-threshold (* 64 1024 1024)))
 
 (defun my-minibuffer-setup-hook ()

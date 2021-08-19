@@ -60,24 +60,11 @@
   (if (derived-mode-p 'dart-mode)
       (add-hook 'before-save-hook #'lsp-format-buffer)))
 
-(defun my-connect-lsp (&optional no-reconnect)
-  "Connect lsp server.  If NO-RECONNECT is t, don't shutdown existing lsp connection."
-  (interactive "P")
-  (when (and (not no-reconnect)
-             (fboundp 'lsp-disconnect))
-    (lsp-disconnect))
-  (when (and buffer-file-name
-             (not (member (file-name-extension buffer-file-name)
-                          '("json"))))
-    (unless (and (boundp 'lsp-mode) lsp-mode)
-      (if (derived-mode-p 'js2-mode) (setq-local lsp-enable-imenu nil))
-      (lsp-deferred))))
-
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
-                          (my-connect-lsp))))
+                          (lsp-deferred))))
          ;; (lsp-mode . my-lsp-setup)
          )
   :init
