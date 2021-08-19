@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 26
+;;     Update #: 28
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -69,8 +69,17 @@
   :diminish
   :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
 
+(use-package imenu
+  :hook (imenu-after-jump . recenter))
+
 (use-package imenu-list
   :defer t)
+
+(use-package separedit
+  :defer t
+  :custom
+  (separedit-remove-trailing-spaces-in-comment t)
+  (separedit-default-mode 'markdown-mode))
 
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
