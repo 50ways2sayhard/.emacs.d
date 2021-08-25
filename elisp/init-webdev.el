@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 18 01:01:03 2021 (+0800)
+;; Last-Updated: Wed Aug 25 09:52:45 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -43,7 +43,7 @@
   (css-selector ((t (:inherit default :foreground "#66CCFF"))))
   (web-mode-current-element-highlight-face ((t (:inherit default :background "#434343"))))
   :mode
-  ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'"
+  ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")
   :custom
   (web-mode-style-padding 0)
@@ -58,10 +58,10 @@
         :keymaps 'web-mode-map
         "f" 'lsp-eslint-fix-all))
     (setq-local lsp-enable-imenu t)
-    ;; (make-local-variable 'before-save-hook)
-    ;; (with-eval-after-load 'lsp-eslint
-    ;;   (add-hook 'before-save-hook 'lsp-eslint-fix-all))
-    )
+    (setq-local lsp-diagnostics-provider :flycheck)
+    (make-local-variable 'before-save-hook)
+    (with-eval-after-load 'lsp-eslint
+      (add-hook 'before-save-hook 'lsp-eslint-fix-all)))
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -121,19 +121,6 @@
 (use-package json-mode
   :mode "\\.json\\'")
 ;; -JsonPac
-
-(use-package prettier-js)
-
-(use-package vue-mode
-  :mode "\\.vue\\'"
-  :hook (vue-mode . yas-minor-mode)
-  :hook (vue-mode . prettier-js-mode)
-  :custom
-  (mmm-submode-decoration-level 2)
-  :config
-  (setq prettier-js-args '("--parser vue"))
-  (add-hook 'vue-mode-hook #'my-connect-lsp)
-  )
 
 (provide 'init-webdev)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
