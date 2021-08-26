@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 18 20:06:32 2021 (+0800)
+;; Last-Updated: Thu Aug 26 17:53:18 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -42,12 +42,6 @@
   (require 'init-const)
   (require 'lsp/+optimization))
 
-
-;;;###autoload
-(defun +lsp-clear-cache ()
-  (lsp-completion--clear-cache))
-
-
 ;;;###autoload
 (defun my-lsp-setup ()
   ;; Integrate `which-key'
@@ -64,9 +58,7 @@
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
-                          (lsp-deferred))))
-         ;; (lsp-mode . my-lsp-setup)
-         )
+                          (lsp-deferred)))))
   :init
   (require 'lsp/+optimization)
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
@@ -92,7 +84,7 @@
           lsp-enable-file-watchers nil
           lsp-keymap-prefix nil
           lsp-eldoc-enable-hover t
-          lsp-eldoc-render-all nil
+          lsp-eldoc-render-all t
           lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
           lsp-modeline-code-actions-enable nil
           lsp-modeline-diagnostics-enable nil
