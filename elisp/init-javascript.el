@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 70
+;;     Update #: 71
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -63,6 +63,7 @@
   :config
   (js2-imenu-extras-mode)
   (js2-highlight-unused-variables-mode)
+  (eglot-ensure)
   (setq-default js2-mode-must-byte-compile nil
                 forward-sexp-function nil
                 ;; {{ comment indention in modern frontend development

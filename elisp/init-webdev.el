@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:03:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 25 09:52:45 2021 (+0800)
+;; Last-Updated: Fri Aug 27 23:04:24 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d web-mode js2-mode typescript-mode emmet instant-rename-tag json-mode
@@ -53,15 +53,17 @@
   :init
   (defun my/web-vue-setup()
     (flycheck-add-mode 'javascript-eslint 'web-mode)
-    (with-eval-after-load 'general
-      (local-leader-def
-        :keymaps 'web-mode-map
-        "f" 'lsp-eslint-fix-all))
-    (setq-local lsp-enable-imenu t)
-    (setq-local lsp-diagnostics-provider :flycheck)
-    (make-local-variable 'before-save-hook)
-    (with-eval-after-load 'lsp-eslint
-      (add-hook 'before-save-hook 'lsp-eslint-fix-all)))
+    ;; (with-eval-after-load 'general
+    ;;   (local-leader-def
+    ;;     :keymaps 'web-mode-map
+    ;;     "f" 'lsp-eslint-fix-all))
+    (eglot-ensure)
+    ;; (setq-local lsp-enable-imenu t)
+    ;; (setq-local lsp-diagnostics-provider :flycheck)
+    ;; (make-local-variable 'before-save-hook)
+    ;; (with-eval-after-load 'lsp-eslint
+    ;;   (add-hook 'before-save-hook 'lsp-eslint-fix-all))
+    )
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)

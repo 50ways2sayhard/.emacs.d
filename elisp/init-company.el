@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 18 00:26:39 2021 (+0800)
+;; Last-Updated: Sat Aug 28 16:10:13 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -146,7 +146,7 @@ Examples:
 ;; ComPac
 (use-package company
   :diminish company-mode
-  :hook ((prog-mode LaTeX-mode) . company-mode)
+  :hook ((text-mode dart-mode emacs-lisp-mode) . company-mode)
   :init
   (company-tng-mode)
   (add-hook 'company-mode-hook #'+company-init-backends-h)
@@ -173,7 +173,7 @@ Examples:
               ("M-k" . nil))
   :config
   (setq company-backends '(company-files company-dabbrev))
-  (global-company-mode 1)
+  ;; (global-company-mode 1)
 
   (general-define-key
    :keymaps '(company-active-map evil-insert-state-map)
@@ -405,6 +405,29 @@ Examples:
               (Template . ,(all-the-icons-material "format_align_left" :height 1.0 :v-adjust -0.2)))
             company-box-icons-alist 'company-box-icons-all-the-icons))))
 
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
+  (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
+  (corfu-quit-no-match t)        ;; Automatically quit if there is no match
+  (corfu-echo-documentation nil) ;; Do not show documentation in the echo area
+  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0)
+
+  ;; Optionally use TAB for cycling, default is `corfu-complete'.
+  :bind (:map corfu-map
+              ("TAB" . corfu-next)
+              ([tab] . corfu-next)
+              ("S-TAB" . corfu-previous)
+              ([backtab] . corfu-previous))
+
+  ;; You may want to enable Corfu only for certain modes.
+  :hook ((prog-mode . (lambda ()
+                        (unless (derived-mode-p 'emacs-lisp-mode 'dart-mode)
+                          (corfu-mode))))))
 
 (provide 'init-company)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

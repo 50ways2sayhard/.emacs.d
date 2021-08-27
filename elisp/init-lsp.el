@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Aug 28 16:01:38 2021 (+0800)
+;; Last-Updated: Sat Aug 28 16:13:24 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -55,10 +55,12 @@
       (add-hook 'before-save-hook #'lsp-format-buffer)))
 
 (use-package lsp-mode
+  :disabled
   :diminish
-  :hook ((prog-mode . (lambda ()
-                        (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
-                          (lsp-deferred)))))
+  ;; :hook ((prog-mode . (lambda ()
+  ;;                       (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
+  ;;                         (lsp-deferred)))))
+  :hook (dart-mode . lsp-deferred)
   :init
   (require 'lsp/+optimization)
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
@@ -141,6 +143,25 @@
   (setq my/lsp-clear-leak-timer
         (run-with-timer 5 5 #'my/lsp-clear-leak))
   )
+
+(use-package eglot
+  :commands eglot eglot-ensure
+  :hook (eglot-managed-mode . +lsp-optimization-mode)
+  :init
+  (setq eglot-sync-connect 1
+        eglot-connect-timeout 10
+        eglot-autoshutdown t
+        eglot-send-changes-idle-time 0.5
+        ;; NOTE We disable eglot-auto-display-help-buffer because :select t in
+        ;;      its popup rule causes eglot to steal focus too often.
+        eglot-auto-display-help-buffer nil)
+  :config
+  (setq eglot-stay-out-of '(flymake company project))
+
+  (add-to-list 'eglot-server-programs '(web-mode . ("vls" "--stdio")))
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
+  (with-eval-after-load 'flycheck
+    (require 'lsp/+eglot)))
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
