@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 26 17:53:18 2021 (+0800)
+;; Last-Updated: Fri Aug 27 14:09:19 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -104,8 +104,20 @@
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
           lsp-vetur-validation-template nil))
-
-  )
+  :config
+  (defun my-lsp--init-if-visible (fn &rest args)
+    (unless (bound-and-true-p git-timemachine-mode)
+      (apply fn args)))
+  (advice-add #'lsp--init-if-visible :around #'my-lsp--init-if-visible)
+  (defun my-lsp-icons-all-the-icons-material-icon (icon-name face fallback &optional feature)
+    (if (and (display-graphic-p)
+             (functionp 'all-the-icons-material)
+             (lsp-icons--enabled-for-feature feature))
+        (all-the-icons-material icon-name
+                                :face face)
+      (propertize fallback 'face face)))
+  (advice-add #'lsp-icons-all-the-icons-material-icon
+              :override #'my-lsp-icons-all-the-icons-material-icon))
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
