@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug 27 14:09:19 2021 (+0800)
+;; Last-Updated: Sat Aug 28 16:01:38 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -117,7 +117,30 @@
                                 :face face)
       (propertize fallback 'face face)))
   (advice-add #'lsp-icons-all-the-icons-material-icon
-              :override #'my-lsp-icons-all-the-icons-material-icon))
+              :override #'my-lsp-icons-all-the-icons-material-icon)
+  (defun my/lsp-client-clear-leak-handlers (lsp-client)
+    "Clear leaking handlers in LSP-CLIENT."
+    (let ((response-handlers (lsp--client-response-handlers lsp-client))
+          to-delete-keys)
+      (maphash (lambda (key value)
+                 (when (> (time-convert (time-since (nth 3 value)) 'integer)
+                          (* 2 lsp-response-timeout))
+                   (push key to-delete-keys)))
+               response-handlers)
+      (when to-delete-keys
+        (message "Deleting %d handlers in %s lsp-client..."
+                 (length to-delete-keys)
+                 (lsp--client-server-id lsp-client))
+        (mapc (lambda (k) (remhash k response-handlers))
+              to-delete-keys))))
+  (defun my/lsp-clear-leak ()
+    "Clear all leaks"
+    (maphash (lambda (_ client)
+               (my/lsp-client-clear-leak-handlers client))
+             lsp-clients))
+  (setq my/lsp-clear-leak-timer
+        (run-with-timer 5 5 #'my/lsp-clear-leak))
+  )
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
