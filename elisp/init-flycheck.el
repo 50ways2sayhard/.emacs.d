@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:08:22 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 18:14:02 2021 (+0800)
+;; Last-Updated: Tue Aug 31 17:55:26 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d flycheck
@@ -58,7 +58,8 @@
         :custom
         (flycheck-posframe-border-width 1)
         (flycheck-posframe-inhibit-functions
-         '((lambda (&rest _) (bound-and-true-p company-backend))))
+         '((lambda (&rest _) (bound-and-true-p company-backend))
+           (lambda (&rest _) (bound-and-true-p corfu--candidates))))
         :config
         (flycheck-posframe-configure-pretty-defaults))
     (use-package flycheck-pos-tip

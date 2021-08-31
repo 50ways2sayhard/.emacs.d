@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Aug 28 16:10:13 2021 (+0800)
+;; Last-Updated: Tue Aug 31 17:30:09 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -414,7 +414,7 @@ Examples:
   (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
   (corfu-quit-no-match t)        ;; Automatically quit if there is no match
   (corfu-echo-documentation nil) ;; Do not show documentation in the echo area
-  (corfu-auto-prefix 1)
+  (corfu-auto-prefix 3)
   (corfu-auto-delay 0)
 
   ;; Optionally use TAB for cycling, default is `corfu-complete'.

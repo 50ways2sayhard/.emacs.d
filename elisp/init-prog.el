@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 30
+;;     Update #: 31
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -71,7 +71,7 @@
   (eldoc-box-only-multi-line t)
   :hook (eldoc-mode . eldoc-box-hover-at-point-mode)
   :init
-  (setq eldoc-box-self-insert-command-list '(company-complete)))
+  (setq eldoc-box-self-insert-command-list '(company-complete corfu-complete)))
 
 (use-package imenu
   :hook (imenu-after-jump . recenter))
