@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 28
+;;     Update #: 30
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -67,7 +67,11 @@
 
 (use-package eldoc-box
   :diminish
-  :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
+  :custom
+  (eldoc-box-only-multi-line t)
+  :hook (eldoc-mode . eldoc-box-hover-at-point-mode)
+  :init
+  (setq eldoc-box-self-insert-command-list '(company-complete)))
 
 (use-package imenu
   :hook (imenu-after-jump . recenter))
