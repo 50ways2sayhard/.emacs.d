@@ -273,9 +273,9 @@ Otherwise it builds `prettify-code-symbols-alist' according to
   :results       "#+RESULTS:"
   :property      ":PROPERTIES:"
   :end           ":END:"
-  :priority_a    "[#A]"
-  :priority_b    "[#B]"
-  :priority_c    "[#C]"
+  ;; :priority_a    "[#A]"
+  ;; :priority_b    "[#B]"
+  ;; :priority_c    "[#C]"
   )
 
 (provide 'init-pretty-code)
