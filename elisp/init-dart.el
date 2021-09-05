@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 26
+;;     Update #: 27
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -53,6 +53,7 @@
 (use-package dart-mode
   :mode ("\\.dart\\'")
   :hook (dart-mode . (lambda ()
+                       (setq-local lsp-enable-imenu t)
                        (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)))
   :config
   (setq dart-format-on-save t)

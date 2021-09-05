@@ -65,14 +65,6 @@
                             lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
   )
 
-(use-package eldoc-box
-  :diminish
-  :custom
-  (eldoc-box-only-multi-line t)
-  :hook (eldoc-mode . eldoc-box-hover-at-point-mode)
-  :init
-  (setq eldoc-box-self-insert-command-list '(company-complete)))
-
 (use-package imenu
   :hook (imenu-after-jump . recenter))
 

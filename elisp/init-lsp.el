@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Aug 28 16:01:38 2021 (+0800)
+;; Last-Updated: Sun Sep  5 10:23:46 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -84,7 +84,7 @@
           lsp-enable-file-watchers nil
           lsp-keymap-prefix nil
           lsp-eldoc-enable-hover t
-          lsp-eldoc-render-all t
+          lsp-eldoc-render-all nil
           lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
           lsp-modeline-code-actions-enable nil
           lsp-modeline-diagnostics-enable nil
@@ -117,30 +117,26 @@
                                 :face face)
       (propertize fallback 'face face)))
   (advice-add #'lsp-icons-all-the-icons-material-icon
-              :override #'my-lsp-icons-all-the-icons-material-icon)
-  (defun my/lsp-client-clear-leak-handlers (lsp-client)
-    "Clear leaking handlers in LSP-CLIENT."
-    (let ((response-handlers (lsp--client-response-handlers lsp-client))
-          to-delete-keys)
-      (maphash (lambda (key value)
-                 (when (> (time-convert (time-since (nth 3 value)) 'integer)
-                          (* 2 lsp-response-timeout))
-                   (push key to-delete-keys)))
-               response-handlers)
-      (when to-delete-keys
-        (message "Deleting %d handlers in %s lsp-client..."
-                 (length to-delete-keys)
-                 (lsp--client-server-id lsp-client))
-        (mapc (lambda (k) (remhash k response-handlers))
-              to-delete-keys))))
-  (defun my/lsp-clear-leak ()
-    "Clear all leaks"
-    (maphash (lambda (_ client)
-               (my/lsp-client-clear-leak-handlers client))
-             lsp-clients))
-  (setq my/lsp-clear-leak-timer
-        (run-with-timer 5 5 #'my/lsp-clear-leak))
-  )
+              :override #'my-lsp-icons-all-the-icons-material-icon))
+(use-package lsp-ui
+  :custom-face
+  (lsp-ui-doc-background ((t (:background nil))))
+  (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-header nil)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-border (face-foreground 'default))
+  (lsp-ui-sideline-enable nil)
+  (lsp-ui-sideline-ignore-duplicate t)
+  (lsp-ui-sideline-show-code-actions nil)
+  (lsp-ui-sideline-show-diagnostics nil)
+  (lsp-ui-doc-position 'at-point)
+  :config
+  (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
+  (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
+    (setq mode-line-format nil)))
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
