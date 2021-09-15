@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Sep  7 15:15:58 2021 (+0800)
+;; Last-Updated: Wed Sep 15 10:49:24 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -127,7 +127,7 @@
   :custom
   (lsp-ui-doc-header nil)
   (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-enable nil)
   (lsp-ui-doc-delay 1)
   (lsp-ui-doc-border (face-foreground 'default))
   (lsp-ui-sideline-enable nil)

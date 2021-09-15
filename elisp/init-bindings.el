@@ -89,8 +89,7 @@
     "cu" '(citre-update-this-tags-file :wk "Citre update this tag")
     "cU" '(citre-update-tags-file :wk "Citre update tag")
     "cc" '(separedit :wk "Write comment")
-
-    "ch" '(my/toggle-lsp-ui-doc :wk "Toggle lsp-ui-doc")
+    "ch" '(lsp-ui-doc-show :wk "Toggle lsp-ui-doc")
 
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
