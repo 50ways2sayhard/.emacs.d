@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 70
+;;     Update #: 73
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -87,6 +87,8 @@
   (make-local-variable 'before-save-hook)
   (with-eval-after-load 'lsp-eslint
     (add-hook 'before-save-hook 'lsp-eslint-fix-all))
+  (with-eval-after-load 'flycheck
+    (flycheck-add-mode 'javascript-eslint 'js2-mode))
   )
 
 

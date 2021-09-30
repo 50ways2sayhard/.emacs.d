@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Sep  5 12:16:07 2021 (+0800)
+;; Last-Updated: Mon Sep  6 16:21:43 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -291,6 +291,7 @@
 ;; OrgDownload
 (use-package org-download
   :defer t
+  :commands org-download-yank org-download-clipboard
   :custom
   (org-download-image-dir "img/")
   (org-download-heading-lvl nil))

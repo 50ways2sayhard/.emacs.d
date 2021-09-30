@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug 13 10:54:05 2021 (+0800)
+;; Last-Updated: Wed Sep 22 16:40:18 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -183,7 +183,7 @@ window that already exists in that direction. It will split otherwise."
     ("Catching errors" . ":goal_net:")
     ("Adding or updating types (Flow, TypeScript)" . ":label:")
     ("增加新特性" . "feat")
-    ("bug 修复" . "bug")
+    ("bug 修复" . "fix")
     ("文档改动" . "docs")
     ("格式改动（不影响代码运行的变动，例如加空格、换行、分号等）" . "style")
     ("重构代码" . "refactor")

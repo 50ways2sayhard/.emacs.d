@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Aug 18 00:26:39 2021 (+0800)
+;; Last-Updated: Sun Sep 26 11:15:52 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -177,7 +177,7 @@ Examples:
 
   (general-define-key
    :keymaps '(company-active-map evil-insert-state-map)
-   "C-h" 'smarter-yas-expand-next-field-complete)
+   "C-u" 'smarter-yas-expand-next-field-complete)
   (general-def 'insert
     :prefix "C-x"
     "C-f" 'company-files)
