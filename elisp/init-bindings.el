@@ -157,6 +157,7 @@
 
     "t" '(:wk "Toggle")
     "tc" '(calendar :wk "Toggle calendar")
+    "te" '(vterm-posframe-toggle :wk "Shell")
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "tt" '(+treemacs/toggle :wk "Treemacs")
