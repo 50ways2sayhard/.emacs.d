@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 16
+;;     Update #: 17
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -48,7 +48,7 @@
 
 
 (use-package tree-sitter
-  :hook ((python-mode js2-mode) . tree-sitter-hl-mode)
+  :hook ((python-mode js2-mode typescript-mode) . tree-sitter-hl-mode)
   :custom-face
   (tree-sitter-hl-face:property ((t (default :inherit font-lock-constant-face :slant normal)))))
 

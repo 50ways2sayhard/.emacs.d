@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 73
+;;     Update #: 75
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -101,7 +101,13 @@
 ;; TypeScriptPac
 (use-package typescript-mode
   :mode "\\.ts\\'"
-  :commands (typescript-mode))
+  :commands (typescript-mode)
+  :config
+  (setq js-indent-level 2)
+  (setq typescript-indent-level 2)
+  (with-eval-after-load 'lsp
+    (setq-local lsp-enable-imenu t))
+  )
 ;; -TypeScriptPac
 
 (provide 'init-javascript)
