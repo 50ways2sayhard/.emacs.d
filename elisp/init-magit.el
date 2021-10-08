@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Sep 22 16:40:18 2021 (+0800)
+;; Last-Updated: Fri Oct  8 22:58:19 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -222,15 +222,22 @@ window that already exists in that direction. It will split otherwise."
                                     (when smerge-mode
                                       (hydra-smerge/body)))))
   :config
-  (local-leader-def
-    :keymaps 'smerge-mode-map
-    "n" '(smerge-next :wk "Next conflict")
-    "p" '(smerge-prev :wk "Previous conflict")
-    "RET" '(smerge-keep-current :wk "Accept current")
-    "l" '(smerge-keep-lower :wk "Keep lower")
-    "u" '(smerge-keep-upper :wk "Keep upper")
-    "m" '(smerge-keep-mine :wk "Keep mine")
-    "A" '(smerge-keep-all :wk "Keep all"))
+  ;; (local-leader-def
+  ;;   :keymaps 'smerge-mode-map
+  ;;   "n" '(smerge-next :wk "Next conflict")
+  ;;   "p" '(smerge-prev :wk "Previous conflict")
+  ;;   "RET" '(smerge-keep-current :wk "Accept current")
+  ;;   "l" '(smerge-keep-lower :wk "Keep lower")
+  ;;   "u" '(smerge-keep-upper :wk "Keep upper")
+  ;;   "m" '(smerge-keep-mine :wk "Keep mine")
+  ;;   "A" '(smerge-keep-all :wk "Keep all"))
+  (evil-define-key 'normal 'smerge-mode-map ",n" 'smerge-next)
+  (evil-define-key 'normal 'smerge-mode-map ",p" 'smerge-prev)
+  (evil-define-key 'normal 'smerge-mode-map ",," 'smerge-keep-current)
+  (evil-define-key 'normal 'smerge-mode-map ",l" 'smerge-keep-lower)
+  (evil-define-key 'normal 'smerge-mode-map ",u" 'smerge-keep-upper)
+  (evil-define-key 'normal 'smerge-mode-map ",m" 'smerge-mine)
+  (evil-define-key 'normal 'smerge-mode-map ",A" 'smerge-keep-all)
   )
 
 (provide 'init-magit)
