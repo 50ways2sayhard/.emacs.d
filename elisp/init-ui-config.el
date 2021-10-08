@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Oct  8 22:39:40 2021 (+0800)
+;; Last-Updated: Fri Oct  8 22:43:23 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -95,6 +95,13 @@
 (setq highlight-nonselected-windows nil)
 (setq fast-but-imprecise-scrolling t)
 (setq redisplay-skip-fontification-on-input t)
+
+(use-package olivetti
+  :straight (:host github :repo "rnkn/olivetti")
+  :commands (olivetti-mode olivetti-shrink olivetti-expand olivetti-set-width)
+  :custom
+  (olivetti-body-width 120))
+
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-ui-config.el ends here

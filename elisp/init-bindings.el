@@ -161,6 +161,7 @@
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "tt" '(+treemacs/toggle :wk "Treemacs")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
+    "tc" '(olivetti-mode :wk "Center")
 
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
