@@ -128,7 +128,6 @@
     "m" '(:wk "Local leader")
 
     "o" '(:wk "Open")
-    "oy" '(my-youdao-search-at-point :wk "youdao")
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
 
@@ -157,13 +156,15 @@
     "sT" '(load-theme :wk "Load theme")
 
     "t" '(:wk "Toggle")
-    "tc" '(calendar :wk "Toggle calendar")
     "te" '(vterm-posframe-toggle :wk "Shell")
+    "tF" '(fanyi-dwim :wk "Fanyi with confirm")
+    "tf" '(fanyi-dwim2 :wk "Fanyi")
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "tt" '(+treemacs/toggle :wk "Treemacs")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
     "tc" '(olivetti-mode :wk "Center")
+    "ty" '(my-youdao-search-at-point :wk "youdao")
 
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
