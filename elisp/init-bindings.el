@@ -88,7 +88,7 @@
     "ck" '(citre-jump-back :wk "Citre jump back")
     "cu" '(citre-update-this-tags-file :wk "Citre update this tag")
     "cU" '(citre-update-tags-file :wk "Citre update tag")
-    "cc" '(separedit :wk "Write comment")
+    "cc" '(separedit-dwim :wk "Write comment")
     "ch" '(lsp-ui-doc-show :wk "Toggle lsp-ui-doc")
 
     "e" '(:wk "Error")

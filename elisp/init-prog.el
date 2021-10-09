@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 34
+;;     Update #: 37
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -62,8 +62,7 @@
   :commands (devdocs-lookup-at-point devdocs-search-at-point)
   :config
   (add-hook 'web-mode-hook (
-                            lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS")))))
-  )
+                            lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))))
 
 (use-package imenu
   :hook (imenu-after-jump . recenter))
@@ -94,8 +93,6 @@
     (setq xref-show-xrefs-function #'xref-show-definitions-completing-read)
     (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
   :hook ((xref-after-return xref-after-jump) . recenter))
-
-
 
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
