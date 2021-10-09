@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 37
+;;     Update #: 45
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,6 +46,9 @@
 ;;
 ;;; Code:
 
+(defvar devdocs-major-mode-docs-alist
+  '((web-mode . ("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))
+
 
 ;;;###autoload
 (defun +devdocs-lookup-at-point()
@@ -57,12 +60,36 @@
   (interactive)
   (devdocs-search (thing-at-point 'symbol)))
 
+;;;###autoload
+(defun devdocs-dwim()
+  "Look up a DevDocs documentation entry.
+Install the doc if it's not installed."
+  (interactive)
+  ;; Install the doc if it's not installed
+  (mapc
+   (lambda (str)
+     (let* ((docs (split-string str " "))
+            (doc (if (length= docs 1)
+                     (downcase (car docs))
+                   (concat (downcase (car docs)) "~" (downcase (cdr docs))))))
+       (unless (and (file-directory-p devdocs-data-dir)
+                    (directory-files devdocs-data-dir nil "^[^.]"))
+         (message "Installing %s..." str)
+         (devdocs-install doc))))
+   (alist-get major-mode devdocs-major-mode-docs-alist))
+
+  ;; Lookup the symbol at point
+  (devdocs-lookup nil (thing-at-point 'symbol t)))
 
 (use-package devdocs
   :commands (devdocs-lookup-at-point devdocs-search-at-point)
-  :config
-  (add-hook 'web-mode-hook (
-                            lambda () ((setq-local devdocs-current-docs '("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))))
+  :init
+  (mapc
+   (lambda (e)
+     (add-hook (intern (format "%s-hook" (car e)))
+               (lambda ()
+                 (setq-local devdocs-current-docs (cdr e)))))
+   devdocs-major-mode-docs-alist))
 
 (use-package imenu
   :hook (imenu-after-jump . recenter))

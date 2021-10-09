@@ -129,7 +129,6 @@
 
     "o" '(:wk "Open")
     "oy" '(my-youdao-search-at-point :wk "youdao")
-    "oe" '(shell-here :wk "Shell")
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
 
@@ -146,7 +145,8 @@
 
     "s" '(:wk "Search")
     "sa" '(consult-org-agenda :wk "Search agenda")
-    "sd" '(+devdocs-lookup-at-point :wk "Devdocs lookup")
+    ;; "sd" '(+devdocs-lookup-at-point :wk "Devdocs lookup")
+    "sd" '(devdocs-dwim :wk "Devdocs lookup")
     "sD" '(+devdocs-search-at-point :wk "Devdocs search")
     "sf" '(locate :wk "Locate file")
     "si" '(+my-imenu :wk "Jump to symbol")
