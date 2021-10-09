@@ -42,6 +42,7 @@
   (general-def [C-S-return] '+default/newline-above)
   (general-def "C-S-RET" '+default/newline-above)
   (general-def "M-?" '+consult-ripgrep-at-point)
+  (general-def "M->" '+lookup-xref-references-backend-fn)
 
   ;; Navigation
   (general-define-key
