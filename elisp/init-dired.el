@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 20:34:37 2021 (+0800)
+;; Last-Updated: Fri Oct  8 22:38:19 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
@@ -80,6 +80,20 @@
   (general-def "C-x C-s" 'save-all-buffers)
   )
 ;; -SaveAllBuffers
+
+(use-package all-the-icons-dired
+  :defer t
+  :after dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-hacks
+  :defer t
+  :after dired)
+
+(use-package  dired-git-info
+  :after dired
+  :config
+  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
 
 (provide 'init-dired)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
