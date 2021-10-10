@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 30
+;;     Update #: 34
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -76,6 +76,26 @@
   :custom
   (separedit-remove-trailing-spaces-in-comment t)
   (separedit-default-mode 'markdown-mode))
+
+(use-package quickrun
+  :ensure t
+  :bind ("C-c x" . quickrun)
+  :custom
+  (quickrun-focus-p nil)
+  (quickrun-input-file-extension ".qr"))
+
+(use-package xref
+  :straight nil
+  :init
+  ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
+  ;; `project-find-regexp' benefits from that.
+  (when (>= emacs-major-version 28)
+    (setq xref-search-program 'ripgrep)
+    (setq xref-show-xrefs-function #'xref-show-definitions-completing-read)
+    (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
+  :hook ((xref-after-return xref-after-jump) . recenter))
+
+
 
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

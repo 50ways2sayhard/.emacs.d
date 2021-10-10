@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:10:23 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 五 6月  5 12:05:38 2020 (+0800)
+;; Last-Updated: Sun Oct 10 19:02:36 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d projectile
@@ -50,6 +50,7 @@
   (projectile-mode 1)
   (when (and *sys/win32* *tr*)
     (setq projectile-indexing-method 'alien))
+  (setq projectile-ignored-projects `("~/"))
   (add-to-list 'projectile-globally-ignored-directories "node_modules"))
 ;; -ProjPac
 
