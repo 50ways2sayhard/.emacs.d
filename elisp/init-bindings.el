@@ -154,6 +154,9 @@
     "sP" '(color-rg-search-project :wk "Color-rg Search project")
     "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
     "sT" '(load-theme :wk "Load theme")
+    "sc" '(:wk "In current file")
+    "scs" '(color-rg-search-input-in-current-file :wk "Search input")
+    "sci" '(color-rg-search-symbol-in-current-file :wk "Search symbol at point")
 
     "t" '(:wk "Toggle")
     "te" '(vterm-posframe-toggle :wk "Shell")
