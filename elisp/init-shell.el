@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 5
+;;     Update #: 8
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -97,10 +97,10 @@
                      :accept-focus t))
               ;; Blink cursor
               (with-current-buffer buffer
+                (save-excursion (vterm-clear t))
                 (setq-local cursor-type 'box))
               ;; Focus the child frame
-              (select-frame-set-input-focus vterm-posframe--frame)))))
-      (bind-key "C-`" #'vterm-posframe-toggle))))
+              (select-frame-set-input-focus vterm-posframe--frame))))))))
 
 (provide 'init-shell)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
