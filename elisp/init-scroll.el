@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Oct 18 11:41:36 2021 (+0800)
+;; Last-Updated: Mon Oct 18 23:15:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -44,8 +44,10 @@
       scroll-conservatively 100000
       auto-window-vscroll nil
       scroll-preserve-screen-position t)
-(setq scroll-conservatively 101
-      scroll-margin 7)
+(when (display-graphic-p)
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+        mouse-wheel-scroll-amount-horizontal 1
+        mouse-wheel-progressive-speed nil))
 (setq scroll-up-aggressively 0.01)
 (setq scroll-down-aggressively 0.01)
 (setq auto-window-vscroll nil)
@@ -59,6 +61,13 @@
 
 (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
       mouse-wheel-scroll-amount-horizontal 1)
+
+(use-package centered-cursor-mode
+  :straight (:repo "andre-r/centered-cursor-mode.el" :repo github :branch "dev")
+  :diminish
+  :custom
+  (centered-cursor-position 'golden-ratio)
+  :hook ((prog-mode text-mode) . centered-cursor-mode))
 
 (provide 'init-scroll)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
