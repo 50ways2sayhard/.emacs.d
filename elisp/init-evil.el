@@ -64,6 +64,8 @@
                         "C-l" 'evil-window-right)
     )
 
+  (add-hook 'evil-jumps-post-jump-hook #'recenter)
+
   (require 'evil/+packages))
 ;;; Packages
 

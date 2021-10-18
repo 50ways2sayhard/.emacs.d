@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 18:14:35 2021 (+0800)
+;; Last-Updated: Mon Oct 18 11:41:36 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -44,7 +44,8 @@
       scroll-conservatively 100000
       auto-window-vscroll nil
       scroll-preserve-screen-position t)
-(setq scroll-conservatively 101)
+(setq scroll-conservatively 101
+      scroll-margin 7)
 (setq scroll-up-aggressively 0.01)
 (setq scroll-down-aggressively 0.01)
 (setq auto-window-vscroll nil)
