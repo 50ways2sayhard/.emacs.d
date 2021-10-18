@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Oct  8 22:58:19 2021 (+0800)
+;; Last-Updated: Wed Oct 13 11:50:45 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -218,9 +218,10 @@ window that already exists in that direction. It will split otherwise."
                           (goto-char (point-min))
                           (when (re-search-forward "^<<<<<<< " nil t)
                             (smerge-mode 1)))))
-         (magit-diff-visit-file . (lambda ()
-                                    (when smerge-mode
-                                      (hydra-smerge/body)))))
+         ;; (magit-diff-visit-file . (lambda ()
+         ;;                            (when smerge-mode
+         ;;                              (hydra-smerge/body))))
+         )
   :config
   ;; (local-leader-def
   ;;   :keymaps 'smerge-mode-map
@@ -238,6 +239,7 @@ window that already exists in that direction. It will split otherwise."
   (evil-define-key 'normal 'smerge-mode-map ",u" 'smerge-keep-upper)
   (evil-define-key 'normal 'smerge-mode-map ",m" 'smerge-mine)
   (evil-define-key 'normal 'smerge-mode-map ",A" 'smerge-keep-all)
+  (evil-define-key 'normal 'smerge-mode-map ",c" 'smerge-keep-current)
   )
 
 (provide 'init-magit)
