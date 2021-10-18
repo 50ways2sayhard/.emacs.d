@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 405
+;;     Update #: 451
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -152,6 +152,14 @@
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-command "fd --color=never --full-path ARG OPTS")
 
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Optionally replace `completing-read-multiple' with an enhanced version.
+  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+
   (autoload 'org-buffer-list "org")
   (defvar org-buffer-source
     `(:name     "Org"
@@ -240,6 +248,15 @@ When the number of characters in a buffer exceeds this threshold,
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
   )
 
+
+(use-package consult-dir
+  :ensure t
+  :after consult
+  :bind (("C-x C-d" . consult-dir)
+         :map selectrum-minibuffer-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
+
 (use-package orderless
   :after marginalia
   :demand t
@@ -284,15 +301,29 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
   :config
-  (setq resize-mini-frames t)
-  (setq mini-frame-show-parameters `((left . 0.5)
-                                     (top . ,(/ (frame-pixel-height) 2))
-                                     (background-mode 'dark)
-                                     (foreground-color . "#bbc2cf")
-                                     (background-color . "#242730")
-                                     (min-width . 80)
-                                     (width . 0.8)))
-  (setq mini-frame-create-lazy nil)
+  ;; (setq resize-mini-frames t)
+  ;; (setq mini-frame-show-parameters `((left . 0.5)
+  ;;                                    (top . ,(/ (frame-pixel-height) 2))
+  ;;                                    (background-mode 'dark)
+  ;;                                    (foreground-color . "#bbc2cf")
+  ;;                                    (background-color . "#242730")
+  ;;                                    (min-width . 80)
+  ;;                                    (width . 0.8)))
+
+  (setq mini-frame-show-parameters
+        (lambda ()
+          (let* ((info (posframe-poshandler-argbuilder))
+                 (posn (posframe-poshandler-point-bottom-left-corner info))
+                 (left (car posn))
+                 (top (cdr posn))
+                 )
+            `((left . ,left)
+              (top . ,top)
+              (background-mode 'dark)
+              (foreground-color . "#bbc2cf")
+              (background-color . "#242730")
+              (min-width . 80)
+              ))))
   (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
     (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
