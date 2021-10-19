@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 17
+;;     Update #: 36
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -47,10 +47,15 @@
 ;;; Code:
 
 
+(eval-when-compile
+  (require 'init-const))
+
 (use-package tree-sitter
-  :hook ((python-mode js2-mode typescript-mode) . tree-sitter-hl-mode)
+  :if *sys/mac*
+  :hook (python-mode . tree-sitter-hl-mode)
   :custom-face
-  (tree-sitter-hl-face:property ((t (default :inherit font-lock-constant-face :slant normal)))))
+  (tree-sitter-hl-face:property ((t (default :inherit font-lock-constant-face :slant normal))))
+  )
 
 (use-package tree-sitter-langs
   :after tree-sitter)
