@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Oct 18 23:15:07 2021 (+0800)
+;; Last-Updated: Tue Oct 19 11:39:35 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -66,7 +66,7 @@
   :straight (:repo "andre-r/centered-cursor-mode.el" :repo github :branch "dev")
   :diminish
   :custom
-  (centered-cursor-position 'golden-ratio)
+  (centered-cursor-position 'golden-ratio-from-bottom)
   :hook ((prog-mode text-mode) . centered-cursor-mode))
 
 (provide 'init-scroll)
