@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 451
+;;     Update #: 460
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -297,19 +297,13 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
-  :if *sys/mac*
+  ;; :if *sys/mac*
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
+  :custom
+  (mini-frame-detach-on-hide nil)
+  (resize-mini-frames t)
   :config
-  ;; (setq resize-mini-frames t)
-  ;; (setq mini-frame-show-parameters `((left . 0.5)
-  ;;                                    (top . ,(/ (frame-pixel-height) 2))
-  ;;                                    (background-mode 'dark)
-  ;;                                    (foreground-color . "#bbc2cf")
-  ;;                                    (background-color . "#242730")
-  ;;                                    (min-width . 80)
-  ;;                                    (width . 0.8)))
-
   (setq mini-frame-show-parameters
         (lambda ()
           (let* ((info (posframe-poshandler-argbuilder))
