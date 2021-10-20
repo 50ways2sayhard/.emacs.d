@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 460
+;;     Update #: 462
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -317,6 +317,7 @@ When the number of characters in a buffer exceeds this threshold,
               (foreground-color . "#bbc2cf")
               (background-color . "#242730")
               (min-width . 80)
+              (width . 0.618)
               ))))
   (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
