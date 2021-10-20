@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Mar 18 14:20:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 22 11:34:52 2020 (+0800)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Wed Oct 20 09:34:10 2021 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d constants
 ;; Compatibility: emacs-version >= 26.1
@@ -54,6 +54,13 @@
 (defconst *sys/linux*
   (eq system-type 'gnu/linux)
   "Are we running on a GNU/Linux system?")
+
+(defconst *sys/wsl*
+  (and (eq system-type 'gnu/linux)
+       (string-match
+        "Linux.*Microsoft.*Linux"
+        (shell-command-to-string "uname -a")))
+  "Are we running on WSL?")
 
 (defconst *sys/mac*
   (eq system-type 'darwin)
