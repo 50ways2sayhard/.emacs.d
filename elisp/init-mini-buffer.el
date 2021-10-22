@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 462
+;;     Update #: 465
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -96,6 +96,8 @@
 
 (use-package selectrum
   :hook (+self/first-input . selectrum-mode)
+  :bind (:map selectrum-minibuffer-map
+              ("C-q" . selectrum-quick-select))
   :config
   (global-set-key (kbd "C-c r") #'selectrum-repeat)
   (selectrum-mode +1)
