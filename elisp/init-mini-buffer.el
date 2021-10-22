@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 462
+;;     Update #: 590
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -49,79 +49,52 @@
 ;;; Code:
 
 ;; Completion styles
-(setq completion-styles '(basic partial-completion substring initials flex))
+;; (setq completion-styles '(basic partial-completion substring initials flex))
+(defvar +my-completion-styles '(basic partial-completion substring initials flex))
+(setq completion-styles +my-completion-styles)
 
 (setq max-mini-window-height 20)
 (setq minibuffer-prompt-properties;minibuffer prompt 只读，且不允许光标进入其中
       '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
 
 
-(defun selectrum-fido-backward-updir ()
-  "Delete char before or go up directory, like `ido-mode'."
-  (interactive)
-  (if (and (eq (char-before) ?/)
-           (eq (selectrum--get-meta 'category) 'file))
-      (save-excursion
-        (goto-char (1- (point)))
-        (when (search-backward "/" (point-min) t)
-          (delete-region (1+ (point)) (point-max))))
-    (call-interactively 'backward-delete-char)))
-
-(defun selectrum-fido-delete-char ()
-  "Delete char or maybe call `dired', like `ido-mode'."
-  (interactive)
-  (let ((end (point-max)))
-    (if (or (< (point) end) (not (eq (selectrum--get-meta 'category) 'file)))
-        (call-interactively 'delete-char)
-      (dired (file-name-directory (minibuffer-contents)))
-      (exit-minibuffer))))
-
-(defun selectrum-fido-enter-dir ()
-  (interactive)
-  (let ((candidate (selectrum-get-current-candidate)))
-    (if (and (eq (selectrum--get-meta 'category) 'file)
-             (file-directory-p candidate)
-             (not (string-equal candidate "~/")))
-        (selectrum-insert-current-candidate)
-      (insert "/"))))
-
-(defun selectrum-fido-do-backward-updir ()
-  (interactive)
-  (if (and (eq (char-before) ?/)
-           (eq (selectrum--get-meta 'category) 'file))
-      (save-excursion
-        (goto-char (1- (point)))
-        (when (search-backward "/" (point-min) t)
-          (delete-region (1+ (point)) (point-max))))))
-
-(use-package selectrum
-  :hook (+self/first-input . selectrum-mode)
+(use-package vertico
+  :straight (:host github :repo "minad/vertico" :files ("*.el" "extensions/*.el"))
+  :ensure t
+  :hook (+self/first-input . vertico-mode)
   :config
-  (global-set-key (kbd "C-c r") #'selectrum-repeat)
-  (selectrum-mode +1)
-  (use-package selectrum-prescient
-    :init
-    (setq selectrum-prescient-enable-filtering nil)
-    (selectrum-prescient-mode +1)
-    (prescient-persist-mode +1))
+  (setq vertico-cycle t
+        vertico-count 13)
 
-  (autoload 'ffap-file-at-point "ffap")
-  (add-hook 'completion-at-point-functions
-            (defun complete-path-at-point+ ()
-              (let ((fn (ffap-file-at-point))
-                    (fap (thing-at-point 'filename)))
-                (when (and (or fn
-                               (equal "/" fap))
-                           (save-excursion
-                             (search-backward fap (line-beginning-position) t)))
-                  (list (match-beginning 0)
-                        (match-end 0)
-                        #'completion-file-name-table)))) 'append)
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args)))
 
-  (define-key selectrum-minibuffer-map (kbd "DEL") 'selectrum-fido-backward-updir)
-  (define-key selectrum-minibuffer-map (kbd "/") 'selectrum-fido-enter-dir)
-  (define-key selectrum-minibuffer-map (kbd "C-d") 'selectrum-fido-delete-char)
-  (define-key selectrum-minibuffer-map (kbd "C-w") 'selectrum-fido-do-backward-updir)
+  (use-package vertico-directory
+    :straight nil
+    ;; More convenient directory navigation commands
+    :bind (([remap evil-show-jumps] . +vertico/jump-list)
+           :map vertico-map
+           ("RET" . vertico-directory-enter)
+           ("DEL" . vertico-directory-delete-char)
+           ("M-DEL" . vertico-directory-delete-word))
+    ;; Tidy shadowed file names
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+  (use-package vertico-repeat
+    :straight nil
+    :bind ("C-c r" . vertico-repeat))
+
+  (use-package vertico-quick
+    :straight nil
+    :bind (:map vertico-map
+                ("C-q" . vertico-quick-exit)
+                ("M-q" . vertico-quick-insert)))
+
+  (require 'vertico/+evil)
   )
 
 (use-package consult
@@ -245,8 +218,7 @@ When the number of characters in a buffer exceeds this threshold,
     (cons
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
-  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
-  )
+  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler))
 
 
 (use-package consult-dir
@@ -262,9 +234,6 @@ When the number of characters in a buffer exceeds this threshold,
   :demand t
   :config
   (savehist-mode)
-  (setq orderless-skip-highlighting (lambda () selectrum-is-active))
-  (setq selectrum-refine-candidates-function #'orderless-filter)
-  (setq selectrum-highlight-candidates-function #'orderless-highlight-matches)
   (setq orderless-matching-styles '(orderless-regexp orderless-literal orderless-initialism completion--regex-pinyin))
   (defun without-if-$! (pattern _index _total)
     (when (or (string-prefix-p "$" pattern) ;如果以! 或$ 开头，则表示否定，即不包含此关键字
@@ -281,9 +250,26 @@ When the number of characters in a buffer exceeds this threshold,
   (defun completion--regex-pinyin (str)
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   (setq orderless-style-dispatchers '(literal-if-= flex-if-comma without-if-$!))
+  (orderless-define-completion-style +orderless-with-initialism
+    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
   (setq completion-styles (cons 'orderless completion-styles)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion)))))
+        orderless-component-separator #'orderless-escapable-split-on-space
+        completion-category-overrides '((file (styles substring)) ;; partial-completion is tried first
+                                        ;; enable initialism by default for symbols
+                                        (command (styles +orderless-with-initialism))
+                                        (variable (styles +orderless-with-initialism))
+                                        (symbol (styles +orderless-with-initialism))))
+
+  (with-eval-after-load 'company
+    (defun +vertico--company-capf--candidates-a (fn &rest args)
+      "Highlight company matches correctly, and try default completion styles before
+  orderless."
+      (let ((orderless-match-faces [completions-common-part])
+            (completion-styles +my-completion-styles))
+        (apply fn args)))
+
+    (advice-add 'company-capf--candidates :around #'+vertico--company-capf--candidates-a))
   )
 
 (use-package marginalia
