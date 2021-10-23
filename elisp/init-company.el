@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Sep 26 11:15:52 2021 (+0800)
+;; Last-Updated: Sat Oct 23 20:04:54 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -182,21 +182,27 @@ Examples:
     :prefix "C-x"
     "C-f" 'company-files)
 
-  (with-eval-after-load 'orderless
-    (defvar-local +company-completion-styles '(partial-completion))
-    (defvar-local +completion-styles nil)
-    (defun set-company-completion-style (backend)
-      (setq +completion-styles completion-styles)
-      (setq completion-styles +company-completion-styles))
-    (defun restore-company-completion-style ()
-      (when +completion-styles
-        (setq completion-styles +completion-styles)
-        (setq +completion-styles nil)))
+  ;; (with-eval-after-load 'orderless
+  ;;   (defvar-local +company-completion-styles '(partial-completion))
+  ;;   (defvar-local +completion-styles nil)
+  ;;   (defun set-company-completion-style (backend)
+  ;;     (setq +completion-styles completion-styles)
+  ;;     (setq completion-styles +company-completion-styles))
+  ;;   (defun restore-company-completion-style ()
+  ;;     (when +completion-styles
+  ;;       (setq completion-styles +completion-styles)
+  ;;       (setq +completion-styles nil)))
 
-    (add-hook 'company-completion-started-hook #'set-company-completion-style)
-    ;; (add-hook 'company-completion-cancelled-hook #'restore-company-completion-style)
-    ;; (add-hook 'company-completion-finished-hook #'restore-company-completion-style)
-    (add-hook 'evil-normal-state-entry-hook #'restore-company-completion-style))
+  ;; (add-hook 'company-completion-started-hook #'set-company-completion-style)
+  ;; (add-hook 'company-completion-cancelled-hook #'restore-company-completion-style)
+  ;; (add-hook 'company-completion-finished-hook #'restore-company-completion-style)
+  ;; (add-hook 'evil-normal-state-entry-hook #'restore-company-completion-style))
+
+  (advice-add 'company-capf
+              :around
+              (lambda (capf-fn &rest args)
+                (let ((completion-styles '(basic partial-completion substring flex)))
+                  (apply capf-fn args))))
   )
 ;; -ComPac
 (use-package company-prescient

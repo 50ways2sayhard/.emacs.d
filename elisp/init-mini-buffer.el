@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 592
+;;     Update #: 595
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -255,21 +255,11 @@ When the number of characters in a buffer exceeds this threshold,
   (setq completion-styles (cons 'orderless completion-styles)
         completion-category-defaults nil
         orderless-component-separator #'orderless-escapable-split-on-space
-        completion-category-overrides '((file (styles substring)) ;; partial-completion is tried first
+        completion-category-overrides '((file (styles substring flex)) ;; partial-completion is tried first
                                         ;; enable initialism by default for symbols
                                         (command (styles +orderless-with-initialism))
                                         (variable (styles +orderless-with-initialism))
                                         (symbol (styles +orderless-with-initialism))))
-
-  (with-eval-after-load 'company
-    (defun +vertico--company-capf--candidates-a (fn &rest args)
-      "Highlight company matches correctly, and try default completion styles before
-  orderless."
-      (let ((orderless-match-faces [completions-common-part])
-            (completion-styles +my-completion-styles))
-        (apply fn args)))
-
-    (advice-add 'company-capf--candidates :around #'+vertico--company-capf--candidates-a))
   )
 
 (use-package marginalia
