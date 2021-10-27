@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 595
+;;     Update #: 605
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -93,6 +93,12 @@
     :bind (:map vertico-map
                 ("C-q" . vertico-quick-exit)
                 ("M-q" . vertico-quick-insert)))
+
+  (use-package vertico-posframe
+    :straight (:host github :repo "tumashu/vertico-posframe")
+    :hook (vertico-mode . vertico-posframe-mode)
+    :custom
+    (vertico-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
 
   (require 'vertico/+evil)
   )
@@ -273,6 +279,7 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
+  :disabled
   ;; :if *sys/mac*
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
