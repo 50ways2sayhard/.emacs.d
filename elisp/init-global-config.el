@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Oct 20 17:40:01 2021 (+0800)
+;; Last-Updated: Wed Oct 27 22:19:55 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -206,10 +206,25 @@ The original function deletes trailing whitespace of the current line."
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 
 (when *sys/wsl*
+  (defun my/browse-url-generic (url &optional _new-window)
+    ;; new-window ignored
+    "Ask the WWW browser defined by `browse-url-generic-program' to load URL.
+Default to the URL around or before point.  A fresh copy of the
+browser is started up in a new process with possible additional arguments
+`browse-url-generic-args'.  This is appropriate for browsers which
+don't offer a form of remote control."
+    (interactive (browse-url-interactive-arg "URL: "))
+    (if (not browse-url-generic-program)
+        (error "No browser defined (`browse-url-generic-program')"))
+    (apply 'call-process browse-url-generic-program nil
+	       0 nil
+	       (append browse-url-generic-args
+                   (list (format "start %s"
+                                 (replace-regexp-in-string "&" "^&" url))))))
   (setq
    browse-url-generic-program  "/mnt/c/Windows/System32/cmd.exe"
-   browse-url-generic-args     '("/c" "start")
-   browse-url-browser-function #'browse-url-generic))
+   browse-url-generic-args     '("/c")
+   browse-url-browser-function #'my/browse-url-generic))
 
 (provide 'init-global-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
