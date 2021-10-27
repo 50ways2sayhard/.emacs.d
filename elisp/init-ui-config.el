@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Oct 18 17:16:43 2021 (+0800)
+;; Last-Updated: Wed Oct 27 18:26:09 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -104,7 +104,9 @@
 
 (use-package transient-posframe
   :straight (:host github :repo "yanghaoxie/transient-posframe")
-  :hook (after-init . transient-posframe-mode))
+  :hook (after-init . transient-posframe-mode)
+  :custom
+  (transient-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
 
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
