@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Aug 27 17:27:37 2021 (+0800)
+;; Last-Updated: Sat Oct 30 10:43:49 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -127,6 +127,22 @@
 
 (use-package smart-newline
   :defer t)
+
+(use-package sis
+  ;; :hook
+  ;; enable the /follow context/ and /inline region/ mode for specific buffers
+  ;; (((text-mode prog-mode) . sis-context-mode)
+  ;;  ((text-mode prog-mode) . sis-inline-mode))
+
+  :config
+  ;; For MacOS
+  (when *sys/mac*
+    (setq sis-english-source "com.apple.keylayout.ABC"))
+  (sis-global-respect-mode t)
+  ;; enable the /context/ mode for all buffers
+  (sis-global-context-mode t)
+  ;; enable the /inline english/ mode for all buffers
+  (sis-global-inline-mode t))
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
