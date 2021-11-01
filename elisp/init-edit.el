@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Oct 30 10:43:49 2021 (+0800)
+;; Last-Updated: Mon Nov  1 09:50:31 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -138,6 +138,18 @@
   ;; For MacOS
   (when *sys/mac*
     (setq sis-english-source "com.apple.keylayout.ABC"))
+  (when *sys/wsl*
+    (setq sis-english-source "1033")
+    (setq sis-other-source "2052")
+    (setq sis-do-get (lambda ()
+                       (sis--ensure-dir
+                        (string-trim (shell-command-to-string "im-select.exe")))))
+    (setq sis-do-set (lambda(source)
+                       (sis--ensure-dir
+                        (call-process "/bin/bash" nil t nil "-c" (concat "im-select.exe " source)))))
+    (setq sis-external-ism "im-select.exe"))
+  (add-hook 'focus-out-hook #'sis-set-other)
+  (add-hook 'focus-in-hook #'sis-set-english)
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   (sis-global-context-mode t)
