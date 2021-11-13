@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Oct 23 20:04:54 2021 (+0800)
+;; Last-Updated: Sat Nov 13 15:24:38 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -146,10 +146,6 @@ Examples:
 ;; ComPac
 (use-package company
   :diminish company-mode
-  :hook ((prog-mode LaTeX-mode) . company-mode)
-  :init
-  (company-tng-mode)
-  (add-hook 'company-mode-hook #'+company-init-backends-h)
   :custom
   (company-files-chop-trailing-slash nil)
   (company-minimum-prefix-length 1)
@@ -165,15 +161,28 @@ Examples:
   (company-quickelp-delay nil)
   (company-dabbrev-downcase nil)
   (company-dabbrev-ignore-case t)
-  (company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
-                       company-preview-frontend
+  (company-frontends '(company-pseudo-tooltip-frontend
                        company-echo-metadata-frontend))
   :bind (:map company-active-map
               ("M-j" . nil)
               ("M-k" . nil))
+  :init
+  (add-hook 'company-mode-hook #'+company-init-backends-h)
   :config
-  (setq company-backends '(company-files company-dabbrev))
   (global-company-mode 1)
+
+  ;; tng
+  (define-key company-active-map [return] nil)
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map [tab] 'company-select-next)
+  (define-key company-active-map (kbd "TAB") 'company-select-next)
+  (define-key company-active-map [backtab] 'company-select-previous)
+  (define-key company-active-map (kbd "S-TAB") 'company-select-previous)
+  (setq company-tng-auto-configure nil)
+  (setq company-selection-default nil)
+  (company-tng-mode)
+
+  (setq company-backends '(company-files company-dabbrev))
 
   (general-define-key
    :keymaps '(company-active-map evil-insert-state-map)
