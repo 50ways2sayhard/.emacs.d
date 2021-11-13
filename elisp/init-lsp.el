@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Sep 15 10:49:24 2021 (+0800)
+;; Last-Updated: Sat Nov 13 14:36:03 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -74,6 +74,7 @@
           ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
           lsp-signature-auto-activate t
+          lsp-signature-function 'lsp-signature-posframe
           lsp-idle-delay 0.5
           lsp-enable-imenu nil
           lsp-enable-on-type-formatting nil
@@ -92,6 +93,8 @@
           lsp-headerline-breadcrumb-enable nil
           lsp-enable-links nil
           lsp-completion-show-detail nil
+          lsp-completion-sort-initial-results t ; check if should keep as t
+          lsp-completion-no-cache t
           lsp-completion-provider :none)
     (setq lsp-typescript-implementations-code-lens-enabled t
           lsp-typescript-references-code-lens-enabled t
