@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Nov 13 14:36:03 2021 (+0800)
+;; Last-Updated: Sat Nov 13 22:41:34 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -80,7 +80,7 @@
           lsp-enable-on-type-formatting nil
           lsp-enable-text-document-color nil
           lsp-enable-symbol-highlighting nil
-          lsp-log-io nil
+          lsp-log-io t
           lsp-enable-folding nil
           lsp-enable-file-watchers nil
           lsp-keymap-prefix nil
@@ -142,6 +142,22 @@
   (advice-add #'keyboard-quit :before #'lsp-ui-doc-hide)
   (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
     (setq mode-line-format nil)))
+
+(use-package dap-mode
+  :defines dap-python-executable
+  :functions dap-hydra/nil
+  :diminish
+  :bind (:map lsp-mode-map
+              ("<f5>" . dap-debug)
+              ("M-<f5>" . dap-hydra))
+  :hook ((prog-mode . dap-auto-configure-mode)
+         (dap-stopped . (lambda (_args) (dap-hydra)))
+
+         (python-mode . (lambda () (require 'dap-python)))
+         ((js-mode js2-mode) . (lambda () (require 'dap-chrome))))
+  :init
+  (when (executable-find "python3")
+    (setq dap-python-executable "python3")))
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

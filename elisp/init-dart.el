@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 34
+;;     Update #: 38
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -58,26 +58,22 @@
                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
                        ))
   :config
+  (with-eval-after-load 'projectile
+    (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+    (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
   (setq dart-format-on-save t)
   (with-eval-after-load 'lsp
+    (setq lsp-dart-dap-flutter-hot-reload-on-save t)
     (setq-local lsp-diagnostics-provider :flycheck)))
 
 (use-package lsp-dart
   :ensure t
-  :hook (dart-mode . lsp))
-
-(use-package flutter
-  :defer t
-  :after dart-mode
-  :bind (:map dart-mode-map
-              ("C-M-x" . #'flutter-run-or-hot-reload))
-  :config
-  (with-eval-after-load 'flutter
-    (local-leader-def
-      :keymaps 'flutter-mode-map
-      "r" 'flutter-run-or-hot-reload))
-  (if *sys/linux*
-      (setq flutter-sdk-path "/usr/share/flutter/"))
+  :hook (dart-mode . lsp)
+  :init
+  (dap-register-debug-template "Flutter :: Attach"
+                               (list
+                                :request "attach"
+                                :type "dart"))
   )
 
 (provide 'init-dart)
