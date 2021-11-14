@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 605
+;;     Update #: 612
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -53,54 +53,119 @@
 (defvar +my-completion-styles '(basic partial-completion substring initials flex))
 (setq completion-styles +my-completion-styles)
 
-(setq max-mini-window-height 20)
-(setq minibuffer-prompt-properties;minibuffer prompt 只读，且不允许光标进入其中
-      '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
+
+(autoload 'ffap-file-at-point "ffap")
+;; Copy from selectrum
+(defun +complete--metadata ()
+  "Get completion metadata.
+Demotes any errors to messages."
+  (condition-case-unless-debug err
+      (completion-metadata (minibuffer-contents)
+                           minibuffer-completion-table
+                           minibuffer-completion-predicate)
+    (error (message (error-message-string err)) nil)))
+
+(defun +complete--get-meta (setting)
+  "Get metadata SETTING from completion table."
+  (completion-metadata-get (+complete--metadata) setting))
+
+(add-hook 'completion-at-point-functions
+          (defun complete-path-at-point+ ()
+            (let ((fn (ffap-file-at-point))
+                  (fap (thing-at-point 'filename)))
+              (when (and (or fn
+                             (equal "/" fap))
+                         (save-excursion
+                           (search-backward fap (line-beginning-position) t)))
+                (list (match-beginning 0)
+                      (match-end 0)
+                      #'completion-file-name-table)))) 'append)
+(defun +complete-fido-backward-updir ()
+  "Delete char before or go up directory, like `ido-mode'."
+  (interactive)
+  (if (and (eq (char-before) ?/)
+           (eq (+complete--get-meta 'category) 'file))
+      (save-excursion
+        (goto-char (1- (point)))
+        (when (search-backward "/" (point-min) t)
+          (delete-region (1+ (point)) (point-max))))
+    (call-interactively 'backward-delete-char)))
+
+(defun +complete-fido-delete-char ()
+  "Delete char or maybe call `dired', like `ido-mode'."
+  (interactive)
+  (let ((end (point-max)))
+    (if (or (< (point) end) (not (eq (+complete--get-meta 'category) 'file)))
+        (call-interactively 'delete-char)
+      (dired (file-name-directory (minibuffer-contents)))
+      (exit-minibuffer))))
+
+(defun +complete-get-current-candidate ()
+  (selectrum-get-current-candidate))
+
+(defun +complete-insert-current-candidate ()
+  (selectrum-insert-current-candidate))
+
+(defun +complete-fido-enter-dir ()
+  (interactive)
+  (let ((candidate (+complete-get-current-candidate))
+        (current-input (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+    (cond
+     ((and (eq (+complete--get-meta 'category) 'file)
+           (string= (car (last (s-split "/" current-input))) ".."))
+      (progn
+        (insert "/")
+        (+complete-fido-do-backward-updir)
+        (+complete-fido-do-backward-updir)))
+
+     ((and (eq (+complete--get-meta 'category) 'file)
+           (file-directory-p candidate)
+           (not (string= candidate "~/")))
+      (+complete-insert-current-candidate))
+
+     (t (insert "/")))))
+
+(defun +complete-fido-do-backward-updir ()
+  (interactive)
+  (if (and (eq (char-before) ?/)
+           (eq (+complete--get-meta 'category) 'file))
+      (save-excursion
+        (goto-char (1- (point)))
+        (when (search-backward "/" (point-min) t)
+          (delete-region (1+ (point)) (point-max))))))
 
 
-(use-package vertico
-  :straight (:host github :repo "minad/vertico" :files ("*.el" "extensions/*.el"))
-  :ensure t
-  :hook (+self/first-input . vertico-mode)
+(use-package selectrum
+  :hook (+self/first-input . selectrum-mode)
+  :bind (:map selectrum-minibuffer-map
+              ("C-q" . selectrum-quick-select)
+              ("M-q" . selectrum-quick-insert))
   :config
-  (setq vertico-cycle t
-        vertico-count 13)
 
-  (setq completion-in-region-function
-        (lambda (&rest args)
-          (apply (if vertico-mode
-                     #'consult-completion-in-region
-                   #'completion--in-region)
-                 args)))
+  (with-eval-after-load 'general
+    (general-def "C-c r" 'selectrum-repeat)
+    )
+  ;; (setq selectrum-should-sort nil)
+  (with-eval-after-load 'orderless
+    (setq orderless-skip-highlighting (lambda () selectrum-is-active))
+    (setq selectrum-refine-candidates-function #'orderless-filter)
+    (setq selectrum-highlight-candidates-function #'orderless-highlight-matches))
 
-  (use-package vertico-directory
-    :straight nil
-    ;; More convenient directory navigation commands
-    :bind (([remap evil-show-jumps] . +vertico/jump-list)
-           :map vertico-map
-           ("RET" . vertico-directory-enter)
-           ("DEL" . vertico-directory-delete-char)
-           ("M-DEL" . vertico-directory-delete-word))
-    ;; Tidy shadowed file names
-    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+  (define-key selectrum-minibuffer-map (kbd "DEL") '+complete-fido-backward-updir)
+  (define-key selectrum-minibuffer-map (kbd "/") '+complete-fido-enter-dir)
+  (define-key selectrum-minibuffer-map (kbd "C-d") '+complete-fido-delete-char)
+  (define-key selectrum-minibuffer-map (kbd "C-w") '+complete-fido-do-backward-updir)
 
-  (use-package vertico-repeat
-    :straight nil
-    :bind ("C-c r" . vertico-repeat))
-
-  (use-package vertico-quick
-    :straight nil
-    :bind (:map vertico-map
-                ("C-q" . vertico-quick-exit)
-                ("M-q" . vertico-quick-insert)))
-
-  (use-package vertico-posframe
-    :straight (:host github :repo "tumashu/vertico-posframe")
-    :hook (vertico-mode . vertico-posframe-mode)
-    :custom
-    (vertico-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
-
-  (require 'vertico/+evil)
+  ;; TODO: only for mac os now
+  (defun open-in-external-app ()
+    (interactive)
+    (let ((candidate (+complete-get-current-candidate)))
+      (message candidate)
+      (message (concat "open " candidate))
+      (when (eq (+complete--get-meta 'category) 'file)
+        (shell-command (concat "open " candidate))
+        (abort-recursive-edit))))
+  (define-key selectrum-minibuffer-map (kbd "C-<return>") 'open-in-external-app)
   )
 
 (use-package consult
@@ -129,7 +194,7 @@
   (setq consult-narrow-key "<")
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
-  (setq consult-find-command "fd --color=never --full-path ARG OPTS")
+  (setq consult-find-args "fd --color=never --full-path ARG OPTS")
 
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
@@ -189,7 +254,7 @@ When the number of characters in a buffer exceeds this threshold,
 
         (when (file-writable-p buffer-file-name)
           (save-buffer))
-        (let ((consult-ripgrep-command
+        (let ((consult-ripgrep-args
                (concat "rg "
                        "--null "
                        "--line-buffered "
@@ -279,7 +344,6 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package mini-frame
-  :disabled
   ;; :if *sys/mac*
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
@@ -290,7 +354,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq mini-frame-show-parameters
         (lambda ()
           (let* ((info (posframe-poshandler-argbuilder))
-                 (posn (posframe-poshandler-point-bottom-left-corner info))
+                 (posn (posframe-poshandler-point-top-left-corner info))
                  (left (car posn))
                  (top (cdr posn))
                  )
