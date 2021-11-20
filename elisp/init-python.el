@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 20:00:56 2021 (+0800)
+;; Last-Updated: Thu Nov 18 23:55:47 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -41,7 +41,7 @@
   (require 'init-const)
   (require 'init-func))
 
-(use-package python
+(use-package python-mode
   :mode "\\.py\\'"
   :hook (inferior-python-mode . (lambda ()
                                   (process-query-on-exit-flag
