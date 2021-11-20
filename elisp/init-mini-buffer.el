@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 612
+;;     Update #: 615
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -187,6 +187,10 @@ Demotes any errors to messages."
   (use-package consult-projectile
     :after consult
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
+  (use-package consult-flycheck
+    :after consult)
+  (use-package consult-lsp
+    :after consult)
   :config
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root)
