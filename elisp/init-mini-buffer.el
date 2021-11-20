@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 615
+;;     Update #: 623
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -53,87 +53,7 @@
 (defvar +my-completion-styles '(basic partial-completion substring initials flex))
 (setq completion-styles +my-completion-styles)
 
-
 (autoload 'ffap-file-at-point "ffap")
-;; Copy from selectrum
-(defun +complete--metadata ()
-  "Get completion metadata.
-Demotes any errors to messages."
-  (condition-case-unless-debug err
-      (completion-metadata (minibuffer-contents)
-                           minibuffer-completion-table
-                           minibuffer-completion-predicate)
-    (error (message (error-message-string err)) nil)))
-
-(defun +complete--get-meta (setting)
-  "Get metadata SETTING from completion table."
-  (completion-metadata-get (+complete--metadata) setting))
-
-(add-hook 'completion-at-point-functions
-          (defun complete-path-at-point+ ()
-            (let ((fn (ffap-file-at-point))
-                  (fap (thing-at-point 'filename)))
-              (when (and (or fn
-                             (equal "/" fap))
-                         (save-excursion
-                           (search-backward fap (line-beginning-position) t)))
-                (list (match-beginning 0)
-                      (match-end 0)
-                      #'completion-file-name-table)))) 'append)
-(defun +complete-fido-backward-updir ()
-  "Delete char before or go up directory, like `ido-mode'."
-  (interactive)
-  (if (and (eq (char-before) ?/)
-           (eq (+complete--get-meta 'category) 'file))
-      (save-excursion
-        (goto-char (1- (point)))
-        (when (search-backward "/" (point-min) t)
-          (delete-region (1+ (point)) (point-max))))
-    (call-interactively 'backward-delete-char)))
-
-(defun +complete-fido-delete-char ()
-  "Delete char or maybe call `dired', like `ido-mode'."
-  (interactive)
-  (let ((end (point-max)))
-    (if (or (< (point) end) (not (eq (+complete--get-meta 'category) 'file)))
-        (call-interactively 'delete-char)
-      (dired (file-name-directory (minibuffer-contents)))
-      (exit-minibuffer))))
-
-(defun +complete-get-current-candidate ()
-  (selectrum-get-current-candidate))
-
-(defun +complete-insert-current-candidate ()
-  (selectrum-insert-current-candidate))
-
-(defun +complete-fido-enter-dir ()
-  (interactive)
-  (let ((candidate (+complete-get-current-candidate))
-        (current-input (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-    (cond
-     ((and (eq (+complete--get-meta 'category) 'file)
-           (string= (car (last (s-split "/" current-input))) ".."))
-      (progn
-        (insert "/")
-        (+complete-fido-do-backward-updir)
-        (+complete-fido-do-backward-updir)))
-
-     ((and (eq (+complete--get-meta 'category) 'file)
-           (file-directory-p candidate)
-           (not (string= candidate "~/")))
-      (+complete-insert-current-candidate))
-
-     (t (insert "/")))))
-
-(defun +complete-fido-do-backward-updir ()
-  (interactive)
-  (if (and (eq (char-before) ?/)
-           (eq (+complete--get-meta 'category) 'file))
-      (save-excursion
-        (goto-char (1- (point)))
-        (when (search-backward "/" (point-min) t)
-          (delete-region (1+ (point)) (point-max))))))
-
 
 (use-package selectrum
   :hook (+self/first-input . selectrum-mode)
@@ -141,6 +61,21 @@ Demotes any errors to messages."
               ("C-q" . selectrum-quick-select)
               ("M-q" . selectrum-quick-insert))
   :config
+  (require 'selectrum/+autoloads)
+
+  (add-hook 'rfn-eshadow-update-overlay-hook #'+vertico-directory-tidy)
+
+  (add-hook 'completion-at-point-functions
+            (defun complete-path-at-point+ ()
+              (let ((fn (ffap-file-at-point))
+                    (fap (thing-at-point 'filename)))
+                (when (and (or fn
+                               (equal "/" fap))
+                           (save-excursion
+                             (search-backward fap (line-beginning-position) t)))
+                  (list (match-beginning 0)
+                        (match-end 0)
+                        #'completion-file-name-table)))) 'append)
 
   (with-eval-after-load 'general
     (general-def "C-c r" 'selectrum-repeat)
@@ -155,6 +90,11 @@ Demotes any errors to messages."
   (define-key selectrum-minibuffer-map (kbd "/") '+complete-fido-enter-dir)
   (define-key selectrum-minibuffer-map (kbd "C-d") '+complete-fido-delete-char)
   (define-key selectrum-minibuffer-map (kbd "C-w") '+complete-fido-do-backward-updir)
+
+  (defun void/set-font ()
+    "Select xfont."
+    (interactive)
+    (set-frame-font (completing-read "Choose font:" (x-list-fonts "*"))))
 
   ;; TODO: only for mac os now
   (defun open-in-external-app ()
