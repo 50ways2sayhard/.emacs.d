@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Nov 13 22:41:34 2021 (+0800)
+;; Last-Updated: Sat Nov 27 22:48:27 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -58,7 +58,9 @@
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
-                          (lsp-deferred)))))
+                          (lsp-deferred))))
+         (lsp-completion-mode . my/lsp-mode-setup-completion)
+         )
   :init
   (require 'lsp/+optimization)
   ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance
@@ -74,17 +76,17 @@
           ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
           lsp-signature-auto-activate t
-          lsp-signature-function 'lsp-signature-posframe
+          ;; lsp-signature-function 'lsp-signature-posframe
           lsp-idle-delay 0.5
           lsp-enable-imenu nil
           lsp-enable-on-type-formatting nil
-          lsp-enable-text-document-color nil
+          lsp-enable-text-documet-color nil
           lsp-enable-symbol-highlighting nil
-          lsp-log-io t
+          lsp-log-io nil
           lsp-enable-folding nil
           lsp-enable-file-watchers nil
           lsp-keymap-prefix nil
-          lsp-eldoc-enable-hover t
+          lsp-eldoc-enable-hover nil
           lsp-eldoc-render-all nil
           lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
           lsp-modeline-code-actions-enable nil
@@ -120,13 +122,21 @@
                                 :face face)
       (propertize fallback 'face face)))
   (advice-add #'lsp-icons-all-the-icons-material-icon
-              :override #'my-lsp-icons-all-the-icons-material-icon))
+              :override #'my-lsp-icons-all-the-icons-material-icon)
+  (defun my/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(flex))) ;; Configure flex
+  )
 (use-package lsp-ui
   :after lsp-mode
   :custom-face
   (lsp-ui-doc-background ((t (:background nil))))
   (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
   :hook (lsp-mode . lsp-ui-mode)
+  :bind
+  (:map lsp-ui-doc-frame-mode-map
+        ("<Ret>" . lsp-ui-doc-focus-frame)
+        ("C-g" . lsp-ui-doc-unfocus-frame))
   :custom
   (lsp-ui-doc-header nil)
   (lsp-ui-doc-include-signature t)
