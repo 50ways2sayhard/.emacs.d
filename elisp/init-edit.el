@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Nov  1 09:50:31 2021 (+0800)
+;; Last-Updated: Sat Nov 27 15:51:32 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -70,7 +70,7 @@
   ;; Be slightly less aggressive in C/C++/C#/Java/Go/Swift
   (add-to-list 'aggressive-indent-dont-indent-if
                '(and (derived-mode-p 'c-mode 'c++-mode 'csharp-mode
-                                     'java-mode 'go-mode 'swift-mode)
+                                     'java-mode 'go-mode 'swift-mode 'dart-mode)
                      (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                                          (thing-at-point 'line))))))
 
@@ -150,11 +150,12 @@
     (setq sis-external-ism "im-select.exe"))
   (add-hook 'focus-out-hook #'sis-set-other)
   (add-hook 'focus-in-hook #'sis-set-english)
-  (sis-global-respect-mode t)
+  ;; (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   (sis-global-context-mode t)
   ;; enable the /inline english/ mode for all buffers
-  (sis-global-inline-mode t))
+  (sis-global-inline-mode t)
+  )
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

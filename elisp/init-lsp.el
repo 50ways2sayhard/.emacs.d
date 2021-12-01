@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Nov 27 22:48:27 2021 (+0800)
+;; Last-Updated: Sun Nov 28 11:57:01 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -76,7 +76,7 @@
           ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
           lsp-signature-auto-activate t
-          ;; lsp-signature-function 'lsp-signature-posframe
+          lsp-signature-function 'lsp-signature-posframe
           lsp-idle-delay 0.5
           lsp-enable-imenu nil
           lsp-enable-on-type-formatting nil

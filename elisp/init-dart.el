@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 38
+;;     Update #: 40
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -70,10 +70,11 @@
   :ensure t
   :hook (dart-mode . lsp)
   :init
-  (dap-register-debug-template "Flutter :: Attach"
-                               (list
-                                :request "attach"
-                                :type "dart"))
+  (with-eval-after-load 'dap-mode
+    (dap-register-debug-template "Flutter :: Attach"
+                                 (list
+                                  :request "attach"
+                                  :type "dart")))
   )
 
 (provide 'init-dart)

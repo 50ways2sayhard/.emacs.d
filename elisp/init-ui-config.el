@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Nov 14 11:30:50 2021 (+0800)
+;; Last-Updated: Sat Nov 27 15:40:53 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -107,6 +107,9 @@
   :hook (after-init . transient-posframe-mode)
   :custom
   (transient-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
+
+(if (boundp 'pixel-scroll-precision-mode)
+    (pixel-scroll-precision-mode t))
 
 (provide 'init-ui-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

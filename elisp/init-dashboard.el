@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Aug 12 20:14:36 2021 (+0800)
+;; Last-Updated: Tue Nov 30 21:15:12 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
@@ -52,7 +52,6 @@
                      (agenda . 5)))
 
   (initial-buffer-choice (lambda () (get-buffer dashboard-buffer-name)))
-  (dashboard-set-heading-icons t)
   (dashboard-set-navigator t)
   (dashboard-set-init-info t)
   (dashboard-set-heading-icons t)

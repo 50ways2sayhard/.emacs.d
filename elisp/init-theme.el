@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Oct 20 17:32:23 2021 (+0800)
+;; Last-Updated: Sat Nov 27 12:27:29 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -52,7 +52,12 @@
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-env-version t)
   (doom-modeline-height 15)
-  (doom-modeline-buffer-modification-icon t))
+  (doom-modeline-buffer-modification-icon t)
+  :config
+  (custom-set-faces
+   '(mode-line ((t (:family "Cascadia Code" ))))
+   '(mode-line-inactive ((t (:family "Cascadia Code" )))))
+  )
 
 
 ;; DoomThemes

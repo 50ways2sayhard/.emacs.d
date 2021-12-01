@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Mar 18 14:20:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Oct 20 09:34:10 2021 (+0800)
+;; Last-Updated: Sat Nov 27 15:40:23 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d constants
@@ -41,6 +41,11 @@
 (setq user-full-name "John")
 (setq user-mail-address "gjtzone@hotmail.com")
 ;; -UserInfo
+
+
+(defconst emacs/>=29p
+  (>= emacs-major-version 29)
+  "Emacs is 29 or above.")
 
 ;; Consts
 (defconst *sys/gui*
