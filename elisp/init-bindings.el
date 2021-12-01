@@ -86,6 +86,7 @@
     "co" '(lsp-ui-imenu :wk "Outline")
     "cJ" '(consult-lsp-symbols :wk "Jump to Symbol in workspace")
     "ca" '(lsp-execute-code-action :wk "Code Actions")
+    "clf" '(lsp-ui-doc-focus-frame :wk "Focus lsp ui doc frame")
     ;; "cp" '(citre-peek :wk "Citre peek")
     ;; "ca" '(citre-ace-peek :wk "Citre ace peek")
     ;; "cj" '(citre-jump+ :wk "Citre jump")

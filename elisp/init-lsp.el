@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Nov 28 11:57:01 2021 (+0800)
+;; Last-Updated: Wed Dec  1 23:38:05 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -135,7 +135,6 @@
   :hook (lsp-mode . lsp-ui-mode)
   :bind
   (:map lsp-ui-doc-frame-mode-map
-        ("<Ret>" . lsp-ui-doc-focus-frame)
         ("C-g" . lsp-ui-doc-unfocus-frame))
   :custom
   (lsp-ui-doc-header nil)
