@@ -21,6 +21,7 @@
   (evil-define-key 'normal 'global
     "j" 'evil-next-visual-line
     "k" 'evil-previous-visual-line
+    "K" 'lsp-ui-doc-glance
     ;; Comment
     "gcc" 'evilnc-comment-or-uncomment-lines
     "gcC" 'evilnc-comment-or-uncomment-to-the-line
@@ -114,7 +115,7 @@
     "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
     "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
 
-    "g" '(:wh "Git")
+    "g" '(:wk "Git")
     "gs" '(magit-status :wk "Git status")
     "gb" '(magit-branch-checkout :wk "Git checkout")
     "gB" '(magit-blame :wk "Git blame")
