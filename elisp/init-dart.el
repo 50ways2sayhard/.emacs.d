@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 40
+;;     Update #: 49
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -69,12 +69,24 @@
 (use-package lsp-dart
   :ensure t
   :hook (dart-mode . lsp)
-  :init
+  :custom
+  (lsp-dart-dap-flutter-hot-reload-on-save t)
+  :config
   (with-eval-after-load 'dap-mode
     (dap-register-debug-template "Flutter :: Attach"
                                  (list
                                   :request "attach"
                                   :type "dart")))
+
+  (local-leader-def
+    :keymaps 'dart-mode-map
+    "r" 'lsp-dart-dap-flutter-hot-reload
+    "R" 'lsp-dart-dap-flutter-hot-restart
+
+    "D" 'lsp-dart-open-devtools
+    "o" 'lsp-dart-show-outline
+    "p" 'lsp-dart-pub-get
+    )
   )
 
 (provide 'init-dart)
