@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 623
+;;     Update #: 633
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -111,7 +111,7 @@
 (use-package consult
   :after orderless
   :straight (:host github :repo "minad/consult")
-  :commands +consult-ripgrep-at-point noct-consult-ripgrep-or-line
+  :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -128,9 +128,9 @@
     :after consult
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
   (use-package consult-flycheck
-    :after consult)
+    :after (consult flycheck))
   (use-package consult-lsp
-    :after consult)
+    :after (consult lsp))
   :config
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root)
