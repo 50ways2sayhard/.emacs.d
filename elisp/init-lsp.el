@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Dec  1 23:38:05 2021 (+0800)
+;; Last-Updated: Sun Dec  5 22:48:39 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -109,6 +109,12 @@
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
           lsp-vetur-validation-template nil))
+  (setq lsp-signature-posframe-params
+        (list :poshandler #'posframe-poshandler-point-bottom-left-corner
+              :height 10
+              :width 60
+              :border-width 1
+              :min-width 60))
   :config
   (defun my-lsp--init-if-visible (fn &rest args)
     (unless (bound-and-true-p git-timemachine-mode)
