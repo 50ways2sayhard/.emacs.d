@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 49
+;;     Update #: 60
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -71,12 +71,21 @@
   :hook (dart-mode . lsp)
   :custom
   (lsp-dart-dap-flutter-hot-reload-on-save t)
+  (lsp-dart-flutter-widget-guides nil)
+  (lsp-dart-flutter-fringe-colors nil)
   :config
   (with-eval-after-load 'dap-mode
     (dap-register-debug-template "Flutter :: Attach"
                                  (list
                                   :request "attach"
-                                  :type "dart")))
+                                  :type "dart"
+                                  :dap-server-path lsp-dart-dap-flutter-debugger-program
+                                  :program (lsp-dart-get-project-entrypoint)
+                                  :output-filter-function #'lsp-dart-dap--output-filter-function
+                                  )))
+  (with-eval-after-load 'lsp
+    (make-local-variable 'before-save-hook)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
   (local-leader-def
     :keymaps 'dart-mode-map
