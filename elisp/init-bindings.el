@@ -44,6 +44,7 @@
   (general-def "C-S-RET" '+default/newline-above)
   (general-def "M-?" '+consult-ripgrep-at-point)
   (general-def "M->" '+lookup-xref-references-backend-fn)
+  (general-def "C-l" 'lsp-signarture-activate)
 
   ;; Navigation
   (general-define-key
@@ -78,7 +79,7 @@
     "c" '(:wk "Code")
     "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
     "cf" '(format-all-buffer :wk "Format buffer")
-    "cD" '(xref-find-references :wk "Jump to implementation")
+    "cD" '(lsp-ui-peek-find-references :wk "Jump to implementation")
     "cd" '(lsp-ui-peek-find-definitions :wk "Jump to definition")
     "cI" '(lsp-organize-imports :wk "Organize import")
     "ci" '(consult-lsp-file-symbols :wk "Symbols in current file")
@@ -95,6 +96,9 @@
     ;; "cU" '(citre-update-tags-file :wk "Citre update tag")
     "cc" '(separedit-dwim :wk "Write comment")
     "ch" '(lsp-ui-doc-show :wk "Toggle lsp-ui-doc")
+
+    "d" '(:wk "Debug")
+    "dt" '(dap-breakpoint-toggle :wk "Add breakpoint")
 
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")

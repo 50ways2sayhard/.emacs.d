@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Dec  5 22:48:39 2021 (+0800)
+;; Last-Updated: Mon Dec 13 18:59:07 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -49,10 +49,11 @@
   (+lsp-optimization-mode +1)
 
   ;; Format and organize imports
-  ;; (unless (derived-mode-p 'c-mode 'c++-mode 'python-mode 'web-mode 'js-mode)
-  ;;   (add-hook 'before-save-hook #'lsp-organize-imports t t))
   (if (derived-mode-p 'dart-mode)
-      (add-hook 'before-save-hook #'lsp-format-buffer)))
+      (add-hook 'before-save-hook #'lsp-format-buffer t t))
+  (if (derived-mode-p 'dart-mode)
+      (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  )
 
 (use-package lsp-mode
   :diminish
@@ -75,9 +76,10 @@
           lsp-semantic-tokens-enable nil
           ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
-          lsp-signature-auto-activate t
-          lsp-signature-function 'lsp-signature-posframe
+          lsp-signature-auto-activate nil
+          ;; lsp-signature-function 'lsp-signature-posframe
           lsp-idle-delay 0.5
+          lsp-lens-enable nil
           lsp-enable-imenu nil
           lsp-enable-on-type-formatting nil
           lsp-enable-text-documet-color nil
@@ -110,9 +112,9 @@
           lsp-vetur-validation-script nil
           lsp-vetur-validation-template nil))
   (setq lsp-signature-posframe-params
-        (list :poshandler #'posframe-poshandler-point-bottom-left-corner
+        (list :poshandler #'posframe-poshandler-window-top-right-corner
               :height 10
-              :width 60
+              :width 80
               :border-width 1
               :min-width 60))
   :config
@@ -159,13 +161,14 @@
     (setq mode-line-format nil)))
 
 (use-package dap-mode
+  :disabled
   :defines dap-python-executable
   :functions dap-hydra/nil
   :diminish
   :bind (:map lsp-mode-map
               ("<f5>" . dap-debug)
               ("M-<f5>" . dap-hydra))
-  :hook ((prog-mode . dap-auto-configure-mode)
+  :hook ((lsp-mode . dap-auto-configure-mode)
          (dap-stopped . (lambda (_args) (dap-hydra)))
 
          (python-mode . (lambda () (require 'dap-python)))
