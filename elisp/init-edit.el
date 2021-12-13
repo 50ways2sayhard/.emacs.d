@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Nov 27 15:51:32 2021 (+0800)
+;; Last-Updated: Wed Dec  8 10:42:45 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -137,7 +137,8 @@
   :config
   ;; For MacOS
   (when *sys/mac*
-    (setq sis-english-source "com.apple.keylayout.ABC"))
+    (setq sis-english-source "com.apple.keylayout.ABC")
+    (setq sis-other-source "im.rime.inputmethod.Squirrel.Rime"))
   (when *sys/wsl*
     (setq sis-english-source "1033")
     (setq sis-other-source "2052")
