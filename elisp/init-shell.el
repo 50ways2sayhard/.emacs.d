@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 8
+;;     Update #: 18
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,12 +50,7 @@
            (executable-find "libtool")
            (executable-find "make"))
   (use-package vterm
-    :commands vterm--internal
-    :bind (:map vterm-mode-map
-                ([f9] . (lambda ()
-                          (interactive)
-                          (and (fboundp 'shell-pop)
-                               (shell-pop nil)))))
+    :commands (vterm--internal vterm-posframe-toggle)
     :init
     (setq vterm-always-compile-module t)
 
@@ -65,6 +60,8 @@
       (defun vterm-posframe-hidehandler (_)
         "Hidehandler used by `vterm-posframe-toggle'."
         (not (eq (selected-frame) posframe--frame)))
+
+      (bind-key "C-<f9>" #'vterm-posframe-toggle)
 
       (defun vterm-posframe-toggle ()
         "Toggle `vterm' child frame."
