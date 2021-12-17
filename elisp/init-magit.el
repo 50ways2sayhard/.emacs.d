@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Oct 13 11:50:45 2021 (+0800)
+;; Last-Updated: Thu Dec  9 16:19:16 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -185,9 +185,10 @@ window that already exists in that direction. It will split otherwise."
     ("增加新特性" . "feat")
     ("bug 修复" . "fix")
     ("文档改动" . "docs")
+    ("功能、交互优化" . "improve")
     ("格式改动（不影响代码运行的变动，例如加空格、换行、分号等）" . "style")
     ("重构代码" . "refactor")
-    ("优化相关（性能优化、交互优化等）" . "perf")
+    ("性能相关优化" . "perf")
     ("测试代码" . "test")
     ("构建过程或辅助工具变动" . "chore")
     ("回滚" . "revert")

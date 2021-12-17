@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Dec  1 22:34:17 2021 (+0800)
+;; Last-Updated: Fri Dec 17 10:44:42 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -210,7 +210,7 @@ Examples:
   (advice-add 'company-capf
               :around
               (lambda (capf-fn &rest args)
-                (let ((completion-styles '(flex)))
+                (let ((completion-styles '(partial-completion)))
                   (apply capf-fn args))))
   )
 

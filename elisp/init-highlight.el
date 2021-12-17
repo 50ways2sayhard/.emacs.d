@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 38
+;;     Update #: 39
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -179,7 +179,8 @@ FACE defaults to inheriting from default and highlight."
   :hook (after-init . global-hl-todo-mode)
   :config
   (setq hl-todo-keyword-faces
-        '(("TODO"   . ,(face-foreground 'warning))
+        '(("MARK" . ,(face-foreground 'success))
+          ("TODO"   . ,(face-foreground 'warning))
           ("HACK" . ,(face-foreground 'warning))
           ("FIXME"  . ,(face-foreground 'warning))
           ("DEBUG"  . ,(face-foreground 'error))
