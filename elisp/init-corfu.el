@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Sun Nov 28 09:52:37 2021 (+0800)
+;; Last-Updated: Fri Dec 24 10:15:43 2021 (+0800)
 ;;           By: John
-;;     Update #: 157
+;;     Update #: 159
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -169,6 +169,12 @@
   (company-tabnine-max-num-results 3)
   :hook
   (kill-emacs . company-tabnine-kill-process)
+  )
+
+(use-package corfu-doc
+  :after corfu
+  :straight (:host github :repo "galeo/corfu-doc")
+  :hook (corfu-mode . corfu-doc-mode)
   )
 
 (provide 'init-corfu)
