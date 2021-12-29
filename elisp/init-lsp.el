@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Dec 13 18:59:07 2021 (+0800)
+;; Last-Updated: Tue Dec 21 09:07:10 2021 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -133,7 +133,7 @@
               :override #'my-lsp-icons-all-the-icons-material-icon)
   (defun my/lsp-mode-setup-completion ()
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-          '(flex))) ;; Configure flex
+          '(partial-completion))) ;; Configure flex
   )
 (use-package lsp-ui
   :after lsp-mode
