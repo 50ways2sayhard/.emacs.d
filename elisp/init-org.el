@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Sep  6 16:21:43 2021 (+0800)
+;; Last-Updated: Wed Jan  5 11:53:09 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -324,16 +324,37 @@
 
 (use-package org-superstar
   :after org
+  :disabled
   :hook (org-mode . org-superstar-mode)
   :custom
   (org-superstar-remove-leading-stars t)
   (org-superstar-special-todo-items t))
+
+(use-package org-bars
+  :straight (:host github :repo "tonyaldon/org-bars")
+  :after org
+  :hook (org-mode . org-bars-mode))
 
 (use-package org-fancy-priorities
   :after org
   :hook (org-mode . org-fancy-priorities-mode)
   :config
   (setq org-fancy-priorities-list '("🅰" "🅱" "🅲" "🅳" "🅴")))
+
+(use-package electric-spacing
+  :straight (:host github :repo "zk-phi/electric-spacing")
+  :after org)
+
+(use-package separate-inline
+  :straight (:host github :repo "ingtshan/separate-inline.el")
+  :hook ((org-mode-hook . separate-inline-mode)
+         (org-mode-hook
+          .
+          (lambda ()
+            (add-hook 'separate-inline-mode-hook
+                      'separate-inline-use-default-rules-for-org-local
+                      nil 'make-it-local)))))
+
 
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
