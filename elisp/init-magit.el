@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:40:27 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Dec  9 16:19:16 2021 (+0800)
+;; Last-Updated: Tue Jan 11 16:15:18 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d magit
@@ -219,10 +219,38 @@ window that already exists in that direction. It will split otherwise."
                           (goto-char (point-min))
                           (when (re-search-forward "^<<<<<<< " nil t)
                             (smerge-mode 1)))))
-         ;; (magit-diff-visit-file . (lambda ()
-         ;;                            (when smerge-mode
-         ;;                              (hydra-smerge/body))))
+         (magit-diff-visit-file . (lambda ()
+                                    (when smerge-mode
+                                      (hydra-smerge/body))))
          )
+   :pretty-hydra
+   ((:title "Smerge"
+    :color pink :quit-key "q")
+   ("Move"
+    (("n" smerge-next "next")
+     ("p" smerge-prev "previous"))
+    "Keep"
+    (("b" smerge-keep-base "base")
+     ("u" smerge-keep-upper "upper")
+     ("l" smerge-keep-lower "lower")
+     ("a" smerge-keep-all "all")
+     ("RET" smerge-keep-current "current")
+     ("C-m" smerge-keep-current "current"))
+    "Diff"
+    (("<" smerge-diff-base-upper "upper/base")
+     ("=" smerge-diff-upper-lower "upper/lower")
+     (">" smerge-diff-base-lower "upper/lower")
+     ("R" smerge-refine "refine")
+     ("E" smerge-ediff "ediff"))
+    "Other"
+    (("C" smerge-combine-with-next "combine")
+     ("r" smerge-resolve "resolve")
+     ("k" smerge-kill-current "kill")
+     ("ZZ" (lambda ()
+             (interactive)
+             (save-buffer)
+             (bury-buffer))
+      "Save and bury buffer" :exit t))))
   :config
   ;; (local-leader-def
   ;;   :keymaps 'smerge-mode-map
@@ -233,14 +261,14 @@ window that already exists in that direction. It will split otherwise."
   ;;   "u" '(smerge-keep-upper :wk "Keep upper")
   ;;   "m" '(smerge-keep-mine :wk "Keep mine")
   ;;   "A" '(smerge-keep-all :wk "Keep all"))
-  (evil-define-key 'normal 'smerge-mode-map ",n" 'smerge-next)
-  (evil-define-key 'normal 'smerge-mode-map ",p" 'smerge-prev)
-  (evil-define-key 'normal 'smerge-mode-map ",," 'smerge-keep-current)
-  (evil-define-key 'normal 'smerge-mode-map ",l" 'smerge-keep-lower)
-  (evil-define-key 'normal 'smerge-mode-map ",u" 'smerge-keep-upper)
-  (evil-define-key 'normal 'smerge-mode-map ",m" 'smerge-mine)
-  (evil-define-key 'normal 'smerge-mode-map ",A" 'smerge-keep-all)
-  (evil-define-key 'normal 'smerge-mode-map ",c" 'smerge-keep-current)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",n" 'smerge-next)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",p" 'smerge-prev)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",," 'smerge-keep-current)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",l" 'smerge-keep-lower)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",u" 'smerge-keep-upper)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",m" 'smerge-mine)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",A" 'smerge-keep-all)
+  ;; (evil-define-key 'normal 'smerge-mode-map ",c" 'smerge-keep-current)
   )
 
 (provide 'init-magit)
