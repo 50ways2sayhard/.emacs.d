@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 45
+;;     Update #: 47
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -101,7 +101,10 @@ Install the doc if it's not installed."
   :defer t
   :custom
   (separedit-remove-trailing-spaces-in-comment t)
-  (separedit-default-mode 'markdown-mode))
+  (separedit-default-mode 'markdown-mode)
+  :config
+  (add-to-list 'separedit-comment-delimiter-alist '(("///") . (dart-mode)))
+  )
 
 (use-package quickrun
   :ensure t
