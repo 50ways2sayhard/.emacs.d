@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Dec 24 10:15:43 2021 (+0800)
+;; Last-Updated: Mon Jan 24 14:53:40 2022 (+0800)
 ;;           By: John
-;;     Update #: 159
+;;     Update #: 172
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -90,8 +90,9 @@
     (corfu--goto -1)
     (goto-char (cadr completion-in-region--data)))
 
-  (define-key corfu-map [remap move-beginning-of-line] #'corfu-beginning-of-prompt)
-  (define-key corfu-map [remap move-end-of-line] #'corfu-end-of-prompt)
+  ;; (define-key corfu-map [remap move-beginning-of-line] #'corfu-beginning-of-prompt)
+  ;; (define-key corfu-map [remap move-end-of-line] #'corfu-end-of-prompt)
+  (add-to-list 'corfu-auto-commands 'end-of-visual-line)
   (defun my/corfu-commit-predicate ()
     ;;     "Auto-commit candidates if:
     ;; 1. A "." is typed, except after a SPACE.
@@ -136,7 +137,7 @@
               ;; (setq-local completion-at-point-functions (list (cape-super-capf #'lsp-completion-at-point #'cape-dabbrev)))
               (add-to-list 'completion-at-point-functions #'cape-file)
               ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-              ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+              (add-to-list 'completion-at-point-functions #'cape-keyword)
               ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
               ;; ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
               ;; ;;(add-to-list 'completion-at-point-functions #'cape-dict)
@@ -175,6 +176,8 @@
   :after corfu
   :straight (:host github :repo "galeo/corfu-doc")
   :hook (corfu-mode . corfu-doc-mode)
+  :custom
+  (corfu-doc-delay 0.5)
   )
 
 (provide 'init-corfu)
