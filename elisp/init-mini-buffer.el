@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 633
+;;     Update #: 636
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -131,6 +131,8 @@
     :after (consult flycheck))
   (use-package consult-lsp
     :after (consult lsp))
+  (use-package consult-eglot
+    :after (consult eglot))
   :config
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root)
@@ -302,7 +304,7 @@ When the number of characters in a buffer exceeds this threshold,
                  (left (car posn))
                  (top (cdr posn))
                  )
-            `((left . ,left)
+            `((left . ,0.5)
               (top . ,top)
               (background-mode 'dark)
               (foreground-color . "#bbc2cf")
