@@ -53,7 +53,7 @@
 ;; Minor mode to aggressively keep your code always indented
 (use-package aggressive-indent
   :diminish
-  :hook ((prog-mode . aggressive-indent-mode)
+  :hook (((web-mode js-mode python-mode) . aggressive-indent-mode)
          ;; FIXME: Disable in big files due to the performance issues
          ;; https://github.com/Malabarba/aggressive-indent-mode/issues/73
          (find-file . (lambda ()
