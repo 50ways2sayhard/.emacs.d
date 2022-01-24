@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Dec 17 10:44:42 2021 (+0800)
+;; Last-Updated: Mon Jan 24 12:06:03 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -77,8 +77,8 @@ If failed try to complete the common part with `company-complete-common'"
 ;;;###autoload
 (defvar +company-backend-alist
   '((text-mode company-tabnine company-yasnippet company-dabbrev)
-    (prog-mode company-files (company-capf :with company-tabnine :with company-yasnippet-unless-member-access :separate))
-    (vue-mode company-files (company-capf :with company-tabnine :with company-yasnippet-unless-member-access :separate))
+    (prog-mode company-files company-capf)
+    (vue-mode company-files company-capf )
     (conf-mode company-capf company-dabbrev-code company-yasnippet))
   "An alist matching modes to company backends. The backends for any mode is
 built from this.")
@@ -227,31 +227,33 @@ Examples:
   (:map company-mode-map
         ("C-x C-t" . company-tabnine))
   :init
-  (defun company//sort-by-tabnine (candidates)
-    "Integrate company-tabnine with lsp-mode"
-    (if (or (functionp company-backend)
-            (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
-        candidates
-      (let ((candidates-table (make-hash-table :test #'equal))
-            candidates-lsp
-            candidates-tabnine)
-        (dolist (candidate candidates)
-          (if (eq (get-text-property 0 'company-backend candidate)
-                  'company-tabnine)
-              (unless (gethash candidate candidates-table)
-                (push candidate candidates-tabnine))
-            (push candidate candidates-lsp)
-            (puthash candidate t candidates-table)))
-        (setq candidates-lsp (nreverse candidates-lsp))
-        (setq candidates-tabnine (nreverse candidates-tabnine))
-        (nconc (seq-take candidates-lsp 2)
-               (seq-take candidates-tabnine 2)
-               (seq-drop candidates-lsp 2)
-               (seq-drop candidates-tabnine 2)
-               ))))
+  (require 'init-tabnine-capf)
+  ;; (defun company//sort-by-tabnine (candidates)
+  ;;   "Integrate company-tabnine with lsp-mode"
+  ;;   (if (or (functionp company-backend)
+  ;;           (not (and (listp company-backend) (memq 'company-tabnine company-backend))))
+  ;;       candidates
+  ;;     (let ((candidates-table (make-hash-table :test #'equal))
+  ;;           candidates-lsp
+  ;;           candidates-tabnine)
+  ;;       (dolist (candidate candidates)
+  ;;         (if (eq (get-text-property 0 'company-backend candidate)
+  ;;                 'company-tabnine)
+  ;;             (unless (gethash candidate candidates-table)
+  ;;               (push candidate candidates-tabnine))
+  ;;           (push candidate candidates-lsp)
+  ;;           (puthash candidate t candidates-table)))
+  ;;       (setq candidates-lsp (nreverse candidates-lsp))
+  ;;       (setq candidates-tabnine (nreverse candidates-tabnine))
+  ;;       (nconc (seq-take candidates-lsp 2)
+  ;;              (seq-take candidates-tabnine 2)
+  ;;              (seq-drop candidates-lsp 2)
+  ;;              (seq-drop candidates-tabnine 2)
+  ;;              ))))
 
   :config
-  (add-to-list 'company-transformers 'company//sort-by-tabnine t)
+  (toggle-company-tabnine-capf)
+  ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
   )
 ;; -CompanyTabNinePac
 
