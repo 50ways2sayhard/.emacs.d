@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 8
+;;     Update #: 24
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -155,7 +155,6 @@ This can be passed nil as its second argument to unset handlers for MODES. e.g.
                                             (symbol-value mode))))))))
         (add-hook hook fn)))))
 
-
 ;;
 ;;; Helpers
 
@@ -244,15 +243,16 @@ This can be passed nil as its second argument to unset handlers for MODES. e.g.
                         (xref-find-backend)
                         identifier)))
     (when xrefs
-      (let ((marker-ring (ring-copy xref--marker-ring)))
+      (let* ((jumped nil)
+             (xref-after-jump-hook
+              (cons (lambda () (setq jumped t))
+                    xref-after-jump-hook)))
         (funcall (or show-fn #'xref--show-defs)
                  (lambda () xrefs)
                  nil)
         (if (cdr xrefs)
             'deferred
-          ;; xref will modify its marker stack when it finds a result to jump to.
-          ;; Use that to determine success.
-          (not (equal xref--marker-ring marker-ring)))))))
+          jumped)))))
 
 (defun +lookup-dictionary-definition-backend-fn (identifier)
   "Look up dictionary definition for IDENTIFIER."
