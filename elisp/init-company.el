@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Jan 24 12:06:03 2022 (+0800)
+;; Last-Updated: Tue Jan 25 10:30:12 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -77,8 +77,8 @@ If failed try to complete the common part with `company-complete-common'"
 ;;;###autoload
 (defvar +company-backend-alist
   '((text-mode company-tabnine company-yasnippet company-dabbrev)
-    (prog-mode company-files company-capf)
-    (vue-mode company-files company-capf )
+    (prog-mode company-tabnine-capf company-files company-capf)
+    (vue-mode company-files company-capf company-tabnine-capf)
     (conf-mode company-capf company-dabbrev-code company-yasnippet))
   "An alist matching modes to company backends. The backends for any mode is
 built from this.")
@@ -228,6 +228,7 @@ Examples:
         ("C-x C-t" . company-tabnine))
   :init
   (require 'init-tabnine-capf)
+  (toggle-company-tabnine-capf)
   ;; (defun company//sort-by-tabnine (candidates)
   ;;   "Integrate company-tabnine with lsp-mode"
   ;;   (if (or (functionp company-backend)
@@ -252,7 +253,7 @@ Examples:
   ;;              ))))
 
   :config
-  (toggle-company-tabnine-capf)
+  ;; (toggle-company-tabnine-capf)
   ;; (add-to-list 'company-transformers 'company//sort-by-tabnine t)
   )
 ;; -CompanyTabNinePac
