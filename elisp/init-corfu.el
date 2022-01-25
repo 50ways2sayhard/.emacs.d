@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Mon Jan 24 14:53:40 2022 (+0800)
+;; Last-Updated: Tue Jan 25 11:34:33 2022 (+0800)
 ;;           By: John
-;;     Update #: 172
+;;     Update #: 188
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -117,6 +117,11 @@
   ;; (setq corfu-commit-predicate #'my/corfu-commit-predicate)
   )
 
+(use-package emacs
+  :init
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'completion))
+
 (use-package cape
   :after corfu
   ;; Bind dedicated completion commands
@@ -135,9 +140,11 @@
   (add-hook 'lsp-completion-mode-hook
             (lambda ()
               ;; (setq-local completion-at-point-functions (list (cape-super-capf #'lsp-completion-at-point #'cape-dabbrev)))
+
+              (setq-local completion-at-point-functions (cape-capf-buster #'lsp-completion-at-point))
               (add-to-list 'completion-at-point-functions #'cape-file)
               ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-              (add-to-list 'completion-at-point-functions #'cape-keyword)
+              ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
               ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
               ;; ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
               ;; ;;(add-to-list 'completion-at-point-functions #'cape-dict)
