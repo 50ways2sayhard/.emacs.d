@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Jan 28 16:20:08 2022 (+0800)
+;; Last-Updated: Fri Jan 28 17:32:28 2022 (+0800)
 ;;           By: John
-;;     Update #: 288
+;;     Update #: 314
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -139,20 +139,16 @@
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   (add-hook 'lsp-completion-mode-hook
             (lambda ()
-              ;; (setq-local completion-at-point-functions (cape-capf-buster #'lsp-completion-at-point))
-              ;; (setq-local completion-at-point-functions (list (cape-company-to-capf #'company-tabnine) (cape-capf-buster #'lsp-completion-at-point) ))
               (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
-              (setq-local completion-at-point-functions (list #'non-greedy-lsp))
-              (push #'cape-tabnine completion-at-point-functions)
-              (add-to-list 'completion-at-point-functions #'cape-file)
-              ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+              (setq-local completion-at-point-functions (list #'non-greedy-lsp #'cape-file #'cape-tabnine))
               ))
-  (add-hook 'text-mode-hook
-            (lambda ()
-              (setq-local completion-at-point-functions (mapcar #'cape-company-to-capf (list #'company-tabnine)))))
+  (add-hook 'eglot-managed-mode-hook (lambda ()
+                                       (setq-local completion-at-point-functions (list #'eglot-completion-at-point #'cape-file #'cape-tabnine))
+                                       ))
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
+  (add-to-list 'completion-at-point-functions #'cape-tabnine)
   )
 
 (use-package kind-icon
