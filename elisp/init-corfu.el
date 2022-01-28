@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Jan 25 11:34:33 2022 (+0800)
+;; Last-Updated: Fri Jan 28 16:20:08 2022 (+0800)
 ;;           By: John
-;;     Update #: 188
+;;     Update #: 288
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -139,29 +139,20 @@
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   (add-hook 'lsp-completion-mode-hook
             (lambda ()
-              ;; (setq-local completion-at-point-functions (list (cape-super-capf #'lsp-completion-at-point #'cape-dabbrev)))
-
-              (setq-local completion-at-point-functions (cape-capf-buster #'lsp-completion-at-point))
+              ;; (setq-local completion-at-point-functions (cape-capf-buster #'lsp-completion-at-point))
+              ;; (setq-local completion-at-point-functions (list (cape-company-to-capf #'company-tabnine) (cape-capf-buster #'lsp-completion-at-point) ))
+              (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
+              (setq-local completion-at-point-functions (list #'non-greedy-lsp))
+              (push #'cape-tabnine completion-at-point-functions)
               (add-to-list 'completion-at-point-functions #'cape-file)
               ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-              ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
-              ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
-              ;; ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-              ;; ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-              ;; (add-to-list 'completion-at-point-functions #'cape-symbol)
-              ;; ;;(add-to-list 'completion-at-point-functions #'cape-line)
               ))
   (add-hook 'text-mode-hook
             (lambda ()
               (setq-local completion-at-point-functions (mapcar #'cape-company-to-capf (list #'company-tabnine)))))
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-  ;; (add-to-list 'completion-at-point-functions #'cape-symbol)
-  ;;(add-to-list 'completion-at-point-functions #'cape-line)
+  (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
   )
 
 (use-package kind-icon
@@ -183,8 +174,8 @@
   :after corfu
   :straight (:host github :repo "galeo/corfu-doc")
   :hook (corfu-mode . corfu-doc-mode)
-  :custom
-  (corfu-doc-delay 0.5)
+  :bind (:map corfu-map
+              ("M-d" . corfu-doc-toggle))
   )
 
 (provide 'init-corfu)
