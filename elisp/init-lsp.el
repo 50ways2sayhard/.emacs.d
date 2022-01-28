@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Dec 21 09:07:10 2021 (+0800)
+;; Last-Updated: Fri Jan 28 17:23:26 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -176,6 +176,26 @@
   :init
   (when (executable-find "python3")
     (setq dap-python-executable "python3")))
+
+(use-package eglot
+  :disabled
+  :commands eglot eglot-ensure
+  :hook ((eglot-managed-mode . +lsp-optimization-mode)
+         (prog-mode . (lambda ()
+                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
+                          (eglot-ensure)))))
+  :config
+  (setq eglot-stay-out-of '(flymake company project))
+  (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
+
+  (setq eldoc-echo-area-use-multiline-p nil)
+
+  (add-to-list 'eglot-server-programs '(web-mode . ("vls" "--stdio")))
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
+  (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server" "--client-id" "emacs.eglot" "--client-version" "1.2")))
+  ;; (with-eval-after-load 'flycheck
+  ;;   (require 'lsp/+eglot))
+  )
 
 (provide 'init-lsp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
