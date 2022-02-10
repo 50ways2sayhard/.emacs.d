@@ -51,4 +51,4 @@ flycheck-init.el
 straight/
 quelpa/
 devdocs/
-./init-custom.el
+init-custom.el
