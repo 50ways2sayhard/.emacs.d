@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Jan 28 17:32:28 2022 (+0800)
+;; Last-Updated: Thu Feb 10 17:38:14 2022 (+0800)
 ;;           By: John
-;;     Update #: 314
+;;     Update #: 322
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,11 +52,11 @@
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0)
+  (corfu-auto-delay 0.05)
   (corfu-echo-documentation 0.3)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
-  (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
-  (corfu-quit-no-match t)        ;; Automatically quit if there is no match
+  ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
+  (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect-first nil)    ;; Disable candidate preselection
   ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
@@ -73,6 +73,7 @@
   (:map corfu-map
         ("TAB" . corfu-next)
         ([tab] . corfu-next)
+        ("s-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
         ([backtab] . corfu-previous))
   :init

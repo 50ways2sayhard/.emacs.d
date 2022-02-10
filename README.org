@@ -15,10 +15,11 @@ Follow [[https://github.com/jimeh/build-emacs-for-macos][build-emacs-for-macos]]
 #+END_SRC
 *** Installing this configuration
 #+BEGIN_SRC bash
-cd ~
-mv .emacs.d .emacs.d.bak
-git clone --recurse-submodules -j8 https://github.com/50ways2sayhard/.emacs.d.git
-cd .emacs.d
+  cd ~
+  mv .emacs.d .emacs.d.bak
+  git clone --recurse-submodules -j8 https://github.com/50ways2sayhard/.emacs.d.git
+  cd .emacs.d
+  cp init-custom-example.el init-custom.el
 #+END_SRC
 
 ** Reference

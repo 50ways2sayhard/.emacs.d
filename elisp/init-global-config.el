@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Oct 27 22:19:55 2021 (+0800)
+;; Last-Updated: Fri Jan 28 17:49:56 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -194,16 +194,16 @@ The original function deletes trailing whitespace of the current line."
   (setq gcmh-idle-delay 5
         gcmh-high-cons-threshold (* 64 1024 1024)))
 
-(defun my-minibuffer-setup-hook ()
-  (setq gc-cons-threshold most-positive-fixnum))
+;; (defun my-minibuffer-setup-hook ()
+;;   (setq gc-cons-threshold most-positive-fixnum))
 
-(defun my-minibuffer-exit-hook ()
-  (setq gc-cons-threshold 100000000))
+;; (defun my-minibuffer-exit-hook ()
+;;   (setq gc-cons-threshold 100000000))
 ;; (defun my-minibuffer-exit-hook ()
 ;;   (setq gc-cons-threshold 80000000))
 
-(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
-(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+;; (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+;; (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 
 (when *sys/wsl*
   (defun my/browse-url-generic (url &optional _new-window)

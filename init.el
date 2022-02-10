@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Nov 28 09:56:04 2021 (+0800)
+;; Last-Updated: Wed Feb  9 09:58:25 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -121,7 +121,12 @@
 (require 'init-header)
 (require 'init-lookup)
 (require 'init-lsp)
-(require 'init-company)
+(pcase my-completion
+  ('company
+   (require 'init-company))
+  ('corfu
+   (require 'init-corfu)))
+;; (require 'init-company)
 ;; (require 'init-corfu)
 (require 'init-prog)
 (require 'init-shell)
