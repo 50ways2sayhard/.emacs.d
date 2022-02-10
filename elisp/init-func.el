@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Dec 27 16:09:31 2021 (+0800)
+;; Last-Updated: Tue Feb  8 10:42:11 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -276,15 +276,17 @@ FACE defaults to inheriting from default and highlight."
       (setq rlt nil)))
     rlt))
 
-(defun +my-imenu ()
+(defun +my-imenu (args)
   "consult-outline in org-mode else imenu"
-  (interactive)
+  (interactive "P")
   (if (derived-mode-p 'org-mode)
       (consult-outline)
-    (if (eq lsp-enable-imenu t)
-        (consult-lsp-file-symbols)
+    (if lsp-enable-imenu
+        (consult-lsp-file-symbols args)
       (consult-imenu))
-    ))
+    )
+  )
+
 
 ;;;###autoload
 (defun +default/newline-above ()

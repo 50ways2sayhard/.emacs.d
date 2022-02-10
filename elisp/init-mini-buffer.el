@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 636
+;;     Update #: 655
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -129,10 +129,23 @@
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
   (use-package consult-flycheck
     :after (consult flycheck))
-  (use-package consult-lsp
-    :after (consult lsp))
-  (use-package consult-eglot
-    :after (consult eglot))
+  (use-package consult-dir
+    :ensure t
+    :after consult
+    :bind (("C-x C-d" . consult-dir)
+           :map selectrum-minibuffer-map
+           ("C-x C-d" . consult-dir)
+           ("C-x C-j" . consult-dir-jump-file)))
+
+  (pcase my-lsp
+    ('eglot
+     (use-package consult-eglot
+       :after (consult eglot)))
+    ('lsp-mode
+     (use-package consult-lsp
+       :after (consult lsp)
+       )
+     ))
   :config
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root)
@@ -237,14 +250,6 @@ When the number of characters in a buffer exceeds this threshold,
      (lambda (str) (orderless--highlight input str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler))
 
-
-(use-package consult-dir
-  :ensure t
-  :after consult
-  :bind (("C-x C-d" . consult-dir)
-         :map selectrum-minibuffer-map
-         ("C-x C-d" . consult-dir)
-         ("C-x C-j" . consult-dir-jump-file)))
 
 (use-package orderless
   :after marginalia
