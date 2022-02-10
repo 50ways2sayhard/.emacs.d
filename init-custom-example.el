@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 5
+;;     Update #: 16
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,9 +46,12 @@
 ;;
 ;;; Code:
 
-(defvar org-base-dir "~/org/")
+(defvar org-base-dir "~/org")
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
+
+(setq my-lsp 'lsp-mode)
+(setq my-completion 'company)
 
 (provide 'init-custom)
 
