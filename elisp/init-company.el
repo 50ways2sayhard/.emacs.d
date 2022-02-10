@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jan 26 15:49:15 2022 (+0800)
+;; Last-Updated: Tue Feb  8 11:42:28 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -148,13 +148,13 @@ Examples:
   :diminish company-mode
   :custom
   (company-files-chop-trailing-slash nil)
-  (company-minimum-prefix-length 1)
+  (company-minimum-prefix-length 2)
   (company-tooltip-align-annotations t)
   (company-require-match 'never)
   ;; Don't use company in the following modes
   (company-global-modes '(not shell-mode))
   ;; Trigger completion immediately.
-  (company-idle-delay 0)
+  (company-idle-delay 0.05)
   ;; Number the candidates (use M-1, M-2 etc to select completions).
   (company-show-numbers nil)
   ;; (company-tooltip-minimum-width 80)
@@ -170,6 +170,11 @@ Examples:
   (add-hook 'company-mode-hook #'+company-init-backends-h)
   :config
   (global-company-mode 1)
+
+  (use-package company-prescient
+    :after company
+    :config
+    (company-prescient-mode t))
 
   ;; tng
   (define-key company-active-map [return] nil)
