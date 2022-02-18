@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jan  5 11:53:09 2022 (+0800)
+;; Last-Updated: Wed Feb 16 14:14:58 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -69,6 +69,11 @@
   (org-bullets-bullet-list '("#"))
   (org-tags-column -77)
   (org-capture-bookmark nil)
+  (org-hide-emphasis-markers t)
+  (org-agenda-span 7)
+  (org-agenda-start-with-log-mode t)
+  (org-agenda-start-with-clockreport-mode t)
+  (org-agenda-start-on-weekday 1)
 
   :config
   (add-hook (quote hack-local-variables-hook)
@@ -113,15 +118,57 @@
           )
         org-todo-keywords
         '((sequence "TODO(t!)" "DOING(i!)" "|" "DONE(d!)" "ABORT(a!)"))
-        ;; org-agenda-window-setup 'other-window
-        org-todo-keyword-faces '(("DOING" . warning)
-                                 ("ABORT" . error))
         org-priority-faces '((?A . error)
                              (?B . warning)
                              (?C . success))
         )
+  (setq org-todo-keywords
+        '((sequence
+           "☞ TODO(t)"  ; A task that needs doing & is ready to do
+           "PROJ(p)"  ; An ongoing project that cannot be completed in one step
+           "⚔ INPROCESS(s)"  ; A task that is in progress
+           "⚑ WAITING(w)"  ; Something is holding up this task; or it is paused
+           "|"
+           "☟ NEXT(n)"
+           "✰ Important(i)"
+           "✔ DONE(d)"  ; Task successfully completed
+           "✘ CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
+          (sequence
+           "✍ NOTE(N)"
+           "FIXME(f)"
+           "☕ BREAK(b)"
+           "❤ Love(l)"
+           "REVIEW(r)"
+           )) ; Task was completed
+        )
 
   ;; (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
+  (defun my:org-agenda-time-grid-spacing ()
+    "Set different line spacing w.r.t. time duration."
+    (save-excursion
+      (let* ((background (alist-get 'background-mode (frame-parameters)))
+             (background-dark-p (string= background "dark"))
+             (colors (if background-dark-p
+                         (list "#aa557f" "DarkGreen" "DarkSlateGray" "DarkSlateBlue")
+                       (list "#F6B1C3" "#FFFF9D" "#BEEB9F" "#ADD5F7")))
+             pos
+             duration)
+        (nconc colors colors)
+        (goto-char (point-min))
+        (while (setq pos (next-single-property-change (point) 'duration))
+          (goto-char pos)
+          (when (and (not (equal pos (point-at-eol)))
+                     (setq duration (org-get-at-bol 'duration)))
+            (let ((line-height (if (< duration 30) 1.0 (+ 0.5 (/ duration 60))))
+                  (ov (make-overlay (point-at-bol) (1+ (point-at-eol)))))
+              (overlay-put ov 'face `(:background ,(car colors)
+                                                  :foreground
+                                                  ,(if background-dark-p "black" "white")))
+              (setq colors (cdr colors))
+              (overlay-put ov 'line-height line-height)
+              (overlay-put ov 'line-spacing (1- line-height))))))))
+
+  (add-hook 'org-agenda-finalize-hook #'my:org-agenda-time-grid-spacing)
 
   ;; binding
   (evil-set-initial-state 'org-agenda-mode 'motion)
@@ -333,7 +380,13 @@
 (use-package org-bars
   :straight (:host github :repo "tonyaldon/org-bars")
   :after org
-  :hook (org-mode . org-bars-mode))
+  :hook (org-mode . org-bars-mode)
+  :config
+  (setq org-bars-color-options '(:only-one-color t
+                                                 :bar-color "#4C4A4D")
+        org-bars-stars '(:empty "◉"
+                                :invisible "▶"
+                                :visible "▼")))
 
 (use-package org-fancy-priorities
   :after org

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:02:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Feb  8 11:42:28 2022 (+0800)
+;; Last-Updated: Wed Feb 16 14:54:16 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d company company-tabnine
@@ -79,6 +79,7 @@ If failed try to complete the common part with `company-complete-common'"
   '((text-mode company-tabnine company-yasnippet company-dabbrev)
     (prog-mode company-files (company-capf :with company-tabnine :with company-yasnippet-unless-member-access :separate))
     (vue-mode  company-files (company-capf :with company-tabnine :separate))
+    (dart-mode company-files (company-capf :with company-tabnine :separate))
     (conf-mode company-capf company-dabbrev-code company-yasnippet))
   "An alist matching modes to company backends. The backends for any mode is
 built from this.")
@@ -167,7 +168,7 @@ Examples:
               ("M-j" . nil)
               ("M-k" . nil))
   :init
-  (add-hook 'company-mode-hook #'+company-init-backends-h)
+  (add-hook 'after-change-major-mode-hook #'+company-init-backends-h 'append)
   :config
   (global-company-mode 1)
 
@@ -269,6 +270,7 @@ Examples:
   :hook (company-mode . company-box-mode)
   :init (setq company-box-enable-icon t
               company-box-backends-colors nil
+              company-box-max-candidates 10
               company-box-doc-delay 0.3)
   :config
   (with-no-warnings

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Jan 28 17:40:32 2022 (+0800)
+;; Last-Updated: Wed Feb 16 14:20:23 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -65,7 +65,14 @@
                            (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
                              (eglot-ensure)))))
      :config
-     (setq eglot-stay-out-of '(flymake company project))
+     (setq eglot-sync-connect 1
+           eglot-connect-timeout 10
+           eglot-autoshutdown t
+           eglot-send-changes-idle-time 0.5
+           ;; NOTE We disable eglot-auto-display-help-buffer because :select t in
+           ;;      its popup rule causes eglot to steal focus too often.
+           eglot-auto-display-help-buffer nil)
+     ;; (setq eglot-stay-out-of '(flymake company project))
      (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
 
      (setq eldoc-echo-area-use-multiline-p nil)
@@ -73,8 +80,91 @@
      (add-to-list 'eglot-server-programs '(web-mode . ("vls" "--stdio")))
      (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
      (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server" "--client-id" "emacs.eglot" "--client-version" "1.2")))
-     ;; (with-eval-after-load 'flycheck
-     ;;   (require 'lsp/+eglot))
+
+     (leader-def :keymaps 'override
+       "ca" '(eglot-code-actions)
+       "cr" '(eglot-rename)
+       "cI" '(eglot-code-action-organize-imports)
+       "ci" '(consult-imenu)
+       "cJ" '(consult-eglot-symbols)
+       "cd" '(eglot-find-declaration)
+       "cF" '(eglot-find-implementation)
+       "cD" '(eglot-find-typeDefinition))
+
+     ;; From Eason0210/emacs.d
+     ;; Hacky eglot support in flycheck
+     ;; This file sets up flycheck so that, when eglot receives a publishDiagnostics method
+     ;; from the server, flycheck updates the reports.
+     ;;
+     ;; It works by creating a bridge function which can be used as the argument of
+     ;; `eglot-flymake-backend', which both consumes diagnostics and queue a call to
+     ;; 'flycheck-buffer'
+
+     (defvar-local +lsp--flycheck-eglot--current-errors nil)
+
+     (defun +lsp--flycheck-eglot-init (checker callback)
+       "CHECKER is the checker (eglot).
+CALLBACK is the function that we need to call when we are done, on all the errors."
+       (eglot-flymake-backend #'+lsp--flycheck-eglot--on-diagnostics)
+       (funcall callback 'finished +lsp--flycheck-eglot--current-errors))
+
+     (defun +lsp--flycheck-eglot--on-diagnostics (diags &rest _)
+       (cl-labels
+           ((flymake-diag->flycheck-err
+             (diag)
+             (with-current-buffer (flymake--diag-buffer diag)
+               (flycheck-error-new-at-pos
+                (flymake--diag-beg diag)
+                (pcase (flymake--diag-type diag)
+                  ('eglot-note 'info)
+                  ('eglot-warning 'warning)
+                  ('eglot-error 'error)
+                  (_ (error "Unknown diagnostic type, %S" diag)))
+                (flymake--diag-text diag)
+                :end-pos (flymake--diag-end diag)
+                :checker 'eglot
+                :buffer (current-buffer)
+                :filename (buffer-file-name)))))
+         (setq +lsp--flycheck-eglot--current-errors
+               (mapcar #'flymake-diag->flycheck-err diags))
+         ;; Call Flycheck to update the diagnostics annotations
+         (flycheck-buffer-deferred)))
+
+     (defun +lsp--flycheck-eglot-available-p ()
+       (bound-and-true-p eglot--managed-mode))
+
+     (with-eval-after-load 'flycheck
+       (flycheck-define-generic-checker 'eglot
+         "Report `eglot' diagnostics using `flycheck'."
+         :start #'+lsp--flycheck-eglot-init
+         :predicate #'+lsp--flycheck-eglot-available-p
+         :modes '(prog-mode text-mode))
+
+       (push 'eglot flycheck-checkers)
+       )
+
+
+     (defun +lsp-eglot-prefer-flycheck-h ()
+       (when eglot--managed-mode
+         (flymake-mode -1)
+         (when-let ((current-checker (flycheck-get-checker-for-buffer)))
+           (when (memq current-checker (list 'c/c++-clang 'rust-cargo 'python-pycompile))
+             (flycheck-disable-checker current-checker))
+           (unless (equal current-checker 'eglot)
+             (flycheck-add-next-checker 'eglot current-checker)))
+         (flycheck-add-mode 'eglot major-mode)
+         (flycheck-mode 1)
+         ;; Call flycheck on initilization to make sure to display initial
+         ;; errors
+         (flycheck-buffer-deferred)))
+
+     (add-hook 'eglot-managed-mode-hook #'+lsp-eglot-prefer-flycheck-h)
+
+     (with-eval-after-load 'flymake
+       (when (and
+              (not (fboundp 'flymake--diag-buffer))
+              (fboundp 'flymake--diag-locus))
+         (defalias 'flymake--diag-buffer 'flymake--diag-locus)))
      )
    )
   ('lsp-mode

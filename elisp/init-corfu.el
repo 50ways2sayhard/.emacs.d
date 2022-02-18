@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Feb 11 18:31:48 2022 (+0800)
+;; Last-Updated: Wed Feb 16 09:52:01 2022 (+0800)
 ;;           By: John
-;;     Update #: 379
+;;     Update #: 390
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -75,6 +75,7 @@
         ([tab] . corfu-next)
         ("s-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
+        ([?\r] . electric-indent-just-newline)
         ([backtab] . corfu-previous))
   :init
   (corfu-global-mode)
@@ -137,19 +138,20 @@
   ;;        ("C-c p l" . cape-line)
   ;;        ("C-c p w" . cape-dict))
   :init
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-hook 'lsp-completion-mode-hook
-            (lambda ()
-              (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
-              (setq-local completion-at-point-functions (list #'non-greedy-lsp #'cape-file #'cape-tabnine))
-              ))
-  (add-hook 'eglot-managed-mode-hook (lambda ()
-                                       (setq-local completion-at-point-functions (list #'eglot-completion-at-point #'cape-file #'cape-tabnine))
-                                       ))
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
   (add-to-list 'completion-at-point-functions #'cape-tabnine)
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-hook 'lsp-completion-mode-hook
+            (lambda ()
+              (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
+              (setq-local completion-at-point-functions (list #'cape-file #'non-greedy-lsp #'cape-tabnine))
+              ))
+  (add-hook 'eglot-managed-mode-hook (lambda ()
+                                       (fset 'non-greedy-eglot (cape-capf-properties #'eglot-completion-at-point :exclusive 'no))
+                                       (setq-local completion-at-point-functions (list #'non-greedy-eglot #'cape-file #'cape-tabnine))
+                                       ))
   )
 
 (use-package kind-icon
@@ -161,37 +163,37 @@
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
   (setq kind-icon-mapping
         '((array "a" :icon "code-brackets" :face font-lock-type-face)
-    (boolean "b" :icon "circle-half-full" :face font-lock-builtin-face)
-    (class "c" :icon "video-input-component" :face font-lock-type-face) ;
-    (color "#" :icon "palette" :face success) ;
-    (constant "co" :icon "square-circle" :face font-lock-constant-face) ;
-    (constructor "cn" :icon "cube-outline" :face font-lock-function-name-face) ;
-    (enum-member "em" :icon "format-align-right" :face font-lock-builtin-face) ;
-    (enum "e" :icon "server" :face font-lock-builtin-face) ;
-    (event "ev" :icon "zip-box-outline" :face font-lock-warning-face) ;
-    (field "fd" :icon "tag" :face font-lock-variable-name-face) ;
-    (file "f" :icon "file-document-outline" :face font-lock-string-face) ;
-    (folder "d" :icon "folder" :face font-lock-doc-face) ;
-    (interface "if" :icon "share-variant" :face font-lock-type-face) ;
-    (keyword "kw" :icon "image-filter-center-focus" :face font-lock-keyword-face) ;
-    (macro "mc" :icon "lambda" :face font-lock-keyword-face)
-    (method "m" :icon "cube-outline" :face font-lock-function-name-face) ;
-    (function "f" :icon "cube-outline" :face font-lock-function-name-face) ;
-    (module "{" :icon "view-module" :face font-lock-preprocessor-face) ;
-    (numeric "nu" :icon "numeric" :face font-lock-builtin-face)
-    (operator "op" :icon "plus-circle-outline" :face font-lock-comment-delimiter-face) ;
-    (param "pa" :icon "tag" :face default)
-    (property "pr" :icon "wrench" :face font-lock-variable-name-face) ;
-    (reference "rf" :icon "collections-bookmark" :face font-lock-variable-name-face) ;
-    (snippet "S" :icon "format-align-center" :face font-lock-string-face) ;
-    (string "s" :icon "sticker-text-outline" :face font-lock-string-face)
-    (struct "%" :icon "video-input-component" :face font-lock-variable-name-face) ;
-    (text "tx" :icon "format-text" :face shadow)
-    (type-parameter "tp" :icon "format-list-bulleted-type" :face font-lock-type-face)
-    (unit "u" :icon "ruler-square" :face shadow)
-    (value "v" :icon "format-align-right" :face font-lock-builtin-face) ;
-    (variable "va" :icon "tag" :face font-lock-variable-name-face)
-    (t "." :icon "file-find" :face shadow))) ;
+          (boolean "b" :icon "circle-half-full" :face font-lock-builtin-face)
+          (class "c" :icon "video-input-component" :face font-lock-type-face) ;
+          (color "#" :icon "palette" :face success) ;
+          (constant "co" :icon "square-circle" :face font-lock-constant-face) ;
+          (constructor "cn" :icon "cube-outline" :face font-lock-function-name-face) ;
+          (enum-member "em" :icon "format-align-right" :face font-lock-builtin-face) ;
+          (enum "e" :icon "server" :face font-lock-builtin-face) ;
+          (event "ev" :icon "zip-box-outline" :face font-lock-warning-face) ;
+          (field "fd" :icon "tag" :face font-lock-variable-name-face) ;
+          (file "f" :icon "file-document-outline" :face font-lock-string-face) ;
+          (folder "d" :icon "folder" :face font-lock-doc-face) ;
+          (interface "if" :icon "share-variant" :face font-lock-type-face) ;
+          (keyword "kw" :icon "image-filter-center-focus" :face font-lock-keyword-face) ;
+          (macro "mc" :icon "lambda" :face font-lock-keyword-face)
+          (method "m" :icon "cube-outline" :face font-lock-function-name-face) ;
+          (function "f" :icon "cube-outline" :face font-lock-function-name-face) ;
+          (module "{" :icon "view-module" :face font-lock-preprocessor-face) ;
+          (numeric "nu" :icon "numeric" :face font-lock-builtin-face)
+          (operator "op" :icon "plus-circle-outline" :face font-lock-comment-delimiter-face) ;
+          (param "pa" :icon "tag" :face default)
+          (property "pr" :icon "wrench" :face font-lock-variable-name-face) ;
+          (reference "rf" :icon "collections-bookmark" :face font-lock-variable-name-face) ;
+          (snippet "S" :icon "format-align-center" :face font-lock-string-face) ;
+          (string "s" :icon "sticker-text-outline" :face font-lock-string-face)
+          (struct "%" :icon "video-input-component" :face font-lock-variable-name-face) ;
+          (text "tx" :icon "format-text" :face shadow)
+          (type-parameter "tp" :icon "format-list-bulleted-type" :face font-lock-type-face)
+          (unit "u" :icon "ruler-square" :face shadow)
+          (value "v" :icon "format-align-right" :face font-lock-builtin-face) ;
+          (variable "va" :icon "tag" :face font-lock-variable-name-face)
+          (t "." :icon "file-find" :face shadow))) ;
   )
 
 (use-package company-tabnine
