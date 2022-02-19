@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 24
+;;     Update #: 25
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,15 +50,6 @@
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
-
-;;;###autoload
-(defun doom-project-root (&optional dir)
-  "Return the project root of DIR (defaults to `default-directory').
-Returns nil if not in a project."
-  (let ((projectile-project-root
-         (unless dir (bound-and-true-p projectile-project-root)))
-        projectile-require-project-root)
-    (projectile-project-root dir)))
 
 ;;;###autoload
 (defun doom-project-p (&optional dir)

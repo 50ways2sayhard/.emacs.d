@@ -305,9 +305,6 @@ When the number of characters in a buffer exceeds this threshold,
   (savehist-mode)
   (defun completion--regex-pinyin (str)
     (orderless-regexp (pinyinlib-build-regexp-string str)))
-  (setq orderless-style-dispatchers '(literal-if-= flex-if-comma without-if-$!))
-  (orderless-define-completion-style +orderless-with-initialism
-    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
   ;; Recognizes the following patterns:
   ;; * ~flex flex~
   ;; * =literal literal=
