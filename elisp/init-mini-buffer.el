@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 655
+;;     Update #: 677
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -55,58 +55,99 @@
 
 (autoload 'ffap-file-at-point "ffap")
 
-(use-package selectrum
-  :hook (+self/first-input . selectrum-mode)
-  :bind (:map selectrum-minibuffer-map
-              ("C-q" . selectrum-quick-select)
-              ("M-q" . selectrum-quick-insert))
+(add-hook 'completion-at-point-functions
+          (defun complete-path-at-point+ ()
+            (let ((fn (ffap-file-at-point))
+                  (fap (thing-at-point 'filename)))
+              (when (and (or fn
+                             (equal "/" fap))
+                         (save-excursion
+                           (search-backward fap (line-beginning-position) t)))
+                (list (match-beginning 0)
+                      (match-end 0)
+                      #'completion-file-name-table)))) 'append)
+
+(defun +complete-fido-enter-dir ()
+  (interactive)
+  (let ((candidate (vertico--candidate))
+        (current-input (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+    (cond
+     ((and (vertico-directory--completing-file-p)
+           (string= (car (last (s-split "/" current-input))) ".."))
+      (progn
+        (vertico-directory-delete-word 1)))
+
+     ((and (vertico-directory--completing-file-p)
+           (file-directory-p candidate)
+           (not (string= candidate "~/")))
+      (vertico-insert))
+
+     (t (insert "/")))))
+
+(use-package vertico
+  :straight (vertico :includes (vertico-quick vertico-repeat vertico-directory)
+                     :files (:defaults "extensions/vertico-*.el"))
+  :hook (+self/first-input . vertico-mode)
+  :bind
+  (:map vertico-map
+        ("C-<return>" . open-in-external-app))
+  :custom
+  (vertico-cycle nil)
+  :init
+  ;; (vertico-mode)
   :config
-  (require 'selectrum/+autoloads)
+  (set-face-background 'vertico-current "#42444a")
 
-  (add-hook 'rfn-eshadow-update-overlay-hook #'+vertico-directory-tidy)
-
-  (add-hook 'completion-at-point-functions
-            (defun complete-path-at-point+ ()
-              (let ((fn (ffap-file-at-point))
-                    (fap (thing-at-point 'filename)))
-                (when (and (or fn
-                               (equal "/" fap))
-                           (save-excursion
-                             (search-backward fap (line-beginning-position) t)))
-                  (list (match-beginning 0)
-                        (match-end 0)
-                        #'completion-file-name-table)))) 'append)
-
-  (with-eval-after-load 'general
-    (general-def "C-c r" 'selectrum-repeat)
+  ;; Configure directory extension.
+  (use-package vertico-quick
+    :after vertico
+    :ensure nil
+    :bind (:map vertico-map
+                ("M-q" . vertico-quick-insert)
+                ("C-q" . vertico-quick-exit)))
+  (use-package vertico-repeat
+    :after vertico
+    :ensure nil
+    :config
+    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+    (with-eval-after-load 'general
+      (general-def "C-c r" 'vertico-repeat)
+      ))
+  (use-package vertico-directory
+    :after vertico
+    :ensure nil
+    ;; More convenient directory navigation commands
+    :bind (:map vertico-map
+                ("RET" . vertico-directory-enter)
+                ("DEL" . vertico-directory-delete-char)
+                ("M-DEL" . vertico-directory-delete-word)
+                ("C-w" . vertico-directory-up)
+                ("/" . +complete-fido-enter-dir))
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)
     )
-  ;; (setq selectrum-should-sort nil)
-  (with-eval-after-load 'orderless
-    (setq orderless-skip-highlighting (lambda () selectrum-is-active))
-    (setq selectrum-refine-candidates-function #'orderless-filter)
-    (setq selectrum-highlight-candidates-function #'orderless-highlight-matches))
-
-  (define-key selectrum-minibuffer-map (kbd "DEL") '+complete-fido-backward-updir)
-  (define-key selectrum-minibuffer-map (kbd "/") '+complete-fido-enter-dir)
-  (define-key selectrum-minibuffer-map (kbd "C-d") '+complete-fido-delete-char)
-  (define-key selectrum-minibuffer-map (kbd "C-w") '+complete-fido-do-backward-updir)
-
-  (defun void/set-font ()
-    "Select xfont."
-    (interactive)
-    (set-frame-font (completing-read "Choose font:" (x-list-fonts "*"))))
-
-  ;; TODO: only for mac os now
-  (defun open-in-external-app ()
-    (interactive)
-    (let ((candidate (+complete-get-current-candidate)))
-      (message candidate)
-      (message (concat "open " candidate))
-      (when (eq (+complete--get-meta 'category) 'file)
-        (shell-command (concat "open " candidate))
-        (abort-recursive-edit))))
-  (define-key selectrum-minibuffer-map (kbd "C-<return>") 'open-in-external-app)
   )
+
+;; A few more useful configurations...
+(use-package emacs
+  :init
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; Alternatively try `consult-completing-read-multiple'.
+  (defun crm-indicator (args)
+    (cons (concat "[CRM] " (car args)) (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
+  ;; (setq read-extended-command-predicate
+  ;;       #'command-completion-default-include-p)
+
+  ;; Enable recursive minibuffers
+  (setq enable-recursive-minibuffers t))
 
 (use-package consult
   :after orderless
@@ -255,33 +296,90 @@ When the number of characters in a buffer exceeds this threshold,
   :after marginalia
   :demand t
   :config
+  (defvar +orderless-dispatch-alist
+    '((?% . char-fold-to-regexp)
+      (?! . orderless-without-literal)
+      (?`. orderless-initialism)
+      (?= . orderless-literal)
+      (?~ . orderless-flex)))
   (savehist-mode)
-  (setq orderless-matching-styles '(orderless-regexp orderless-literal orderless-initialism completion--regex-pinyin))
-  (defun without-if-$! (pattern _index _total)
-    (when (or (string-prefix-p "$" pattern) ;如果以! 或$ 开头，则表示否定，即不包含此关键字
-              (string-prefix-p "!" pattern))
-      `(orderless-without-literal . ,(substring pattern 1))))
-  (defun flex-if-comma (pattern _index _total) ;如果以逗号结尾，则以flex 算法匹配此组件
-    (when (string-suffix-p "," pattern)
-      `(orderless-flex . ,(substring pattern 0 -1))))
-  (defun literal-if-= (pattern _index _total) ;如果以=结尾，则以literal  算法匹配此关键字
-    (when (or (string-suffix-p "=" pattern)
-              (string-suffix-p "-" pattern)
-              (string-suffix-p ";" pattern))
-      `(orderless-literal . ,(substring pattern 0 -1))))
   (defun completion--regex-pinyin (str)
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   (setq orderless-style-dispatchers '(literal-if-= flex-if-comma without-if-$!))
   (orderless-define-completion-style +orderless-with-initialism
     (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
-  (setq completion-styles (cons 'orderless completion-styles)
+  ;; Recognizes the following patterns:
+  ;; * ~flex flex~
+  ;; * =literal literal=
+  ;; * %char-fold char-fold%
+  ;; * `initialism initialism`
+  ;; * !without-literal without-literal!
+  ;; * .ext (file extension)
+  ;; * regexp$ (regexp matching at end)
+  (defun +orderless-dispatch (pattern index _total)
+    (cond
+     ;; Ensure that $ works with Consult commands, which add disambiguation suffixes
+     ((string-suffix-p "$" pattern)
+      `(orderless-regexp . ,(concat (substring pattern 0 -1) "[\x100000-\x10FFFD]*$")))
+     ;; File extensions
+     ((and
+       ;; Completing filename or eshell
+       (or minibuffer-completing-file-name
+           (derived-mode-p 'eshell-mode))
+       ;; File extension
+       (string-match-p "\\`\\.." pattern))
+      `(orderless-regexp . ,(concat "\\." (substring pattern 1) "[\x100000-\x10FFFD]*$")))
+     ;; Ignore single !
+     ((string= "!" pattern) `(orderless-literal . ""))
+     ;; Prefix and suffix
+     ((if-let (x (assq (aref pattern 0) +orderless-dispatch-alist))
+          (cons (cdr x) (substring pattern 1))
+        (when-let (x (assq (aref pattern (1- (length pattern))) +orderless-dispatch-alist))
+          (cons (cdr x) (substring pattern 0 -1)))))))
+
+  ;; Define orderless style with initialism by default
+  (orderless-define-completion-style +orderless-with-initialism
+    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp completion--regex-pinyin)))
+
+  ;; You may want to combine the `orderless` style with `substring` and/or `basic`.
+  ;; There are many details to consider, but the following configurations all work well.
+  ;; Personally I (@minad) use option 3 currently. Also note that you may want to configure
+  ;; special styles for special completion categories, e.g., partial-completion for files.
+  ;;
+  ;; 1. (setq completion-styles '(orderless))
+  ;; This configuration results in a very coherent completion experience,
+  ;; since orderless is used always and exclusively. But it may not work
+  ;; in all scenarios. Prefix expansion with TAB is not possible.
+  ;;
+  ;; 2. (setq completion-styles '(substring orderless))
+  ;; By trying substring before orderless, TAB expansion is possible.
+  ;; The downside is that you can observe the switch from substring to orderless
+  ;; during completion, less coherent.
+  ;;
+  ;; 3. (setq completion-styles '(orderless basic))
+  ;; Certain dynamic completion tables (completion-table-dynamic)
+  ;; do not work properly with orderless. One can add basic as a fallback.
+  ;; Basic will only be used when orderless fails, which happens only for
+  ;; these special tables.
+  ;;
+  ;; 4. (setq completion-styles '(substring orderless basic))
+  ;; Combine substring, orderless and basic.
+  ;;
+  (setq completion-styles '(orderless)
         completion-category-defaults nil
-        orderless-component-separator #'orderless-escapable-split-on-space
-        completion-category-overrides '((file (styles substring flex)) ;; partial-completion is tried first
+        ;;; Enable partial-completion for files.
+        ;;; Either give orderless precedence or partial-completion.
+        ;;; Note that completion-category-overrides is not really an override,
+        ;;; but rather prepended to the default completion-styles.
+        ;; completion-category-overrides '((file (styles orderless partial-completion))) ;; orderless is tried first
+        completion-category-overrides '((file (flex styles basic partial-completion)) ;; partial-completion is tried first
                                         ;; enable initialism by default for symbols
                                         (command (styles +orderless-with-initialism))
                                         (variable (styles +orderless-with-initialism))
-                                        (symbol (styles +orderless-with-initialism))))
+                                        (symbol (styles +orderless-with-initialism)))
+        orderless-component-separator #'orderless-escapable-split-on-space ;; allow escaping space with backslash!
+        orderless-style-dispatchers '(+orderless-dispatch))
+
   )
 
 (use-package marginalia

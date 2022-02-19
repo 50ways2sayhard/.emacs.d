@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Feb  8 10:42:11 2022 (+0800)
+;; Last-Updated: Sat Feb 19 21:37:06 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -306,6 +306,26 @@ FACE defaults to inheriting from default and highlight."
       (call-interactively 'evil-open-below)
     (end-of-line)
     (newline-and-indent)))
+
+(defun my-open-recent ()
+  "Open recent directory in dired or file otherwise."
+  (interactive)
+  (unless recentf-mode (recentf-mode 1))
+  (if (derived-mode-p 'dired-mode)
+      (find-file (completing-read "Find recent dirs: "
+                                  (delete-dups
+                                   (append (mapcar 'file-name-directory recentf-list)))))
+    (consult-recent-file)))
+
+;;;###autoload
+(defun open-in-external-app ()
+  "TODO: only for macos now."
+  (interactive)
+  (let ((candidate (+complete-get-current-candidate)))
+    (when (eq (+complete--get-meta 'category) 'file)
+      (shell-command (concat "open " candidate))
+      (abort-recursive-edit))))
+
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
