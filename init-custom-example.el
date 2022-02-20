@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 16
+;;     Update #: 17
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,7 +46,7 @@
 ;;
 ;;; Code:
 
-(defvar org-base-dir "~/org")
+(defvar +self/org-base-dir "~/org")
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
 

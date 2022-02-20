@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Feb 16 14:14:58 2022 (+0800)
+;; Last-Updated: Sun Feb 20 22:10:41 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -40,12 +40,12 @@
 (require 'org/+funcs)
 
 ;; OrgPac
-(defvar +org-capture-file-gtd (concat org-base-dir "gtd.org"))
-(defvar +org-capture-file-idea (concat org-base-dir "ideas.org"))
-(defvar +org-capture-file-note (concat org-base-dir "notes.org"))
-(defvar +org-capture-file-inbox (concat org-base-dir "inbox.org"))
-(defvar +org-capture-file-someday (concat org-base-dir "someday.org"))
-(defvar +org-capture-file-tickler (concat org-base-dir "tickler.org"))
+(defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
+(defvar +org-capture-file-idea (concat +self/org-base-dir "ideas.org"))
+(defvar +org-capture-file-note (concat +self/org-base-dir "notes.org"))
+(defvar +org-capture-file-inbox (concat +self/org-base-dir "inbox.org"))
+(defvar +org-capture-file-someday (concat +self/org-base-dir "someday.org"))
+(defvar +org-capture-file-tickler (concat +self/org-base-dir "tickler.org"))
 (defun archive-done-tasks ()
   (interactive)
   (save-excursion
@@ -55,27 +55,35 @@
       (goto-char (line-beginning-position))
       (org-archive-subtree))))
 (use-package org
-  :straight nil
   :hook ((org-mode . org-indent-mode)
-         (org-mode . +org-update-cookies-h))
+         (org-mode . +org-update-cookies-h)
+         (org-mode . org-num-mode))
+  :bind
+  (:map org-mode-map
+        ([tab] . org-cycle))
   :custom
   (org-log-done 'time)
   (org-export-backends (quote (ascii html icalendar latex md odt)))
   (org-use-speed-commands t)
   (org-confirm-babel-evaluate 'nil)
-  (org-directory (expand-file-name org-base-dir))
   (org-ellipsis " ▼ ")
-  (org-babel-python-command "python3")
   (org-bullets-bullet-list '("#"))
   (org-tags-column -77)
-  (org-capture-bookmark nil)
+  (org-src-preserve-indentation nil)
+  (org-edit-src-content-indentation 0)
+  (org-capture-bookmark nil) ;; TODO: no bookmark for refile
+  (org-log-done 'time)
   (org-hide-emphasis-markers t)
+  (org-deadline-warning-days 90)
   (org-agenda-span 7)
   (org-agenda-start-with-log-mode t)
   (org-agenda-start-with-clockreport-mode t)
   (org-agenda-start-on-weekday 1)
+  (org-directory (expand-file-name +self/org-base-dir))
+  (org-babel-python-command "python3")
 
   :config
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (add-hook (quote hack-local-variables-hook)
             (lambda ()
               (let ((symbol (quote org-startup-folded)))
@@ -124,15 +132,15 @@
         )
   (setq org-todo-keywords
         '((sequence
-           "☞ TODO(t)"  ; A task that needs doing & is ready to do
+           "☞TODO(t)"  ; A task that needs doing & is ready to do
            "PROJ(p)"  ; An ongoing project that cannot be completed in one step
-           "⚔ INPROCESS(s)"  ; A task that is in progress
-           "⚑ WAITING(w)"  ; Something is holding up this task; or it is paused
+           "⚔INPROCESS(s)"  ; A task that is in progress
+           "⚑WAITING(w)"  ; Something is holding up this task; or it is paused
            "|"
-           "☟ NEXT(n)"
-           "✰ Important(i)"
-           "✔ DONE(d)"  ; Task successfully completed
-           "✘ CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
+           "☟NEXT(n)"
+           "✰Important(i)"
+           "✔DONE(d)"  ; Task successfully completed
+           "✘CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
           (sequence
            "✍ NOTE(N)"
            "FIXME(f)"
@@ -140,7 +148,44 @@
            "❤ Love(l)"
            "REVIEW(r)"
            )) ; Task was completed
+        org-todo-keyword-faces
+        '(
+          ("☞TODO" . (:foreground "#ff39a3" :weight bold))
+          ("⚔INPROCESS"  . "orangered")
+          ("✘CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
+          ("⚑WAITING" . "pink")
+          ("☕BREAK" . "gray")
+          ("❤LOVE" . (:foreground "VioletRed4"
+                                  ;; :background "#7A586A"
+                                  :weight bold))
+          ("☟NEXT" . (:foreground "DeepSkyBlue"
+                                  ;; :background "#7A586A"
+                                  :weight bold))
+          ("✰IMPORTANT" . (:foreground "greenyellow"
+                                       ;; :background "#7A586A"
+                                       :weight bold))
+          ("✔DONE" . "#008080")
+          ("FIXME" . "IndianRed"))
         )
+
+  (add-hook 'after-change-major-mode-hook
+            (lambda () (if (equal show-paren-mode 't)
+    		          (when (derived-mode-p 'org-mode)
+    		            (show-paren-mode -1))
+                    (show-paren-mode 1))))
+
+  ;; https://emacs-china.org/t/topic/2119/15
+  (defun my--diary-chinese-anniversary (lunar-month lunar-day &optional year mark)
+    (require 'cal-china)
+    (if year
+        (let* ((d-date (diary-make-date lunar-month lunar-day year))
+               (a-date (calendar-absolute-from-gregorian d-date))
+               (c-date (calendar-chinese-from-absolute a-date))
+               (cycle (car c-date))
+               (yy (cadr c-date))
+               (y (+ (* 100 cycle) yy)))
+          (diary-chinese-anniversary lunar-month lunar-day y mark))
+      (diary-chinese-anniversary lunar-month lunar-day year mark)))
 
   ;; (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
   (defun my:org-agenda-time-grid-spacing ()
@@ -338,10 +383,13 @@
 ;; OrgDownload
 (use-package org-download
   :defer t
-  :commands org-download-yank org-download-clipboard
+  :commands (org-download-clipboard org-download-delete org-download-image org-download-yank org-download-edit org-download-rename-at-point org-download-rename-last-file org-download-screenshot)
   :custom
   (org-download-image-dir "img/")
-  (org-download-heading-lvl nil))
+  (org-download-heading-lvl nil)
+  :config
+  (cond (*sys/mac*
+         (setq org-download-screenshot-method "screencapture -i %s"))))
 ;; -OrgDownload
 
 (use-package plantuml-mode
@@ -352,7 +400,6 @@
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
   (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
   (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
-
                                         ; Make babel results blocks lowercase
   (setq org-babel-results-keyword "results")
 
@@ -362,6 +409,9 @@
       (error nil)))
   )
 
+(use-package org-contrib
+  :after org)
+
 (use-package valign
   :after org
   :defer t
@@ -369,13 +419,6 @@
   :hook (org-mode . valign-mode)
   )
 
-(use-package org-superstar
-  :after org
-  :disabled
-  :hook (org-mode . org-superstar-mode)
-  :custom
-  (org-superstar-remove-leading-stars t)
-  (org-superstar-special-todo-items t))
 
 (use-package org-bars
   :straight (:host github :repo "tonyaldon/org-bars")
@@ -387,6 +430,22 @@
         org-bars-stars '(:empty "◉"
                                 :invisible "▶"
                                 :visible "▼")))
+
+(use-package calfw
+  :commands (cfw:open-org-calendar)
+  :straight (:host github :repo "zemaye/emacs-calfw")
+  :bind (:map cfw:calendar-mode-map
+              ("s" . cfw:show-details-command))
+  :custom
+  (cfw:display-calendar-holidays nil)
+  :config
+  (with-eval-after-load 'calfw
+	(use-package calfw-ical
+	  :straight (:host github :repo "zemaye/emacs-calfw"))
+	(use-package calfw-org
+	  :straight (:host github :repo "zemaye/emacs-calfw"))
+	(use-package calfw-cal
+	  :straight (:host github :repo "zemaye/emacs-calfw"))))
 
 (use-package org-fancy-priorities
   :after org
