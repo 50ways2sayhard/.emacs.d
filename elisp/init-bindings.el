@@ -61,7 +61,7 @@
   ;; Leader def
   (leader-def
     :keymaps 'override
-    "<SPC>" '(consult-projectile :wk "Project Find File")
+    "<SPC>" '(consult-project-extra-find :wk "Project Find File")
     ":" '(execute-extended-command :which-key "M-x")
     "/" '(consult-ripgrep :wk "Search in project")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
@@ -142,11 +142,13 @@
     "ox" '(org-agenda :wk "Org agenda")
 
     "p" '(:wk "Project")
-    "pk" '(projectile-kill-buffers :wk "Kill project buffers" )
-    "pp" '(projectile-switch-project :wk "Switch project")
-    "pf" '(consult-projectile :wk "Find file in project")
+    "pk" '(project-kill-buffers :wk "Kill project buffers" )
+    "pp" '(project-switch-project :wk "Switch project")
+    "pf" '(consult-project-extra :wk "Find file in project consult")
+    "pF" '(project-find-file :wk "Find file in project")
     "pt" '(magit-todos-list :wk "List project tasks")
-    "pS" '(projectile-save-project-buffers :wk "Save project buffers")
+    "pS" '(save-some-buffers :wk "Save project buffers")
+    "pd" '(project-find-dir :wk "Find dir in project")
 
     "q" '(:wk "Quit")
     "qq" '(kill-emacs :wk "Quit")

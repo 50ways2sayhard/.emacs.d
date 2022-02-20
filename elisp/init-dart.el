@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 60
+;;     Update #: 61
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -58,9 +58,6 @@
                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
                        ))
   :config
-  (with-eval-after-load 'projectile
-    (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
-    (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
   (setq dart-format-on-save t)
   (with-eval-after-load 'lsp
     (setq lsp-dart-dap-flutter-hot-reload-on-save t)

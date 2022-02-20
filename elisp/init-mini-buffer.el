@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 677
+;;     Update #: 693
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -165,9 +165,9 @@
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :init
-  (use-package consult-projectile
+  (use-package consult-project-extra
     :after consult
-    :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
+    :straight (consult-project-extra :type git :host github :repo "Qkessler/consult-project-extra"))
   (use-package consult-flycheck
     :after (consult flycheck))
   (use-package consult-dir
@@ -188,10 +188,6 @@
        )
      ))
   :config
-  (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root)
-  (setq consult-preview-key nil)
-  (setq consult-narrow-key "<")
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
@@ -319,13 +315,13 @@ When the number of characters in a buffer exceeds this threshold,
      ((string-suffix-p "$" pattern)
       `(orderless-regexp . ,(concat (substring pattern 0 -1) "[\x100000-\x10FFFD]*$")))
      ;; File extensions
-     ((and
-       ;; Completing filename or eshell
-       (or minibuffer-completing-file-name
-           (derived-mode-p 'eshell-mode))
-       ;; File extension
-       (string-match-p "\\`\\.." pattern))
-      `(orderless-regexp . ,(concat "\\." (substring pattern 1) "[\x100000-\x10FFFD]*$")))
+     ;; ((and
+     ;;   ;; Completing filename or eshell
+     ;;   (or minibuffer-completing-file-name
+     ;;       (derived-mode-p 'eshell-mode))
+     ;;   ;; File extension
+     ;;   (string-match-p "\\`\\.." pattern))
+     ;;  `(orderless-regexp . ,(concat "\\." (substring pattern 1) "[\x100000-\x10FFFD]*$")))
      ;; Ignore single !
      ((string= "!" pattern) `(orderless-literal . ""))
      ;; Prefix and suffix

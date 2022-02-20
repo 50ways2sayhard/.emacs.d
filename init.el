@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Feb  9 09:58:25 2022 (+0800)
+;; Last-Updated: Sun Feb 20 22:26:40 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -110,7 +110,7 @@
 
 ;; General Programming
 (require 'init-magit)
-(require 'init-projectile)
+(require 'init-project)
 (require 'init-treemacs)
 (require 'init-yasnippet)
 (require 'init-flycheck)

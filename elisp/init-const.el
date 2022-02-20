@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Mar 18 14:20:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Nov 27 15:40:23 2021 (+0800)
+;; Last-Updated: Sat Feb 19 23:01:26 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d constants
@@ -133,10 +133,12 @@
 (defun doom-project-root (&optional dir)
   "Return the project root of DIR (defaults to `default-directory').
 Returns nil if not in a project."
-  (let ((projectile-project-root
-         (unless dir (bound-and-true-p projectile-project-root)))
-        projectile-require-project-root)
-    (projectile-project-root dir)))
+  ;; (let ((projectile-project-root
+  ;;        (unless dir (bound-and-true-p projectile-project-root)))
+  ;;       projectile-require-project-root)
+  ;;   (projectile-project-root dir))
+  (project-root dir)
+  )
 
 (provide 'init-const)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
