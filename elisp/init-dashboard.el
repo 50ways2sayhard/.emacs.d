@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:21:46 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Feb 19 23:25:57 2022 (+0800)
+;; Last-Updated: Tue Feb 22 10:14:40 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dashboard
@@ -48,8 +48,8 @@
   (dashboard-startup-banner (expand-file-name "images/banner.txt" user-emacs-directory))
   (dashboard-center-content t)
   (dashboard-items '((recents  . 7)
-                     (bookmarks . 7)
-                     (agenda . 5)))
+                     (agenda . 5)
+                     (projects . 3)))
 
   (initial-buffer-choice (lambda () (get-buffer dashboard-buffer-name)))
   (dashboard-set-navigator t)
@@ -66,10 +66,11 @@
                                                :v-adjust -0.05
                                                :face 'error))
   (dashboard-page-separator "\n\f\n")
-  (dashboard-project-backends 'project-el)
   :custom-face
   (dashboard-heading ((t (:inherit (font-lock-string-face bold)))))
   (dashboard-banner-logo-title ((t (:family "CaskaydiaCove Nerd Font" :height 200))))
+  :init
+  (setq dashboard-projects-backend 'project-el)
   :config
   (setq dashboard-set-file-icons t)
   (set-face-attribute 'dashboard-text-banner-face nil :foreground "#E5C07B")
