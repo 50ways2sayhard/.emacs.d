@@ -103,7 +103,8 @@
 
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
-    "el" '(+flycheck-list-errors :wk "List errors")
+    ;; "el" '(+flycheck-list-errors :wk "List errors")
+    "el" '(consult-flycheck :wk "List errors")
     "eL" '(consult-lsp-diagnostics :wk "List all errors")
     "ef" '(consult-flycheck :wk "Find error")
     "en" '(flycheck-next-error :wk "Next error")
@@ -140,6 +141,7 @@
     "o" '(:wk "Open")
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
+    "oc" '(cfw:open-org-calendar :wk "Open calendar")
 
     "p" '(:wk "Project")
     "pk" '(project-kill-buffers :wk "Kill project buffers" )
