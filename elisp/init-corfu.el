@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Wed Feb 16 09:52:01 2022 (+0800)
+;; Last-Updated: Thu Feb 24 17:15:52 2022 (+0800)
 ;;           By: John
-;;     Update #: 390
+;;     Update #: 398
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,7 +52,7 @@
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.05)
+  (corfu-auto-delay 0.01)
   (corfu-echo-documentation 0.3)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
@@ -143,10 +143,12 @@
   (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
   (add-to-list 'completion-at-point-functions #'cape-tabnine)
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
+
+  (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
+  (fset 'lsp-with-tabnine (cape-super-capf #'non-greedy-lsp #'cape-tabnine))
   (add-hook 'lsp-completion-mode-hook
             (lambda ()
-              (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
-              (setq-local completion-at-point-functions (list #'cape-file #'non-greedy-lsp #'cape-tabnine))
+              (setq-local completion-at-point-functions (list #'cape-file (cape-capf-buster #'lsp-with-tabnine)))
               ))
   (add-hook 'eglot-managed-mode-hook (lambda ()
                                        (fset 'non-greedy-eglot (cape-capf-properties #'eglot-completion-at-point :exclusive 'no))
