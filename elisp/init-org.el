@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Feb 20 22:10:41 2022 (+0800)
+;; Last-Updated: Mon Feb 21 09:48:15 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -110,7 +110,7 @@
   (setq org-capture-templates
         '(("t" "Todo" entry
            (file+headline +org-capture-file-gtd "Next Actions")
-           "* TODO %i%? [0%] \n:LOGBOOK: \n:CREATED: %U \n:END:" :prepend t :kill-buffer t)
+           "* ☞TODO %i%? [0%] \n:LOGBOOK: \n:CREATED: %U \n:END:" :prepend t :kill-buffer t)
           ("w" "Waiting for" entry
            (file+headline +org-capture-file-tickler "Tickler")
            "* %?\n%i" :prepend t :kill-buffer t)

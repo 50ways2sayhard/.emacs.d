@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 09:56:12 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: 四 4月 23 17:42:13 2020 (+0800)
+;; Last-Updated: Fri Feb 25 17:19:33 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d treemacs
@@ -88,12 +88,6 @@ Use `treemacs' command for old functionality."
      (treemacs-git-mode 'deferred))
     (`(t . _)
      (treemacs-git-mode 'simple)))
-
-  ;; Projectile integration
-  (use-package treemacs-projectile
-    :after projectile
-    :bind (:map projectile-command-map
-                ("h" . treemacs-projectile)))
 
   (use-package treemacs-evil
     :after evil
