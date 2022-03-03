@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 39
+;;     Update #: 40
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -279,7 +279,6 @@ FACE defaults to inheriting from default and highlight."
                  other-window windmove-do-window-select
                  ace-window aw--select-window
                  pager-page-down pager-page-up
-                 treemacs-select-window
                  symbol-overlay-basic-jump))
     (advice-add cmd :after #'my-pulse-momentary-line))
 
