@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Thu Feb 24 17:15:52 2022 (+0800)
+;; Last-Updated: Thu Mar  3 16:08:04 2022 (+0800)
 ;;           By: John
-;;     Update #: 398
+;;     Update #: 438
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,15 +52,14 @@
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.01)
+  (corfu-auto-delay 0.05)
   (corfu-echo-documentation 0.3)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
   (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect-first nil)    ;; Disable candidate preselection
-  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (corfu-no-exact-match 'quit)
 
   ;; You may want to enable Corfu only for certain modes.
   ;; :hook ((prog-mode . corfu-mode)
@@ -73,9 +72,9 @@
   (:map corfu-map
         ("TAB" . corfu-next)
         ([tab] . corfu-next)
-        ("s-SPC" . corfu-insert-separator)
+        ("S-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
-        ([?\r] . electric-indent-just-newline)
+        ([?\r] . newline)
         ([backtab] . corfu-previous))
   :init
   (corfu-global-mode)
@@ -104,7 +103,7 @@
     (cond
      ((seq-contains-p (this-command-keys-vector) ?.)
       (or (string-empty-p (car corfu--input))
-	      (not (string= (substring (car corfu--input) -1) " "))))
+	        (not (string= (substring (car corfu--input) -1) " "))))
 
      ((/= corfu--index corfu--preselect) ; a selection was made
       (not (seq-contains-p (this-command-keys-vector) ? )))
@@ -113,10 +112,14 @@
       (seq-intersection (this-command-keys-vector) [?: ?, ?\) ?\] ?\( ? ]))
 
      ((and corfu--input ; exact 1st match
-	       (string-equal (substring (car corfu--input) corfu--base)
-			             (car corfu--candidates)))
+	         (string-equal (substring (car corfu--input) corfu--base)
+			                   (car corfu--candidates)))
       (seq-intersection (this-command-keys-vector) [?: ?. ?, ?\) ?\] ?\" ?' ? ]))))
   ;; (setq corfu-commit-predicate #'my/corfu-commit-predicate)
+  ;; https://github.com/minad/corfu/issues/12#issuecomment-869037519
+  (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
+  (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
+  (evil-make-overriding-map corfu-map)
   )
 
 (use-package emacs
@@ -127,33 +130,47 @@
 (use-package cape
   :after corfu
   ;; Bind dedicated completion commands
-  ;; :bind (("C-c p p" . completion-at-point) ;; capf
-  ;;        ("C-c p t" . complete-tag)        ;; etags
-  ;;        ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-  ;;        ("C-c p f" . cape-file)
-  ;;        ("C-c p k" . cape-keyword)
-  ;;        ("C-c p s" . cape-symbol)
-  ;;        ("C-c p a" . cape-abbrev)
-  ;;        ("C-c p i" . cape-ispell)
-  ;;        ("C-c p l" . cape-line)
-  ;;        ("C-c p w" . cape-dict))
+  :bind (("C-x C-f" . cape-file)
+         ("C-x C-k" . cape-keyword)
+         ("C-x C-s" . cape-symbol)
+         ("C-x C-l" . cape-line)
+         ("C-x C-w" . cape-dict))
+  :hook ((prog-mode . my/set-basic-capf)
+         (org-mode . my/set-basic-capf)
+         (lsp-completion-mode . my/set-lsp-capf))
   :init
+  (setq cape-dict-file "/usr/share/dict/words")
+  (defun my/convert-super-capf (arg-capf)
+    (list
+     #'cape-file
+     (cape-super-capf
+      arg-capf
+      #'tempel-complete)
+     ))
+  (defun my/set-basic-capf ()
+    (setq completion-category-defaults nil)
+    (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
+
+  (defun my/set-lsp-capf ()
+    (setq completion-category-defaults nil)
+    (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-completion-at-point)))
+
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
-  (add-to-list 'completion-at-point-functions #'cape-tabnine)
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
-  (fset 'non-greedy-lsp (cape-capf-properties #'lsp-completion-at-point :exclusive 'no))
-  (fset 'lsp-with-tabnine (cape-super-capf #'non-greedy-lsp #'cape-tabnine))
-  (add-hook 'lsp-completion-mode-hook
-            (lambda ()
-              (setq-local completion-at-point-functions (list #'cape-file (cape-capf-buster #'lsp-with-tabnine)))
-              ))
-  (add-hook 'eglot-managed-mode-hook (lambda ()
-                                       (fset 'non-greedy-eglot (cape-capf-properties #'eglot-completion-at-point :exclusive 'no))
-                                       (setq-local completion-at-point-functions (list #'non-greedy-eglot #'cape-file #'cape-tabnine))
-                                       ))
+  (use-package tempel
+    :init
+    (defun my/tempel-expand-or-next ()
+      (interactive)
+      (if tempel--active
+          (tempel-next 1)
+        (call-interactively #'tempel-expand)))
+    (with-eval-after-load 'general
+      (general-define-key
+       :keymaps '(evil-insert-state-map)
+       "C-k" 'my/tempel-expand-or-next))
+    )
   )
 
 (use-package kind-icon
@@ -196,14 +213,6 @@
           (value "v" :icon "format-align-right" :face font-lock-builtin-face) ;
           (variable "va" :icon "tag" :face font-lock-variable-name-face)
           (t "." :icon "file-find" :face shadow))) ;
-  )
-
-(use-package company-tabnine
-  :straight (:host github :repo "theFool32/company-tabnine" :depth 1)
-  :custom
-  (company-tabnine-max-num-results 3)
-  :hook
-  (kill-emacs . company-tabnine-kill-process)
   )
 
 (use-package corfu-doc
