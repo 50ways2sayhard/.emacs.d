@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 702
+;;     Update #: 713
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -394,22 +394,16 @@ When the number of characters in a buffer exceeds this threshold,
   (mini-frame-detach-on-hide nil)
   (resize-mini-frames t)
   :config
-  (setq mini-frame-show-parameters
-        (lambda ()
-          (let* ((info (posframe-poshandler-argbuilder))
-                 (posn (posframe-poshandler-point-top-left-corner info))
-                 (left (car posn))
-                 (top (cdr posn))
-                 )
-            `((left . ,0.5)
-              (top . ,top)
-              (background-mode 'dark)
-              (foreground-color . "#bbc2cf")
-              (background-color . "#242730")
-              (min-width . 80)
-              (width . 0.618)
-              (no-accept-focus . t)
-              ))))
+  (setq mini-frame-show-parameters `((left . 0.5)
+                                     (top . ,(/ (frame-pixel-height) 2))
+                                     (background-mode 'dark)
+                                     (foreground-color . "#bbc2cf")
+                                     (background-color . "#242730")
+                                     ;; (internal-border-width . 1)
+                                     ;; (child-frame-border-width . 1)
+                                     (min-width . 80)
+                                     (width . 0.618)
+                                     (no-accept-focus . t)))
   (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
     (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
     (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Dec  8 10:42:45 2021 (+0800)
+;; Last-Updated: Wed Mar  2 20:36:18 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -52,6 +52,7 @@
 
 ;; Minor mode to aggressively keep your code always indented
 (use-package aggressive-indent
+  :defer t
   :diminish
   :hook (((web-mode js-mode python-mode) . aggressive-indent-mode)
          ;; FIXME: Disable in big files due to the performance issues
@@ -75,6 +76,7 @@
                                          (thing-at-point 'line))))))
 
 (use-package origami
+  :defer t
   :hook (prog-mode . origami-mode)
   :init (setq origami-show-fold-header t)
   :config (face-spec-reset-face 'origami-fold-header-face)
@@ -121,9 +123,11 @@
 (add-hook 'prog-mode-hook 'nuke_trailing)
 (add-hook 'text-mode-hook 'nuke_trailing)
 
-(use-package expand-region)
+(use-package expand-region
+  :defer t)
 
-(use-package pinyinlib)
+(use-package pinyinlib
+  :defer t)
 
 (use-package smart-newline
   :defer t)
