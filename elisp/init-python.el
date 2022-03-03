@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Nov 18 23:55:47 2021 (+0800)
+;; Last-Updated: Wed Mar  2 20:37:17 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -74,9 +74,6 @@
 
 (use-package lsp-pyright
   :after lsp-mode
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         ))
   :init
   (when (executable-find "python3")
     (setq lsp-pyright-python-executable-cmd "python3"))

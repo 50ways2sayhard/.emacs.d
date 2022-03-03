@@ -105,13 +105,12 @@
 (require 'init-fonts)
 (require 'init-dashboard)
 (require 'init-scroll)
-(require 'init-pretty-code)
+;; (require 'init-pretty-code)
 (require 'init-highlight)
 
 ;; General Programming
 (require 'init-magit)
 (require 'init-project)
-(require 'init-treemacs)
 (require 'init-yasnippet)
 (require 'init-flycheck)
 (require 'init-parens)
@@ -126,14 +125,11 @@
    (require 'init-company))
   ('corfu
    (require 'init-corfu)))
-;; (require 'init-company)
-;; (require 'init-corfu)
 (require 'init-prog)
 (require 'init-shell)
 
 ;; Programming
 (require 'init-python)
-(require 'init-latex)
 (require 'init-javascript)
 (require 'init-webdev)
 (require 'init-ml)

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:17:13 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Jul 24 11:28:26 2021 (+0800)
+;; Last-Updated: Wed Mar  2 20:33:35 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d parenthesis smartparens delete-block
@@ -41,7 +41,6 @@
   (require 'init-global-config))
 
 (use-package elec-pair
-  :hook (after-init . electric-pair-mode)
   :hook (after-init . electric-pair-mode)
   :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
   :config

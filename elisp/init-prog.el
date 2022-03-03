@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 47
+;;     Update #: 49
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -94,9 +94,6 @@ Install the doc if it's not installed."
 (use-package imenu
   :hook (imenu-after-jump . recenter))
 
-(use-package imenu-list
-  :defer t)
-
 (use-package separedit
   :defer t
   :custom
@@ -105,13 +102,6 @@ Install the doc if it's not installed."
   :config
   (add-to-list 'separedit-comment-delimiter-alist '(("///") . (dart-mode)))
   )
-
-(use-package quickrun
-  :ensure t
-  :bind ("C-c x" . quickrun)
-  :custom
-  (quickrun-focus-p nil)
-  (quickrun-input-file-extension ".qr"))
 
 (use-package xref
   :straight nil

@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 61
+;;     Update #: 74
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -58,14 +58,12 @@
                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
                        ))
   :config
-  (setq dart-format-on-save t)
+  ;; (setq dart-format-on-save t)
   (with-eval-after-load 'lsp
     (setq lsp-dart-dap-flutter-hot-reload-on-save t)
     (setq-local lsp-diagnostics-provider :flycheck)))
 
 (use-package lsp-dart
-  :ensure t
-  :hook (dart-mode . lsp)
   :custom
   (lsp-dart-dap-flutter-hot-reload-on-save t)
   (lsp-dart-flutter-widget-guides nil)
@@ -75,7 +73,8 @@
     (dap-register-debug-template "Flutter :: Attach"
                                  (list
                                   :request "attach"
-                                  :type "dart"
+                                  :type "
+dart"
                                   :dap-server-path lsp-dart-dap-flutter-debugger-program
                                   :program (lsp-dart-get-project-entrypoint)
                                   :output-filter-function #'lsp-dart-dap--output-filter-function
