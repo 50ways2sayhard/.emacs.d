@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Fri Oct  8 22:38:19 2021 (+0800)
+;; Last-Updated: Thu Mar  3 14:23:46 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
@@ -39,8 +39,8 @@
 
 ;; DiredPackage
 (use-package dired
-  :straight nil
   :defer t
+  :straight nil
   :custom
   ;; Always delete and copy recursively
   (dired-recursive-deletes 'always)
@@ -62,13 +62,70 @@
   (global-auto-revert-mode t)
   ;; Reuse same dired buffer, to prevent numerous buffers while navigating in dired
   (put 'dired-find-alternate-file 'disabled nil)
-  :hook
-  (dired-mode . (lambda ()
-                  (local-set-key (kbd "<mouse-2>") #'dired-find-alternate-file)
-                  (local-set-key (kbd "RET") #'dired-find-alternate-file)
-                  (local-set-key (kbd "^")
-                                 (lambda () (interactive) (find-alternate-file ".."))))))
-;; -DiredPackage
+
+  (with-eval-after-load 'general
+    (general-define-key :states '(normal)
+                        :keymaps 'dired-mode-map
+                        "l" 'dired-find-alternate-file
+                        "h"  'dired-up-directory)
+    )
+
+  ;; Colourful dired
+  (use-package diredfl
+    :hook (dired-mode . diredfl-mode))
+
+
+  (use-package all-the-icons-dired
+    :disabled
+    :defer t
+    :after dired
+    :hook (dired-mode . all-the-icons-dired-mode))
+
+  (use-package dired-git-info
+    :after dired
+    :config
+    (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
+
+  ;; Extra Dired functionality
+  (use-package dired-x
+    :straight nil
+    :demand
+    :hook (dired-mode . dired-omit-mode)
+    :config
+    (setq dired-omit-files
+          (concat dired-omit-files
+                  "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+
+  ;; `find-dired' alternative using `fd'
+  (when (executable-find "fd")
+    (use-package fd-dired))
+
+  (use-package dired-narrow) ;; use `s' for fliter
+  (use-package dired-open
+    :config
+    (setq dired-open-extensions
+          (mapcar (lambda (ext)
+                    (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
+
+  (use-package dirvish  ;; `(' for details.
+    :straight (dirvish :type git :host github :repo "alexluigit/dirvish")
+    :after dired
+    :init
+    (dirvish-override-dired-mode)
+    :config
+    (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
+
+    (use-package dirvish-menu
+      :straight nil
+      :config
+      (with-eval-after-load 'general
+        (general-define-key :states '(normal)
+                            :keymaps 'dirvish-mode-map
+                            "?" 'dirvish-menu-all-cmds)))
+    )
+  )
+
+
 
 ;; SaveAllBuffers
 (defun save-all-buffers ()
@@ -80,20 +137,6 @@
   (general-def "C-x C-s" 'save-all-buffers)
   )
 ;; -SaveAllBuffers
-
-(use-package all-the-icons-dired
-  :defer t
-  :after dired
-  :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package dired-hacks
-  :defer t
-  :after dired)
-
-(use-package  dired-git-info
-  :after dired
-  :config
-  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
 
 (provide 'init-dired)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
