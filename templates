@@ -28,3 +28,20 @@ org-mode
        :post (progn (tempel-done) (org-edit-src-code)))
 (link "[[" (s link) "][" (s description) "]]")
 (table "|" p "|" p "|" n> "|-+-|" n> "|||")
+
+dart-mode
+
+(header "/// " p n> "/// " n> "/// Created by johngong at " (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)) n>)
+
+(stateless "class " (s Name) " extends StatelessWidget {"
+           n> n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
+
+(stateful "class " (s Name) " extends StatefulWidget {"
+          n> n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
+          n> "}" n
+          n
+          "class _" (s Name) "State extends State<" (s Name) "> {" n>
+          "@override" n>
+          "Widget build(BuildContext context) {" n> n> "}"
+          n> "}"
+          )

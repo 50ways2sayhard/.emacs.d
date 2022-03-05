@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:27:40 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar  3 10:28:24 2022 (+0800)
+;; Last-Updated: Sat Mar  5 11:04:21 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d format-all
@@ -39,7 +39,8 @@
 
 ;; FormatAllPac
 (use-package format-all
-  :hook (emacs-lisp-mode . format-all-mode)
+  :hook (((emacs-lisp-mode) . format-all-mode)
+         ((prog-mode) . format-all-ensure-formatter))
   :config
   ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
   )

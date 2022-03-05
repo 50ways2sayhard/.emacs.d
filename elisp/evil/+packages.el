@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 2
+;;     Update #: 16
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -47,7 +47,6 @@
 ;;; Code:
 
 (use-package evil-easymotion
-  :ensure t
   :commands evilem-create evilem-default-keybindings
   :config
   ;; Use evil-search backend, instead of isearch
@@ -107,10 +106,8 @@
 
 
 (use-package evil-escape
-  :straight (:host github :repo "hlissner/evil-escape")
-  :ensure t
-  :hook (after-init . evil-escape-mode)
-  :commands evil-escape
+  :after evil
+  :commands  (evil-escape-pre-command-hook evil-escape)
   :init
   (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
         evil-escape-excluded-major-modes '(vterm-mode)
@@ -118,15 +115,9 @@
         evil-escape-delay 0.15)
   (evil-define-key* '(insert replace visual operator) 'global "\C-g" #'evil-escape)
   :config
+  (add-hook 'pre-command-hook 'evil-escape-pre-command-hook)
   ;; no `evil-escape' in minibuffer
-  (add-hook 'evil-escape-inhibit-functions #'minibufferp)
-  ;; so that evil-escape-mode-hook runs, and can be toggled by evil-mc
-  (evil-escape-mode +1))
-
-
-(use-package evil-exchange
-  :ensure t
-  :commands evil-exchange)
+  (add-hook 'evil-escape-inhibit-functions #'minibufferp))
 
 
 (use-package evil-nerd-commenter
@@ -196,7 +187,8 @@
   (evil-collection-init)
   )
 
-(use-package evil-indent-plus)
+(use-package evil-indent-plus
+  :after evil)
 
 (use-package evil-matchit
   :after evil

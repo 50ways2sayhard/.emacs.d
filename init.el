@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar  3 14:35:38 2022 (+0800)
+;; Last-Updated: Sat Mar  5 11:13:21 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -90,13 +90,11 @@
 (require 'init-mini-buffer)
 (require 'init-evil)
 (require 'init-search)
-;; (require 'init-tree-sitter)
+(require 'init-tree-sitter)
 (require 'init-which-key)
 (require 'init-popup-kill-ring)
-;; (require 'init-undo-tree)
-;; (require 'init-discover-my-major)
+(require 'init-undo-tree)
 (require 'init-dired)
-;; (require 'init-buffer)
 (require 'init-bindings)
 
 ;; User Interface Enhancements
@@ -105,7 +103,7 @@
 (require 'init-fonts)
 (require 'init-dashboard)
 (require 'init-scroll)
-;; (require 'init-pretty-code)
+(require 'init-pretty-code)
 (require 'init-highlight)
 
 ;; General Programming
@@ -140,7 +138,6 @@
 ;; Miscellaneous
 (require 'init-org)
 (require 'init-restart-emacs)
-(require 'init-shackle)
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

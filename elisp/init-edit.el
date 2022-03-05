@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar  2 20:36:18 2022 (+0800)
+;; Last-Updated: Sat Mar  5 10:59:24 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -113,10 +113,6 @@
     (activate-input-method default-input-method))
   (add-hook 'text-mode-hook 'activate-default-input-method))
 
-(use-package editorconfig
-  :config
-  (editorconfig-mode 1))
-
 (defun nuke_trailing()
   (add-hook 'write-file-hooks 'delete-trailing-whitespace))
 
@@ -125,42 +121,6 @@
 
 (use-package expand-region
   :defer t)
-
-(use-package pinyinlib
-  :defer t)
-
-(use-package smart-newline
-  :defer t)
-
-(use-package sis
-  ;; :hook
-  ;; enable the /follow context/ and /inline region/ mode for specific buffers
-  ;; (((text-mode prog-mode) . sis-context-mode)
-  ;;  ((text-mode prog-mode) . sis-inline-mode))
-
-  :config
-  ;; For MacOS
-  (when *sys/mac*
-    (setq sis-english-source "com.apple.keylayout.ABC")
-    (setq sis-other-source "im.rime.inputmethod.Squirrel.Rime"))
-  (when *sys/wsl*
-    (setq sis-english-source "1033")
-    (setq sis-other-source "2052")
-    (setq sis-do-get (lambda ()
-                       (sis--ensure-dir
-                        (string-trim (shell-command-to-string "im-select.exe")))))
-    (setq sis-do-set (lambda(source)
-                       (sis--ensure-dir
-                        (call-process "/bin/bash" nil t nil "-c" (concat "im-select.exe " source)))))
-    (setq sis-external-ism "im-select.exe"))
-  (add-hook 'focus-out-hook #'sis-set-other)
-  (add-hook 'focus-in-hook #'sis-set-english)
-  ;; (sis-global-respect-mode t)
-  ;; enable the /context/ mode for all buffers
-  (sis-global-context-mode t)
-  ;; enable the /inline english/ mode for all buffers
-  (sis-global-inline-mode t)
-  )
 
 (provide 'init-edit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

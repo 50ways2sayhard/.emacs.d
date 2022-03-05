@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 713
+;;     Update #: 722
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -167,7 +167,11 @@
   :init
   (use-package consult-project-extra
     :after consult
-    :straight (consult-project-extra :type git :host github :repo "Qkessler/consult-project-extra"))
+    :straight (consult-project-extra :type git :host github :repo "Qkessler/consult-project-extra")
+    :config
+    ;; WORKAROUND
+    (setq consult-project-buffer-sources consult-project-extra-sources)
+    )
   (use-package consult-flycheck
     :after (consult flycheck))
   (use-package consult-dir
@@ -300,8 +304,6 @@ When the number of characters in a buffer exceeds this threshold,
       (?= . orderless-literal)
       (?~ . orderless-flex)))
   (savehist-mode)
-  (defun completion--regex-pinyin (str)
-    (orderless-regexp (pinyinlib-build-regexp-string str)))
   ;; Recognizes the following patterns:
   ;; * ~flex flex~
   ;; * =literal literal=
@@ -333,7 +335,7 @@ When the number of characters in a buffer exceeds this threshold,
 
   ;; Define orderless style with initialism by default
   (orderless-define-completion-style +orderless-with-initialism
-    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp completion--regex-pinyin)))
+    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
 
   ;; You may want to combine the `orderless` style with `substring` and/or `basic`.
   ;; There are many details to consider, but the following configurations all work well.
