@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 16
+;;     Update #: 17
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -114,8 +114,8 @@
         evil-escape-key-sequence "jk"
         evil-escape-delay 0.15)
   (evil-define-key* '(insert replace visual operator) 'global "\C-g" #'evil-escape)
-  :config
   (add-hook 'pre-command-hook 'evil-escape-pre-command-hook)
+  :config
   ;; no `evil-escape' in minibuffer
   (add-hook 'evil-escape-inhibit-functions #'minibufferp))
 
