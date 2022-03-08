@@ -173,8 +173,7 @@
 
     "t" '(:wk "Toggle")
     "te" '(vterm-posframe-toggle :wk "Shell")
-    "tF" '(fanyi-dwim :wk "Fanyi with confirm")
-    "tf" '(fanyi-dwim2 :wk "Fanyi")
+    "tt" '(dirvish-side :wk "Tree view")
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
