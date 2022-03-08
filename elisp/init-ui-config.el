@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar  8 14:29:46 2022 (+0800)
+;; Last-Updated: Tue Mar  8 21:56:41 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -164,8 +164,7 @@
           "\\*rustfmt\\*$" rustic-compilation-mode rustic-cargo-clippy-mode
           rustic-cargo-outdated-mode rustic-cargo-test-moed))
 
-  (with-eval-after-load 'projectile
-    (setq popper-group-function #'popper-group-by-projectile))
+  (setq popper-group-function #'popper-group-by-project)
   (setq popper-echo-dispatch-actions t)
   :config
   (popper-echo-mode 1)
