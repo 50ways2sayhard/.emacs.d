@@ -58,6 +58,15 @@
                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
                        ))
   :config
+  (defun project-try-dart (dir)
+    (let ((project (or (locate-dominating-file dir "pubspec.yaml")
+                       (locate-dominating-file dir "BUILD"))))
+      (if project
+          (cons 'dart project)
+        (cons 'transient dir))))
+  (add-hook 'project-find-functions #'project-try-dart)
+  (cl-defmethod project-roots ((project (head dart)))
+    (list (cdr project)))
   ;; (setq dart-format-on-save t)
   (with-eval-after-load 'lsp
     (setq lsp-dart-dap-flutter-hot-reload-on-save t)
@@ -68,6 +77,11 @@
   (lsp-dart-dap-flutter-hot-reload-on-save t)
   (lsp-dart-flutter-widget-guides nil)
   (lsp-dart-flutter-fringe-colors nil)
+  (lsp-dart-outline nil)
+  (lsp-dart-flutter-outline nil)
+  (lsp-dart-closing-labels nil)
+  (lsp-dart-main-code-lens nil)
+  (lsp-dart-test-code-lens nil)
   :config
   (with-eval-after-load 'dap-mode
     (dap-register-debug-template "Flutter :: Attach"
