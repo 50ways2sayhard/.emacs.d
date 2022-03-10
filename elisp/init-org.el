@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Mon Feb 21 09:48:15 2022 (+0800)
+;; Last-Updated: Wed Mar  9 17:09:46 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -170,8 +170,8 @@
 
   (add-hook 'after-change-major-mode-hook
             (lambda () (if (equal show-paren-mode 't)
-    		          (when (derived-mode-p 'org-mode)
-    		            (show-paren-mode -1))
+    		              (when (derived-mode-p 'org-mode)
+    		                (show-paren-mode -1))
                     (show-paren-mode 1))))
 
   ;; https://emacs-china.org/t/topic/2119/15
@@ -377,6 +377,29 @@
     "xR" 'org-download-rename-last-file
     "xs" 'org-download-screenshot
     )
+
+  (local-leader-def
+    :keymaps 'org-agenda-mode-map
+    "d" '(:wk "date/deadline")
+    "dd" 'org-agenda-deadline
+    "ds" 'org-agenda-schedule
+
+    "c" '(:wk "clock")
+    "cc" 'org-agenda-clock-cancel
+    "cg" 'org-agenda-clock-goto
+    "ci" 'org-agenda-clock-in
+    "co" 'org-agenda-clock-out
+    "cr" 'org-agenda-clockreport-mode
+    "cs" 'org-agenda-show-clocking-issues
+
+    "p" '(:wk "priority")
+    "pd" 'org-agenda-priority-down
+    "pp" 'org-agenda-priority
+    "pu" 'org-agenda-priority-up
+
+    "q" 'org-agenda-set-tags
+    "r" 'org-agenda-refile
+    "t" 'org-agenda-todo)
   )
 ;; -OrgPac
 
@@ -440,12 +463,12 @@
   (cfw:display-calendar-holidays nil)
   :config
   (with-eval-after-load 'calfw
-	(use-package calfw-ical
-	  :straight (:host github :repo "zemaye/emacs-calfw"))
-	(use-package calfw-org
-	  :straight (:host github :repo "zemaye/emacs-calfw"))
-	(use-package calfw-cal
-	  :straight (:host github :repo "zemaye/emacs-calfw"))))
+	  (use-package calfw-ical
+	    :straight (:host github :repo "zemaye/emacs-calfw"))
+	  (use-package calfw-org
+	    :straight (:host github :repo "zemaye/emacs-calfw"))
+	  (use-package calfw-cal
+	    :straight (:host github :repo "zemaye/emacs-calfw"))))
 
 (use-package org-fancy-priorities
   :after org
