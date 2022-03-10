@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Mar  5 11:00:23 2022 (+0800)
+;; Last-Updated: Thu Mar 10 09:43:22 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -191,8 +191,8 @@ The original function deletes trailing whitespace of the current line."
   ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
   ;; (setq gcmh-idle-delay 5
   ;;       gcmh-high-cons-threshold #x1000000)
-  (setq gcmh-idle-delay 5
-        gcmh-high-cons-threshold (* 64 1024 1024)))
+  (setq gcmh-idle-delay 0.5
+        gcmh-high-cons-threshold (* 128 1024 1024)))
 
 (when *sys/wsl*
   (defun my/browse-url-generic (url &optional _new-window)
@@ -206,8 +206,8 @@ don't offer a form of remote control."
     (if (not browse-url-generic-program)
         (error "No browser defined (`browse-url-generic-program')"))
     (apply 'call-process browse-url-generic-program nil
-	       0 nil
-	       (append browse-url-generic-args
+	         0 nil
+	         (append browse-url-generic-args
                    (list (format "start %s"
                                  (replace-regexp-in-string "&" "^&" url))))))
   (setq

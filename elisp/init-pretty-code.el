@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 32
+;;     Update #: 33
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -277,24 +277,6 @@ Otherwise it builds `prettify-code-symbols-alist' according to
   ;; :priority_b    "[#B]"
   ;; :priority_c    "[#C]"
   )
-
-(set-pretty-symbols! '(dart-mode)
- ;; Functional
-    :def "Function"
-    :lambda "() =>"
-    ;; Types
-    :null "null"
-    :true "true" :false "false"
-    :int "int" :float "double"
-    :bool "bool"
-    ;; Flow
-    :not "!"
-    :in "in"
-    :and "&&" :or "||"
-    :for "for"
-    :return "return"
-    ;; Other
-    :yield "yield")
 
 (provide 'init-pretty-code)
 
