@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Thu Mar  3 16:08:04 2022 (+0800)
+;; Last-Updated: Thu Mar 10 17:14:12 2022 (+0800)
 ;;           By: John
-;;     Update #: 438
+;;     Update #: 454
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -137,13 +137,18 @@
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (org-mode . my/set-basic-capf)
-         (lsp-completion-mode . my/set-lsp-capf))
-  :init
+         (lsp-completion-mode . my/set-lsp-capf)
+         ;; (eglot-managed-mode . my/set-eglot-capf)
+         )
+  :config
+  (setq dabbrev-upcase-means-case-search t)
+  (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
      (cape-super-capf
+      #'cape-dabbrev
       arg-capf
       #'tempel-complete)
      ))
@@ -154,6 +159,11 @@
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-completion-at-point)))
+
+  (defun my/set-eglot-capf ()
+    (setq completion-category-defaults nil)
+    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
+    )
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -168,7 +178,7 @@
         (call-interactively #'tempel-expand)))
     (with-eval-after-load 'general
       (general-define-key
-       :keymaps '(evil-insert-state-map)
+       :keymaps '(corfu-map)
        "C-k" 'my/tempel-expand-or-next))
     )
   )
