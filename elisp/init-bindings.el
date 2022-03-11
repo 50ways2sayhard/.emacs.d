@@ -62,11 +62,12 @@
   (leader-def
     :keymaps 'override
     "<SPC>" '(consult-project-extra-find :wk "Project Find File")
-    ":" '(execute-extended-command :which-key "M-x")
+    ":" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
     "/" '(consult-ripgrep :wk "Search in project")
+    "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(noct-consult-ripgrep-or-line :wk "Swiper")
-    "`" '(selectrum-repeat :wk "Repeat last search")
+    "`" '(vertico-repeat :wk "Repeat last search")
     "[" '(previous-buffer :wk "Previous buffer")
     "]" '(next-buffer :wk "Next buffer")
 
@@ -103,7 +104,6 @@
 
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
-    ;; "el" '(+flycheck-list-errors :wk "List errors")
     "el" '(consult-flycheck :wk "List errors")
     "eL" '(consult-lsp-diagnostics :wk "List all errors")
     "ef" '(consult-flycheck :wk "Find error")
@@ -161,6 +161,7 @@
     "sd" '(devdocs-dwim :wk "Devdocs lookup")
     "sD" '(+devdocs-search-at-point :wk "Devdocs search")
     "sf" '(locate :wk "Locate file")
+    "sh" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
     "si" '(+my-imenu :wk "Jump to symbol")
     "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")
     "sp" '(consult-ripgrep :wk "Search project")
