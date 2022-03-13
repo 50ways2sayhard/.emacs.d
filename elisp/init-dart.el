@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 74
+;;     Update #: 84
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -67,10 +67,7 @@
   (add-hook 'project-find-functions #'project-try-dart)
   (cl-defmethod project-roots ((project (head dart)))
     (list (cdr project)))
-  ;; (setq dart-format-on-save t)
-  (with-eval-after-load 'lsp
-    (setq lsp-dart-dap-flutter-hot-reload-on-save t)
-    (setq-local lsp-diagnostics-provider :flycheck)))
+  )
 
 (use-package lsp-dart
   :custom
