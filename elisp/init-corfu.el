@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Thu Mar 10 17:14:12 2022 (+0800)
+;; Last-Updated: Sun Mar 13 15:12:21 2022 (+0800)
 ;;           By: John
-;;     Update #: 454
+;;     Update #: 465
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -79,6 +79,7 @@
   :init
   (corfu-global-mode)
   :config
+  (advice-add #'keyboard-quit :before #'corfu-quit)
   (defun corfu-beginning-of-prompt ()
     "Move to beginning of completion input."
     (interactive)
@@ -137,9 +138,7 @@
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (org-mode . my/set-basic-capf)
-         (lsp-completion-mode . my/set-lsp-capf)
-         ;; (eglot-managed-mode . my/set-eglot-capf)
-         )
+         (lsp-completion-mode . my/set-lsp-capf))
   :config
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
@@ -148,9 +147,9 @@
     (list
      #'cape-file
      (cape-super-capf
-      #'cape-dabbrev
       arg-capf
       #'tempel-complete)
+     #'cape-dabbrev
      ))
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
@@ -159,11 +158,6 @@
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-completion-at-point)))
-
-  (defun my/set-eglot-capf ()
-    (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
-    )
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)

@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 17
+;;     Update #: 18
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,7 +50,6 @@
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
 
-(setq my-lsp 'lsp-mode)
 (setq my-completion 'company)
 
 (provide 'init-custom)

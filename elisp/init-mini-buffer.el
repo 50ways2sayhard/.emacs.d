@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 722
+;;     Update #: 724
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -182,15 +182,9 @@
            ("C-x C-d" . consult-dir)
            ("C-x C-j" . consult-dir-jump-file)))
 
-  (pcase my-lsp
-    ('eglot
-     (use-package consult-eglot
-       :after (consult eglot)))
-    ('lsp-mode
-     (use-package consult-lsp
-       :after (consult lsp)
-       )
-     ))
+  (use-package consult-lsp
+    :after (consult lsp))
+
   :config
   (setq consult-preview-key "M-p")
   (setq xref-show-xrefs-function #'consult-xref
