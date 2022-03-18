@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar  8 21:56:41 2022 (+0800)
+;; Last-Updated: Wed Mar 16 10:04:42 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -105,6 +105,7 @@
 (setq pixel-scroll-precision-mode nil)
 
 ;; Enforce rules for popups
+;; from centaur emacs
 (use-package popper
   :defines popper-echo-dispatch-actions
   :commands popper-group-by-projectile
@@ -146,6 +147,7 @@
           "\\*DAP Templates\\*$" dap-server-log-mode
           "\\*ELP Profiling Restuls\\*" profiler-report-mode
           "\\*Flycheck errors\\*$" " \\*Flycheck checker\\*$"
+          "\\*Flymake diagnostics for .*\\*"
           "\\*Paradox Report\\*$" "\\*package update results\\*$" "\\*Package-Lint\\*$"
           "\\*[Wo]*Man.*\\*$"
           "\\*ert\\*$" overseer-buffer-mode
@@ -169,6 +171,14 @@
   :config
   (popper-echo-mode 1)
   (with-no-warnings
+    (defun my-popper-fit-window-height (win)
+      "Determine the height of popup window WIN by fitting it to the buffer's content."
+      (fit-window-to-buffer
+       win
+       (floor (frame-height) 3)
+       (floor (frame-height) 3)))
+    (setq popper-window-height #'my-popper-fit-window-height)
+
     (defun popper-close-window-hack (&rest _)
       "Close popper window via `C-g'."
       ;; `C-g' can deactivate region

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar  3 14:23:46 2022 (+0800)
+;; Last-Updated: Wed Mar 16 09:58:21 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
@@ -107,14 +107,19 @@
           (mapcar (lambda (ext)
                     (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
-  (use-package dirvish  ;; `(' for details.
+  (use-package dirvish
     :straight (dirvish :type git :host github :repo "alexluigit/dirvish")
     :after dired
+    :custom
+    (dirvish-attributes '(all-the-icons file-size))
     :init
     (dirvish-override-dired-mode)
     :config
     (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
-
+    (general-define-key :states '(normal)
+                        :keymaps 'dirvish-mode-map
+                        "?" 'dirvish-menu-all-cmds)
+    
     (use-package dirvish-menu
       :straight nil
       :config

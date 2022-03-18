@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Sun Mar 13 15:12:21 2022 (+0800)
+;; Last-Updated: Fri Mar 18 14:21:07 2022 (+0800)
 ;;           By: John
-;;     Update #: 465
+;;     Update #: 481
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,14 +52,13 @@
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.05)
+  ;; (corfu-auto-delay 0.05)
   (corfu-echo-documentation 0.3)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
-  (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
+  ;; (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect-first nil)    ;; Disable candidate preselection
-  (corfu-no-exact-match 'quit)
 
   ;; You may want to enable Corfu only for certain modes.
   ;; :hook ((prog-mode . corfu-mode)
@@ -121,6 +120,13 @@
   (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
   (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
   (evil-make-overriding-map corfu-map)
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active)
+                (bound-and-true-p vertico--input))
+      ;; (setq-local corfu-auto nil) Enable/disable auto completion
+      (corfu-mode 1)))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
   )
 
 (use-package emacs
