@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Mar  5 11:13:21 2022 (+0800)
+;; Last-Updated: Tue Mar 15 10:15:38 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -94,8 +94,8 @@
 (require 'init-which-key)
 (require 'init-popup-kill-ring)
 (require 'init-undo-tree)
-(require 'init-dired)
 (require 'init-bindings)
+(require 'init-dired)
 
 ;; User Interface Enhancements
 (require 'init-ui-config)
@@ -110,7 +110,8 @@
 (require 'init-magit)
 (require 'init-project)
 (require 'init-yasnippet)
-(require 'init-flycheck)
+;; (require 'init-flycheck)
+(require 'init-flymake)
 (require 'init-parens)
 (require 'init-indent)
 (require 'init-format)

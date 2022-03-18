@@ -62,7 +62,8 @@
   (leader-def
     :keymaps 'override
     "<SPC>" '(consult-project-extra-find :wk "Project Find File")
-    ":" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
+    ";" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
+    ":" '(execute-extended-command :wk "M-x")
     "/" '(consult-ripgrep :wk "Search in project")
     "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
@@ -105,7 +106,7 @@
     "e" '(:wk "Error")
     "eb" '(flycheck-buffer :wk "Check current buffer")
     "el" '(consult-flycheck :wk "List errors")
-    "eL" '(consult-lsp-diagnostics :wk "List all errors")
+    "eL" '(consult-lsp-diagnostics :wk "List all error")
     "ef" '(consult-flycheck :wk "Find error")
     "en" '(flycheck-next-error :wk "Next error")
     "ep" '(flycheck-previous-error :wk "Previous error")

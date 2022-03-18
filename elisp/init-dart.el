@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 84
+;;     Update #: 93
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,8 +54,11 @@
   :mode ("\\.dart\\'")
   :hook (dart-mode . (lambda ()
                        (setq-local lsp-enable-imenu t)
-                       (setq-local lsp-diagnostics-provider :flycheck)
+                       ;; (setq-local lsp-diagnostics-provider :flycheck)
+                       (setq-local lsp-diagnostics-provider :flymake)
                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
+                       (add-hook 'after-save-hook #'lsp-format-buffer nil t)
+                       (add-hook 'after-save-hook #'lsp-organize-imports nil t)
                        ))
   :config
   (defun project-try-dart (dir)
