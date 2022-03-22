@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Mar 22 16:52:09 2022 (+0800)
+;; Last-Updated: Tue Mar 22 21:17:43 2022 (+0800)
 ;;           By: John
-;;     Update #: 517
+;;     Update #: 542
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -121,15 +121,18 @@
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
+
+  (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
      (cape-capf-buster
       (cape-super-capf
        arg-capf
+       #'cape-tabnine
        #'tempel-complete)
       )
-     #'cape-dabbrev
+     ;; #'cape-dabbrev
      ))
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
@@ -210,6 +213,13 @@
   :bind (:map corfu-map
               ("M-d" . corfu-doc-toggle))
   )
+
+(use-package company-tabnine
+  :defer 1
+  :after corfu
+  :hook (kill-emacs . company-tabnine-kill-process)
+  :custom
+  (company-tabnine-max-num-results 3))
 
 (provide 'init-corfu)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
