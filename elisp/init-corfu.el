@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Mar 18 14:21:07 2022 (+0800)
+;; Last-Updated: Tue Mar 22 16:52:09 2022 (+0800)
 ;;           By: John
-;;     Update #: 481
+;;     Update #: 517
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -53,7 +53,7 @@
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
   ;; (corfu-auto-delay 0.05)
-  (corfu-echo-documentation 0.3)
+  (corfu-echo-documentation 0.5)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
   ;; (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
@@ -73,53 +73,24 @@
         ([tab] . corfu-next)
         ("S-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
-        ([?\r] . newline)
+        ([return] . nil)
+        ("RET" . nil)
         ([backtab] . corfu-previous))
   :init
   (corfu-global-mode)
   :config
+  (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
+  (add-to-list 'corfu-auto-commands 'awesome-pair-open-bracket)
+  (add-to-list 'corfu-auto-commands 'awesome-pair-open-curly)
+
   (advice-add #'keyboard-quit :before #'corfu-quit)
-  (defun corfu-beginning-of-prompt ()
-    "Move to beginning of completion input."
-    (interactive)
-    (corfu--goto -1)
-    (goto-char (car completion-in-region--data)))
-
-  (defun corfu-end-of-prompt ()
-    "Move to end of completion input."
-    (interactive)
-    (corfu--goto -1)
-    (goto-char (cadr completion-in-region--data)))
-
-  ;; (define-key corfu-map [remap move-beginning-of-line] #'corfu-beginning-of-prompt)
-  ;; (define-key corfu-map [remap move-end-of-line] #'corfu-end-of-prompt)
   (add-to-list 'corfu-auto-commands 'end-of-visual-line)
-  (defun my/corfu-commit-predicate ()
-    ;;     "Auto-commit candidates if:
-    ;; 1. A "." is typed, except after a SPACE.
-    ;; 2. A selection was made, aside from entering SPACE.
-    ;; 3. Just one candidate exists, and we continue to non-symbol info.
-    ;; 4. The 1st match is exact."
-    (cond
-     ((seq-contains-p (this-command-keys-vector) ?.)
-      (or (string-empty-p (car corfu--input))
-	        (not (string= (substring (car corfu--input) -1) " "))))
 
-     ((/= corfu--index corfu--preselect) ; a selection was made
-      (not (seq-contains-p (this-command-keys-vector) ? )))
-
-     ((eq corfu--total 1) ;just one candidate
-      (seq-intersection (this-command-keys-vector) [?: ?, ?\) ?\] ?\( ? ]))
-
-     ((and corfu--input ; exact 1st match
-	         (string-equal (substring (car corfu--input) corfu--base)
-			                   (car corfu--candidates)))
-      (seq-intersection (this-command-keys-vector) [?: ?. ?, ?\) ?\] ?\" ?' ? ]))))
-  ;; (setq corfu-commit-predicate #'my/corfu-commit-predicate)
   ;; https://github.com/minad/corfu/issues/12#issuecomment-869037519
   (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
   (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
   (evil-make-overriding-map corfu-map)
+
   (defun corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
     (unless (or (bound-and-true-p mct--active)
@@ -144,7 +115,8 @@
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (org-mode . my/set-basic-capf)
-         (lsp-completion-mode . my/set-lsp-capf))
+         (lsp-completion-mode . my/set-lsp-capf)
+         (eglot-managed-mode . my/set-eglot-capf))
   :config
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
@@ -152,9 +124,11 @@
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
-     (cape-super-capf
-      arg-capf
-      #'tempel-complete)
+     (cape-capf-buster
+      (cape-super-capf
+       arg-capf
+       #'tempel-complete)
+      )
      #'cape-dabbrev
      ))
   (defun my/set-basic-capf ()
@@ -164,6 +138,10 @@
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-completion-at-point)))
+
+  (defun my/set-eglot-capf ()
+    (setq completion-category-defaults nil)
+    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)

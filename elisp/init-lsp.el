@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sun Mar 13 15:09:39 2022 (+0800)
+;; Last-Updated: Tue Mar 22 16:58:29 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -49,6 +49,45 @@
   (+lsp-optimization-mode +1)
   )
 
+(use-package eglot
+  :disabled
+  :commands (+eglot-organize-imports)
+  :hook (
+         (eglot-managed-mode . (lambda ()
+                                 (+lsp-optimization-mode)
+                                 (leader-def :keymaps 'override
+                                   "ca" '(eglot-code-actions :wk "Code Actions")
+                                   "cr" '(eglot-rename :wk "Rename symbol")
+                                   "cI" '(eglot-code-action-organize-imports :wk "Organize import")
+                                   "ci" '(consult-imenu :wk "imenu")
+                                   "cJ" '(consult-eglot-symbols "Symbols in project")
+                                   "cd" '(eglot-find-declaration "Jump to definition")
+                                   "cF" '(eglot-find-implementation "Find implementation")
+                                   "cD" '(eglot-find-typeDefinition "Find type definition"))
+
+                                 (evil-define-key 'normal 'global
+                                   "K" 'eldoc-doc-buffer)
+                                 ))
+         (prog-mode . (lambda ()
+                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
+                          (eglot-ensure))
+                        )))
+  :init
+  (require 'lsp/+optimization)
+  :config
+  (setq eglot-sync-connect 1
+        eglot-connect-timeout 10
+        eglot-autoshutdown t
+        eglot-send-changes-idle-time 0.5
+        ;; NOTE We disable eglot-auto-display-help-buffer because :select t in
+        ;;      its popup rule causes eglot to steal focus too often.
+        eglot-auto-display-help-buffer nil)
+  (setq eldoc-echo-area-use-multiline-p nil)
+  ;; (setq eglot-server-programs (remove '(dart-mode "dart_language_server") eglot-server-programs))
+  (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server")))
+  (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
+  )
+
 (use-package lsp-mode
   :diminish
   :hook ((prog-mode . (lambda ()
@@ -69,7 +108,8 @@
           lsp-semantic-tokens-enable nil
           ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
-          lsp-signature-auto-activate nil
+          lsp-signature-auto-activate t
+          lsp-signature-doc-lines 1
           ;; lsp-signature-function 'lsp-signature-posframe
           lsp-idle-delay 0.5
           lsp-lens-enable nil
@@ -81,7 +121,7 @@
           lsp-enable-folding nil
           lsp-enable-file-watchers nil
           lsp-keymap-prefix nil
-          lsp-eldoc-enable-hover nil
+          lsp-eldoc-enable-hover t
           lsp-eldoc-render-all nil
           lsp-session-file (concat user-emacs-directory ".local/cache/lsp-session")
           lsp-modeline-code-actions-enable nil
@@ -104,12 +144,6 @@
           lsp-vetur-validation-style nil
           lsp-vetur-validation-script nil
           lsp-vetur-validation-template nil))
-  (setq lsp-signature-posframe-params
-        (list :poshandler #'posframe-poshandler-window-top-right-corner
-              :height 10
-              :width 80
-              :border-width 1
-              :min-width 60))
   :config
   (defun my-lsp--init-if-visible (fn &rest args)
     (unless (bound-and-true-p git-timemachine-mode)

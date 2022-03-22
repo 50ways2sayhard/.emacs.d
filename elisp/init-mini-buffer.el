@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 724
+;;     Update #: 725
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -184,6 +184,8 @@
 
   (use-package consult-lsp
     :after (consult lsp))
+  (use-package consult-eglot
+    :after (consult eglot))
 
   :config
   (setq consult-preview-key "M-p")
