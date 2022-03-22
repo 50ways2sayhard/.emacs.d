@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar 22 16:58:29 2022 (+0800)
+;; Last-Updated: Tue Mar 22 17:41:31 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -50,7 +50,7 @@
   )
 
 (use-package eglot
-  :disabled
+  :when (eq my-lsp 'eglot)
   :commands (+eglot-organize-imports)
   :hook (
          (eglot-managed-mode . (lambda ()
@@ -60,10 +60,10 @@
                                    "cr" '(eglot-rename :wk "Rename symbol")
                                    "cI" '(eglot-code-action-organize-imports :wk "Organize import")
                                    "ci" '(consult-imenu :wk "imenu")
-                                   "cJ" '(consult-eglot-symbols "Symbols in project")
-                                   "cd" '(eglot-find-declaration "Jump to definition")
-                                   "cF" '(eglot-find-implementation "Find implementation")
-                                   "cD" '(eglot-find-typeDefinition "Find type definition"))
+                                   "cJ" '(consult-eglot-symbols :wk "Symbols in project")
+                                   "cd" '(eglot-find-declaration :wk "Jump to definition")
+                                   "cF" '(eglot-find-implementation :wk "Find implementation")
+                                   "cD" '(eglot-find-typeDefinition :wk "Find type definition"))
 
                                  (evil-define-key 'normal 'global
                                    "K" 'eldoc-doc-buffer)
@@ -89,6 +89,7 @@
   )
 
 (use-package lsp-mode
+  :when (eq my-lsp 'lsp-mode)
   :diminish
   :hook ((prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode)
