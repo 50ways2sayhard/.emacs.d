@@ -44,7 +44,6 @@
   (general-def "C-S-RET" '+default/newline-above)
   (general-def "M-?" '+consult-ripgrep-at-point)
   (general-def "M->" '+lookup-xref-references-backend-fn)
-  (general-def "C-l" 'lsp-signarture-activate)
 
   ;; Navigation
   (general-define-key
