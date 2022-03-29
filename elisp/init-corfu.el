@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Mar 22 21:17:43 2022 (+0800)
+;; Last-Updated: Tue Mar 29 18:23:21 2022 (+0800)
 ;;           By: John
-;;     Update #: 542
+;;     Update #: 582
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -74,7 +74,9 @@
         ("S-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
         ([return] . nil)
+        ("C-i" . nil)
         ("RET" . nil)
+        ("S-<return>" . corfu-insert)
         ([backtab] . corfu-previous))
   :init
   (corfu-global-mode)
@@ -130,7 +132,7 @@
       (cape-super-capf
        arg-capf
        #'cape-tabnine
-       #'tempel-complete)
+       #'tempel-expand)
       )
      ;; #'cape-dabbrev
      ))
@@ -151,17 +153,7 @@
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
   (use-package tempel
-    :init
-    (defun my/tempel-expand-or-next ()
-      (interactive)
-      (if tempel--active
-          (tempel-next 1)
-        (call-interactively #'tempel-expand)))
-    (with-eval-after-load 'general
-      (general-define-key
-       :keymaps '(corfu-map)
-       "C-k" 'my/tempel-expand-or-next))
-    )
+    :after cape)
   )
 
 (use-package kind-icon
@@ -220,6 +212,40 @@
   :hook (kill-emacs . company-tabnine-kill-process)
   :custom
   (company-tabnine-max-num-results 3))
+
+(use-package copilot
+  :after corfu
+  :straight (:host github :repo "zerolfx/copilot.el"
+                   :files ("dist" "copilot.el"))
+  :ensure t
+  :config
+  (add-hook 'post-command-hook (lambda ()
+                                 (copilot-clear-overlay)
+                                 (when (and (evil-insert-state-p)
+                                            (not tempel--active)) ;; diable copilot in tempel
+                                   (copilot-complete))))
+
+  (add-hook 'evil-insert-state-exit-hook (lambda () (copilot-clear-overlay)))
+
+
+  (defun my/copilot-or-tempel-expand-or-next ()
+    "Try tempel expand, if failed, try copilot expand."
+    (interactive)
+    (if tempel--active
+        (tempel-next 1)
+      (if (tempel-expand) ;; HACK call `tempel-expand' twice
+          (call-interactively #'tempel-expand)
+        (copilot-accept-completion)
+        ))
+    (copilot-clear-overlay))
+
+  (with-eval-after-load 'general
+    (general-define-key
+     :keymaps '(evil-insert-state-map)
+     "C-i" 'my/copilot-or-tempel-expand-or-next))
+
+  )
+
 
 (provide 'init-corfu)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
