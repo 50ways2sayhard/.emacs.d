@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar 16 10:04:42 2022 (+0800)
+;; Last-Updated: Sat Apr  9 18:51:42 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -125,6 +125,7 @@
           "\\*Backtrace\\*"
           "\\*Agenda Commands\\*"
           "\\*eldoc\\*"
+          "\\*eldoc .*\\*"
           ;; "\\*Calendar\\*"              ; FIXME: https://github.com/karthink/popper/issues/29
 
           bookmark-bmenu-mode
@@ -146,7 +147,6 @@
 
           "\\*DAP Templates\\*$" dap-server-log-mode
           "\\*ELP Profiling Restuls\\*" profiler-report-mode
-          "\\*Flycheck errors\\*$" " \\*Flycheck checker\\*$"
           "\\*Flymake diagnostics for .*\\*"
           "\\*Paradox Report\\*$" "\\*package update results\\*$" "\\*Package-Lint\\*$"
           "\\*[Wo]*Man.*\\*$"

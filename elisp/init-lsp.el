@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar 22 17:41:31 2022 (+0800)
+;; Last-Updated: Sat Apr  9 18:51:22 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -107,7 +107,6 @@
           lsp-restart 'auto-restart
           lsp-enable-indentation nil
           lsp-semantic-tokens-enable nil
-          ;; lsp-diagnostics-provider :flycheck
           lsp-diagnostics-provider :none
           lsp-signature-auto-activate t
           lsp-signature-doc-lines 1

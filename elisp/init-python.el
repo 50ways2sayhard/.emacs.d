@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar  2 20:37:17 2022 (+0800)
+;; Last-Updated: Sat Apr  9 18:49:06 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -50,9 +50,6 @@
   ;; Disable readline based native completion
   (setq python-shell-completion-native-enable nil)
   :config
-  (add-hook 'python-mode-hook (lambda()
-                                (flycheck-add-mode 'python-flake8 'python-mode)
-                                ))
   (setq python-indent-offset 4)
   (setq python-shell-interpreter "python3")
 

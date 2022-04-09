@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar 22 16:20:28 2022 (+0800)
+;; Last-Updated: Sat Apr  9 18:51:09 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -214,13 +214,6 @@ FACE defaults to inheriting from default and highlight."
    (read-file-name "Delete: " default-directory buffer-file-name))
   (unless (file-exists-p (buffer-file-name))
     (kill-current-buffer)))
-
-(defun +flycheck-list-errors ()
-  "Auto focus on flycheck list window."
-  (interactive)
-  (call-interactively 'flycheck-list-errors)
-  (select-window (get-buffer-window "*Flycheck errors*"))
-  )
 
 (defun doom-enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."

@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 75
+;;     Update #: 77
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,7 +54,6 @@
 
 (use-package js-doc :defer t)
 (use-package js2-mode
-  :defines flycheck-javascript-eslint-executable
   :commands js2-mode-create-imenu-index
   :mode (("\\.js\\'" . js2-mode)
          ("\\.jsx\\'" . js2-jsx-mode))
@@ -87,8 +86,6 @@
   (make-local-variable 'before-save-hook)
   (with-eval-after-load 'lsp-eslint
     (add-hook 'before-save-hook 'lsp-eslint-fix-all))
-  (with-eval-after-load 'flycheck
-    (flycheck-add-mode 'javascript-eslint 'js2-mode))
   )
 
 
