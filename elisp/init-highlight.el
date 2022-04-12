@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 40
+;;     Update #: 49
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -178,19 +178,23 @@ FACE defaults to inheriting from default and highlight."
               ("C-c t o" . hl-todo-occur))
   :hook (after-init . global-hl-todo-mode)
   :config
-  (setq hl-todo-keyword-faces
-        '(("MARK" . ,(face-foreground 'success))
-          ("TODO"   . ,(face-foreground 'warning))
-          ("HACK" . ,(face-foreground 'warning))
-          ("FIXME"  . ,(face-foreground 'warning))
-          ("DEBUG"  . ,(face-foreground 'error))
-          ("GOTCHA" . ,(face-foreground 'error))
-          ("DONT". ,(face-foreground 'error))
-          ))
-  (dolist (keyword '("BUG" "DEFECT" "ISSUE"))
+  ;; (setq hl-todo-keyword-faces
+  ;;       '(("MARK" . ,(face-foreground 'success))
+  ;;         ("TODO"   . ,(face-foreground 'warning))
+  ;;         ("HACK" . ,(face-foreground 'warning))
+  ;;         ("FIXME"  . ,(face-foreground 'warning))
+  ;;         ("DEBUG"  . ,(face-foreground 'error))
+  ;;         ("GOTCHA" . ,(face-foreground 'error))
+  ;;         ("DONT". ,(face-foreground 'error))
+  ;;         ))
+  (dolist (keyword '("BUG" "DEFECT" "ISSUE" "DONT" "GOTCHA" "DEBUG"))
     (cl-pushnew `(,keyword . ,(face-foreground 'error)) hl-todo-keyword-faces))
-  (dolist (keyword '("WORKAROUND" "HACK" "TRICK"))
-    (cl-pushnew `(,keyword . ,(face-foreground 'warning)) hl-todo-keyword-faces)))
+  (dolist (keyword '("WORKAROUND" "HACK" "TRICK" "FIXME"))
+    (cl-pushnew `(,keyword . ,(face-foreground 'warning)) hl-todo-keyword-faces))
+
+  (dolist (keyword '("MARK"))
+    (cl-pushnew `(,keyword . ,(face-foreground 'success)) hl-todo-keyword-faces))
+  )
 
 ;; Highlight uncommitted changes using VC
 (use-package diff-hl
