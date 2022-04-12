@@ -4,8 +4,6 @@
 (use-package evil
   :hook (after-init . evil-mode)
   :demand t
-  :init
-  (setq evil-want-keybinding nil)
   :preface
   (setq evil-want-visual-char-semi-exclusive t
         evil-ex-search-vim-style-regexp t
@@ -32,7 +30,6 @@
   :config
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
-  (evil-mode 1)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
   (dolist (mode '(color-rg-mode smerge-mode vterm-mode))
     (add-to-list 'evil-emacs-state-modes mode))
@@ -49,13 +46,6 @@
   ;; Allows you to click buttons without initiating a selection
   (define-key evil-motion-state-map [down-mouse-1] nil)
 
-  ;; Force *message* buffer into evil-normal-state to use <spc>
-  ;; HACK: donot know why `evil-emacs-state`
-  (with-current-buffer "*Messages*"
-    (evil-emacs-state))
-  (add-hook 'messages-buffer-mode-hook #'(lambda ()
-                                           (evil-emacs-state)))
-
   (with-eval-after-load 'general
     (general-define-key :keymaps 'evil-window-map
                         "C-h" 'evil-window-left
@@ -64,7 +54,12 @@
                         "C-l" 'evil-window-right)
     )
 
-  (add-hook 'evil-jumps-post-jump-hook #'recenter)
+  (add-hook 'after-change-major-mode-hook #'(lambda ()
+                                              (when (or (derived-mode-p 'fundamental-mode)
+                                                        (derived-mode-p 'text-mode)
+                                                        (derived-mode-p 'snippet-mode))
+                                                (setq-local evil-auto-indent nil))))
+
 
   (require 'evil/+packages))
 ;;; Packages
