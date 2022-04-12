@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 725
+;;     Update #: 726
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -357,7 +357,7 @@ When the number of characters in a buffer exceeds this threshold,
   ;; 4. (setq completion-styles '(substring orderless basic))
   ;; Combine substring, orderless and basic.
   ;;
-  (setq completion-styles '(orderless)
+  (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         ;;; Enable partial-completion for files.
         ;;; Either give orderless precedence or partial-completion.
