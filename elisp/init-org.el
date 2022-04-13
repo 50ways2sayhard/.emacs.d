@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar  9 17:09:46 2022 (+0800)
+;; Last-Updated: Wed Apr 13 21:45:38 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -85,6 +85,8 @@
   :config
   (setq org-clock-persist t
         org-clock-persist-file (concat +self/org-base-dir "org-clock-save.el"))
+  (add-hook 'org-clock-in-hook #'org-save-all-org-buffers)
+  (add-hook 'org-clock-out-hook #'org-save-all-org-buffers)
   (with-eval-after-load 'org
     (org-clock-persistence-insinuate))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
@@ -174,9 +176,9 @@
 
   (add-hook 'after-change-major-mode-hook
             (lambda () (if (equal show-paren-mode 't)
-    		              (when (derived-mode-p 'org-mode)
-    		                (show-paren-mode -1))
-                    (show-paren-mode 1))))
+    		                   (when (derived-mode-p 'org-mode)
+    		                     (show-paren-mode -1))
+                         (show-paren-mode 1))))
 
   ;; https://emacs-china.org/t/topic/2119/15
   (defun my--diary-chinese-anniversary (lunar-month lunar-day &optional year mark)
@@ -447,16 +449,16 @@
   )
 
 
-(use-package org-bars
-  :straight (:host github :repo "tonyaldon/org-bars")
-  :after org
-  :hook (org-mode . org-bars-mode)
-  :config
-  (setq org-bars-color-options '(:only-one-color t
-                                                 :bar-color "#4C4A4D")
-        org-bars-stars '(:empty "◉"
-                                :invisible "▶"
-                                :visible "▼")))
+;; (use-package org-bars
+;;   :straight (:host github :repo "tonyaldon/org-bars")
+;;   :after org
+;;   :hook (org-mode . org-bars-mode)
+;;   :config
+;;   (setq org-bars-color-options '(:only-one-color t
+;;                                                  :bar-color "#4C4A4D")
+;;         org-bars-stars '(:empty "◉"
+;;                                 :invisible "▶"
+;;                                 :visible "▼")))
 
 (use-package calfw
   :commands (cfw:open-org-calendar)
@@ -474,11 +476,11 @@
 	  (use-package calfw-cal
 	    :straight (:host github :repo "zemaye/emacs-calfw"))))
 
-(use-package org-fancy-priorities
-  :after org
-  :hook (org-mode . org-fancy-priorities-mode)
-  :config
-  (setq org-fancy-priorities-list '("🅰" "🅱" "🅲" "🅳" "🅴")))
+;; (use-package org-fancy-priorities
+;;   :after org
+;;   :hook (org-mode . org-fancy-priorities-mode)
+;;   :config
+;;   (setq org-fancy-priorities-list '("🅰" "🅱" "🅲" "🅳" "🅴")))
 
 (use-package electric-spacing
   :straight (:host github :repo "zk-phi/electric-spacing")
@@ -494,6 +496,34 @@
                       'separate-inline-use-default-rules-for-org-local
                       nil 'make-it-local)))))
 
+
+(use-package org-modern
+  :defer t
+  :after org
+  :hook ((org-mode . org-modern-mode)
+         (org-agenda-finalize . org-modern-agenda)
+         (org-modern-mode . (lambda ()
+                              "Adapt `org-modern-mode'."
+                              ;; Looks better for tags
+                              (setq line-spacing 0.1)
+                              ;; Disable Prettify Symbols mode
+                              (setq prettify-symbols-alist nil)
+                              (prettify-symbols-mode -1))))
+  :config
+  (setq
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────")
+  )
+
+(defun +my/open-org-agenda ()
+  "open org agenda in left window"
+  (interactive)
+  (org-agenda nil "n")
+  (evil-window-move-far-left))
 
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
