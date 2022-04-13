@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr  9 18:51:22 2022 (+0800)
+;; Last-Updated: Wed Apr 13 19:36:49 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -83,6 +83,7 @@
         ;;      its popup rule causes eglot to steal focus too often.
         eglot-auto-display-help-buffer nil)
   (setq eldoc-echo-area-use-multiline-p nil)
+  (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   ;; (setq eglot-server-programs (remove '(dart-mode "dart_language_server") eglot-server-programs))
   (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server")))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
