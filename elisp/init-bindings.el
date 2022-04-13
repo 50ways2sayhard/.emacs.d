@@ -176,7 +176,7 @@
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-    "tc" '(olivetti-mode :wk "Center")
+    "tc" '(consult-clock-in :wk "Clock in task")
     "ty" '(my-youdao-search-at-point :wk "youdao")
 
     "w" '(:wk "Window")
