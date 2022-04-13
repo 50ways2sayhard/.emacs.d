@@ -83,6 +83,10 @@
   (org-babel-python-command "python3")
 
   :config
+  (setq org-clock-persist t
+        org-clock-persist-file (concat +self/org-base-dir "org-clock-save.el"))
+  (with-eval-after-load 'org
+    (org-clock-persistence-insinuate))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (add-hook (quote hack-local-variables-hook)
             (lambda ()

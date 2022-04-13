@@ -152,7 +152,7 @@
 (use-package consult
   :after orderless
   :straight (:host github :repo "minad/consult")
-  :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point)
+  :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point consult-clock-in)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -286,7 +286,38 @@ When the number of characters in a buffer exceeds this threshold,
     (cons
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
-  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler))
+  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
+
+  (defun consult-clock-in (&optional match scope resolve)
+    "Clock into an Org heading."
+    (interactive (list nil nil current-prefix-arg))
+    (require 'org-clock)
+    (org-clock-load)
+    (save-window-excursion
+      (consult-org-heading
+       match
+       (or scope
+           (thread-last org-clock-history
+                        (mapcar 'marker-buffer)
+                        (mapcar 'buffer-file-name)
+                        (delete-dups)
+                        (delq nil))
+           (user-error "No recent clocked tasks")))
+      (org-clock-in nil (when resolve
+                          (org-resolve-clocks)
+                          (org-read-date t t)))))
+
+  (consult-customize consult-clock-in
+                     :prompt "Clock in: "
+                     :preview-key (kbd "M-.")
+                     :group
+                     (lambda (cand transform)
+                       (let* ((marker (get-text-property 0 'consult--candidate cand))
+                              (name (if (member marker org-clock-history)
+                                        "*Recent*"
+                                      (buffer-name (marker-buffer marker)))))
+                         (if transform (substring cand (1+ (length name))) name))))
+  )
 
 
 (use-package orderless
