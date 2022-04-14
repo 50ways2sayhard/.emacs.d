@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 726
+;;     Update #: 727
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -313,10 +313,12 @@ When the number of characters in a buffer exceeds this threshold,
                      :group
                      (lambda (cand transform)
                        (let* ((marker (get-text-property 0 'consult--candidate cand))
+                              (bname (buffer-name (marker-buffer marker)))
                               (name (if (member marker org-clock-history)
                                         "*Recent*"
-                                      (buffer-name (marker-buffer marker)))))
-                         (if transform (substring cand (1+ (length name))) name))))
+                                      bname)))
+                         (if transform (substring cand (1+ (length bname))) name))))
+
   )
 
 
