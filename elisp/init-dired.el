@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar 16 09:58:21 2022 (+0800)
+;; Last-Updated: Wed Apr 13 19:26:09 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
@@ -119,7 +119,7 @@
     (general-define-key :states '(normal)
                         :keymaps 'dirvish-mode-map
                         "?" 'dirvish-menu-all-cmds)
-    
+
     (use-package dirvish-menu
       :straight nil
       :config
@@ -127,6 +127,9 @@
         (general-define-key :states '(normal)
                             :keymaps 'dirvish-mode-map
                             "?" 'dirvish-menu-all-cmds)))
+
+    (use-package dirvish-extras
+      :straight nil)
     )
   )
 

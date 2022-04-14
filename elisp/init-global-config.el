@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Apr 12 14:08:18 2022 (+0800)
+;; Last-Updated: Thu Apr 14 09:32:39 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -123,7 +123,24 @@ The original function deletes trailing whitespace of the current line."
                      "recentf"
                      "undo-tree-hist"
                      "url"
-                     "COMMIT_EDITMSG\\'")))
+                     "COMMIT_EDITMSG\\'"))
+  :config
+  (defun recentd-track-opened-file ()
+    "Insert the name of the directory just opened into the recent list."
+    (and (derived-mode-p 'dired-mode) default-directory
+         (recentf-add-file default-directory))
+    ;; Must return nil because it is run from `write-file-functions'.
+    nil)
+
+  (defun recentd-track-closed-file ()
+    "Update the recent list when a dired buffer is killed.
+That is, remove a non kept dired from the recent list."
+    (and (derived-mode-p 'dired-mode) default-directory
+         (recentf-remove-if-non-kept default-directory)))
+
+  (add-hook 'dired-after-readin-hook 'recentd-track-opened-file)
+  (add-hook 'kill-buffer-hook 'recentd-track-closed-file)
+  )
 
 ;; When buffer is closed, saves the cursor location
 (save-place-mode 1)
@@ -188,9 +205,6 @@ The original function deletes trailing whitespace of the current line."
   :hook (+self/first-input . gcmh-mode)
   :diminish
   :init
-  ;; (setq gcmh-high-cons-threshold (* 64 1024 1024))
-  ;; (setq gcmh-idle-delay 5
-  ;;       gcmh-high-cons-threshold #x1000000)
   (setq gcmh-idle-delay 5
         gcmh-high-cons-threshold (* 64 1024 1024)))
 

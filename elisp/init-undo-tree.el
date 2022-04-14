@@ -6,8 +6,8 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 15:28:48 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Jan  1 18:34:37 2020 (-0500)
-;;           By: Mingde (Matthew) Zeng
+;; Last-Updated: Sun Apr 10 10:17:23 2022 (+0800)
+;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d undo-tree
 ;; Compatibility: emacs-version >= 26.1
@@ -37,18 +37,14 @@
 ;;
 ;;; Code:
 
-;; UndoTreePac
-;; (use-package undo-tree
-;;   :defer t
-;;   :diminish undo-tree-mode
-;;   :init (global-undo-tree-mode)
-;;   :custom
-;;   (undo-tree-visualizer-diff t)
-;;   (undo-tree-visualizer-timestamps t))
-;; -UndoTreePac
-
-(use-package undo-fu
-  :defer t)
+(use-package vundo
+  :straight (:host github :repo "casouri/vundo")
+  :commands vundo
+  :defer t
+  :config
+  (setf (alist-get 'selected-node vundo-glyph-alist) ?X
+        (alist-get 'node vundo-glyph-alist) ?O)
+  )
 
 (provide 'init-undo-tree)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

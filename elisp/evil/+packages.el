@@ -171,14 +171,6 @@
     "#" #'evil-visualstar/begin-search-backward))
 
 
-;;
-;;; Text object plugins
-
-(use-package exato
-  :ensure t
-  :commands evil-outer-xml-attr evil-inner-xml-attr)
-
-
 (use-package evil-collection
   :after evil
   :init
@@ -189,11 +181,6 @@
 
 (use-package evil-indent-plus
   :after evil)
-
-(use-package evil-matchit
-  :after evil
-  :init
-  (global-evil-matchit-mode))
 
 (provide 'evil/+packages)
 

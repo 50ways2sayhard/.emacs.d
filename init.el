@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Tue Mar 15 10:15:38 2022 (+0800)
+;; Last-Updated: Wed Apr 13 21:47:22 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -101,7 +101,7 @@
 (require 'init-ui-config)
 (require 'init-theme)
 (require 'init-fonts)
-(require 'init-dashboard)
+;; (require 'init-dashboard)
 (require 'init-scroll)
 (require 'init-pretty-code)
 (require 'init-highlight)
@@ -119,11 +119,7 @@
 (require 'init-header)
 (require 'init-lookup)
 (require 'init-lsp)
-(pcase my-completion
-  ('company
-   (require 'init-company))
-  ('corfu
-   (require 'init-corfu)))
+(require 'init-corfu)
 (require 'init-prog)
 (require 'init-shell)
 
@@ -132,13 +128,20 @@
 (require 'init-javascript)
 (require 'init-webdev)
 (require 'init-ml)
-(require 'init-dockerfile)
+;; (require 'init-dockerfile)
 (require 'init-dart)
 
 
 ;; Miscellaneous
 (require 'init-org)
 (require 'init-restart-emacs)
+
+(add-hook 'after-init-hook
+          #'(lambda ()
+              (+my/open-org-agenda)
+              (evil-window-vsplit)
+              (cfw:open-org-calendar)
+              ))
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

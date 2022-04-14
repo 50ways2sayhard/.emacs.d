@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:01:43 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Mar  2 20:24:19 2022 (+0800)
+;; Last-Updated: Wed Apr 13 21:16:07 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d color-rg rg
@@ -47,7 +47,13 @@
   :straight (:host github :repo "manateelazycat/color-rg")
   :if *rg*
   :init
-  (setq color-rg-mac-load-path-from-shell nil))
+  (setq color-rg-mac-load-path-from-shell nil)
+  (defun color-rg-project-root-dir ()
+    (let ((project (project-current)))
+      (if project
+          (project-root project) ;;  HACK: original repo breaks here
+        default-directory)))
+  )
 ;; -ColorRGPac
 
 
@@ -78,6 +84,14 @@
     (if (display-graphic-p)
         (youdao-dictionary-search-at-point-posframe)
       (youdao-dictionary-search-at-point))))
+
+(use-package pinyinlib
+  :after orderless
+  :config
+  (defun completion--regex-pinyin (str)
+    (orderless-regexp (pinyinlib-build-regexp-string str)))
+  (add-to-list 'orderless-matching-styles 'completion--regex-pinyin)
+  )
 
 (provide 'init-search)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
