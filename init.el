@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Apr 13 21:47:22 2022 (+0800)
+;; Last-Updated: Thu Apr 14 15:34:21 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -139,8 +139,6 @@
 (add-hook 'after-init-hook
           #'(lambda ()
               (+my/open-org-agenda)
-              (evil-window-vsplit)
-              (cfw:open-org-calendar)
               ))
 
 (provide 'init)

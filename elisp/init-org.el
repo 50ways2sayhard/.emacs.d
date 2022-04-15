@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Apr 13 21:45:38 2022 (+0800)
+;; Last-Updated: Thu Apr 14 17:01:44 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -87,6 +87,7 @@
         org-clock-persist-file (concat +self/org-base-dir "org-clock-save.el"))
   (add-hook 'org-clock-in-hook #'org-save-all-org-buffers)
   (add-hook 'org-clock-out-hook #'org-save-all-org-buffers)
+  (add-hook 'org-after-todo-state-change-hook #'org-save-all-org-buffers)
   (with-eval-after-load 'org
     (org-clock-persistence-insinuate))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
@@ -176,9 +177,9 @@
 
   (add-hook 'after-change-major-mode-hook
             (lambda () (if (equal show-paren-mode 't)
-    		                   (when (derived-mode-p 'org-mode)
-    		                     (show-paren-mode -1))
-                         (show-paren-mode 1))))
+    		              (when (derived-mode-p 'org-mode)
+    		                (show-paren-mode -1))
+                    (show-paren-mode 1))))
 
   ;; https://emacs-china.org/t/topic/2119/15
   (defun my--diary-chinese-anniversary (lunar-month lunar-day &optional year mark)
@@ -511,6 +512,7 @@
                               (prettify-symbols-mode -1))))
   :config
   (setq
+   org-agenda-block-separator ?─
    org-agenda-time-grid
    '((daily today require-timed)
      (800 1000 1200 1400 1600 1800 2000)
@@ -522,8 +524,7 @@
 (defun +my/open-org-agenda ()
   "open org agenda in left window"
   (interactive)
-  (org-agenda nil "n")
-  (evil-window-move-far-left))
+  (org-agenda nil "n"))
 
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
