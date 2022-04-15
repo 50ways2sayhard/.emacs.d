@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar 17 14:46:39 2022 (+0800)
+;; Last-Updated: Tue Apr 12 14:29:24 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -145,11 +145,6 @@
     (setq sis-external-ism "im-select.exe"))
   (add-hook 'focus-out-hook #'sis-set-other)
   (add-hook 'focus-in-hook #'sis-set-english)
-  ;; (sis-global-respect-mode t)
-  ;; enable the /context/ mode for all buffers
-  ;; (sis-global-context-mode t)
-  ;; enable the /inline english/ mode for all buffers
-  ;; (sis-global-inline-mode t)
   )
 
 

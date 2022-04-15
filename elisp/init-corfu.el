@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Mar 29 18:23:21 2022 (+0800)
+;; Last-Updated: Thu Apr 14 17:39:19 2022 (+0800)
 ;;           By: John
-;;     Update #: 582
+;;     Update #: 617
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -47,6 +47,7 @@
 ;;; Code:
 
 (use-package corfu
+  :straight (corfu :includes (corfu-indexed corfu-quick) :files (:defaults "extensions/corfu-*.el"))
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -73,14 +74,17 @@
         ([tab] . corfu-next)
         ("S-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
-        ([return] . nil)
+        ("C-j" . corfu-insert)
         ("C-i" . nil)
-        ("RET" . nil)
-        ("S-<return>" . corfu-insert)
+        ;; ([?\r] . nil)
         ([backtab] . corfu-previous))
   :init
   (corfu-global-mode)
   :config
+  (use-package corfu-quick
+    :bind
+    (:map corfu-map
+          ("C-q" . corfu-quick-insert)))
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-bracket)
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-curly)
@@ -123,15 +127,14 @@
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
-
-  (fset 'cape-tabnine (cape-company-to-capf #'company-tabnine))
+  (fset 'cape-tabnine (cape-interactive-capf (cape-company-to-capf #'company-tabnine)))
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
      (cape-capf-buster
       (cape-super-capf
        arg-capf
-       #'cape-tabnine
+       ;; #'cape-tabnine
        #'tempel-expand)
       )
      ;; #'cape-dabbrev
@@ -219,21 +222,38 @@
                    :files ("dist" "copilot.el"))
   :ensure t
   :config
-  (add-hook 'post-command-hook (lambda ()
-                                 (copilot-clear-overlay)
-                                 (when (and (evil-insert-state-p)
-                                            (not tempel--active)) ;; diable copilot in tempel
-                                   (copilot-complete))))
+  (set-face-foreground 'copilot-overlay-face "blue") ;; TODO: find a better color
+  (defun +my/copilot-post-hook ()
+    "hook for post-command-hook"
+    (copilot-clear-overlay)
+    (when (and (evil-insert-state-p)
+               (not tempel--active) ;; diable copilot in tempel
+               (not (string= current-input-method "rime")) ;; HACK: enable copilot only for ascii chars
+               (looking-back "[\x00-\xff]"))
+      (copilot-complete)))
+  (defun +my/copilot-exit-hook ()
+    ""
+    (copilot-clear-overlay))
 
-  (add-hook 'evil-insert-state-exit-hook (lambda () (copilot-clear-overlay)))
+  (defun +my/turn-on-copilot ()
+    ""
+    (interactive)
+    (add-hook 'post-command-hook '+my/copilot-post-hook)
+    (add-hook 'evil-insert-state-exit-hook '+my/copilot-exit-hook))
+  (defun +my/turn-off-copilot ()
+    ""
+    (interactive)
+    (remove-hook 'post-command-hook '+my/copilot-post-hook)
+    (remove-hook 'evil-insert-state-exit-hook '+my/copilot-exit-hook))
 
+  (call-interactively '+my/turn-on-copilot)
 
   (defun my/copilot-or-tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
     (interactive)
     (if tempel--active
         (tempel-next 1)
-      (if (tempel-expand) ;; HACK call `tempel-expand' twice
+      (if (tempel-expand) ;; HACK: call `tempel-expand' twice
           (call-interactively #'tempel-expand)
         (copilot-accept-completion)
         ))
@@ -243,7 +263,6 @@
     (general-define-key
      :keymaps '(evil-insert-state-map)
      "C-i" 'my/copilot-or-tempel-expand-or-next))
-
   )
 
 

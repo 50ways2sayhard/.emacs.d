@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 10
+;;     Update #: 11
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -58,7 +58,7 @@
 
   (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first))
 
-(setq flymake-no-changes-timeout 2)
+(setq flymake-no-changes-timeout 5)
 
 (use-package flymake-flycheck
   :diminish
