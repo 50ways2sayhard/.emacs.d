@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 11:09:30 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Apr 14 17:01:44 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:12:10 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d org toc-org htmlize ox-gfm
@@ -143,8 +143,9 @@
            "PROJ(p)"  ; An ongoing project that cannot be completed in one step
            "⚔INPROCESS(s)"  ; A task that is in progress
            "⚑WAITING(w)"  ; Something is holding up this task; or it is paused
+           "♻Testing️(u)"
            "|"
-           "☟NEXT(n)"
+           "⬇️NEXT(n)"
            "✰Important(i)"
            "✔DONE(d)"  ; Task successfully completed
            "✘CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
@@ -161,6 +162,7 @@
           ("⚔INPROCESS"  . "orangered")
           ("✘CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
           ("⚑WAITING" . "pink")
+          ("♻Testing️" . (:foreground "#ff6900"))
           ("☕BREAK" . "gray")
           ("❤LOVE" . (:foreground "VioletRed4"
                                   ;; :background "#7A586A"
