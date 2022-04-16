@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Sat Apr 16 16:58:07 2022 (+0800)
+;; Last-Updated: Sat Apr 16 20:08:20 2022 (+0800)
 ;;           By: John
-;;     Update #: 625
+;;     Update #: 643
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -134,7 +134,7 @@
      (cape-capf-buster
       (cape-super-capf
        arg-capf
-       ;; #'cape-tabnine
+       #'cape-tabnine
        #'tempel-expand)
       )
      ;; #'cape-dabbrev
@@ -218,36 +218,21 @@
 
 (use-package copilot
   :after corfu
+  :hook (prog-mode . copilot-mode)
   :straight (:host github :repo "zerolfx/copilot.el"
                    :files ("dist" "copilot.el"))
   :ensure t
+  :bind
+  (("C-c n" . copilot-next-completion)
+   ("C-c p" . copilot-previous-completion))
   :config
   (set-face-foreground 'copilot-overlay-face "pink") ;; TODO: find a better color
-  (defun +my/copilot-post-hook ()
-    "hook for post-command-hook"
-    (copilot-clear-overlay)
-    (when (and (evil-insert-state-p)
-               (not (derived-mode-p 'minibuffer-mode))
-               (not tempel--active) ;; diable copilot in tempel
-               (not (string= current-input-method "rime")) ;; HACK: enable copilot only for ascii chars
-               (looking-back "[\x00-\xff]"))
-      (copilot-complete)))
-  (defun +my/copilot-exit-hook ()
-    ""
-    (copilot-clear-overlay))
 
-  (defun +my/turn-on-copilot ()
-    ""
-    (interactive)
-    (add-hook 'post-command-hook '+my/copilot-post-hook)
-    (add-hook 'evil-insert-state-exit-hook '+my/copilot-exit-hook))
-  (defun +my/turn-off-copilot ()
-    ""
-    (interactive)
-    (remove-hook 'post-command-hook '+my/copilot-post-hook)
-    (remove-hook 'evil-insert-state-exit-hook '+my/copilot-exit-hook))
+  (defun +my/corfu-candidates-p ()
+    (not (eq corfu--candidates nil)))
 
-  (call-interactively '+my/turn-on-copilot)
+  (customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
+  (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p))
 
   (defun my/copilot-or-tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
