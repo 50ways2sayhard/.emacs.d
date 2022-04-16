@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:17:13 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 16 19:18:45 2022 (+0800)
+;; Last-Updated: Sat Apr 16 19:53:23 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d parenthesis smartparens delete-block
@@ -65,7 +65,6 @@
   (define-key awesome-pair-mode-map (kbd "]") 'awesome-pair-close-bracket)
   (define-key awesome-pair-mode-map (kbd "}") 'awesome-pair-close-curly)
 
-  (define-key awesome-pair-mode-map (kbd "RET") 'awesome-pair-newline)
 
   (define-key awesome-pair-mode-map (kbd "%") 'awesome-pair-match-paren)
   (define-key awesome-pair-mode-map (kbd "\"") 'awesome-pair-double-quote)

@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 14
+;;     Update #: 18
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -58,8 +58,6 @@
 
 ;;   (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first))
 
-;; (setq flymake-no-changes-timeout 5)
-
 ;; (use-package flymake-flycheck
 ;;   :diminish
 ;;   :config
@@ -81,6 +79,8 @@
 ;;       "el" '(consult-flymake :wk "List error")
 ;;       "ef" '(consult-flymake :wk "Find error")))
 ;;   )
+
+(setq flymake-no-changes-timeout nil)
 
 (provide 'init-flymake)
 
