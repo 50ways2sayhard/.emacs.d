@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 115
+;;     Update #: 124
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,18 +54,15 @@
   :mode ("\\.dart\\'")
   :hook ((dart-mode . (lambda ()
                         (setq-local lsp-enable-imenu t)
-                        ;; (setq-local lsp-diagnostics-provider :flycheck)
                         (setq-local lsp-diagnostics-provider :flymake)
-                        ;; (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)
                         (add-hook 'lsp-mode-hook
                                   (lambda ()
                                     (add-hook 'before-save-hook #'lsp-format-buffer nil t)
                                     (add-hook 'before-save-hook #'lsp-organize-imports nil t)))
                         ))
          (eglot-managed-mode . (lambda ()
-                                 (add-hook 'before-save-hook #'eglot-format-buffer nil t)
+                                 (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
                                  (add-hook 'before-save-hook '+eglot-organize-imports nil t)
-                                 ;; (add-hook 'before-save-hook #'eglot-code-action-organize-imports nil t)
                                  ))
          )
   :config
@@ -81,6 +78,7 @@
   )
 
 (use-package lsp-dart
+  :after lsp-mode
   :custom
   (lsp-dart-dap-flutter-hot-reload-on-save t)
   (lsp-dart-flutter-widget-guides nil)
