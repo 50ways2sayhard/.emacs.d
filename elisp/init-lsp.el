@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 10:42:09 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Apr 13 19:36:49 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:51:25 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d lsp
@@ -47,46 +47,6 @@
   ;; Integrate `which-key'
   (lsp-enable-which-key-integration)
   (+lsp-optimization-mode +1)
-  )
-
-(use-package eglot
-  :when (eq my-lsp 'eglot)
-  :commands (+eglot-organize-imports)
-  :hook (
-         (eglot-managed-mode . (lambda ()
-                                 (+lsp-optimization-mode)
-                                 (leader-def :keymaps 'override
-                                   "ca" '(eglot-code-actions :wk "Code Actions")
-                                   "cr" '(eglot-rename :wk "Rename symbol")
-                                   "cI" '(eglot-code-action-organize-imports :wk "Organize import")
-                                   "ci" '(consult-imenu :wk "imenu")
-                                   "cJ" '(consult-eglot-symbols :wk "Symbols in project")
-                                   "cd" '(eglot-find-declaration :wk "Jump to definition")
-                                   "cF" '(eglot-find-implementation :wk "Find implementation")
-                                   "cD" '(eglot-find-typeDefinition :wk "Find type definition"))
-
-                                 (evil-define-key 'normal 'global
-                                   "K" 'eldoc-doc-buffer)
-                                 ))
-         (prog-mode . (lambda ()
-                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
-                          (eglot-ensure))
-                        )))
-  :init
-  (require 'lsp/+optimization)
-  :config
-  (setq eglot-sync-connect 1
-        eglot-connect-timeout 10
-        eglot-autoshutdown t
-        eglot-send-changes-idle-time 0.5
-        ;; NOTE We disable eglot-auto-display-help-buffer because :select t in
-        ;;      its popup rule causes eglot to steal focus too often.
-        eglot-auto-display-help-buffer nil)
-  (setq eldoc-echo-area-use-multiline-p nil)
-  (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
-  ;; (setq eglot-server-programs (remove '(dart-mode "dart_language_server") eglot-server-programs))
-  (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server")))
-  (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
   )
 
 (use-package lsp-mode

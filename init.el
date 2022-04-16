@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 10:15:28 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Apr 14 15:34:21 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:56:08 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d init
@@ -119,7 +119,10 @@
 (require 'init-header)
 (require 'init-lookup)
 (require 'init-lsp)
-(require 'init-corfu)
+(if (eq my-lsp 'eglot)
+    (require 'init-eglot)
+  (require 'init-lsp))
+(require 'init-complete)
 (require 'init-prog)
 (require 'init-shell)
 

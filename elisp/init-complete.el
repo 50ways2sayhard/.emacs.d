@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Thu Apr 14 17:39:19 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:55:30 2022 (+0800)
 ;;           By: John
-;;     Update #: 617
+;;     Update #: 622
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,8 +52,7 @@
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  (corfu-auto-prefix 1)
-  ;; (corfu-auto-delay 0.05)
+  (corfu-auto-prefix 2)
   (corfu-echo-documentation 0.5)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
@@ -227,6 +226,7 @@
     "hook for post-command-hook"
     (copilot-clear-overlay)
     (when (and (evil-insert-state-p)
+               (not (derived-mode-p 'minibuffer-mode))
                (not tempel--active) ;; diable copilot in tempel
                (not (string= current-input-method "rime")) ;; HACK: enable copilot only for ascii chars
                (looking-back "[\x00-\xff]"))
