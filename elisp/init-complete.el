@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Sat Apr 16 13:55:30 2022 (+0800)
+;; Last-Updated: Sat Apr 16 16:58:07 2022 (+0800)
 ;;           By: John
-;;     Update #: 622
+;;     Update #: 625
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -54,6 +54,7 @@
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 2)
   (corfu-echo-documentation 0.5)
+  (corfu-max-width 120)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
   ;; (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
@@ -221,7 +222,7 @@
                    :files ("dist" "copilot.el"))
   :ensure t
   :config
-  (set-face-foreground 'copilot-overlay-face "blue") ;; TODO: find a better color
+  (set-face-foreground 'copilot-overlay-face "pink") ;; TODO: find a better color
   (defun +my/copilot-post-hook ()
     "hook for post-command-hook"
     (copilot-clear-overlay)
@@ -266,6 +267,6 @@
   )
 
 
-(provide 'init-corfu)
+(provide 'init-complete)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-corfu.el ends here
