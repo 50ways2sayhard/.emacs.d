@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr  9 18:51:42 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:44:29 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -93,7 +93,6 @@
 (setq idle-update-delay 1.0)
 (setq-default cursor-in-non-selected-windows nil)
 (setq highlight-nonselected-windows nil)
-(setq fast-but-imprecise-scrolling t)
 (setq redisplay-skip-fontification-on-input t)
 
 (use-package transient-posframe
@@ -101,8 +100,6 @@
   :hook (after-init . transient-posframe-mode)
   :custom
   (transient-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
-
-(setq pixel-scroll-precision-mode nil)
 
 ;; Enforce rules for popups
 ;; from centaur emacs

@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Fri Mar 15 08:30:08 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar  3 14:37:17 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:45:51 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d smooth-scroll
@@ -40,27 +40,25 @@
 ;; SmoothScroll
 ;; Vertical Scroll
 (setq scroll-step 1
-      scroll-margin 0
-      scroll-conservatively 100000
-      auto-window-vscroll nil
-      scroll-preserve-screen-position t)
+      ;; scroll-margin 0
+      ;; scroll-conservatively 100000
+      auto-window-vscroll t
+      scroll-preserve-screen-position 'always)
 (when (display-graphic-p)
   (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
         mouse-wheel-scroll-amount-horizontal 1
         mouse-wheel-progressive-speed nil))
-(setq scroll-up-aggressively 0.01)
-(setq scroll-down-aggressively 0.01)
-(setq auto-window-vscroll nil)
+;; (setq scroll-up-aggressively 0.01)
+;; (setq scroll-down-aggressively 0.01)
 (setq fast-but-imprecise-scrolling nil)
-(setq mouse-wheel-scroll-amount '(2 ((shift) . 1)))
 (setq mouse-wheel-progressive-speed t)
+
+(setq pixel-scroll-precision-mode t)
 ;; Horizontal Scroll
 (setq hscroll-step 1)
 (setq hscroll-margin 1)
 ;; -SmoothScroll
 
-(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
-      mouse-wheel-scroll-amount-horizontal 1)
 
 (provide 'init-scroll)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

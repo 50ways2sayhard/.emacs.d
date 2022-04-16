@@ -91,12 +91,6 @@
     "cJ" '(consult-lsp-symbols :wk "Jump to Symbol in workspace")
     "ca" '(lsp-execute-code-action :wk "Code Actions")
     "clf" '(lsp-ui-doc-focus-frame :wk "Focus lsp ui doc frame")
-    ;; "cp" '(citre-peek :wk "Citre peek")
-    ;; "ca" '(citre-ace-peek :wk "Citre ace peek")
-    ;; "cj" '(citre-jump+ :wk "Citre jump")
-    ;; "ck" '(citre-jump-back :wk "Citre jump back")
-    ;; "cu" '(citre-update-this-tags-file :wk "Citre update this tag")
-    ;; "cU" '(citre-update-tags-file :wk "Citre update tag")
     "cc" '(separedit-dwim :wk "Write comment")
     "ch" '(lsp-ui-doc-show :wk "Toggle lsp-ui-doc")
 
@@ -108,6 +102,7 @@
     "el" '(consult-flymake :wk "List errors")
     "eL" '(consult-lsp-diagnostics :wk "List all error")
     "ef" '(consult-flymake :wk "Find error")
+    "eP" '(flymake-show-project-diagnostics :wk "Show project errors")
     "en" '(flymake-goto-next-error :wk "Next error")
     "ep" '(flymake-goto-prev-error :wk "Previous error")
 

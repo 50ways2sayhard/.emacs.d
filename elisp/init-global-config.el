@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Apr 14 09:32:39 2022 (+0800)
+;; Last-Updated: Sat Apr 16 13:40:17 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -154,7 +154,7 @@ That is, remove a non kept dired from the recent list."
 (setq ring-bell-function 'ignore)
 
 ;; Show Keystrokes in Progress Instantly
-(setq echo-keystrokes 0.1)
+;; (setq echo-keystrokes 0.1)
 
 ;; Don't Lock Files
 (setq-default create-lockfiles nil)
