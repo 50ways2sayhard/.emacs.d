@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 28 13:25:24 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 16 11:35:20 2022 (+0800)
+;; Last-Updated: Sat Apr 23 18:05:37 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d iedit
@@ -112,12 +112,6 @@
     (interactive)
     (activate-input-method default-input-method))
   (add-hook 'text-mode-hook 'activate-default-input-method))
-
-(defun nuke_trailing()
-  (add-hook 'write-file-hooks 'delete-trailing-whitespace))
-
-(add-hook 'prog-mode-hook 'nuke_trailing)
-(add-hook 'text-mode-hook 'nuke_trailing)
 
 (use-package expand-region
   :defer t)

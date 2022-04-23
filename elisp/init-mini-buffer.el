@@ -12,7 +12,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 727
+;;     Update #: 745
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -49,10 +49,6 @@
 ;;; Code:
 
 ;; Completion styles
-;; (setq completion-styles '(basic partial-completion substring initials flex))
-(defvar +my-completion-styles '(basic partial-completion substring initials flex))
-(setq completion-styles +my-completion-styles)
-
 (autoload 'ffap-file-at-point "ffap")
 
 (add-hook 'completion-at-point-functions
@@ -66,23 +62,6 @@
                 (list (match-beginning 0)
                       (match-end 0)
                       #'completion-file-name-table)))) 'append)
-
-(defun +complete-fido-enter-dir ()
-  (interactive)
-  (let ((candidate (vertico--candidate))
-        (current-input (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-    (cond
-     ((and (vertico-directory--completing-file-p)
-           (string= (car (last (s-split "/" current-input))) ".."))
-      (progn
-        (vertico-directory-delete-word 1)))
-
-     ((and (vertico-directory--completing-file-p)
-           (file-directory-p candidate)
-           (not (string= candidate "~/")))
-      (vertico-insert))
-
-     (t (insert "/")))))
 
 (use-package vertico
   :straight (vertico :includes (vertico-quick vertico-repeat vertico-directory)
@@ -121,8 +100,7 @@
                 ("RET" . vertico-directory-enter)
                 ("DEL" . vertico-directory-delete-char)
                 ("M-DEL" . vertico-directory-delete-word)
-                ("C-w" . vertico-directory-up)
-                ("/" . +complete-fido-enter-dir))
+                ("C-w" . vertico-directory-up))
     :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)
     )
   )
@@ -166,25 +144,22 @@
          ("M-s e" . consult-isearch))
   :init
   (use-package consult-project-extra
-    :after consult
-    :straight (consult-project-extra :type git :host github :repo "Qkessler/consult-project-extra")
-    :config
-    ;; WORKAROUND
-    (setq consult-project-buffer-sources consult-project-extra-sources)
-    )
+    :after consult)
   (use-package consult-flycheck
     :after (consult flycheck))
   (use-package consult-dir
     :ensure t
     :after consult
     :bind (("C-x C-d" . consult-dir)
-           :map selectrum-minibuffer-map
+           :map vertico-map
            ("C-x C-d" . consult-dir)
            ("C-x C-j" . consult-dir-jump-file)))
 
   (use-package consult-lsp
+    :when (eq my-lsp 'lsp-mode)
     :after (consult lsp))
   (use-package consult-eglot
+    :when (eq my-lsp 'eglot)
     :after (consult eglot))
 
   :config
@@ -365,31 +340,6 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Define orderless style with initialism by default
   (orderless-define-completion-style +orderless-with-initialism
     (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
-
-  ;; You may want to combine the `orderless` style with `substring` and/or `basic`.
-  ;; There are many details to consider, but the following configurations all work well.
-  ;; Personally I (@minad) use option 3 currently. Also note that you may want to configure
-  ;; special styles for special completion categories, e.g., partial-completion for files.
-  ;;
-  ;; 1. (setq completion-styles '(orderless))
-  ;; This configuration results in a very coherent completion experience,
-  ;; since orderless is used always and exclusively. But it may not work
-  ;; in all scenarios. Prefix expansion with TAB is not possible.
-  ;;
-  ;; 2. (setq completion-styles '(substring orderless))
-  ;; By trying substring before orderless, TAB expansion is possible.
-  ;; The downside is that you can observe the switch from substring to orderless
-  ;; during completion, less coherent.
-  ;;
-  ;; 3. (setq completion-styles '(orderless basic))
-  ;; Certain dynamic completion tables (completion-table-dynamic)
-  ;; do not work properly with orderless. One can add basic as a fallback.
-  ;; Basic will only be used when orderless fails, which happens only for
-  ;; these special tables.
-  ;;
-  ;; 4. (setq completion-styles '(substring orderless basic))
-  ;; Combine substring, orderless and basic.
-  ;;
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         ;;; Enable partial-completion for files.
@@ -411,8 +361,6 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (+self/first-input . marginalia-mode)
   :config
   (setq marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light))
-  (advice-add #'marginalia-cycle :after
-              (lambda () (when (bound-and-true-p selectrum-mode) (selectrum-exhibit))))
   :bind (:map minibuffer-local-completion-map
               ("M-A" . marginalia-cycle)
               ("C-i" . marginalia-cycle-annotators)))

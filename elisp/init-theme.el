@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 17:11:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Thu Mar  3 14:34:48 2022 (+0800)
+;; Last-Updated: Sat Apr 23 18:20:00 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d doom-themes doom-modeline
@@ -68,10 +68,6 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
   (load-theme 'doom-one t)
-  ;; (custom-set-faces
-  ;;  `(font-lock-comment-face ((t (:slant italic))))
-  ;;  `(font-lock-comment-delimiter-face ((t (:slant italic))))
-  ;;  `(font-lock-doc-face ((t (:slant italic)))))
   )
 ;; -DoomThemes
 

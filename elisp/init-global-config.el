@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 16 13:40:17 2022 (+0800)
+;; Last-Updated: Sat Apr 23 18:18:45 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -154,7 +154,7 @@ That is, remove a non kept dired from the recent list."
 (setq ring-bell-function 'ignore)
 
 ;; Show Keystrokes in Progress Instantly
-;; (setq echo-keystrokes 0.1)
+(setq echo-keystrokes 0.1)
 
 ;; Don't Lock Files
 (setq-default create-lockfiles nil)
@@ -182,9 +182,6 @@ That is, remove a non kept dired from the recent list."
 (when (fboundp 'global-so-long-mode)
   (global-so-long-mode))
 
-;; Add a newline automatically at the end of the file upon save.
-(setq require-final-newline t)
-
 ;; Default .args, .in, .out files to text-mode
 (add-to-list 'auto-mode-alist '("\\.in\\'" . text-mode))
 (add-to-list 'auto-mode-alist '("\\.out\\'" . text-mode))
@@ -196,7 +193,7 @@ That is, remove a non kept dired from the recent list."
 (unless *sys/linux*
   (setq command-line-x-option-alist nil))
 ;; Increase how much is read from processes in a single chunk (default is 4kb)
-(setq read-process-output-max #x10000)  ; 64kb
+(setq read-process-output-max (* 1024 1024))  ; 1M
 
 ;; Don't ping things that look like domain names.
 (setq ffap-machine-p-known 'reject)
@@ -205,7 +202,7 @@ That is, remove a non kept dired from the recent list."
   :hook (+self/first-input . gcmh-mode)
   :diminish
   :init
-  (setq gcmh-idle-delay 5
+  (setq gcmh-idle-delay 0.5
         gcmh-high-cons-threshold (* 64 1024 1024)))
 
 (when *sys/wsl*

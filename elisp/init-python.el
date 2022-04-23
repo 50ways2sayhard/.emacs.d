@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Mon Jun 10 18:58:02 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr  9 18:49:06 2022 (+0800)
+;; Last-Updated: Sat Apr 23 18:26:36 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: lsp-python-ms
@@ -78,7 +78,7 @@
   (setq lsp-pyright-multi-root nil)
   (setq lsp-pyright-use-library-code-for-types t)
   (setq lsp-pyright-auto-search-paths nil)
-  (setq lsp-pyright-auto-import-completions nil)
+  (setq lsp-pyright-auto-import-completions t)
   )
 
 (provide 'init-python)

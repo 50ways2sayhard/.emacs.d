@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 16:12:56 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 16 13:44:29 2022 (+0800)
+;; Last-Updated: Sat Apr 23 18:19:30 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d ui
@@ -42,8 +42,6 @@
   (require 'init-func))
 
 
-(mouse-avoidance-mode 'exile)
-
 ;; PreSym
 (global-prettify-symbols-mode 1)
 ;; -PreSym
@@ -59,7 +57,8 @@
 ;; StartupScreen
 (setq inhibit-startup-screen t)
 (setq initial-major-mode 'text-mode)
-(setq initial-scratch-message "Present Day, Present Time...\n")
+(setq-default initial-scratch-message
+              (concat ";; Happy hacking, " user-login-name " - Emacs ♥ you!\n\n"))
 ;; -StartupScreen
 
 ;; DisLineNum
@@ -82,9 +81,6 @@
 (setq word-wrap t
       word-wrap-by-category t
       require-final-newline t)
-
-(add-hook 'prog-mode-hook #'(lambda () (visual-line-mode)))
-(add-hook 'text-mode-hook #'(lambda () (visual-line-mode)))
 
 (setq split-width-threshold 0
       split-height-threshold nil)

@@ -35,6 +35,9 @@
     "'" 'noct-consult-ripgrep-or-line
     )
 
+  (evil-define-key 'insert 'global
+    "M-y" 'consult-yank-from-kill-ring)
+
   (evil-ex-define-cmd "W" 'evil-write)
   (general-def "<escape>" 'keyboard-quit)
   (general-def "C-;" 'embrace-commander)
