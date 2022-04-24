@@ -8,9 +8,9 @@
 ;; Created: Sat Nov 27 21:36:42 2021 (+0800)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Sat Apr 16 20:08:20 2022 (+0800)
+;; Last-Updated: Thu Apr 21 10:57:16 2022 (+0800)
 ;;           By: John
-;;     Update #: 643
+;;     Update #: 646
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -229,7 +229,10 @@
   (set-face-foreground 'copilot-overlay-face "pink") ;; TODO: find a better color
 
   (defun +my/corfu-candidates-p ()
-    (not (eq corfu--candidates nil)))
+    (or (not (eq corfu--candidates nil))
+        (derived-mode-p 'minibuffer-mode)
+        tempel--active ;; diable copilot in tempel
+        (not (looking-back "[\x00-\xff]"))))
 
   (customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p))
