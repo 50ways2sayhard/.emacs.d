@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 14:01:54 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 23 18:18:45 2022 (+0800)
+;; Last-Updated: Sun Apr 24 17:54:54 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -202,7 +202,9 @@ That is, remove a non kept dired from the recent list."
   :hook (+self/first-input . gcmh-mode)
   :diminish
   :init
-  (setq gcmh-idle-delay 0.5
+  ;; from doom-emacs
+  (setq gcmh-idle-delay 'auto
+        gcmh-auto-idle-delay-factor 10
         gcmh-high-cons-threshold (* 64 1024 1024)))
 
 (when *sys/wsl*

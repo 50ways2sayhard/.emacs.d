@@ -142,7 +142,7 @@
   (if (derived-mode-p 'org-mode)
       (consult-outline)
     (if (boundp 'lsp-mode)
-        (if (and lsp-mode lsp-enable-imeu (not lsp-use-plists))
+        (if (and lsp-mode lsp-enable-imenu (not lsp-use-plists))
             (consult-lsp-file-symbols args)
           (consult-imenu))
       (consult-imenu)
