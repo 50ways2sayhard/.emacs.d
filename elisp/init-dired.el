@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Thu Mar 14 11:37:00 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Sat Apr 16 11:23:39 2022 (+0800)
+;; Last-Updated: Wed Apr 20 16:31:47 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d dired auto-save
@@ -108,7 +108,7 @@
                     (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
   (use-package dirvish
-    :straight (dirvish :type git :host github :repo "alexluigit/dirvish")
+    :straight (dirvish :includes (dirvish-extras dirvish-menu dirvish-side dirvish-peek dirvish-vc dirvish-yank) :files (:defaults "extensions/dirvish-*.el"))
     :after dired
     :custom
     (dirvish-attributes '(all-the-icons file-size))

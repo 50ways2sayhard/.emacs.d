@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 124
+;;     Update #: 125
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -99,10 +99,6 @@ dart"
                                   :program (lsp-dart-get-project-entrypoint)
                                   :output-filter-function #'lsp-dart-dap--output-filter-function
                                   )))
-  (with-eval-after-load 'lsp
-    (make-local-variable 'before-save-hook)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t))
-
   (local-leader-def
     :keymaps 'dart-mode-map
     "r" 'lsp-dart-dap-flutter-hot-reload

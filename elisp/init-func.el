@@ -6,7 +6,7 @@
 ;; Copyright (C) 2019 Mingde (Matthew) Zeng
 ;; Created: Sun Jun  9 17:53:44 2019 (-0400)
 ;; Version: 2.0.0
-;; Last-Updated: Wed Apr 13 22:45:12 2022 (+0800)
+;; Last-Updated: Thu Apr 21 11:18:37 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
 ;; Keywords: M-EMACS .emacs.d
@@ -275,7 +275,7 @@ FACE defaults to inheriting from default and highlight."
   (if (derived-mode-p 'org-mode)
       (consult-outline)
     (if (boundp 'lsp-mode)
-        (if (and lsp-mode lsp-enable-imeu (not lsp-use-plists))
+        (if (and lsp-mode lsp-enable-imenu (not lsp-use-plists))
             (consult-lsp-file-symbols args)
           (consult-imenu))
       (consult-imenu)
