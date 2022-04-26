@@ -86,13 +86,16 @@
     "Attach to a running Flutter application."
     (interactive)
 
-    (let ((project (+find-project-root)))
-      (cd project)
-      (start-process
-       (concat "flutter-attach-" project)
-       (concat "*Flutter Attach - " project "*")
-       "flutter" "attach")
-      (display-buffer-at-bottom (concat "*Flutter Attach - " project "*"))
+    (let* ((project (+find-project-root))
+           (attach-process (concat "flutter-attach-" project)))
+      (unless (get-process attach-process)
+        (cd project)
+        (start-process
+         (concat "flutter-attach-" project)
+         (concat "*Flutter Attach - " project "*")
+         "flutter" "attach")
+        (display-buffer (concat "*Flutter Attach - " project "*"))
+        )
       )
     )
 
@@ -100,16 +103,19 @@
     "Run a Flutter application."
     (interactive)
 
-    (let ((project (+find-project-root)))
+    (let* ((project (+find-project-root))
+           (run-process (concat "flutter-run-" project)))
       (if (file-exists-p (concat project "/lib/main.dart"))
           (cd project)
         (cd (concat project "example"))
 
-        (start-process
-         (concat "flutter-run-" project)
-         (concat "*Flutter Run - " project "*")
-         "flutter" "run")
-        (display-buffer-at-bottom (concat "*Flutter Run - " project "*"))
+        (unless (get-process run-process)
+          (start-process
+           (concat "flutter-run-" project)
+           (concat "*Flutter Run - " project "*")
+           "flutter" "run")
+          (display-buffer (concat "*Flutter Run - " project "*"))
+          )
         )
       ))
 
