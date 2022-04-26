@@ -190,6 +190,15 @@
       (abort-recursive-edit))))
 
 
+;;;###autoload
+(defun +my/find-project-root()
+  (interactive)
+  (let ((project (project-current)))
+    (if project
+        (project-root project) ;;  HACK: original repo breaks here
+      nil)))
+
+
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-func.el ends here

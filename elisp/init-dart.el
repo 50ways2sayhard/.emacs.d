@@ -75,96 +75,77 @@
   ;; (cl-defmethod project-roots ((project (head dart)))
   ;;   (list (cdr project)))
 
-  (defun +find-project-root()
-    (interactive)
-    (let ((project (project-current)))
-      (if project
-          (project-root project) ;;  HACK: original repo breaks here
-        default-directory)))
+  (defun +my/flutter--process-name ()
+    "Return the name of the flutter process."
+    (let ((project-name (+my/find-project-root)))
+      (if project-name
+          (concat "flutter-" project-name)
+        nil)))
 
-  (defun +flutter-attach ()
+  (defun +my/flutter--buffer-name()
+    "Return the name of the flutter buffer."
+    (concat "*Flutter Daemon - " (+my/find-project-root) "*"))
+
+  (defun +my/flutter--process-running-p ()
+    "Return t if the flutter process is running."
+    (comint-check-proc (+my/flutter--process-name)))
+
+  (defun +my/flutter-run-or-attach (mode)
     "Attach to a running Flutter application."
-    (interactive)
+    (interactive (list (completing-read "Mode: " '("run" "attach") nil t)))
 
-    (let* ((project (+find-project-root))
-           (attach-process (concat "flutter-attach-" project)))
-      (unless (get-process attach-process)
-        (cd project)
-        (start-process
-         (concat "flutter-attach-" project)
-         (concat "*Flutter Attach - " project "*")
-         "flutter" "attach")
-        (display-buffer (concat "*Flutter Attach - " project "*"))
+    (unless (+my/flutter--process-running-p)
+      (let* ((project (+my/find-project-root))
+             (process-name (+my/flutter--process-name))
+             (buffer (get-buffer-create (+my/flutter--buffer-name))))
+        (if (file-exists-p (concat project "lib/main.dart"))
+            (cd project)
+          (cd (concat project "example")))
+        (start-process process-name (+my/flutter--buffer-name) "flutter" mode)
+        (display-buffer (+my/flutter--buffer-name))
         )
       )
     )
 
-  (defun +flutter-run ()
-    "Run a Flutter application."
-    (interactive)
-
-    (let* ((project (+find-project-root))
-           (run-process (concat "flutter-run-" project)))
-      (if (file-exists-p (concat project "/lib/main.dart"))
-          (cd project)
-        (cd (concat project "example"))
-
-        (unless (get-process run-process)
-          (start-process
-           (concat "flutter-run-" project)
-           (concat "*Flutter Run - " project "*")
-           "flutter" "run")
-          (display-buffer (concat "*Flutter Run - " project "*"))
-          )
-        )
+  (defun +my/send-flutter-command (command)
+    "Send a command to a running Flutter application."
+    (let ((process (+my/flutter--process-name)))
+      (if (eq (process-status process) 'run)
+          (process-send-string process command)
+        (call-interactively #'+my/flutter-run-or-attach))
       ))
 
-  (defun +send-flutter-command (command)
-    "Send a command to a running Flutter application."
-    (let* ((project (+find-project-root))
-           (attach-process (concat "flutter-attach-" project))
-           (run-process (concat "flutter-run-" project))
-           )
-      (if (get-process attach-process)
-          (process-send-string attach-process command)
-        (process-send-string run-process command))
-      )
-    )
-
-  (defun +flutter-hot-reload ()
+  (defun +my/flutter-run-or-hot-reload ()
     "Hot reload the current Flutter application."
     (interactive)
-    (+send-flutter-command "r")
-    )
+    (+my/send-flutter-command "r"))
 
-  (defun +flutter-hot-restart ()
+  (defun +my/flutter-run-or-hot-restart ()
     "Hot restart the current Flutter application."
     (interactive)
-    (+send-flutter-command "R")
-    )
+    (+my/send-flutter-command "R"))
 
-  (defun +flutter-open-devtools ()
+  (defun +my/flutter-open-devtools ()
     "Open the Flutter DevTools."
     (interactive)
-    (+send-flutter-command "D")
-    )
+    (+my/send-flutter-command "v"))
 
-  (defun +flutter-quit ()
+  (defun +my/flutter-quit ()
     "Quit the Flutter application."
     (interactive)
-    (+send-flutter-command "q")
-    )
+    (when (+my/flutter--process-running-p)
+      (+my/send-flutter-command "q")
+      (display-buffer (+my/flutter--buffer-name))))
 
   (local-leader-def
     :keymaps 'dart-mode-map
-    "r" '(+flutter-hot-reload :wk "Hot reload")
-    "R" '(+flutter-hot-restart :wk "Hot restart")
+    "r" '(+my/flutter-run-or-hot-reload :wk "Run or hot reload")
+    "R" '(+my/flutter-run-or-hot-restart :wk "Run or hot restart")
 
-    "D" '(+flutter-open-devtools :wk "Open devtools")
-    "Q" '(+flutter-quit :wk "Quit application")
+    "v" '(+my/flutter-open-devtools :wk "Open devtools")
+    "Q" '(+my/flutter-quit :wk "Quit application")
 
-    "a" '(+flutter-attach :wk "Flutter Attach")
-    "s" '(+flutter-run :wk "Flutter Run")
+    "s" '(+my/flutter-run-or-attach :wk "Run or Attach")
     )
   )
 
