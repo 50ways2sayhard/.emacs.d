@@ -21,7 +21,7 @@
   (evil-define-key 'normal 'global
     "j" 'evil-next-visual-line
     "k" 'evil-previous-visual-line
-    "K" 'lsp-ui-doc-glance
+    ;; "K" 'lsp-ui-doc-glance
     ;; Comment
     "gcc" 'evilnc-comment-or-uncomment-lines
     "gcC" 'evilnc-comment-or-uncomment-to-the-line
@@ -35,9 +35,6 @@
     "'" 'noct-consult-ripgrep-or-line
     )
 
-  (evil-define-key 'insert 'global
-    "M-y" 'consult-yank-from-kill-ring)
-
   (evil-ex-define-cmd "W" 'evil-write)
   (general-def "<escape>" 'keyboard-quit)
   (general-def "C-;" 'embrace-commander)
@@ -47,6 +44,7 @@
   (general-def "C-S-RET" '+default/newline-above)
   (general-def "M-?" '+consult-ripgrep-at-point)
   (general-def "M->" '+lookup-xref-references-backend-fn)
+  (general-def "M-y" 'consult-yank-from-kill-ring)
 
   ;; Navigation
   (general-define-key
