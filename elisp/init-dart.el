@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 125
+;;     Update #: 126
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -66,15 +66,100 @@
                                  ))
          )
   :config
-  (defun project-try-dart (dir)
-    (let ((project (or (locate-dominating-file dir "pubspec.yaml")
-                       (locate-dominating-file dir "BUILD"))))
+  ;; (defun project-try-dart (dir)
+  ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")
+  ;;                      (locate-dominating-file dir "BUILD"))))
+  ;;     (if project ;;         (cons 'dart project)
+  ;;       (cons 'transient dir))))
+  ;; (add-hook 'project-find-functions #'project-try-dart)
+  ;; (cl-defmethod project-roots ((project (head dart)))
+  ;;   (list (cdr project)))
+
+  (defun +find-project-root()
+    (interactive)
+    (let ((project (project-current)))
       (if project
-          (cons 'dart project)
-        (cons 'transient dir))))
-  (add-hook 'project-find-functions #'project-try-dart)
-  (cl-defmethod project-roots ((project (head dart)))
-    (list (cdr project)))
+          (project-root project) ;;  HACK: original repo breaks here
+        default-directory)))
+
+  (defun +flutter-attach ()
+    "Attach to a running Flutter application."
+    (interactive)
+
+    (let ((project (+find-project-root)))
+      (cd project)
+      (start-process
+       (concat "flutter-attach-" project)
+       (concat "*Flutter Attach - " project "*")
+       "flutter" "attach")
+      (display-buffer-at-bottom (concat "*Flutter Attach - " project "*"))
+      )
+    )
+
+  (defun +flutter-run ()
+    "Run a Flutter application."
+    (interactive)
+
+    (let ((project (+find-project-root)))
+      (if (file-exists-p (concat project "/lib/main.dart"))
+          (cd project)
+        (cd (concat project "example"))
+
+        (start-process
+         (concat "flutter-run-" project)
+         (concat "*Flutter Run - " project "*")
+         "flutter" "run")
+        (display-buffer-at-bottom (concat "*Flutter Run - " project "*"))
+        )
+      ))
+
+  (defun +send-flutter-command (command)
+    "Send a command to a running Flutter application."
+    (let* ((project (+find-project-root))
+           (attach-process (concat "flutter-attach-" project))
+           (run-process (concat "flutter-run-" project))
+           )
+      (if (get-process attach-process)
+          (process-send-string attach-process command)
+        (process-send-string run-process command))
+      )
+    )
+
+  (defun +flutter-hot-reload ()
+    "Hot reload the current Flutter application."
+    (interactive)
+    (+send-flutter-command "r")
+    )
+
+  (defun +flutter-hot-restart ()
+    "Hot restart the current Flutter application."
+    (interactive)
+    (+send-flutter-command "R")
+    )
+
+  (defun +flutter-open-devtools ()
+    "Open the Flutter DevTools."
+    (interactive)
+    (+send-flutter-command "D")
+    )
+
+  (defun +flutter-quit ()
+    "Quit the Flutter application."
+    (interactive)
+    (+send-flutter-command "q")
+    )
+
+  (local-leader-def
+    :keymaps 'dart-mode-map
+    "r" '(+flutter-hot-reload :wk "Hot reload")
+    "R" '(+flutter-hot-restart :wk "Hot restart")
+
+    "D" '(+flutter-open-devtools :wk "Open devtools")
+    "Q" '(+flutter-quit :wk "Quit application")
+
+    "a" '(+flutter-attach :wk "Flutter Attach")
+    "s" '(+flutter-run :wk "Flutter Run")
+    )
   )
 
 (use-package lsp-dart
@@ -88,26 +173,6 @@
   (lsp-dart-closing-labels nil)
   (lsp-dart-main-code-lens nil)
   (lsp-dart-test-code-lens nil)
-  :config
-  (with-eval-after-load 'dap-mode
-    (dap-register-debug-template "Flutter :: Attach"
-                                 (list
-                                  :request "attach"
-                                  :type "
-dart"
-                                  :dap-server-path lsp-dart-dap-flutter-debugger-program
-                                  :program (lsp-dart-get-project-entrypoint)
-                                  :output-filter-function #'lsp-dart-dap--output-filter-function
-                                  )))
-  (local-leader-def
-    :keymaps 'dart-mode-map
-    "r" 'lsp-dart-dap-flutter-hot-reload
-    "R" 'lsp-dart-dap-flutter-hot-restart
-
-    "D" 'lsp-dart-open-devtools
-    "o" 'lsp-dart-show-outline
-    "p" 'lsp-dart-pub-get
-    )
   )
 
 (provide 'init-dart)

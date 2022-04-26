@@ -151,6 +151,7 @@
           "\\*vc-.*\\*$"
           "^\\*elfeed-entry\\*$"
           "^\\*macro expansion\\**"
+          "^\\*Flutter.*\\*$"
 
           "\\*Org Select\\*" "\\*Capture\\*" "^CAPTURE-.*\\.org*"
           "\\*Gofmt Errors\\*$" "\\*Go Test\\*$" godoc-mode
