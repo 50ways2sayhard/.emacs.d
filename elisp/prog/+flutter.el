@@ -51,13 +51,12 @@
   "Return t if the flutter process is running."
   (get-process (+my/flutter--process-name)))
 
-(defun +my/flutter--process-filter (_ output)
+(defun +my/flutter--process-filter (output)
   "Capture app-id from OUTPUT."
-  (message "response: %s" output)
-  (let ((output-splitted (split-string (string-trim response) " ")))
+  (let ((output-splitted (split-string (string-trim output) " ")))
     (when (string-equal (car output-splitted) "flutter")
       (let ((app-id (string-join (nthcdr 3 output-splitted) " ")))
-        (message "output: %s" app-id)
+        (message "capture app-id: %s" app-id)
         (unless (member app-id +my/flutter--app-id-alist)
           (add-to-list '+my/flutter--app-id-alist app-id)))))
   )
@@ -91,7 +90,8 @@
   (unless (+my/flutter--process-running-p)
     (let* ((project (+my/find-project-root))
            (process-name (+my/flutter--process-name))
-           (buffer (get-buffer-create (+my/flutter--buffer-name))))
+           (buffer (get-buffer-create (+my/flutter--buffer-name)))
+           (command (+my/flutter--command mode app-id)))
       (if (file-exists-p (concat project "lib/main.dart"))
           (cd project)
         (cd (concat project "example")))
@@ -103,6 +103,10 @@
        ;; :filter '+my/flutter--process-filter
        :sentinel '+my/flutter--sentinel
        :noquery t)
+      (with-current-buffer buffer
+        (unless (derived-mode-p 'comint-mode)
+          (comint-mode)
+          (setq-local comint-output-filter-functions #'+my/flutter--process-filter)))
       (display-buffer buffer))))
 
 (defun +my/flutter--send (command)
