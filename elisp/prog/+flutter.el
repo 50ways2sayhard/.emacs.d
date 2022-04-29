@@ -140,7 +140,18 @@
 (defun +my/flutter-pub-get ()
   "Run pub get."
   (interactive)
-  (start-process "flutter-pub-get" "*Flutter Pub Get*" "flutter" "pub" "get"))
+  ;; (start-process "flutter-pub-get" "*Flutter Pub Get*" "flutter" "pub" "get")
+  (cd (+my/find-project-root))
+  (make-process :name "flutter-pub-get"
+                :buffer "*Flutter Pub Get*"
+                :command '("flutter" "pub" "get")
+                :coding 'utf-8
+                :noquery t
+                :sentinel (lambda (process event)
+                            (message "[Flutter] run pub get: %s" event))
+                )
+  (display-buffer "*Flutter Pub Get*")
+  )
 
 
 (provide 'prog/+flutter)
