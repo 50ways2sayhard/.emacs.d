@@ -85,6 +85,7 @@
     "Q" '(+my/flutter-quit :wk "Quit application")
 
     "s" '(+my/flutter-run-or-attach :wk "Run or Attach")
+    "p" '(+my/flutter-pub-get :wk "Pub get")
     )
   )
 
