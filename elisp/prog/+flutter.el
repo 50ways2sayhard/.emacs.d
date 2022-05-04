@@ -107,6 +107,7 @@
         (unless (derived-mode-p 'comint-mode)
           (comint-mode)
           (setq-local comint-output-filter-functions #'+my/flutter--process-filter)))
+      (cd (file-name-directory buffer-file-name))
       (display-buffer buffer))))
 
 (defun +my/flutter--send (command)
@@ -150,6 +151,7 @@
                 :sentinel (lambda (process event)
                             (message "[Flutter] run pub get: %s" event))
                 )
+  (cd (file-name-directory buffer-file-name))
   (display-buffer "*Flutter Pub Get*")
   )
 
