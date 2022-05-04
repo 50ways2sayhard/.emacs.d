@@ -179,9 +179,9 @@
 
   (add-hook 'after-change-major-mode-hook
             (lambda () (if (equal show-paren-mode 't)
-    		              (when (derived-mode-p 'org-mode)
-    		                (show-paren-mode -1))
-                    (show-paren-mode 1))))
+    		                   (when (derived-mode-p 'org-mode)
+    		                     (show-paren-mode -1))
+                         (show-paren-mode 1))))
 
   ;; https://emacs-china.org/t/topic/2119/15
   (defun my--diary-chinese-anniversary (lunar-month lunar-day &optional year mark)
@@ -501,19 +501,17 @@
 
 
 (use-package org-modern
+  :straight (:host github :repo "minad/org-modern")
   :defer t
   :after org
   :hook ((org-mode . org-modern-mode)
-         (org-agenda-finalize . org-modern-agenda)
-         (org-modern-mode . (lambda ()
-                              "Adapt `org-modern-mode'."
-                              ;; Looks better for tags
-                              (setq line-spacing 0.1)
-                              ;; Disable Prettify Symbols mode
-                              (setq prettify-symbols-alist nil)
-                              (prettify-symbols-mode -1))))
+         (org-agenda-finalize . org-modern-agenda))
   :config
   (setq
+   org-modern-table nil
+   org-modern-block nil
+   org-modern-keyword nil
+   org-modern-todo nil ;;  TODO: no better way to define fine faces
    org-agenda-block-separator ?─
    org-agenda-time-grid
    '((daily today require-timed)
@@ -521,6 +519,64 @@
      " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
    org-agenda-current-time-string
    "⭠ now ─────────────────────────────────────────────────")
+
+
+  (setq org-tags-column 0
+        org-auto-align-tags nil)
+
+  ;; avoid unneccesary calculations, I never need it.
+  (defalias 'org-align-tags #'ignore)
+
+  ;; Inspired by Ihor Radchenko’s code at: https://orgmode.org/list/87lfh745ch.fsf@localhost/
+  (add-hook 'org-modern-mode-hook #'aj/org-set-tag-align-keywords)
+  (defun aj/org-set-tag-align-keywords ()
+    (add-to-list 'font-lock-extra-managed-props 'org-tag-aligned)
+    (font-lock-add-keywords nil '((yant/org-align-tags t)) 'append))
+
+  (defun aj/string-pixel-width (string &optional mode)
+    "Calculate pixel width of STRING.
+Optional MODE specifies major mode used for display."
+    (let ((fra face-remapping-alist))
+      (with-temp-buffer
+        (with-silent-modifications
+          (setf (buffer-string) string))
+        (when (fboundp mode)
+          (funcall mode)
+          (font-lock-ensure))
+        (setq-local face-remapping-alist fra)
+        (if (get-buffer-window (current-buffer))
+	          (car (window-text-pixel-size nil (line-beginning-position) (point)))
+          (set-window-buffer nil (current-buffer))
+          (car (window-text-pixel-size nil (line-beginning-position) (point)))))))
+
+
+  (defun yant/org-align-tags (limit &optional force)
+    "Align all the tags in org buffer."
+    (save-match-data
+      (when (eq major-mode 'org-mode)
+        (let ((ellw (aj/string-pixel-width org-ellipsis)))
+	        (while (re-search-forward "^\\*+ \\(.+?\\)\\([ \t]+\\)\\(:\\(?:[^ \n]+:\\)+\\)$" limit t)
+	          (when (and (match-string 2)
+		                   (or force
+			                     (not (get-text-property (match-beginning 2) 'org-tag-aligned))))
+	            (with-silent-modifications
+                (put-text-property (match-beginning 2) (match-end 2) 'org-tag-aligned t)
+	              (put-text-property
+                 (if (>= 2 (- (match-end 2) (match-beginning 2)))
+				             (match-beginning 2)
+			             ;; multiple whitespaces may mean that we are in process of typing
+			             (1+ (match-beginning 2)))
+			           (match-end 2)
+			           'display
+			           `(space . (:align-to
+                            (- right
+						                   (,(+ 3 ;; no idea, but otherwise it is sometimes not enough
+							                      ellw
+                                    (if (match-beginning 3)
+                                        (car (window-text-pixel-size nil (match-beginning 3) (match-end 3)))
+                                      0))))))))))))))
+
+
   )
 
 (defun +my/open-org-agenda ()
