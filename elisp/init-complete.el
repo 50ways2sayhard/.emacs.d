@@ -75,11 +75,13 @@
         ("S-SPC" . corfu-insert-separator)
         ("S-TAB" . corfu-previous)
         ("C-j" . corfu-insert)
+        ("C-d" . corfu-info-documentation)
+        ("M-." . corfu-info-location)
         ("C-i" . nil)
         ;; ([?\r] . nil)
         ([backtab] . corfu-previous))
   :init
-  (corfu-global-mode)
+  (global-corfu-mode)
   :config
   (use-package corfu-quick
     :bind
@@ -121,8 +123,7 @@
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (org-mode . my/set-basic-capf)
-         (lsp-completion-mode . my/set-lsp-capf)
-         (eglot-managed-mode . my/set-eglot-capf))
+         ((lsp-completion-mode eglot-managed-mode) . my/set-lsp-capf))
   :config
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
@@ -134,7 +135,7 @@
      (cape-capf-buster
       (cape-super-capf
        arg-capf
-       #'cape-tabnine
+       ;; #'cape-tabnine
        #'tempel-expand)
       )
      ;; #'cape-dabbrev
@@ -145,14 +146,13 @@
 
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-completion-at-point)))
-
-  (defun my/set-eglot-capf ()
-    (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
+    (setq-local completion-at-point-functions (my/convert-super-capf (if (eq my-lsp 'eglot)
+                                                                         #'eglot-completion-at-point
+                                                                       #'lsp-completion-at-point))))
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-tabnine)
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
   (use-package tempel
@@ -230,12 +230,11 @@
 
   (defun +my/corfu-candidates-p ()
     (or (not (eq corfu--candidates nil))
-        (derived-mode-p 'minibuffer-mode)
         tempel--active ;; diable copilot in tempel
         (not (looking-back "[\x00-\xff]"))))
 
   (customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
-  (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p))
+  (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
 
   (defun my/copilot-or-tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
