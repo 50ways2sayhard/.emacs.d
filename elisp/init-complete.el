@@ -113,6 +113,7 @@
   (setq completion-cycle-threshold 3)
   (setq tab-always-indent 'completion))
 
+
 (use-package cape
   :after corfu
   ;; Bind dedicated completion commands
@@ -128,14 +129,14 @@
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
-  (fset 'cape-tabnine (cape-interactive-capf (cape-company-to-capf #'company-tabnine)))
+
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
      (cape-capf-buster
       (cape-super-capf
        arg-capf
-       ;; #'cape-tabnine
+       #'tabnine-completion-at-point
        #'tempel-expand)
       )
      ;; #'cape-dabbrev
@@ -152,11 +153,17 @@
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-tabnine)
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
   (use-package tempel
     :after cape)
+
+  (use-package tabnine-capf
+    :after cape
+    :straight (:host github :repo "50ways2sayhard/tabnine-capf" :files ("*.el" "*.sh"))
+    :hook (kill-emacs . tabnine-capf-kill-process)
+    :config
+    (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point))
   )
 
 (use-package kind-icon
@@ -208,13 +215,6 @@
   :bind (:map corfu-map
               ("M-d" . corfu-doc-toggle))
   )
-
-(use-package company-tabnine
-  :defer 1
-  :after corfu
-  :hook (kill-emacs . company-tabnine-kill-process)
-  :custom
-  (company-tabnine-max-num-results 3))
 
 (use-package copilot
   :after corfu
