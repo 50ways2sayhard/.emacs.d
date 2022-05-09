@@ -141,6 +141,19 @@
   (add-hook 'focus-in-hook #'sis-set-english)
   )
 
+(use-package super-save
+  :diminish
+  :defer 0.5
+  :init
+  (setq auto-save-default nil)
+  :config
+  (add-to-list 'super-save-triggers 'switch-window)
+  (add-to-list 'super-save-triggers 'eglot-rename)
+  (setq super-save-exclude '(".gpg"))
+  (setq super-save-idle-duration 5)
+  (setq super-save-auto-save-when-idle nil)
+  (setq save-silently t)
+  (super-save-mode 1))
 
 
 (provide 'init-edit)

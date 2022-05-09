@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 16
+;;     Update #: 17
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -76,7 +76,7 @@ This is a thin variant of `project-try-vc':
     (and root (cons 'vc root))))
 
 
-(setq project-find-functions '(mu-project-try-vc my/project-try-local))
+;; (setq project-find-functions '(mu-project-try-vc my/project-try-local))
 
 (defun my/project-files-in-directory (dir)
   "Use `fd' to list files in DIR."

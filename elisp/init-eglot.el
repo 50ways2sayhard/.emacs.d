@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 30
+;;     Update #: 32
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -76,15 +76,10 @@
   (require 'lsp/+optimization)
   :config
   (setq
-   ;; eglot-connect-timeout 10
    eglot-autoshutdown t
    eglot-extend-to-xref t
-   ;; eglot-send-changes-idle-time 0.5
-   eglot-confirm-server-initiated-edits nil
-   ;; NOTE We disable eglot-auto-display-help-buffer because :select t in
-   ;;      its popup rule causes eglot to steal focus too often.
-   eglot-auto-display-help-buffer nil)
-  (setq eldoc-echo-area-use-multiline-p nil)
+   eglot-confirm-server-initiated-edits nil)
+  (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
 

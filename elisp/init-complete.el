@@ -82,6 +82,8 @@
         ([backtab] . corfu-previous))
   :init
   (global-corfu-mode)
+  (evil-collection-define-key 'insert 'corfu-map
+    (kbd "C-j") 'corfu-insert)
   :config
   (use-package corfu-quick
     :bind
@@ -250,8 +252,10 @@
   (with-eval-after-load 'general
     (general-define-key
      :keymaps '(evil-insert-state-map)
-     "C-i" 'my/copilot-or-tempel-expand-or-next))
+     "C-i" 'my/copilot-or-tempel-expand-or-next
+     "M-i" 'copilot-accept-completion-by-word))
   )
+
 
 
 (provide 'init-complete)
