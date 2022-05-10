@@ -50,31 +50,6 @@
    ("M-DEL" . delete-block-backward)))
 ;; -DeleteBlockPac
 
-;; Minor mode to aggressively keep your code always indented
-(use-package aggressive-indent
-  :defer t
-  :diminish
-  :hook (((web-mode js-mode python-mode) . aggressive-indent-mode)
-         ;; FIXME: Disable in big files due to the performance issues
-         ;; https://github.com/Malabarba/aggressive-indent-mode/issues/73
-         (find-file . (lambda ()
-                        (if (> (buffer-size) (* 3000 80))
-                            (aggressive-indent-mode -1)))))
-  :config
-  ;; Disable in some modes
-  (dolist (mode '(asm-mode web-mode html-mode css-mode go-mode scala-mode prolog-inferior-mode))
-    (push mode aggressive-indent-excluded-modes))
-
-  ;; Disable in some commands
-  (add-to-list 'aggressive-indent-protected-commands #'delete-trailing-whitespace t)
-
-  ;; Be slightly less aggressive in C/C++/C#/Java/Go/Swift
-  (add-to-list 'aggressive-indent-dont-indent-if
-               '(and (derived-mode-p 'c-mode 'c++-mode 'csharp-mode
-                                     'java-mode 'go-mode 'swift-mode 'dart-mode)
-                     (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-                                         (thing-at-point 'line))))))
-
 (use-package origami
   :defer t
   :hook (prog-mode . origami-mode)
