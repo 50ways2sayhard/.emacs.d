@@ -119,7 +119,6 @@
 (if (eq my-lsp 'eglot)
     (require 'init-eglot)
   (require 'init-lsp))
-(require 'init-lsp-bridge)
 (require 'init-complete)
 (require 'init-prog)
 (require 'init-shell)
