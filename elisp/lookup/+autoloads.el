@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 25
+;;     Update #: 12
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -50,6 +50,17 @@
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
+
+;;;###autoload
+(defalias 'doom-project-root #'my-project-root)
+;; (defun doom-project-root (&optional dir)
+;;   (when-let ((default-directory (or dir
+;;                                     default-directory))
+;;              (project (project-current)))
+;;     (expand-file-name (if (fboundp 'project-root)
+;;                           (project-root project)
+;;                         (cdr project)))))
+
 
 ;;;###autoload
 (defun doom-project-p (&optional dir)
@@ -145,6 +156,7 @@ This can be passed nil as its second argument to unset handlers for MODES. e.g.
                                        (and (boundp mode)
                                             (symbol-value mode))))))))
         (add-hook hook fn)))))
+
 
 ;;
 ;;; Helpers
@@ -244,18 +256,6 @@ This can be passed nil as its second argument to unset handlers for MODES. e.g.
         (if (cdr xrefs)
             'deferred
           jumped)))))
-
-(defun +lookup-dictionary-definition-backend-fn (identifier)
-  "Look up dictionary definition for IDENTIFIER."
-  (when (derived-mode-p 'text-mode)
-    (+lookup/dictionary-definition identifier)
-    'deferred))
-
-(defun +lookup-thesaurus-definition-backend-fn (identifier)
-  "Look up synonyms for IDENTIFIER."
-  (when (derived-mode-p 'text-mode)
-    (+lookup/synonyms identifier)
-    'deferred))
 
 (defun +lookup-xref-definitions-backend-fn (identifier)
   "Non-interactive wrapper for `xref-find-definitions'"
