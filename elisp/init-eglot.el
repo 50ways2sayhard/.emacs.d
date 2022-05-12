@@ -69,7 +69,7 @@
                                    "K" '+eglot-help-at-point)
                                  ))
          (prog-mode . (lambda ()
-                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
+                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode 'python-mode)
                           (eglot-ensure))
                         )))
   :init
@@ -80,6 +80,7 @@
    eglot-extend-to-xref t
    eglot-confirm-server-initiated-edits nil)
   (setq eldoc-echo-area-use-multiline-p 5)
+  (setq elgot-stay-out-of '(flymake))
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
 
@@ -94,21 +95,21 @@
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()

@@ -52,6 +52,9 @@
   :config
   (setq python-indent-offset 4)
   (setq python-shell-interpreter "python3")
+  (setq py-tab-indent nil)
+  (add-hook 'python-mode-hook (lambda ()
+                                (setq-local tab-width 4)))
 
   (use-package pyvenv
     :defer t)

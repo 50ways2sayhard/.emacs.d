@@ -62,14 +62,6 @@
       (append elisp-flymake-byte-compile-load-path
               load-path))
 
-(use-package flymake-proc
-  :config
-  (progn
-    ;; flymake-proc adds this legacy backend automatically but (1) I
-    ;; don't seem to use it and (2) it triggers warnings in *Flymake
-    ;; log*.
-    (remove-hook 'flymake-diagnostic-functions #'flymake-proc-legacy-flymake)))
-
 (use-package flymake-flycheck
   :diminish
   :config
@@ -91,6 +83,10 @@
       "el" '(consult-flymake :wk "List error")
       "ef" '(consult-flymake :wk "Find error")))
   )
+
+
+(unless (version< emacs-version "28.1")
+  (setq eldoc-documentation-function 'eldoc-documentation-compose))
 
 (setq flymake-no-changes-timeout nil)
 
