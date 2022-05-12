@@ -61,11 +61,13 @@
                                     (add-hook 'before-save-hook #'lsp-organize-imports nil t)))
                         ))
          (eglot-managed-mode . (lambda ()
-                                 (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
+                                 (format-all-mode t)
+                                 ;; (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
                                  (add-hook 'before-save-hook '+eglot-organize-imports nil t)
                                  ))
          )
   :config
+  (setq +my/flutter-pub-host "http://pub.futuoa.com")
   (require 'prog/+flutter)
   ;; (defun project-try-dart (dir)
   ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")
@@ -87,6 +89,27 @@
     "s" '(+my/flutter-run-or-attach :wk "Run or Attach")
     "p" '(+my/flutter-pub-get :wk "Pub get")
     )
+
+  (require 'flycheck)
+  (flycheck-define-checker dart
+    "Dart static analyzer using dartanalyze.
+https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli#dartanalyzer"
+    :command ("flutter" "analyze" "--format=machine" source)
+    :error-patterns
+    ((error line-start "ERROR" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
+            (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
+            (message) line-end)
+
+     (warning line-start "WARNING" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
+              (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
+              (message) line-end)
+
+     (info line-start "INFO" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
+           (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
+           (message) line-end))
+    :modes dart-mode)
+
+  (add-to-list 'flycheck-checkers 'dart)
   )
 
 (use-package lsp-dart

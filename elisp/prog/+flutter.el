@@ -36,6 +36,8 @@
 
 (defvar +my/flutter--app-id-alist '())
 
+(defvar +my/flutter-pub-host "https://pub.dev")
+
 (defun +my/flutter--process-name ()
   "Return the name of the flutter process."
   (let ((project-name (+my/find-project-root)))
@@ -143,14 +145,17 @@
   (interactive)
   ;; (start-process "flutter-pub-get" "*Flutter Pub Get*" "flutter" "pub" "get")
   (cd (+my/find-project-root))
-  (make-process :name "flutter-pub-get"
-                :buffer "*Flutter Pub Get*"
-                :command '("flutter" "pub" "get")
-                :coding 'utf-8
-                :noquery t
-                :sentinel (lambda (process event)
-                            (message "[Flutter] run pub get: %s" event))
-                )
+  (let* ((temp (mapcar 'concat process-environment))
+         (process-environment (setenv-internal temp "PUB_HOSTED_URL" +my/flutter-pub-host t)))
+    (make-process :name "flutter-pub-get"
+                  :buffer "*Flutter Pub Get*"
+                  :command '("flutter" "pub" "get")
+                  :coding 'utf-8
+                  :noquery t
+                  :sentinel (lambda (process event)
+                              (message "[Flutter] run pub get: %s" event))
+                  )
+    )
   (cd (file-name-directory buffer-file-name))
   (display-buffer "*Flutter Pub Get*")
   )

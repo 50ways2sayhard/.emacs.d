@@ -43,6 +43,7 @@
          ((prog-mode) . format-all-ensure-formatter))
   :config
   ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
+  (setq format-all-show-errors 'never)
   )
 ;; -FormatAllPac
 
