@@ -71,7 +71,8 @@
 
 (defun +my/flutter--sentinel (_ event)
   "Sentinel for flutter process.EVENT is the event that triggered the sentinel."
-  (message "[Flutter] event: %s" event))
+  (message "[Flutter] event: %s" event)
+  (kill-buffer (+my/flutter--buffer-name)))
 
 (defun +my/flutter-run-or-attach ()
   "Interactively run or attach to a running flutter app."
@@ -153,7 +154,8 @@
                   :coding 'utf-8
                   :noquery t
                   :sentinel (lambda (process event)
-                              (message "[Flutter] run pub get: %s" event))
+                              (message "[Flutter] run pub get: %s" event)
+                              (kill-buffer "*Flutter Pub Get*"))
                   )
     )
   (cd (file-name-directory buffer-file-name))
