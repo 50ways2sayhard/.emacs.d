@@ -60,6 +60,8 @@
   (evilem-make-motion evilem-motion-search-word-backward #'evil-ex-search-word-backward
                       :bind ((evil-ex-search-highlight-all nil))))
 
+(use-package evil-anzu
+  :after evil)
 
 (use-package evil-embrace
   :commands embrace-add-pair embrace-add-pair-regexp

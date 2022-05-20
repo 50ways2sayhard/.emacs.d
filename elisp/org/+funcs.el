@@ -157,8 +157,8 @@ current file). Only scans first 2048 bytes of the document."
              in (cl-remove-if-not #'listp org-todo-keywords)
              for keywords =
              (mapcar (lambda (x) (if (string-match "^\\([^(]+\\)(" x)
-                                     (match-string 1 x)
-                                   x))
+                                (match-string 1 x)
+                              x))
                      keyword-spec)
              if (eq type 'sequence)
              if (member keyword keywords)
@@ -546,6 +546,50 @@ unfold to point on startup."
   (add-hook 'org-capture-mode-hook #'evil-insert-state)
   )
 
+
+(with-eval-after-load 'consult
+  (defun +my/retrieval-todo-items ()
+    (require 'consult-org)
+    (consult--read
+     (consult--with-increased-gc
+      (-filter (lambda (item)
+                 (not (member
+                       (car (cdr (get-text-property 0 'consult-org--heading item)))
+                       '("✔DONE" "✘CANCELED"))))
+               (consult-org--headings nil nil 'agenda)))
+     :prompt "Go to heading: "
+     :category 'consult-org-heading
+     :sort nil
+     :require-match t
+     :history '(:input consult-org--history)
+     :narrow (consult-org--narrow)
+     :state (consult--jump-state)
+     :group
+     (lambda (cand transform)
+       (let ((name (buffer-name
+                    (marker-buffer
+                     (get-text-property 0 'consult--candidate cand)))))
+         (if transform cand name)))
+     :lookup #'consult--lookup-candidate))
+
+  (defun consult-clock-in ()
+    "Clock into an Org agenda heading."
+    (interactive)
+    (save-window-excursion
+      (+my/retrieval-todo-items)
+      (org-clock-in)
+      (save-buffer)))
+  (consult-customize consult-clock-in :prompt "Clock in: ")
+
+  (defun consult-mark-done ()
+    "Clock into an Org agenda heading."
+    (interactive)
+    (save-window-excursion
+      (+my/retrieval-todo-items)
+      (org-todo 'done)
+      (save-buffer)))
+  (consult-customize consult-mark-done :prompt "Mark done: ")
+  )
 
 (provide 'org/+funcs)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

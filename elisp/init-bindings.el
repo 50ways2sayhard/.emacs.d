@@ -136,6 +136,9 @@
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
     "oc" '(cfw:open-org-calendar :wk "Open calendar")
+    "oo" '((lambda () (consult-clock-in) (org-save-all-org-buffers)) :wk "Clock in")
+    "oi" '(org-clock-out :wk "Clock out")
+    "od" '(consult-mark-done :wk "Mark done")
 
     "p" '(:wk "Project")
     "pk" '(project-kill-buffers :wk "Kill project buffers" )
@@ -172,7 +175,6 @@
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-    "tc" '(consult-clock-in :wk "Clock in task")
     "ty" '(my-youdao-search-at-point :wk "youdao")
 
     "w" '(:wk "Window")
