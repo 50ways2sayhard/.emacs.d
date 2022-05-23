@@ -67,7 +67,7 @@
                                  ))
          )
   :config
-  (setq +my/flutter-pub-host "http://pub.futuoa.com")
+  (setq +my/flutter-pub-host "https://pub.dev")
   (require 'prog/+flutter)
   ;; (defun project-try-dart (dir)
   ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")
@@ -94,7 +94,7 @@
   (flycheck-define-checker dart
     "Dart static analyzer using dartanalyze.
 https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli#dartanalyzer"
-    :command ("flutter" "analyze" "--format=machine" source)
+    :command ("dart" "analyze" source)
     :error-patterns
     ((error line-start "ERROR" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
             (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
