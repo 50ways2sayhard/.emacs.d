@@ -35,6 +35,7 @@
 (require 'subr-x)
 
 (defvar +my/flutter--app-id-alist '())
+(defvar +my/flutter--device-alist '())
 
 (defvar +my/flutter-pub-host "https://pub.dev")
 

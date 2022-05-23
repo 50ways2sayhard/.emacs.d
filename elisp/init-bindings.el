@@ -136,8 +136,8 @@
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
     "oc" '(cfw:open-org-calendar :wk "Open calendar")
-    "oo" '((lambda () (consult-clock-in) (org-save-all-org-buffers)) :wk "Clock in")
-    "oi" '(org-clock-out :wk "Clock out")
+    "oi" '(consult-clock-in :wk "Clock in")
+    "oo" '((lambda () (org-clock-out) (org-save-all-org-buffers)) :wk "Clock out")
     "od" '(consult-mark-done :wk "Mark done")
 
     "p" '(:wk "Project")
