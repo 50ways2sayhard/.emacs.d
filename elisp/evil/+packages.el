@@ -63,6 +63,11 @@
 (use-package evil-anzu
   :after evil)
 
+(use-package evil-indent-plus
+  :after evil
+  :config
+  (evil-indent-plus-default-bindings))
+
 (use-package evil-embrace
   :commands embrace-add-pair embrace-add-pair-regexp
   :hook (LaTeX-mode . embrace-LaTeX-mode-hook)

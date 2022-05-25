@@ -67,7 +67,6 @@
                                  ))
          )
   :config
-  (setq +my/flutter-pub-host "https://pub.dev")
   (require 'prog/+flutter)
   ;; (defun project-try-dart (dir)
   ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")

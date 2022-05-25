@@ -91,31 +91,6 @@
 (use-package expand-region
   :defer t)
 
-(use-package sis
-  ;; :hook
-  ;; enable the /follow context/ and /inline region/ mode for specific buffers
-  ;; (((text-mode prog-mode) . sis-context-mode)
-  ;;  ((text-mode prog-mode) . sis-inline-mode))
-
-  :config
-  ;; For MacOS
-  (when *sys/mac*
-    (setq sis-english-source "com.apple.keylayout.ABC")
-    (setq sis-other-source "im.rime.inputmethod.Squirrel.Rime"))
-  (when *sys/wsl*
-    (setq sis-english-source "1033")
-    (setq sis-other-source "2052")
-    (setq sis-do-get (lambda ()
-                       (sis--ensure-dir
-                        (string-trim (shell-command-to-string "im-select.exe")))))
-    (setq sis-do-set (lambda(source)
-                       (sis--ensure-dir
-                        (call-process "/bin/bash" nil t nil "-c" (concat "im-select.exe " source)))))
-    (setq sis-external-ism "im-select.exe"))
-  (add-hook 'focus-out-hook #'sis-set-other)
-  (add-hook 'focus-in-hook #'sis-set-english)
-  )
-
 (use-package super-save
   :diminish
   :defer 0.5
