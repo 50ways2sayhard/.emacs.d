@@ -88,7 +88,7 @@
 (unless (version< emacs-version "28.1")
   (setq eldoc-documentation-function 'eldoc-documentation-compose))
 
-(setq flymake-no-changes-timeout nil)
+(setq flymake-no-changes-timeout 2)
 
 (provide 'init-flymake)
 

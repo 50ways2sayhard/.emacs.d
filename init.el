@@ -131,6 +131,7 @@
 ;; (require 'init-dockerfile)
 (require 'init-dart)
 
+(require 'init-lsp-bridge)
 
 ;; Miscellaneous
 (require 'init-org)

@@ -65,6 +65,8 @@
                                    "cF" '(eglot-find-implementation :wk "Find implementation")
                                    "cD" '(eglot-find-typeDefinition :wk "Find type definition"))
 
+                                 (my/set-lsp-bridge-capf)
+
                                  (evil-define-key 'normal 'global
                                    "K" '+eglot-help-at-point)
                                  ))
@@ -78,7 +80,9 @@
   (setq
    eglot-autoshutdown t
    eglot-extend-to-xref t
-   eglot-confirm-server-initiated-edits nil)
+   eglot-confirm-server-initiated-edits nil
+   eglot-sync-connect nil
+   eglot-events-buffer-size 0)
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq elgot-stay-out-of '(flymake))
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))

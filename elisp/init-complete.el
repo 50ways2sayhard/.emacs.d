@@ -223,7 +223,9 @@ function to the relevant margin-formatters list."
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (org-mode . my/set-basic-capf)
-         ((lsp-completion-mode eglot-managed-mode) . my/set-lsp-capf))
+         ((lsp-completion-mode eglot-managed-mode) . my/set-lsp-capf)
+         (lsp-bridge-mode . my/set-lsp-bridge-capf)
+         )
   :config
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
@@ -242,13 +244,16 @@ function to the relevant margin-formatters list."
      ))
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
+    (setq-local completion-at-point-functions (list #'cape-file #'cape-dabbrev #'tabnine-completion-at-point)))
 
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf (if (eq my-lsp 'eglot)
                                                                          #'eglot-completion-at-point
                                                                        #'lsp-completion-at-point))))
+  (defun my/set-lsp-bridge-capf ()
+    (setq completion-category-defaults nil)
+    (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-bridge-capf)))
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -259,10 +264,12 @@ function to the relevant margin-formatters list."
 
   (use-package tabnine-capf
     :after cape
-    :straight (:host github :repo "50ways2sayhard/tabnine-capf" :files ("*.el" "*.sh"))
-    :hook (kill-emacs . tabnine-capf-kill-process)
+    :commands (tbanine-completion-at-point tabnine-capf-start-process)
+    :straight (:host github :repo "theFool32/tabnine-capf" :files ("*.el" "*.sh" "*.py"))
+    :hook ((+self/first-input . (lambda () (run-with-idle-timer 2 nil #'tabnine-capf-start-process)))
+           (kill-emacs . tabnine-capf-kill-process))
     :config
-    (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
+    ;; (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
     )
   )
 
@@ -306,6 +313,8 @@ function to the relevant margin-formatters list."
           (unit "u" :icon "ruler-square" :face shadow)
           (value "v" :icon "format-align-right" :face font-lock-builtin-face) ;
           (variable "va" :icon "tag" :face font-lock-variable-name-face)
+          (tmux . ,(all-the-icons-alltheicon "terminal-alt" :height 0.8 :v-adjust 0))
+          (tabnine . ,(all-the-icons-material "cloud" :height 0.8))
           (t "." :icon "file-find" :face shadow))) ;
   )
 
