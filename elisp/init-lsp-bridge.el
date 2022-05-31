@@ -41,7 +41,8 @@
 
   (add-hook 'lsp-bridge-mode-hook
             (lambda ()
-              (add-hook 'xref-backend-functions #'lsp-bridge-xref-backend nil t)))
+              (evil-define-key 'normal 'global
+                "K" 'lsp-bridge-lookup-document)))
 
   (add-to-list 'lsp-bridge-enable-popup-predicates
                '((lambda ()

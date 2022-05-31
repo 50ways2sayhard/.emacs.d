@@ -244,7 +244,7 @@ function to the relevant margin-formatters list."
      ))
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (list #'cape-file #'cape-dabbrev #'tabnine-completion-at-point)))
+    (setq-local completion-at-point-functions (my/convert-super-capf (car (last completion-at-point-functions 2)))))
 
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
@@ -345,6 +345,11 @@ function to the relevant margin-formatters list."
 
   (customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
+
+  ;;  HACK: workaround for node@16
+  (cl-loop for node_path in '("/usr/local/opt/node@16/bin/node" "/opt/homebrew/opt/node@16/bin/node")
+           when (file-exists-p node_path)
+           return (setq copilot-node-executable node_path))
 
   (defun my/copilot-or-tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
