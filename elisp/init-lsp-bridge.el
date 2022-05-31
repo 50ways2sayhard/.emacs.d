@@ -31,8 +31,9 @@
 ;;; Code:
 
 (use-package lsp-bridge
-  :straight nil
-  :load-path "site-lisp/lsp-bridge-self/"
+  :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
+  ;; :straight nil
+  ;; :load-path "site-lisp/lsp-bridge-self/"
   :config
   (setq lsp-bridge-completion-provider 'corfu)
   (global-lsp-bridge-mode)
@@ -41,14 +42,20 @@
 
   (add-hook 'lsp-bridge-mode-hook
             (lambda ()
+              (leader-def :keymaps 'override
+                "cr" '(lsp-bridge-rename :wk "Rename symbol")
+                "cF" '(lsp-bridge-find-impl :wk "Find implementation")
+                "cD" '(lsp-bridge-find-references :wk "Find references")
+                "cd" '(lsp-bridge-find-def :wk "Find definition")
+                )
+
               (evil-define-key 'normal 'global
                 "K" 'lsp-bridge-lookup-document)))
 
   (add-to-list 'lsp-bridge-enable-popup-predicates
                '((lambda ()
                    (and
-                    (< corfu--index 0) ; not select a candidate
-                    (or (not (featurep 'evil)) (evil-insert-state-p))))))
+                    (< corfu--index 0)))))
   )
 
 (provide 'init-lsp-bridge)
