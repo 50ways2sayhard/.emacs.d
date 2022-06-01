@@ -271,7 +271,7 @@ function to the relevant margin-formatters list."
     :hook ((+self/first-input . (lambda () (run-with-idle-timer 2 nil #'tabnine-capf-start-process)))
            (kill-emacs . tabnine-capf-kill-process))
     :config
-    (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
+    ;; (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
     )
   )
 
@@ -281,6 +281,8 @@ function to the relevant margin-formatters list."
   :hook (corfu-mode . corfu-doc-mode)
   :bind (:map corfu-map
               ("M-d" . corfu-doc-toggle))
+  :custom
+  (corfu-doc-display-within-parent-frame t)
   )
 
 (use-package copilot
