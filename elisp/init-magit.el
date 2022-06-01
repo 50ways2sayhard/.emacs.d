@@ -112,10 +112,23 @@ window that already exists in that direction. It will split otherwise."
   :defer t
   :if *git*
   :bind ("C-x g" . magit-status)
+  :commands (magit-open-repo)
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
   (setq magit-diff-refine-hunk (quote all))
+
+  (defun magit-open-repo ()
+    "open remote repo URL"
+    (interactive)
+    (let ((url (magit-get "remote" "origin" "url")))
+      (progn
+        (browse-url (if (string-match "^http" url)
+                        url
+                      (replace-regexp-in-string "\\(.*\\)@\\(.*\\):\\(.*\\)\\(\\.git?\\)"
+                                                "https://\\2/\\3"
+                                                url)))
+        (message "opening repo %s" url))))
   )
 ;; -MagitPac
 
@@ -224,9 +237,9 @@ window that already exists in that direction. It will split otherwise."
                                     (when smerge-mode
                                       (hydra-smerge/body))))
          )
-   :pretty-hydra
-   ((:title "Smerge"
-    :color pink :quit-key "q")
+  :pretty-hydra
+  ((:title "Smerge"
+           :color pink :quit-key "q")
    ("Move"
     (("n" smerge-next "next")
      ("p" smerge-prev "previous"))

@@ -222,6 +222,8 @@ function to the relevant margin-formatters list."
          ("C-x C-l" . cape-line)
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
+         (emacs-lisp-mode . (lambda ()
+                              (my/set-basic-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf)
          ((lsp-completion-mode eglot-managed-mode) . my/set-lsp-capf)
          (lsp-bridge-mode . my/set-lsp-bridge-capf)
@@ -244,7 +246,7 @@ function to the relevant margin-formatters list."
      ))
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf (car (last completion-at-point-functions 2)))))
+    (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
 
   (defun my/set-lsp-capf ()
     (setq completion-category-defaults nil)
@@ -269,53 +271,8 @@ function to the relevant margin-formatters list."
     :hook ((+self/first-input . (lambda () (run-with-idle-timer 2 nil #'tabnine-capf-start-process)))
            (kill-emacs . tabnine-capf-kill-process))
     :config
-    ;; (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
+    (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
     )
-  )
-
-(use-package kind-icon
-  :disabled
-  :after corfu
-  :custom
-  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-  (kind-icon-blend-background nil)
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
-  (setq kind-icon-mapping
-        '((array "a" :icon "code-brackets" :face font-lock-type-face)
-          (boolean "b" :icon "circle-half-full" :face font-lock-builtin-face)
-          (class "c" :icon "video-input-component" :face font-lock-type-face) ;
-          (color "#" :icon "palette" :face success) ;
-          (constant "co" :icon "square-circle" :face font-lock-constant-face) ;
-          (constructor "cn" :icon "cube-outline" :face font-lock-function-name-face) ;
-          (enum-member "em" :icon "format-align-right" :face font-lock-builtin-face) ;
-          (enum "e" :icon "server" :face font-lock-builtin-face) ;
-          (event "ev" :icon "zip-box-outline" :face font-lock-warning-face) ;
-          (field "fd" :icon "tag" :face font-lock-variable-name-face) ;
-          (file "f" :icon "file-document-outline" :face font-lock-string-face) ;
-          (folder "d" :icon "folder" :face font-lock-doc-face) ;
-          (interface "if" :icon "share-variant" :face font-lock-type-face) ;
-          (keyword "kw" :icon "image-filter-center-focus" :face font-lock-keyword-face) ;
-          (macro "mc" :icon "lambda" :face font-lock-keyword-face)
-          (method "m" :icon "cube-outline" :face font-lock-function-name-face) ;
-          (function "f" :icon "cube-outline" :face font-lock-function-name-face) ;
-          (module "{" :icon "view-module" :face font-lock-preprocessor-face) ;
-          (numeric "nu" :icon "numeric" :face font-lock-builtin-face)
-          (operator "op" :icon "plus-circle-outline" :face font-lock-comment-delimiter-face) ;
-          (param "pa" :icon "tag" :face default)
-          (property "pr" :icon "wrench" :face font-lock-variable-name-face) ;
-          (reference "rf" :icon "collections-bookmark" :face font-lock-variable-name-face) ;
-          (snippet "S" :icon "format-align-center" :face font-lock-string-face) ;
-          (string "s" :icon "sticker-text-outline" :face font-lock-string-face)
-          (struct "%" :icon "video-input-component" :face font-lock-variable-name-face) ;
-          (text "tx" :icon "format-text" :face shadow)
-          (type-parameter "tp" :icon "format-list-bulleted-type" :face font-lock-type-face)
-          (unit "u" :icon "ruler-square" :face shadow)
-          (value "v" :icon "format-align-right" :face font-lock-builtin-face) ;
-          (variable "va" :icon "tag" :face font-lock-variable-name-face)
-          (tmux . ,(all-the-icons-alltheicon "terminal-alt" :height 0.8 :v-adjust 0))
-          (tabnine . ,(all-the-icons-material "cloud" :height 0.8))
-          (t "." :icon "file-find" :face shadow))) ;
   )
 
 (use-package corfu-doc

@@ -47,12 +47,17 @@
                 "cF" '(lsp-bridge-find-impl :wk "Find implementation")
                 "cD" '(lsp-bridge-find-references :wk "Find references")
                 "cd" '(lsp-bridge-find-def :wk "Find definition")
+                "ck" '(lsp-bridge-lookup-documentation :wk "Lookup documentation")
                 )
 
-              (evil-define-key 'normal 'global
-                "K" 'lsp-bridge-lookup-document)))
+              (evil-collection-define-key 'normal 'global
+                (kbd "K") 'lsp-bridge-lookup-documentation)
 
-  (add-to-list 'lsp-bridge-enable-popup-predicates
+              (evil-define-key 'normal 'global
+                "K" 'lsp-bridge-lookup-documentation)
+              ))
+
+  (add-to-list 'lsp-bridge-completion-popup-predicates
                '((lambda ()
                    (and
                     (< corfu--index 0)))))
