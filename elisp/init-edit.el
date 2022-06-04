@@ -98,6 +98,7 @@
   (setq auto-save-default nil)
   :config
   (add-to-list 'super-save-triggers 'switch-window)
+  (add-to-list 'super-save-triggers 'switch-to-buffer)
   (add-to-list 'super-save-triggers 'eglot-rename)
   (setq super-save-exclude '(".gpg"))
   (setq super-save-idle-duration 5)

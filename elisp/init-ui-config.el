@@ -76,6 +76,7 @@
 (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(setq frame-resize-pixelwise t)
 (custom-set-variables '(x-select-enable-clipboard t))
 (setq blink-cursor-mode nil)
 (setq word-wrap t

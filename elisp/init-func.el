@@ -198,6 +198,14 @@
         (project-root project) ;;  HACK: original repo breaks here
       nil)))
 
+(defun my-project-root (&optional dir)
+  "Return the project root of DIR."
+  (when-let* ((default-directory (or dir default-directory))
+              (project (project-current)))
+    (expand-file-name (if (fboundp 'project-root)
+                          (project-root project)
+                        (cdr project)))))
+
 
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

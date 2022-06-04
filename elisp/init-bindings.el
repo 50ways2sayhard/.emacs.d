@@ -124,7 +124,7 @@
     "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
     "gf" '(magit-fetch :wk "Git fetch")
     "gF" '(magit-pull :wk "Git pull")
-    "go" '(magit-open-repo :wk "open repo")
+    "go" '(magit-open-repo :wk "Open repo")
 
     "j" '(:wk "Jump")
     "jj" '(evil-avy-goto-char :wk "Jump to character")

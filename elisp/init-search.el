@@ -39,17 +39,28 @@
 
 (eval-when-compile
   (require 'init-global-config)
-  (require 'init-const))
+  (require 'init-const)
+  (require 'init-func))
 
 ;; ColorRGPac
 (use-package color-rg
-  :commands (color-rg-search-input color-rg-search-project color-rg-search-symbol-in-project color-rg-search-input-in-current-file color-rg-search-symbol-in-current-file)
+  :commands (color-rg-search-input color-rg-search-project color-rg-search-symbol-in-project)
   :straight (:host github :repo "manateelazycat/color-rg")
   :if *rg*
+  :bind
+  (:map color-rg-mode-map
+        ("q" . my-quit-color-rg))
   :init
   (setq color-rg-mac-load-path-from-shell nil)
   :config
   (fset 'color-rg-project-root-dir #'my-project-root)
+  (evil-make-overriding-map color-rg-mode-map 'normal)
+  ;; force update evil keymaps after git-timemachine-mode loaded
+  (add-hook 'color-rg-mode-hook #'evil-normalize-keymaps)
+  (defun my-quit-color-rg ()
+    (interactive)
+    (kill-current-buffer)
+    (evil-quit))
   )
 ;; -ColorRGPac
 
