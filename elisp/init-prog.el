@@ -114,6 +114,10 @@ Install the doc if it's not installed."
     (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
   :hook ((xref-after-return xref-after-jump) . recenter))
 
+(use-package markdown-mode
+  :defer t
+  :mode ("\\.md\\'" . markdown-mode))
+
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-prog.el ends here

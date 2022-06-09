@@ -32,7 +32,8 @@
 
 (defun +acm-setup ()
 
-  (global-corfu-mode -1)
+  (corfu-mode -1)
+  (setq acm-candidate-match-function #'orderless-flex)
 
   (when (boundp 'acm-mode-map)
     (define-key evil-insert-state-map (kbd "TAB") nil)
@@ -41,13 +42,6 @@
     (define-key acm-mode-map (kbd "<backtab>") 'acm-select-prev)
     (define-key acm-mode-map (kbd "C-j") 'acm-complete)
     )
-
-
-  (defvar acm-orderless-styles '(orderless-flex orderless-initialism))
-  (defun acm-match-orderless (keyword candidate)
-    (string-match-p (car (orderless-pattern-compiler (downcase keyword) acm-orderless-styles)) (downcase candidate)))
-
-  (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
   )
 
 (use-package lsp-bridge
@@ -58,7 +52,9 @@
   :load-path "site-lisp/lsp-bridge-dev/"
   :hook (((python-mode dart-mode js-mode) . lsp-bridge-mode)
          (lsp-bridge-mode . (lambda ()
-                              (my/set-lsp-bridge-capf)
+                              (if (boundp 'acm-mode-map)
+                                  (+acm-setup)
+                                (my/set-lsp-bridge-capf))
                               (leader-def :keymaps 'override
                                 "cr" '(lsp-bridge-rename :wk "Rename symbol")
                                 "cF" '(lsp-bridge-find-impl :wk "Find implementation")
