@@ -61,7 +61,10 @@
                       :bind ((evil-ex-search-highlight-all nil))))
 
 (use-package evil-anzu
-  :after evil)
+  :after evil
+  :config
+  (global-anzu-mode)
+  (add-hook 'evil-insert-state-entry-hook #'evil-ex-nohighlight))
 
 (use-package evil-indent-plus
   :after evil
