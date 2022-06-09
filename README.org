@@ -1,11 +1,11 @@
 * Emacs for own use
 
 + Fast. Less than 1s to start up.
-+ =lsp= and =company= for completion.
-+ =selectrum= and =consult= for searching.
++ =eglot= and =corfu= for completion.
++ =vertico and =consult= for searching.
 + =tree-sitter= for symbol highlighting.
-+ Optimized for =Vue= developing.
-+ Tested with Emacs@28 with native-comp on macOS/WSL.
++ Optimized for =Vue= and =dart= developing.
++ Tested with Emacs@29 with native-comp on macOS.
 
 ** Installation
 *** Installing Emacs

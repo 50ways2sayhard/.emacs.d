@@ -49,9 +49,6 @@
 (defvar +self/org-base-dir "~/org")
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
-
-(setq my-completion 'company)
-
 (provide 'init-custom)
 
 

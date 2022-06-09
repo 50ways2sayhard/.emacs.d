@@ -155,11 +155,7 @@
            ("C-x C-d" . consult-dir)
            ("C-x C-j" . consult-dir-jump-file)))
 
-  (use-package consult-lsp
-    :when (eq my-lsp 'lsp-mode)
-    :after (consult lsp))
   (use-package consult-eglot
-    :when (eq my-lsp 'eglot)
     :after (consult eglot))
 
   :config

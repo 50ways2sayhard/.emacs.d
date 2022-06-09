@@ -223,10 +223,9 @@ function to the relevant margin-formatters list."
          ("C-x C-w" . cape-dict))
   :hook ((prog-mode . my/set-basic-capf)
          (emacs-lisp-mode . (lambda ()
-                              (my/set-basic-capf #'elisp-completion-at-point)))
+                              (my/convert-super-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf)
-         ((lsp-completion-mode eglot-managed-mode) . my/set-lsp-capf)
-         (lsp-bridge-mode . my/set-lsp-bridge-capf)
+         ;; ((lsp-completion-mode eglot-managed-mode) . my/set-eglot-capf)
          )
   :config
   (setq dabbrev-upcase-means-case-search t)
@@ -243,16 +242,15 @@ function to the relevant margin-formatters list."
        #'tempel-expand)
       )
      ;; #'cape-dabbrev
-     ))
+     )
+    )
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
 
-  (defun my/set-lsp-capf ()
+  (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf (if (eq my-lsp 'eglot)
-                                                                         #'eglot-completion-at-point
-                                                                       #'lsp-completion-at-point))))
+    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
   (defun my/set-lsp-bridge-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-bridge-capf)))
