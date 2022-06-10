@@ -262,7 +262,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 
 (use-package orderless
-  :after marginalia
   :demand t
   :config
   (defvar +orderless-dispatch-alist

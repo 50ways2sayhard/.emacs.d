@@ -60,9 +60,8 @@
                                                         (derived-mode-p 'snippet-mode))
                                                 (setq-local evil-auto-indent nil))))
 
-
-  (require 'evil/+packages))
+  )
 ;;; Packages
-
+(require 'evil/+packages)
 (provide 'init-evil)
 ;;; init-evil.el ends here

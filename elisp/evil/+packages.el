@@ -47,6 +47,7 @@
 ;;; Code:
 
 (use-package evil-easymotion
+  :after evil
   :commands evilem-create evilem-default-keybindings
   :config
   ;; Use evil-search backend, instead of isearch
@@ -72,6 +73,7 @@
   (evil-indent-plus-default-bindings))
 
 (use-package evil-embrace
+  :after evil
   :commands embrace-add-pair embrace-add-pair-regexp
   :hook (LaTeX-mode . embrace-LaTeX-mode-hook)
   :hook (org-mode . embrace-org-mode-hook)
@@ -131,6 +133,7 @@
 
 
 (use-package evil-nerd-commenter
+  :after evil
   :ensure t
   :commands (evilnc-comment-operator
              evilnc-inner-comment
@@ -138,6 +141,7 @@
 
 
 (use-package evil-snipe
+  :after evil
   :ensure t
   :commands (evil-snipe-mode
              evil-snipe-override-mode
@@ -154,6 +158,7 @@
 
 
 (use-package evil-surround
+  :after evil
   :ensure t
   :commands (global-evil-surround-mode
              evil-surround-edit
@@ -171,6 +176,7 @@
 
 ;; Allows you to use the selection for * and #
 (use-package evil-visualstar
+  :after evil
   :ensure t
   :commands (evil-visualstar/begin-search
              evil-visualstar/begin-search-forward

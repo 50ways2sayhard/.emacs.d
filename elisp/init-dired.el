@@ -39,7 +39,6 @@
 
 ;; DiredPackage
 (use-package dired
-  :defer t
   :straight nil
   :custom
   ;; Always delete and copy recursively
@@ -68,72 +67,69 @@
                         :keymaps 'dired-mode-map
                         "l" 'dired-find-alternate-file
                         "h"  'dired-up-directory)
-    )
-
-  ;; Colourful dired
-  (use-package diredfl
-    :hook (dired-mode . diredfl-mode))
+    ))
 
 
-  (use-package all-the-icons-dired
-    :disabled
-    :defer t
-    :after dired
-    :hook (dired-mode . all-the-icons-dired-mode))
+;; Colourful dired
+(use-package diredfl
+  :hook (dired-mode . diredfl-mode))
 
-  (use-package dired-git-info
-    :after dired
-    :config
-    (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
 
-  ;; Extra Dired functionality
-  (use-package dired-x
+(use-package dired-git-info
+  :after dired
+  :config
+  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
+
+;; Extra Dired functionality
+(use-package dired-x
+  :straight nil
+  :demand
+  :hook (dired-mode . dired-omit-mode)
+  :config
+  (setq dired-omit-files
+        (concat dired-omit-files
+                "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+
+;; `find-dired' alternative using `fd'
+(when (executable-find "fd")
+  (use-package fd-dired
+    :after dired))
+
+(use-package dired-narrow
+  :after dired) ;; use `s' for fliter
+(use-package dired-open
+  :after dired
+  :config
+  (setq dired-open-extensions
+        (mapcar (lambda (ext)
+                  (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
+
+(use-package dirvish
+  :straight (dirvish :includes (dirvish-extras dirvish-menu dirvish-side dirvish-peek dirvish-vc dirvish-yank) :files (:defaults "extensions/dirvish-*.el"))
+  :after dired
+  :hook (+my/first-input . dirvish-override-dired-mode)
+  :custom
+  (dirvish-attributes '(all-the-icons file-size))
+  (dirvish-side-follow-buffer-file t)
+  :config
+  (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
+  (general-define-key :states '(normal)
+                      :keymaps 'dirvish-mode-map
+                      "?" 'dirvish-menu-all-cmds)
+
+  (use-package dirvish-menu
     :straight nil
-    :demand
-    :hook (dired-mode . dired-omit-mode)
+    :after dirvish
     :config
-    (setq dired-omit-files
-          (concat dired-omit-files
-                  "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+    (with-eval-after-load 'general
+      (general-define-key :states '(normal)
+                          :keymaps 'dirvish-mode-map
+                          "?" 'dirvish-menu-all-cmds)))
 
-  ;; `find-dired' alternative using `fd'
-  (when (executable-find "fd")
-    (use-package fd-dired))
-
-  (use-package dired-narrow) ;; use `s' for fliter
-  (use-package dired-open
-    :config
-    (setq dired-open-extensions
-          (mapcar (lambda (ext)
-                    (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
-
-  (use-package dirvish
-    :straight (dirvish :includes (dirvish-extras dirvish-menu dirvish-side dirvish-peek dirvish-vc dirvish-yank) :files (:defaults "extensions/dirvish-*.el"))
-    :after dired
-    :custom
-    (dirvish-attributes '(all-the-icons file-size))
-    (dirvish-side-follow-buffer-file t)
-    :init
-    (dirvish-override-dired-mode)
-    :config
-    (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
-    (general-define-key :states '(normal)
-                        :keymaps 'dirvish-mode-map
-                        "?" 'dirvish-menu-all-cmds)
-
-    (use-package dirvish-menu
-      :straight nil
-      :config
-      (with-eval-after-load 'general
-        (general-define-key :states '(normal)
-                            :keymaps 'dirvish-mode-map
-                            "?" 'dirvish-menu-all-cmds)))
-
-    (use-package dirvish-extras
-      :straight nil)
-    )
+  (use-package dirvish-extras
+    :straight nil
+    :after dirvish)
   )
-
 
 
 ;; SaveAllBuffers

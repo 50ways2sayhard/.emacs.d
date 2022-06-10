@@ -46,8 +46,7 @@
 (add-hook 'emacs-startup-hook
           (lambda ()
             "Recover GC values after startup."
-            (setq gc-cons-threshold 800000
-                  gc-cons-percentage 0.1)))
+            (setq gc-cons-percentage 0.1)))
 
 ;; LoadPath
 (defun update-to-load-path (folder)
@@ -73,10 +72,13 @@
 ;; -InitPrivate
 
 (defvar +self/first-input-hook nil)
-(add-hook 'pre-command-hook #'(lambda ()
-                                (when +self/first-input-hook
-                                  (run-hooks '+self/first-input-hook)
-                                  (setq +self/first-input-hook nil))))
+(defun +my/first-input-hook-fun ()
+  (when +self/first-input-hook
+    (run-hooks '+self/first-input-hook)
+    (setq +self/first-input-hook nil))
+  (remove-hook 'pre-command-hook '+my/first-input-hook-fun))
+(add-hook 'pre-command-hook '+my/first-input-hook-fun)
+
 
 ;; Constants
 (require 'init-const)
@@ -84,6 +86,7 @@
 ;; Package Management
 (require 'init-package)
 
+;; (use-package esup)
 ;; Global Functionalities
 (require 'init-global-config)
 (require 'init-func)

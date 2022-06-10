@@ -63,6 +63,7 @@
               load-path))
 
 (use-package flymake-flycheck
+  :after flymake
   :diminish
   :config
   (with-eval-after-load 'flycheck
@@ -81,8 +82,7 @@
     (leader-def
       :keymaps 'override
       "el" '(consult-flymake :wk "List error")
-      "ef" '(consult-flymake :wk "Find error")))
-  )
+      "ef" '(consult-flymake :wk "Find error"))))
 
 
 (unless (version< emacs-version "28.1")

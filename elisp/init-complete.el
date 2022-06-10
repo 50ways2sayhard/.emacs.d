@@ -86,6 +86,7 @@
     (kbd "C-j") 'corfu-insert)
   :config
   (use-package corfu-quick
+    :after corfu
     :straight nil
     :bind
     (:map corfu-map
@@ -93,6 +94,7 @@
 
   (use-package corfu-history
     :straight nil
+    :after corfu
     :config
     (corfu-history-mode))
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
