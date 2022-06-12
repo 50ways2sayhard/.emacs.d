@@ -107,7 +107,7 @@
               ("C-h z" . popper-toggle-latest)
               ("C-<tab>"   . popper-cycle)
               ("C-M-<tab>" . popper-toggle-type))
-  :hook (after-init . popper-mode)
+  :hook (+self/first-input . popper-mode)
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"

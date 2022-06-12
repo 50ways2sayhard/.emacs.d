@@ -9,14 +9,14 @@
 ;; Last-Updated: Sat Apr 23 18:26:36 2022 (+0800)
 ;;           By: John
 ;; URL: https://github.com/MatthewZMD/.emacs.d
-;; Keywords: lsp-python-ms
+;; Keywords: python
 ;; Compatibility: emacs-version >= 26.1
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Commentary:
 ;;
-;; This initializes lsp-python-ms
+;; This initializes python setup
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -71,18 +71,6 @@
     (add-hook 'python-mode-hook
               (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
     ))
-
-(use-package lsp-pyright
-  :after lsp-mode
-  :init
-  (when (executable-find "python3")
-    (setq lsp-pyright-python-executable-cmd "python3"))
-  (setq lsp-pyright-venv-path ".venv")
-  (setq lsp-pyright-multi-root nil)
-  (setq lsp-pyright-use-library-code-for-types t)
-  (setq lsp-pyright-auto-search-paths nil)
-  (setq lsp-pyright-auto-import-completions t)
-  )
 
 (provide 'init-python)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

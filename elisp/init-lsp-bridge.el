@@ -30,37 +30,55 @@
 
 ;;; Code:
 
+(defun +acm-setup ()
+
+  (corfu-mode -1)
+  (setq acm-candidate-match-function #'orderless-flex)
+
+  (when (boundp 'acm-mode-map)
+    (define-key evil-insert-state-map (kbd "TAB") nil)
+    (define-key acm-mode-map (kbd "<tab>") 'acm-select-next)
+    (define-key acm-mode-map (kbd "<s-tab>") 'acm-select-prev)
+    (define-key acm-mode-map (kbd "<backtab>") 'acm-select-prev)
+    (define-key acm-mode-map (kbd "C-j") 'acm-complete)
+    )
+  )
+
 (use-package lsp-bridge
-  :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
-  ;; :straight nil
-  ;; :load-path "site-lisp/lsp-bridge-self/"
+  ;; :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
+  :commands (lsp-bridge-mode)
+  :straight nil
+  ;; :load-path "site-lisp/lsp-bridge/"
+  :load-path "site-lisp/lsp-bridge-dev/"
+  :hook (((python-mode dart-mode js-mode) . lsp-bridge-mode)
+         (lsp-bridge-mode . (lambda ()
+                              (if (boundp 'acm-mode-map)
+                                  (+acm-setup)
+                                (my/set-lsp-bridge-capf))
+                              (leader-def :keymaps 'override
+                                "cr" '(lsp-bridge-rename :wk "Rename symbol")
+                                "cF" '(lsp-bridge-find-impl :wk "Find implementation")
+                                "cD" '(lsp-bridge-find-references :wk "Find references")
+                                "cd" '(lsp-bridge-find-def :wk "Find definition")
+                                "ck" '(lsp-bridge-lookup-documentation :wk "Lookup documentation"))
+                              (setq-local corfu-auto-prefix 0)
+
+                              (evil-define-key 'normal 'global
+                                "K" 'lsp-bridge-lookup-documentation))))
   :config
+  ;; (global-lsp-bridge-mode)
+  (setq lsp-bridge-enable-diagnostics nil)
   (setq lsp-bridge-completion-provider 'corfu)
-  (global-lsp-bridge-mode)
+  (setq lsp-bridge-lookup-doc-tooltip-border-width 10)
 
   (add-to-list 'lsp-bridge-completion-stop-commands #'evil-escape)
-
-  (add-hook 'lsp-bridge-mode-hook
-            (lambda ()
-              (leader-def :keymaps 'override
-                "cr" '(lsp-bridge-rename :wk "Rename symbol")
-                "cF" '(lsp-bridge-find-impl :wk "Find implementation")
-                "cD" '(lsp-bridge-find-references :wk "Find references")
-                "cd" '(lsp-bridge-find-def :wk "Find definition")
-                "ck" '(lsp-bridge-lookup-documentation :wk "Lookup documentation")
-                )
-
-              (evil-collection-define-key 'normal 'global
-                (kbd "K") 'lsp-bridge-lookup-documentation)
-
-              (evil-define-key 'normal 'global
-                "K" 'lsp-bridge-lookup-documentation)
-              ))
 
   (add-to-list 'lsp-bridge-completion-popup-predicates
                '((lambda ()
                    (and
                     (< corfu--index 0)))))
+  (add-hook 'lsp-bridge-mode-hook
+            (lambda () (add-hook 'xref-backend-functions #'lsp-bridge-xref-backend nil t)))
   )
 
 (provide 'init-lsp-bridge)

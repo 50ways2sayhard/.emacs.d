@@ -111,19 +111,6 @@ https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli#dartanalyzer"
   (add-to-list 'flycheck-checkers 'dart)
   )
 
-(use-package lsp-dart
-  :after lsp-mode
-  :custom
-  (lsp-dart-dap-flutter-hot-reload-on-save t)
-  (lsp-dart-flutter-widget-guides nil)
-  (lsp-dart-flutter-fringe-colors nil)
-  (lsp-dart-outline nil)
-  (lsp-dart-flutter-outline nil)
-  (lsp-dart-closing-labels nil)
-  (lsp-dart-main-code-lens nil)
-  (lsp-dart-test-code-lens nil)
-  )
-
 (provide 'init-dart)
 
 
