@@ -90,7 +90,8 @@
     :straight nil
     :bind
     (:map corfu-map
-          ("C-q" . corfu-quick-insert)))
+          ("C-q" . corfu-quick-insert)
+          ("M-q" . corfu-quick-complete)))
 
   (use-package corfu-history
     :straight nil
@@ -237,12 +238,10 @@ function to the relevant margin-formatters list."
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
-     (cape-capf-buster
-      (cape-super-capf
-       arg-capf
-       #'tabnine-completion-at-point
-       #'tempel-expand)
-      )
+     (cape-super-capf
+      arg-capf
+      #'tabnine-completion-at-point
+      #'tempel-complete)
      ;; #'cape-dabbrev
      )
     )
@@ -252,7 +251,9 @@ function to the relevant margin-formatters list."
 
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
+    ;; (setq-local completion-at-point-functions (my/convert-super-capf (cape-capf-prefix-length #'eglot-completion-at-point 2)))
+    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
+    )
   (defun my/set-lsp-bridge-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-bridge-capf)))
@@ -262,7 +263,18 @@ function to the relevant margin-formatters list."
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
   (use-package tempel
-    :after cape)
+    :after cape
+    :config
+    (defun my/tempel-expand-or-next ()
+      "Try tempel expand, if failed, try copilot expand."
+      (interactive)
+      (if tempel--active
+          (tempel-next 1)
+        (call-interactively #'tempel-expand)))
+    (with-eval-after-load 'general
+      (general-define-key
+       :keymaps '(evil-insert-state-map)
+       "C-i" 'my/tempel-expand-or-next)))
 
   (use-package tabnine-capf
     :after cape
@@ -286,6 +298,7 @@ function to the relevant margin-formatters list."
   )
 
 (use-package copilot
+  :disabled
   :after corfu
   :hook (prog-mode . copilot-mode)
   :straight (:host github :repo "zerolfx/copilot.el"
