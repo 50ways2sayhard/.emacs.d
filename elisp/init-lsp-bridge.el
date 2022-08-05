@@ -30,21 +30,27 @@
 
 ;;; Code:
 
+(defvar acm-orderless-matching-styles '(orderless-regexp orderless-initialism))
+
+(defun acm-match-orderless (keyword candidate)
+  (string-match-p (car (orderless-pattern-compiler (downcase keyword) orderless-matching-styles)) (downcase candidate)))
+
 (defun +acm-setup ()
 
   (corfu-mode -1)
-  (setq acm-candidate-match-function #'orderless-flex)
+  (setq acm-candidate-match-function #'orderless-flex
+        acm-enable-yas nil
+        acm-enable-search-words nil)
+
+  ;; (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
+
 
   (when (boundp 'acm-mode-map)
     (define-key evil-insert-state-map (kbd "TAB") nil)
-    (define-key acm-mode-map (kbd "<tab>") 'acm-select-next)
-    (define-key acm-mode-map (kbd "<s-tab>") 'acm-select-prev)
-    (define-key acm-mode-map (kbd "<backtab>") 'acm-select-prev)
-    (define-key acm-mode-map (kbd "C-j") 'acm-complete)
-    )
-  )
+    (define-key acm-mode-map (kbd "C-j") 'acm-complete)))
 
 (use-package lsp-bridge
+  :disabled
   ;; :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
   :commands (lsp-bridge-mode)
   :straight nil
@@ -66,8 +72,8 @@
                               (evil-define-key 'normal 'global
                                 "K" 'lsp-bridge-lookup-documentation))))
   :config
-  ;; (global-lsp-bridge-mode)
   (setq lsp-bridge-enable-diagnostics nil)
+  (setq lsp-bridge-enable-signature-help nil)
   (setq lsp-bridge-completion-provider 'corfu)
   (setq lsp-bridge-lookup-doc-tooltip-border-width 10)
 
@@ -79,6 +85,36 @@
                     (< corfu--index 0)))))
   (add-hook 'lsp-bridge-mode-hook
             (lambda () (add-hook 'xref-backend-functions #'lsp-bridge-xref-backend nil t)))
+  )
+
+(use-package lspce
+  :straight nil
+  :load-path "site-lisp/lspce/"
+  :hook (((dart-mode) . lspce-mode)
+         ((lspce-mode) . (lambda ()
+                           (setq-local corfu-auto-delay 0)
+                           (setq-local corfu-auto-prefix 1)
+                           (leader-def :keymaps 'override
+                             "ca" '(lspce-code-actions :wk "Code Actions")
+                             "cr" '(lspce-rename :wk "Rename symbol")
+                             "ck" '(lspce-help-at-point :wk "Documentation at point")
+                             "cs" '(lspce-signature-at-point :wk "Signature at point")
+                             )
+                           (setq completion-category-defaults nil)
+                           (my/convert-super-capf #'lspce-completion-at-point))))
+  :config
+  (add-to-list 'lspce-server-programs '("dart-mode" "/usr/local/bin/dart" "language-server" lspce-dart-initializationOptions))
+  (lspce-set-log-file "/Users/johngong/.emacs.d/.local/cache/lspce.log")
+  (setq lspce-enable-flymake nil)
+
+
+  (defun lspce-dart-initializationOptions ()
+    (let ((options (make-hash-table :test #'equal)))
+      (setq options (lspce--add-option "dart.completeFunctionCalls" t options))
+      (setq options (lspce--add-option "dart.enableSnippets" t options))
+      options
+      )
+    )
   )
 
 (provide 'init-lsp-bridge)
