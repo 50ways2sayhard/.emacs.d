@@ -107,6 +107,15 @@ window that already exists in that direction. It will split otherwise."
       (switch-to-buffer buffer t t)
       (selected-window))))
 
+(defun magit-add-current-buffer-to-kill-ring ()
+  "Show the current branch in the echo-area and add it to the `kill-ring'."
+  (interactive)
+  (let ((branch (magit-get-current-branch)))
+    (if branch
+        (progn (kill-new branch)
+               (message "%s" branch))
+      (user-error "There is not current branch"))))
+
 ;; MagitPac
 (use-package magit
   :defer t
