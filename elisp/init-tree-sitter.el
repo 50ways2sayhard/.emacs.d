@@ -52,7 +52,7 @@
 
 (use-package tree-sitter
   :if *sys/mac*
-  :hook (dart-mode . tree-sitter-hl-mode)
+  :hook ((dart-mode python-mode) . tree-sitter-hl-mode)
   :custom-face
   (tree-sitter-hl-face:property ((t (default :inherit font-lock-constant-face :slant normal))))
   )

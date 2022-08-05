@@ -100,7 +100,7 @@ Install the doc if it's not installed."
   (separedit-remove-trailing-spaces-in-comment t)
   (separedit-default-mode 'markdown-mode)
   :config
-  (add-to-list 'separedit-comment-delimiter-alist '(("///") . (dart-mode)))
+  (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode)))
   )
 
 (use-package xref

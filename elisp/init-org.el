@@ -55,6 +55,7 @@
       (goto-char (line-beginning-position))
       (org-archive-subtree))))
 (use-package org
+  :straight nil
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
          (org-mode . org-num-mode))
@@ -179,9 +180,9 @@
 
   (add-hook 'after-change-major-mode-hook
             (lambda () (if (equal show-paren-mode 't)
-    		                   (when (derived-mode-p 'org-mode)
-    		                     (show-paren-mode -1))
-                         (show-paren-mode 1))))
+    		              (when (derived-mode-p 'org-mode)
+    		                (show-paren-mode -1))
+                    (show-paren-mode 1))))
 
   ;; https://emacs-china.org/t/topic/2119/15
   (defun my--diary-chinese-anniversary (lunar-month lunar-day &optional year mark)

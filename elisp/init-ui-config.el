@@ -121,6 +121,7 @@
           "\\*eldoc\\*"
           "\\*eldoc .*\\*"
           ;; "\\*Calendar\\*"              ; FIXME: https://github.com/karthink/popper/issues/29
+          "\\*lspce-hover\\*"
 
           bookmark-bmenu-mode
           compilation-mode
