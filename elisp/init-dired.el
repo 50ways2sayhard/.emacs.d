@@ -67,7 +67,10 @@
                         :keymaps 'dired-mode-map
                         "l" 'dired-find-alternate-file
                         "h"  'dired-up-directory)
-    ))
+    )
+  (setq insert-directory-program "gls" dired-use-ls-dired t)
+  (setq dired-listing-switches "-al --group-directories-first")
+  )
 
 
 ;; Colourful dired
@@ -107,12 +110,34 @@
 (use-package dirvish
   :straight (dirvish :includes (dirvish-extras dirvish-menu dirvish-side dirvish-peek dirvish-vc dirvish-yank) :files (:defaults "extensions/dirvish-*.el"))
   :after dired
-  :hook (+my/first-input . dirvish-override-dired-mode)
+  :hook ((+self/first-input . dirvish-override-dired-mode)
+         (evil-collection-setup . (lambda (&rest a)
+                                    (evil-define-key '(normal) dired-mode-map
+                                      (kbd "C-c f") 'dirvish-fd
+                                      "i" 'wdired-change-to-wdired-mode
+                                      "." 'dired-omit-mode
+                                      (kbd "TAB") 'dirvish-subtree-toggle
+                                      (kbd "M-s") 'dirvish-setup-menu
+                                      (kbd "M-f") 'dirvish-toggle-fullscreen
+                                      "*"   'dirvish-mark-menu
+                                      "f"   'dirvish-file-info-menu
+                                      [remap dired-sort-toggle-or-edit] 'dirvish-quicksort
+                                      [remap dired-do-redisplay] 'dirvish-ls-switches-menu
+                                      [remap dired-summary] 'dirvish-dispatch
+                                      [remap dired-do-copy] 'dirvish-yank-menu
+                                      [remap mode-line-other-buffer] 'dirvish-history-last))))
   :custom
   (dirvish-attributes '(all-the-icons file-size))
+  (dirvish-mode-line-format ; it's ok to place string inside
+   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (dirvish-side-follow-buffer-file t)
   :config
   (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
+  (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
+  (setq dired-dwim-target t)
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
   (general-define-key :states '(normal)
                       :keymaps 'dirvish-mode-map
                       "?" 'dirvish-menu-all-cmds)
