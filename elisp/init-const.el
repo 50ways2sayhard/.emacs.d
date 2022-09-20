@@ -42,6 +42,41 @@
 (setq user-mail-address "gjtzone@hotmail.com")
 ;; -UserInfo
 
+(let ((my-env-file (concat user-emacs-directory "env")))
+  (when (and (or (display-graphic-p)
+                 (daemonp))
+             (file-exists-p my-env-file))
+    (if (not (file-readable-p my-env-file))
+        (unless noerror
+          (signal 'file-error (list "Couldn't read envvar file" my-env-file)))
+      (let (envvars environment)
+        (with-temp-buffer
+          (save-excursion
+            (insert "\n")
+            (insert-file-contents my-env-file))
+          (while (re-search-forward "\n *\\([^#= \n]*\\)=" nil t)
+            (push (match-string 1) envvars)
+            (push (buffer-substring
+                   (match-beginning 1)
+                   (1- (or (save-excursion
+                             (when (re-search-forward "^\\([^= ]+\\)=" nil t)
+                               (line-beginning-position)))
+                           (point-max))))
+                  environment)))
+        (when environment
+          (setq process-environment
+                (append (nreverse environment) process-environment)
+                exec-path
+                (if (member "PATH" envvars)
+                    (append (split-string (getenv "PATH") path-separator t)
+                            (list exec-directory))
+                  exec-path)
+                shell-file-name
+                (if (member "SHELL" envvars)
+                    (or (getenv "SHELL") shell-file-name)
+                  shell-file-name))
+          envvars)))))
+
 
 (defconst emacs/>=29p
   (>= emacs-major-version 29)
