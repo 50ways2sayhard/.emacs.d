@@ -69,6 +69,8 @@
 ;; 10% speed up of startup for my configuration
 (setq gc-cons-threshold most-positive-fixnum)
 
+(setq byte-compile-warnings nil)
+
 (provide 'early-init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; early-init.el ends here

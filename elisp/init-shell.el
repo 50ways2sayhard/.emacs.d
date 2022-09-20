@@ -61,8 +61,6 @@
         "Hidehandler used by `vterm-posframe-toggle'."
         (not (eq (selected-frame) posframe--frame)))
 
-      (bind-key "C-<f9>" #'vterm-posframe-toggle)
-
       (defun vterm-posframe-toggle ()
         "Toggle `vterm' child frame."
         (interactive)
