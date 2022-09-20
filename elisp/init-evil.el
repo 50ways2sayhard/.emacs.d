@@ -1,6 +1,8 @@
 
 ;;; Code:
 
+(let ((file-name-handler-alist nil))
+
 (use-package evil
   :hook (after-init . evil-mode)
   :demand t
@@ -9,14 +11,14 @@
         evil-ex-search-vim-style-regexp t
         evil-ex-substitute-global t
         evil-ex-visual-char-range t  ; column range for ex commands
-        evil-mode-line-format 'nil
+        evil-mode-line-format nil
         ;; more vim-like behavior
         evil-symbol-word-search t
         ;; cursor appearance
         evil-normal-state-cursor 'box
         evil-insert-state-cursor 'bar
         evil-visual-state-cursor 'hollow
-        evil-want-keybinding 'nil
+        evil-want-keybinding nil
         ;; Only do highlighting in selected window so that Emacs has less work
         ;; to do highlighting them all.
         evil-ex-interactive-search-highlight 'selected-window
@@ -61,6 +63,8 @@
                                                 (setq-local evil-auto-indent nil))))
 
   )
+  )
+
 ;;; Packages
 (require 'evil/+packages)
 (provide 'init-evil)

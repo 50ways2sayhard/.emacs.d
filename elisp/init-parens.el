@@ -78,6 +78,17 @@
   (define-key awesome-pair-mode-map (kbd "M-:") 'awesome-pair-jump-out-pair-and-newline)
   )
 
+
+;; Show matching parens
+(use-package paren
+  :hook (after-init . show-paren-mode)
+  :config
+  (when emacs/>=29p
+    (setq show-paren-style 'parenthesis
+          show-paren-context-when-offscreen 'overlay
+          show-paren-when-point-in-periphery t
+          show-paren-when-point-inside-paren t)))
+
 (provide 'init-parens)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-parens.el ends here

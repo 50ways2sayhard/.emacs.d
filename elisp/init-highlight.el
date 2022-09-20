@@ -52,14 +52,6 @@
   :hook ((after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
 
-;; Show matching parens
-(use-package paren
-  :custom
-  (show-paren-context-when-offscreen t)
-  (show-paren-when-point-in-periphery t)
-  :config
-  (show-paren-mode))
-
 ;; Highlight symbols
 (use-package symbol-overlay
   :diminish
