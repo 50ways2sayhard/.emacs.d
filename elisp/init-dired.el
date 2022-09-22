@@ -108,7 +108,7 @@
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package dirvish
-  :straight (dirvish :includes (dirvish-extras dirvish-menu dirvish-side dirvish-peek dirvish-vc dirvish-yank) :files (:defaults "extensions/dirvish-*.el"))
+  :straight (dirvish :includes (dirvish-extras dirvish-side dirvish-peek dirvish-vc dirvish-yank dirvish-fd) :files (:defaults "extensions/dirvish-*.el"))
   :after dired
   :hook ((+self/first-input . dirvish-override-dired-mode)
          (evil-collection-setup . (lambda (&rest a)
@@ -126,6 +126,26 @@
                                       [remap dired-summary] 'dirvish-dispatch
                                       [remap dired-do-copy] 'dirvish-yank-menu
                                       [remap mode-line-other-buffer] 'dirvish-history-last))))
+  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish-fd)
+   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+   ("a"   . dirvish-quick-access)
+   ("f"   . dirvish-file-info-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("^"   . dirvish-history-last)
+   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-l" . dirvish-ls-switches-menu)
+   ("M-m" . dirvish-mark-menu)
+   ("M-t" . dirvish-layout-toggle)
+   ("M-s" . dirvish-setup-menu)
+   ("M-e" . dirvish-emerge-menu)
+   ("M-j" . dirvish-fd-jump))
   :custom
   (dirvish-attributes '(all-the-icons file-size))
   (dirvish-mode-line-format ; it's ok to place string inside
@@ -141,15 +161,6 @@
   (general-define-key :states '(normal)
                       :keymaps 'dirvish-mode-map
                       "?" 'dirvish-menu-all-cmds)
-
-  (use-package dirvish-menu
-    :straight nil
-    :after dirvish
-    :config
-    (with-eval-after-load 'general
-      (general-define-key :states '(normal)
-                          :keymaps 'dirvish-mode-map
-                          "?" 'dirvish-menu-all-cmds)))
 
   (use-package dirvish-extras
     :straight nil
