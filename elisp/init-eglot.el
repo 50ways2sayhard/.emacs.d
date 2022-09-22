@@ -87,40 +87,39 @@
   :hook (
          (eglot-managed-mode . (lambda ()
                                  (+lsp-optimization-mode)
-                                 (leader-def :keymaps 'override
-                                   "ca" '(eglot-code-actions :wk "Code Actions")
-                                   "cr" '(eglot-rename :wk "Rename symbol")
-                                   "cI" '(eglot-code-action-organize-imports :wk "Organize import")
-                                   "ci" '(consult-imenu :wk "imenu")
-                                   "cJ" '(consult-eglot-symbols :wk "Symbols in project")
-                                   "cd" '(eglot-find-declaration :wk "Jump to definition")
-                                   "cF" '(eglot-find-implementation :wk "Find implementation")
-                                   "cD" '(eglot-find-typeDefinition :wk "Find type definition")
-                                   ;; "ck" '(+eglot-help-at-point :wk "Lookup documentation")
-                                   )
+                                 (setq eldoc-documentation-functions
+                                       (cons #'flymake-eldoc-function
+                                             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+                                 ;; Show all eldoc feedback.
+                                 (setq eldoc-documentation-strategy #'eldoc-documentation-compose)
 
-                                 (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
 
-                                 ;; (my/set-lsp-bridge-capf)
-
-                                 ;; (evil-define-key 'normal 'global
-                                 ;;   "K" 'lsp-bridge-lookup-documentation)
+                                 (if (or (boundp 'lsp-bridge-mode) (boundp 'lspce-mode))
+                                     (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
+                                   (progn
+                                     (setq-local corfu-auto-delay 0.1)
+                                     (my/set-eglot-capf)))
+                                 (when (boundp 'lspce-mode)
+                                   eglot-stay-out-of '(eldoc))
                                  ))
          (prog-mode . (lambda ()
-                        (unless (derived-mode-p 'emacs-lisp-mode 'lsp-mode 'makefile-mode)
-                          (eglot-ensure))
-                        )))
+                        (unless (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
+                          (eglot-ensure)))))
   :config
   (setq
+   eglot-send-changes-idle-time 0.2
    eglot-autoshutdown t
    eglot-extend-to-xref t
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
-   eglot-events-buffer-size 0)
+   eglot-events-buffer-size 0
+   ;; eglot-max-candidates 100
+   )
   (setq eldoc-echo-area-use-multiline-p 5)
-  (setq elgot-stay-out-of '(flymake))
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
+
+  (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
   ;; HACK Eglot removed `eglot-help-at-point' in joaotavora/eglot@a044dec for a
   ;;      more problematic approach of deferred to eldoc. Here, I've restored it.
@@ -133,27 +132,33 @@
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
     (interactive)
     (+eglot-lookup-documentation nil))
   )
+
+(use-package eldoc-box
+  :after eglot
+  :config
+  (leader-def :keymaps 'override
+    "ck" '(eldoc-box-eglot-help-at-point :wk "Documentation at point")))
 
 
 (provide 'init-eglot)

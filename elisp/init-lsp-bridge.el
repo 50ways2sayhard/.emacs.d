@@ -40,29 +40,30 @@
   (corfu-mode -1)
   (setq acm-candidate-match-function #'orderless-flex
         acm-enable-yas nil
-        acm-enable-search-words nil)
+        acm-enable-search-words nil
+        acm-enable-tabnine-helper nil)
 
   ;; (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
 
 
   (when (boundp 'acm-mode-map)
     (define-key evil-insert-state-map (kbd "TAB") nil)
-    (define-key acm-mode-map (kbd "C-j") 'acm-complete)))
+    (define-key acm-mode-map (kbd "C-j") 'acm-complete)
+    (define-key acm-mode-map (kbd "C-q") 'acm-complete-quick-access)))
 
 (use-package lsp-bridge
   :disabled
   ;; :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
   :commands (lsp-bridge-mode)
   :straight nil
-  ;; :load-path "site-lisp/lsp-bridge/"
-  :load-path "site-lisp/lsp-bridge-dev/"
+  :load-path "site-lisp/lsp-bridge/"
+  ;; :load-path "site-lisp/lsp-bridge-dev/"
   :hook (((python-mode dart-mode js-mode) . lsp-bridge-mode)
          (lsp-bridge-mode . (lambda ()
                               (if (boundp 'acm-mode-map)
                                   (+acm-setup)
                                 (my/set-lsp-bridge-capf))
                               (leader-def :keymaps 'override
-                                "cr" '(lsp-bridge-rename :wk "Rename symbol")
                                 "cF" '(lsp-bridge-find-impl :wk "Find implementation")
                                 "cD" '(lsp-bridge-find-references :wk "Find references")
                                 "cd" '(lsp-bridge-find-def :wk "Find definition")
@@ -88,9 +89,10 @@
   )
 
 (use-package lspce
+  :disabled
   :straight nil
   :load-path "site-lisp/lspce/"
-  :hook (((dart-mode) . lspce-mode)
+  :hook (((dart-mode python-mode) . lspce-mode)
          ((lspce-mode) . (lambda ()
                            (setq-local corfu-auto-delay 0)
                            (setq-local corfu-auto-prefix 1)
@@ -101,11 +103,14 @@
                              "cs" '(lspce-signature-at-point :wk "Signature at point")
                              )
                            (setq completion-category-defaults nil)
-                           (my/convert-super-capf #'lspce-completion-at-point))))
+                           (setq-local completion-at-point-functions (my/convert-super-capf #'lspce-completion-at-point))
+                           )))
   :config
-  (add-to-list 'lspce-server-programs '("dart-mode" "/usr/local/bin/dart" "language-server" lspce-dart-initializationOptions))
+  (add-to-list 'lspce-server-programs '("dart" "/usr/local/bin/dart" "language-server" lspce-dart-initializationOptions))
   (lspce-set-log-file "/Users/johngong/.emacs.d/.local/cache/lspce.log")
-  (setq lspce-enable-flymake nil)
+  (setq lspce-enable-flymake nil
+        lspce-send-changes-idle-time 0.1
+        lspce-eldoc-enable-signature t)
 
 
   (defun lspce-dart-initializationOptions ()
