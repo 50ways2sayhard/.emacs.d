@@ -73,7 +73,8 @@
 (defun +my/flutter--sentinel (_ event)
   "Sentinel for flutter process.EVENT is the event that triggered the sentinel."
   (message "[Flutter] event: %s" event)
-  (kill-buffer (+my/flutter--buffer-name)))
+  (when (string-prefix-p "finished" event)
+    (kill-buffer (+my/flutter--buffer-name))))
 
 (defun +my/flutter-run-or-attach ()
   "Interactively run or attach to a running flutter app."
@@ -95,7 +96,9 @@
     (let* ((project (+my/find-project-root))
            (process-name (+my/flutter--process-name))
            (buffer (get-buffer-create (+my/flutter--buffer-name)))
-           (command (+my/flutter--command mode app-id)))
+           (command (+my/flutter--command mode app-id))
+           (temp (mapcar 'concat process-environment))
+           (process-environment (setenv-internal temp "PUB_HOSTED_URL" +my/flutter-pub-host t)))
       (if (file-exists-p (concat project "lib/main.dart"))
           (cd project)
         (cd (concat project "example")))
@@ -156,7 +159,8 @@
                   :noquery t
                   :sentinel (lambda (process event)
                               (message "[Flutter] run pub get: %s" event)
-                              (kill-buffer "*Flutter Pub Get*"))
+                              (when (string-prefix-p "finished" event)
+                                (kill-buffer "*Flutter Pub Get*")))
                   )
     )
   (cd (file-name-directory buffer-file-name))
