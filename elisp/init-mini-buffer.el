@@ -75,7 +75,6 @@
   :init
   ;; (vertico-mode)
   :config
-  (set-face-background 'vertico-current "#42444a")
 
   ;; Configure directory extension.
   (use-package vertico-quick
@@ -169,7 +168,7 @@
   (advice-add #'register-preview :override #'consult-register-window)
 
   ;; Optionally replace `completing-read-multiple' with an enhanced version.
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
 
   (autoload 'org-buffer-list "org")
@@ -338,11 +337,6 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (setq mini-frame-show-parameters `((left . 0.5)
                                      (top . ,(/ (frame-pixel-height) 2))
-                                     (background-mode 'dark)
-                                     (foreground-color . "#bbc2cf")
-                                     (background-color . "#242730")
-                                     ;; (internal-border-width . 1)
-                                     ;; (child-frame-border-width . 1)
                                      (min-width . 80)
                                      (width . 0.618)
                                      (no-accept-focus . t)))
