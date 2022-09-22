@@ -45,6 +45,7 @@
   (general-def "M-?" '+consult-ripgrep-at-point)
   (general-def "M->" '+lookup-xref-references-backend-fn)
   (general-def "M-y" 'consult-yank-from-kill-ring)
+  (general-def "C-0" 'vterm-posframe-toggle)
 
   ;; Navigation
   (general-define-key
@@ -114,14 +115,14 @@
 
     "g" '(:wk "Git")
     "gs" '(magit-status :wk "Git status")
-    "gbb" '(magit-branch-checkout :wk "Git checkout")
+    "gb" '(magit-branch-checkout :wk "Git checkout")
     "gB" '(magit-blame :wk "Git blame")
     "gm" '(gitmoji-picker :wk "Gitmoji")
     "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
     "gf" '(magit-fetch :wk "Git fetch")
     "gF" '(magit-pull :wk "Git pull")
     "go" '(magit-open-repo :wk "Open repo")
-    "gby" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
+    "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
 
     "j" '(:wk "Jump")
     "jj" '(evil-avy-goto-char :wk "Jump to character")

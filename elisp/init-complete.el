@@ -85,6 +85,18 @@
   (evil-collection-define-key 'insert 'corfu-map
     (kbd "C-j") 'corfu-insert)
   :config
+  (defun eat/yas-next-field-or-maybe-expand ()
+    "Try complete current cond or `yas-next-field-or-maybe-expand'.
+
+Sometime lsp client return a snippet and complete didn't work(TAB will jump to next field),
+so try complete filst, if there nothing to complete then try to jump to next field or expand."
+    (interactive)
+    (or (corfu-insert) ;; NOTE this works
+        (yas-next-field-or-maybe-expand)))
+  (with-eval-after-load 'yasnippet
+    (define-key yas-keymap (kbd "<tab>") 'eat/yas-next-field-or-maybe-expand)
+    (define-key yas-keymap (kbd "TAB") 'eat/yas-next-field-or-maybe-expand))
+
   (use-package corfu-quick
     :after corfu
     :straight nil
