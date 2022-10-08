@@ -246,6 +246,8 @@ don't offer a form of remote control."
 
 (setq command-error-function #'filter-command-error-function)
 
+(add-hook 'after-change-major-mode-hook #'hexcolour-add-to-font-lock)
+
 (provide 'init-global-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-global-config.el ends here
