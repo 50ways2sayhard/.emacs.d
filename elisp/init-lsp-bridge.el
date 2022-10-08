@@ -41,7 +41,7 @@
   (setq acm-candidate-match-function #'orderless-flex
         acm-enable-yas nil
         acm-enable-search-words nil
-        acm-enable-tabnine-helper nil)
+        acm-enable-tabnine-helper t)
 
   ;; (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
 
@@ -64,6 +64,7 @@
                                   (+acm-setup)
                                 (my/set-lsp-bridge-capf))
                               (leader-def :keymaps 'override
+                                "ca" '(lsp-bridge-code-action :wk "Code Action")
                                 "cF" '(lsp-bridge-find-impl :wk "Find implementation")
                                 "cD" '(lsp-bridge-find-references :wk "Find references")
                                 "cd" '(lsp-bridge-find-def :wk "Find definition")
@@ -75,8 +76,7 @@
   :config
   (setq lsp-bridge-enable-diagnostics nil)
   (setq lsp-bridge-enable-signature-help nil)
-  (setq lsp-bridge-completion-provider 'corfu)
-  (setq lsp-bridge-lookup-doc-tooltip-border-width 10)
+  (setq lsp-bridge-lookup-doc-tooltip-border-width 2)
 
   (add-to-list 'lsp-bridge-completion-stop-commands #'evil-escape)
 

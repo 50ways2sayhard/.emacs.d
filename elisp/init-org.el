@@ -452,18 +452,6 @@
   :hook (org-mode . valign-mode)
   )
 
-
-;; (use-package org-bars
-;;   :straight (:host github :repo "tonyaldon/org-bars")
-;;   :after org
-;;   :hook (org-mode . org-bars-mode)
-;;   :config
-;;   (setq org-bars-color-options '(:only-one-color t
-;;                                                  :bar-color "#4C4A4D")
-;;         org-bars-stars '(:empty "◉"
-;;                                 :invisible "▶"
-;;                                 :visible "▼")))
-
 (use-package calfw
   :commands (cfw:open-org-calendar)
   :straight (:host github :repo "zemaye/emacs-calfw")
@@ -479,12 +467,6 @@
 	    :straight (:host github :repo "zemaye/emacs-calfw"))
 	  (use-package calfw-cal
 	    :straight (:host github :repo "zemaye/emacs-calfw"))))
-
-;; (use-package org-fancy-priorities
-;;   :after org
-;;   :hook (org-mode . org-fancy-priorities-mode)
-;;   :config
-;;   (setq org-fancy-priorities-list '("🅰" "🅱" "🅲" "🅳" "🅴")))
 
 (use-package electric-spacing
   :straight (:host github :repo "zk-phi/electric-spacing")
