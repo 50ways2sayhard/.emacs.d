@@ -41,7 +41,7 @@
   (require 'init-const))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 13) ("Hack" . 13) ("Inconsolata" . 13) ("Fira Code" . 13) ("SF Mono" . 13))
+(defvar font-list '(("Cascadia Code" . 15) ("Iosevka Comfy" . 16) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -88,7 +88,7 @@
   ;; (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
   ;;          when (font-installed-p font)
   ;;          return (set-fontset-font t '(#x4e00 . #x9fff) font)))
-  (set-fontset-font t '(#x4e00 . #x9fff) "Sarasa Mono SC Nerd")
+  (set-fontset-font t '(#x4e00 . #x9fff) "Maple Mono SC NF")
 
   (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend)
   )
