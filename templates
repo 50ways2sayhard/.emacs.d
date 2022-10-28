@@ -2,10 +2,10 @@
 
 prog-mode
 
-(fixme (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "FIXME ")
-(todo (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "TODO ")
-(bug (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "BUG ")
-(hack (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "HACK ")
+(fixme (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "FIXME ")
+(todo (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "TODO ")
+(bug (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "BUG ")
+(hack (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "HACK ")
 
 
 emacs-lisp-mode
@@ -34,10 +34,10 @@ dart-mode
 (header "/// " p n> "/// " n> "/// Created by johngong at " (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)) n>)
 
 (stateless "class " (s Name) " extends StatelessWidget {"
-           n> n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
+           n> p n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
 
 (stateful "class " (s Name) " extends StatefulWidget {"
-          n> n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
+          n> p n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
           n> "}" n
           n
           "class _" (s Name) "State extends State<" (s Name) "> {" n>
@@ -45,3 +45,5 @@ dart-mode
           "Widget build(BuildContext context) {" n> n> "}"
           n> "}"
           )
+
+(nn "if ( " p " != null) {" n> p n> "}")
