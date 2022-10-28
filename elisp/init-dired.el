@@ -152,6 +152,8 @@
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (dirvish-side-follow-buffer-file t)
   :config
+  (when (boundp 'dirvish-side-follow-mode)
+    (dirvish-side-follow-mode t))
   (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
   (setq dired-recursive-deletes 'always)
   (setq delete-by-moving-to-trash t)

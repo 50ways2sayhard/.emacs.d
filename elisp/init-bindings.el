@@ -122,6 +122,7 @@
     "gf" '(magit-fetch :wk "Git fetch")
     "gF" '(magit-pull :wk "Git pull")
     "go" '(magit-open-repo :wk "Open repo")
+    "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
     "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
 
     "j" '(:wk "Jump")
@@ -159,7 +160,7 @@
     "sf" '(locate :wk "Locate file")
     "sh" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
     "si" '(+my-imenu :wk "Jump to symbol")
-    "sI" '(consult-project-imenu :wk "Jump to symbol all buffer")
+    "sI" '(consult-imenu-multi :wk "Jump to symbol all buffer")
     "sp" '(consult-ripgrep :wk "Search project")
     "sP" '(color-rg-search-project :wk "Color-rg Search project")
     "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")

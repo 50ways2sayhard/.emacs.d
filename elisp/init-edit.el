@@ -68,10 +68,12 @@
      rime-predicate-prog-in-code-p
      rime-predicate-after-ascii-char-p
      rime-predicate-space-after-cc-p))
+  (rime-posframe-properties
+   (list :internal-border-width 5))
   :config
   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
-  (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
+  (cond (*sys/mac* (setq rime-user-data-dir "~/Library/Rime/"
                          rime-librime-root "~/.local/share/librime/dist/"))
         (*sys/linux* (setq rime-user-data-dir "~/.rime")))
   (defun +rime-sync ()
