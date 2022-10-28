@@ -47,12 +47,13 @@
 ;;; Code:
 
 (use-package corfu
-  :straight (corfu :includes (corfu-indexed corfu-quick) :files (:defaults "extensions/corfu-*.el"))
+  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick) :files (:defaults "extensions/corfu-*.el"))
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  (corfu-auto-prefix 2)
+  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0.01)
   (corfu-echo-documentation 0.5)
   (corfu-max-width 120)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
@@ -227,7 +228,6 @@ function to the relevant margin-formatters list."
   (setq completion-cycle-threshold 3)
   (setq tab-always-indent 'completion))
 
-
 (use-package cape
   :after corfu
   ;; Bind dedicated completion commands
@@ -240,7 +240,6 @@ function to the relevant margin-formatters list."
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf)
-         ;; ((lsp-completion-mode eglot-managed-mode) . my/set-eglot-capf)
          )
   :config
   (setq dabbrev-upcase-means-case-search t)
@@ -252,6 +251,7 @@ function to the relevant margin-formatters list."
      #'cape-file
      (cape-super-capf
       arg-capf
+      ;; #'tabnine-capf
       #'tabnine-completion-at-point
       #'tempel-complete)
      ;; #'cape-dabbrev
@@ -288,15 +288,22 @@ function to the relevant margin-formatters list."
        :keymaps '(evil-insert-state-map)
        "C-i" 'my/tempel-expand-or-next)))
 
+  ;; (use-package tabnine-capf
+  ;;   :after cape
+  ;;   :commands (tabnine-capf tabnine-capf-start-process)
+  ;;   :straight (:host github :repo "theFool32/tabnine-capf" :files ("*.el" "*.sh" "*.py"))
+  ;;   ;; :straight (:host github :repo "50ways2sayhard/tabnine-capf" :files ("*.el" "*.sh"))
+  ;;   :hook (
+  ;;          (+self/first-input . tabnine-capf-start-process)
+  ;;          (kill-emacs . tabnine-capf-kill-process))
+  ;;   :config
+  ;;   ;; (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
+  ;;   )
   (use-package tabnine-capf
     :after cape
-    :commands (tbanine-completion-at-point tabnine-capf-start-process)
-    :straight (:host github :repo "theFool32/tabnine-capf" :files ("*.el" "*.sh" "*.py"))
-    :hook ((+self/first-input . (lambda () (run-with-idle-timer 2 nil #'tabnine-capf-start-process)))
-           (kill-emacs . tabnine-capf-kill-process))
-    :config
-    ;; (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
-    )
+    :commands (tabnine-completion-at-point tabnine-capf-start-process)
+    :straight (:host github :repo "50ways2sayhard/tabnine-capf" :files ("*.el" "*.sh"))
+    :hook ((kill-emacs . tabnine-capf-kill-process)))
   )
 
 (use-package corfu-doc
