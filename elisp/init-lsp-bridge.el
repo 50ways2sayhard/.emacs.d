@@ -38,10 +38,14 @@
 (defun +acm-setup ()
 
   (corfu-mode -1)
-  (setq acm-candidate-match-function #'orderless-flex
-        acm-enable-yas nil
-        acm-enable-search-words nil
-        acm-enable-tabnine-helper t)
+  (setq
+   ;; acm-candidate-match-function #'orderless-flex
+   acm-enable-yas nil
+   acm-enable-search-words nil
+   acm-enable-tabnine-helper t
+   acm-enable-telega nil
+   acm-enable-search-sdcv-words nil
+   )
 
   ;; (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
 
@@ -74,7 +78,7 @@
                               (evil-define-key 'normal 'global
                                 "K" 'lsp-bridge-lookup-documentation))))
   :config
-  (setq lsp-bridge-enable-diagnostics nil)
+  (setq lsp-bridge-enable-diagnostics (not (boundp 'eglot-managed-mode)))
   (setq lsp-bridge-enable-signature-help nil)
   (setq lsp-bridge-lookup-doc-tooltip-border-width 2)
 
