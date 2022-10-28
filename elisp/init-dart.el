@@ -53,16 +53,8 @@
 (use-package dart-mode
   :mode ("\\.dart\\'")
   :hook ((dart-mode . (lambda ()
-                        (setq-local lsp-enable-imenu t)
-                        (setq-local lsp-diagnostics-provider :flymake)
-                        (add-hook 'lsp-mode-hook
-                                  (lambda ()
-                                    (add-hook 'before-save-hook #'lsp-format-buffer nil t)
-                                    (add-hook 'before-save-hook #'lsp-organize-imports nil t)))
-                        ))
+                        (format-all-mode t)))
          (eglot-managed-mode . (lambda ()
-                                 (format-all-mode t)
-                                 ;; (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
                                  (add-hook 'before-save-hook '+eglot-organize-imports nil t)
                                  ))
          )
@@ -72,10 +64,21 @@
   ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")
   ;;                      (locate-dominating-file dir "BUILD"))))
   ;;     (if project ;;         (cons 'dart project)
-  ;;       (cons 'transient dir))))
+  ;;         (cons 'transient dir))))
   ;; (add-hook 'project-find-functions #'project-try-dart)
   ;; (cl-defmethod project-roots ((project (head dart)))
   ;;   (list (cdr project)))
+  (setq +my/flutter-pub-host "http://pub.futuoa.com")
+
+  (with-eval-after-load 'consult-imenu
+    (add-to-list 'consult-imenu-config '(dart-mode :types
+                                                   ((?c "Class"    font-lock-type-face)
+                                                    (?V "Constructor" font-lock-type-face)
+                                                    (?C "Constant"    font-lock-constant-face)
+                                                    (?f "Function"  font-lock-function-name-face)
+                                                    (?m "Method"  font-lock-function-name-face)
+                                                    (?p "Property" font-lock-variable-name-face)
+                                                    (?F "Field"  font-lock-variable-name-face)))))
 
   (local-leader-def
     :keymaps 'dart-mode-map
