@@ -283,10 +283,11 @@ function to the relevant margin-formatters list."
       (if tempel--active
           (tempel-next 1)
         (call-interactively #'tempel-expand)))
+
     (with-eval-after-load 'general
       (general-define-key
        :keymaps '(evil-insert-state-map)
-       "C-i" 'my/tempel-expand-or-next)))
+       "C-o" 'my/tempel-expand-or-next)))
 
   ;; (use-package tabnine-capf
   ;;   :after cape

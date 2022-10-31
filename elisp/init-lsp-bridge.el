@@ -32,11 +32,16 @@
 
 (defvar acm-orderless-matching-styles '(orderless-regexp orderless-initialism))
 
-(defun acm-match-orderless (keyword candidate)
-  (string-match-p (car (orderless-pattern-compiler (downcase keyword) orderless-matching-styles)) (downcase candidate)))
+(defun acm-insert-common-or-complete()
+  "Insert common prefix of menu or complete."
+  (interactive)
+  (let ((inhibit-message t)
+        (num (length (acm-get-input-prefix))))
+    (acm-insert-common)
+    (when (= num (length (acm-get-input-prefix)))
+      (acm-complete))))
 
 (defun +acm-setup ()
-
   (corfu-mode -1)
   (setq
    ;; acm-candidate-match-function #'orderless-flex
@@ -44,19 +49,20 @@
    acm-enable-search-words nil
    acm-enable-tabnine-helper t
    acm-enable-telega nil
-   acm-enable-search-sdcv-words nil
-   )
+   acm-enable-search-sdcv-words nil)
 
-  ;; (advice-add #'acm-candidate-fuzzy-search :override #'acm-match-orderless)
+  (with-eval-after-load 'magit
+    (advice-add 'magit-status :after (lambda (&rest args)
+                                       (lsp-bridge-kill-process)))
 
+    (advice-add 'magit-mode-bury-buffer :before (lambda (&rest args)
+                                                  (lsp-bridge-start-process))))
 
   (when (boundp 'acm-mode-map)
-    (define-key evil-insert-state-map (kbd "TAB") nil)
-    (define-key acm-mode-map (kbd "C-j") 'acm-complete)
-    (define-key acm-mode-map (kbd "C-q") 'acm-complete-quick-access)))
+    (define-key acm-mode-map (kbd "TAB") 'acm-insert-common-or-complete)
+    (define-key acm-mode-map (kbd "C-j") 'acm-complete)))
 
 (use-package lsp-bridge
-  :disabled
   ;; :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
   :commands (lsp-bridge-mode)
   :straight nil
