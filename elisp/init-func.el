@@ -230,6 +230,16 @@
                     (:background ,colour)))))))))
 
 
+(defun +my/google-it (&optional word)
+  "Google it."
+  (interactive (list
+                (if (use-region-p)
+                    (buffer-substring-no-properties (region-beginning)
+                                                    (region-end))
+                  (thing-at-point 'symbol))))
+  (browse-url (concat "https://www.google.com/search?q=" word)))
+
+
 (provide 'init-func)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-func.el ends here

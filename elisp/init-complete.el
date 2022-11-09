@@ -263,7 +263,6 @@ function to the relevant margin-formatters list."
 
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
-    ;; (setq-local completion-at-point-functions (my/convert-super-capf (cape-capf-prefix-length #'eglot-completion-at-point 2)))
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
     )
   (defun my/set-lsp-bridge-capf ()

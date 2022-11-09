@@ -243,8 +243,8 @@ Otherwise it builds `prettify-code-symbols-alist' according to
 
 (set-pretty-symbols! 'org-mode
   :name "#+NAME:"
-  :src_block "#+BEGIN_SRC"
-  :src_block_end "#+END_SRC"
+  :src_block "#+begin_src"
+  :src_block_end "#+end_src"
   :checkbox      "[ ]"
   :pending       "[-]"
   :checkedbox    "[X]"

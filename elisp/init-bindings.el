@@ -168,6 +168,7 @@
     "sc" '(:wk "In current file")
     "scs" '(color-rg-search-input-in-current-file :wk "Search input")
     "sci" '(color-rg-search-symbol-in-current-file :wk "Search symbol at point")
+    "sg" '(+my/google-it :wk "Google")
 
     "t" '(:wk "Toggle")
     "te" '(vterm-posframe-toggle :wk "Shell")
