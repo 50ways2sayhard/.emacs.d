@@ -46,23 +46,17 @@
   (setq
    ;; acm-candidate-match-function #'orderless-flex
    acm-enable-yas nil
-   acm-enable-search-words nil
+   acm-enable-search-words t
    acm-enable-tabnine-helper t
    acm-enable-telega nil
    acm-enable-search-sdcv-words nil)
-
-  (with-eval-after-load 'magit
-    (advice-add 'magit-status :after (lambda (&rest args)
-                                       (lsp-bridge-kill-process)))
-
-    (advice-add 'magit-mode-bury-buffer :before (lambda (&rest args)
-                                                  (lsp-bridge-start-process))))
 
   (when (boundp 'acm-mode-map)
     (define-key acm-mode-map (kbd "TAB") 'acm-insert-common-or-complete)
     (define-key acm-mode-map (kbd "C-j") 'acm-complete)))
 
 (use-package lsp-bridge
+  :disabled
   ;; :straight (:host github :repo "50ways2sayhard/lsp-bridge" :branch "dev" :files ("*.el" "*.py" "core/*" "langserver/*"))
   :commands (lsp-bridge-mode)
   :straight nil
