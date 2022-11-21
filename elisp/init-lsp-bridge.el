@@ -92,6 +92,7 @@
             (lambda () (add-hook 'xref-backend-functions #'lsp-bridge-xref-backend nil t)))
   )
 
+;; TODO Support didChangeConfiguration
 (use-package lspce
   :disabled
   :straight nil
@@ -108,22 +109,65 @@
                              )
                            (setq completion-category-defaults nil)
                            (setq-local completion-at-point-functions (my/convert-super-capf #'lspce-completion-at-point))
+                           (add-function :before-until (local 'imenu-create-index-function)
+                                         #'lspce-imenu-create)
                            )))
+  :init
+  (advice-add #'lspce--clientCapabilities :around
+              (lambda (fn)
+                (let ((l (funcall fn)))
+                  (plist-put (plist-get l :textDocument)
+                             :documentSymbol
+                             (list
+                              :dynamicRegistration :json-false
+                              :hierarchicalDocumentSymbolSupport t
+                              :symbolKind `(:valueSet
+                                            [,@(mapcar
+                                                #'car lspce--symbol-kind-names)])))
+                  l)))
   :config
-  (add-to-list 'lspce-server-programs '("dart" "/usr/local/bin/dart" "language-server" lspce-dart-initializationOptions))
-  (lspce-set-log-file "/Users/johngong/.emacs.d/.local/cache/lspce.log")
+  (add-to-list 'lspce-server-programs '("dart" "dart" "language-server"))
+  (lspce-set-log-file (expand-file-name ".local/cache/lspce.log" user-emacs-directory))
   (setq lspce-enable-flymake nil
         lspce-send-changes-idle-time 0.1
         lspce-eldoc-enable-signature t)
 
+  (defun lspce-imenu-create ()
+    (cl-labels
+        ((unfurl (obj)
+           (if-let ((children (gethash "children" obj))
+                    (name (gethash "name" obj)))
+               (cons obj
+                     (mapcar (lambda (c)
+                               (puthash
+                                "containerName"
+                                (let ((existing (gethash "containerName" c)))
+                                  (if existing (format "%s::%s" name existing)
+                                    name)) c) c)
+                             (mapcan #'unfurl children)))
+             (list obj))))
+      (mapcar
+       (lambda (obj)
+         (cons
+          (cdr (assoc (car obj) lspce--symbol-kind-names))
+          (mapcar
+           (lambda (obj)
+             (let ((content
+                    (cons (gethash "name" obj)
+                          (lspce--lsp-position-to-point
+                           (gethash "start"
+                                    (if-let ((range (gethash "selectionRange" obj)))
+                                        range
+                                      (gethash "range" (gethash "location" obj)))))))
+                   (container (gethash "containerName" obj)))
+               (if container (list container content)
+                 content)))
+           (cdr obj))))
 
-  (defun lspce-dart-initializationOptions ()
-    (let ((options (make-hash-table :test #'equal)))
-      (setq options (lspce--add-option "dart.completeFunctionCalls" t options))
-      (setq options (lspce--add-option "dart.enableSnippets" t options))
-      options
-      )
-    )
+       (seq-group-by
+        (lambda (obj) (gethash "kind" obj))
+        (mapcan #'unfurl
+                (lspce--request "textDocument/documentSymbol" (list :textDocument (lspce--textDocumentIdenfitier (lspce--uri)))))))))
   )
 
 (provide 'init-lsp-bridge)
