@@ -168,6 +168,18 @@
         (lambda (obj) (gethash "kind" obj))
         (mapcan #'unfurl
                 (lspce--request "textDocument/documentSymbol" (list :textDocument (lspce--textDocumentIdenfitier (lspce--uri)))))))))
+
+  (evil-collection-define-key 'normal 'lspce-mode-map
+    "gd" 'xref-find-definitions
+    "gD" 'xref-find-definitions-other-window
+    "g5" 'xref-find-definitions-other-frame
+    "gR" 'xref-find-implementations
+    (kbd "C-t") 'xref-pop-marker-stack
+    "K" 'eldoc-doc-buffer)
+
+  (when evil-collection-want-find-usages-bindings
+    (evil-collection-define-key 'normal 'lspce-mode-map
+      "gr" 'xref-find-references))
   )
 
 (provide 'init-lsp-bridge)
