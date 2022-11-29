@@ -46,10 +46,14 @@
   :bind
   (:map yas-minor-mode-map
         ("C-c C-n" . yas-expand-from-trigger-key)
-        ("TAB" . nil)
-        ("<tab>" . nil))
+        ("TAB" . my/yas-smart-next-field-or-maybe-expand)
+        ([tab] . my/yas-smart-next-field-or-maybe-expand)
+        )
   (:map yas-keymap
-        (("M-}" . smarter-yas-expand-next-field)))
+        (("M-}" . smarter-yas-expand-next-field)
+         ("TAB" . nil)
+         ([tab]. nil)
+         ))
   :config
   (yas-reload-all)
   (defun smarter-yas-expand-next-field ()
@@ -61,6 +65,7 @@
       (when (and (eq old-point (point))
                  (eq old-tick (buffer-chars-modified-tick)))
         (ignore-errors (yas-next-field))))))
+
 ;; -YASnippetPac
 
 (provide 'init-yasnippet)

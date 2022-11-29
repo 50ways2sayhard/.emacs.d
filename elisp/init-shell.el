@@ -53,6 +53,7 @@
     :commands (vterm--internal vterm-posframe-toggle)
     :init
     (setq vterm-always-compile-module t)
+    (setq vterm-shell "/usr/local/bin/fish")
     (setq vterm-timer-delay 0.001
           process-adaptive-read-buffering nil)
 
@@ -98,6 +99,27 @@
                 (setq-local cursor-type 'box))
               ;; Focus the child frame
               (select-frame-set-input-focus vterm-posframe--frame))))))))
+
+(use-package winner
+  :ensure nil
+  :commands (winner-undo winner-redo)
+  :hook (after-init . winner-mode)
+  :init (setq winner-boring-buffers '("*Completions*"
+                                      "*Compile-Log*"
+                                      "*inferior-lisp*"
+                                      "*Fuzzy Completions*"
+                                      "*Apropos*"
+                                      "*Help*"
+                                      "*cvs*"
+                                      "*Buffer List*"
+                                      "*Ibuffer*"
+                                      "*esh command on file*")))
+
+(use-package tab-bar
+  :ensure nil
+  :hook (after-init . tab-bar-mode)
+  :config
+  (setq tab-bar-show nil))
 
 (provide 'init-shell)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -199,7 +199,7 @@ That is, remove a non kept dired from the recent list."
 (setq ffap-machine-p-known 'reject)
 
 (use-package gcmh
-  :hook (+self/first-input . gcmh-mode)
+  :hook (emacs-startup . gcmh-mode)
   :diminish
   :init
   ;; from doom-emacs

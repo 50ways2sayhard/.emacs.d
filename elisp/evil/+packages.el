@@ -120,6 +120,7 @@
 (use-package evil-escape
   :after evil
   :commands  (evil-escape-pre-command-hook evil-escape)
+  :hook (+my/first-input-hook . evil-escape-mode)
   :init
   (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
         evil-escape-excluded-major-modes '(vterm-mode)

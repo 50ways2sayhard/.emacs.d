@@ -118,7 +118,7 @@
   (setq org-capture-templates
         '(("t" "Todo" entry
            (file+headline +org-capture-file-gtd "Next Actions")
-           "* ☞TODO %i%? [0%] \n:LOGBOOK: \n:CREATED: %U \n:END:" :prepend t :kill-buffer t)
+           "* TODO %i%? [0%] \n:LOGBOOK: \n:CREATED: %U \n:END:" :prepend t :kill-buffer t)
           ("w" "Waiting for" entry
            (file+headline +org-capture-file-tickler "Tickler")
            "* %?\n%i" :prepend t :kill-buffer t)
@@ -140,46 +140,34 @@
         )
   (setq org-todo-keywords
         '((sequence
-           "☞TODO(t)"  ; A task that needs doing & is ready to do
+           "TODO(t)"  ; A task that needs doing & is ready to do
            "PROJ(p)"  ; An ongoing project that cannot be completed in one step
-           "⚔INPROCESS(s)"  ; A task that is in progress
-           "⚑WAITING(w)"  ; Something is holding up this task; or it is paused
-           "♻Testing️(u)"
+           "INPROCESS(s)"  ; A task that is in progress
+           "WAITING(w)"  ; Something is holding up this task; or it is paused
+           "Testing️(u)"
            "|"
-           "⬇️NEXT(n)"
-           "✰Important(i)"
-           "✔DONE(d)"  ; Task successfully completed
-           "✘CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
+           "DONE(d)"  ; Task successfully completed
+           "CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
           (sequence
-           "✍ NOTE(N)"
+           "NOTE(N)"
            "FIXME(f)"
-           "☕ BREAK(b)"
-           "❤ Love(l)"
+           "BREAK(b)"
+           "Love(l)"
            "REVIEW(r)"
            )) ; Task was completed
-        org-todo-keyword-faces
-        '(
-          ("☞TODO" . (:foreground "#ff39a3" :weight bold))
-          ("⚔INPROCESS"  . "orangered")
-          ("✘CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
-          ("⚑WAITING" . "pink")
-          ("♻Testing️" . (:foreground "#ff6900"))
-          ("☕BREAK" . "gray")
-          ("❤LOVE" . (:foreground "VioletRed4"
-                                  ;; :background "#7A586A"
-                                  :weight bold))
-          ("☟NEXT" . (:foreground "DeepSkyBlue"
-                                  ;; :background "#7A586A"
-                                  :weight bold))
-          ("✰IMPORTANT" . (:foreground "greenyellow"
-                                       ;; :background "#7A586A"
-                                       :weight bold))
-          ("✔DONE" . "#008080")
-          ("FIXME" . "IndianRed"))
         )
 
   (add-hook 'org-mode-hook (lambda ()
-                             (show-paren-local-mode -1)))
+                             (show-paren-local-mode -1))
+            (defface org-checkbox-done-text
+              '((t (:strike-through t)))
+              "Face for the text part of a checked org-mode checkbox.")
+
+            (font-lock-add-keywords
+             'org-mode
+             `(("^[ \t]*\\(?:[-+*]\\|[0-9]+[).]\\)[ \t]+\\(\\(?:\\[@\\(?:start:\\)?[0-9]+\\][ \t]*\\)?\\[\\(?:X\\|\\([0-9]+\\)/\\2\\)\\][^\n]*\n\\)"
+                1 'org-checkbox-done-text prepend))
+             'append))
 
 
   ;; https://emacs-china.org/t/topic/2119/15
@@ -489,10 +477,11 @@
          (org-agenda-finalize . org-modern-agenda))
   :config
   (setq
-   org-modern-table nil
-   org-modern-block nil
-   org-modern-keyword nil
+   org-modern-table t
+   org-modern-block t
+   org-modern-keyword t
    org-modern-todo nil ;;  TODO: no better way to define fine faces
+   org-modern-timestamp t
    org-agenda-block-separator ?─
    org-agenda-time-grid
    '((daily today require-timed)

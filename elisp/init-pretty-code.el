@@ -169,7 +169,7 @@ correct width of the symbols instead of the width measured by `char-width'."
             len (1- len)))
     (cons (car ligature-alist) acc)))
 
-(defvar +pretty-code-enabled-modes t
+(defvar +pretty-code-enabled-modes '(org-mode)
   "List of major modes in which `prettify-symbols-mode' should be enabled.
 If t, enable it everywhere. If the first element is 'not, enable it in any mode
 besides what is listed.")
