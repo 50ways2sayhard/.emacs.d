@@ -119,7 +119,7 @@
 
     "f" '(:wk "Files")
     "ff" '(find-file :wk "Find file")
-    "fF" '(find-file-other-frame :wk "Find file in new Frame")
+    "fF" '(find-file-other-window :wk "Find file in new Frame")
     "fr" '(recentf-open-files :wk "Recent file")
     "fR" '(+my-rename-file :wk "Rename file")
     "fp" '(+open-configuration-folder :wk ".emacs.d")

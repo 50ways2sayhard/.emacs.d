@@ -554,6 +554,48 @@ Optional MODE specifies major mode used for display."
   (interactive)
   (org-agenda nil "n"))
 
+;; -Notification only for mac os
+(when *sys/mac*
+  (add-hook '+my/first-input-hook
+            (lambda ()
+              (run-with-timer 5 nil
+                              (lambda ()
+                                (with-eval-after-load 'org
+                                  (require 'appt)
+
+                                  (setq appt-time-msg-list nil) ;; clear existing appt list
+                                  (setq appt-display-interval '5) ;; warn every 5 minutes from t - appt-message-warning-time
+                                  (setq
+                                   appt-message-warning-time '15 ;; send first warning 15 minutes before appointment
+                                   appt-display-mode-line nil ;; don't show in the modeline
+                                   appt-display-format 'window) ;; pass warnings to the designated window function
+                                  (setq appt-disp-window-function (function ct/appt-display-native))
+
+                                  (appt-activate 1) ;; activate appointment notification
+                                        ; (display-time) ;; Clock in modeline
+
+                                  ;; brew install terminal-notifier
+                                  (defun ct/send-notification (title msg)
+                                    (let ((notifier-path (executable-find "terminal-notifier")))
+                                      (start-process
+                                       "Appointment Alert"
+                                       nil
+                                       notifier-path
+                                       "-message" msg
+                                       "-title" title
+                                       "-sender" "org.gnu.Emacs"
+                                       "-activate" "org.gnu.Emacs")))
+                                  (defun ct/appt-display-native (min-to-app new-time msg)
+                                    (ct/send-notification
+                                     (format "Appointment in %s minutes" min-to-app) ; Title
+                                     (format "%s" msg))) ; Message/detail text
+                                  ;; Agenda-to-appointent hooks
+                                  (org-agenda-to-appt) ;; generate the appt list from org agenda files on emacs launch
+                                  (run-at-time nil 900 'org-agenda-to-appt) ;; update appt list hourly
+                                  (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+                                  ))))))
+;; -Notification
+
 (provide 'init-org)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-org.el ends here

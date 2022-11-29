@@ -47,7 +47,7 @@
 ;;; Code:
 
 (use-package corfu
-  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick) :files (:defaults "extensions/corfu-*.el"))
+  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick corfu-popupinfo) :files (:defaults "extensions/corfu-*.el"))
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -232,7 +232,7 @@ function to the relevant margin-formatters list."
     (when corfu--preview-ov
       (delete-overlay corfu--preview-ov)
       (setq corfu--preview-ov nil))
-    (corfu--echo-cancel corfu--echo-message)
+    ;; (corfu--echo-cancel corfu--echo-message)
     ;; Ensure that state is initialized before next Corfu command
     (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
       (corfu--update))
@@ -246,7 +246,7 @@ function to the relevant margin-formatters list."
 
   (defun corfu-insert-exact ()
     "Insert current candidate with the `exact' status.
-Quit if no candidate is selected."
+  Quit if no candidate is selected."
     (interactive)
     (if (>= corfu--index 0)
         (corfu--insert 'exact)

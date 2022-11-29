@@ -146,13 +146,11 @@
   (diff-hl-delete ((t (:background nil))))
   :bind (:map diff-hl-command-map
               ("SPC" . diff-hl-mark-hunk))
-  :hook ((after-init . global-diff-hl-mode)
+  :hook ((find-file . diff-hl-mode)
+         (vc-dir-mode . diff-hl-dir-mode)
          (dired-mode . diff-hl-dired-mode))
   :init (setq diff-hl-draw-borders nil)
   :config
-  ;; Highlight on-the-fly
-  (diff-hl-flydiff-mode 1)
-
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
 
@@ -164,19 +162,12 @@
       '(center t)))
   (setq diff-hl-fringe-bmp-function #'my-diff-hl-fringe-bmp-function)
 
-  (unless (display-graphic-p)
-    (setq diff-hl-margin-symbols-alist
-          '((insert . " ") (delete . " ") (change . " ")
-            (unknown . " ") (ignored . " ")))
-    ;; Fall back to the display margin since the fringe is unavailable in tty
-    (diff-hl-margin-mode 1)
-    ;; Avoid restoring `diff-hl-margin-mode'
-    (with-eval-after-load 'desktop
-      (add-to-list 'desktop-minor-mode-table
-                   '(diff-hl-margin-mode nil))))
+  (dolist (hook '(conf-mode-hook prog-mode-hook))
+    (add-hook hook #'diff-hl-update))
 
   ;; Integration with magit
   (with-eval-after-load 'magit
+    (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
 
 ;; Highlight some operations
