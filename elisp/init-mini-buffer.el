@@ -69,7 +69,7 @@
   :ensure t
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-'" . embark-dwim)        ;; good alternative: M-.
+   ("M-." . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
   :custom
   (embark-cycle-key ".")
@@ -77,6 +77,11 @@
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
+  ;;  HACK: bind will be override by evil
+  (general-define-key :states '(normal insert visual emacs)
+                      "C-." 'embark-act
+                      "M-." 'embark-dwim
+                      "C-h B" 'embark-bindings)
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -131,7 +136,6 @@ targets."
   )
 
 (use-package embark-consult
-  :ensure t ; only
   :after consult)
 
 (use-package vertico

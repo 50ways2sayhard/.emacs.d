@@ -1,4 +1,4 @@
-;;; init-flymake.el ---
+;;; init-flymake.el --- -*- lexical-binding: t -*-
 ;;
 ;; Filename: init-flymake.el
 ;; Description:
@@ -88,7 +88,7 @@
 (unless (version< emacs-version "28.1")
   (setq eldoc-documentation-function 'eldoc-documentation-compose))
 
-(setq flymake-no-changes-timeout 2)
+(setq flymake-no-changes-timeout nil)
 
 (provide 'init-flymake)
 

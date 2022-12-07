@@ -47,7 +47,7 @@
 ;;; Code:
 
 (use-package corfu
-  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick corfu-popupinfo) :files (:defaults "extensions/corfu-*.el"))
+  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick corfu-popupinfo corfu-history) :files (:defaults "extensions/corfu-*.el"))
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -105,7 +105,9 @@
   (use-package corfu-popupinfo
     :after corfu
     :straight nil
-    :hook (corfu-mode . corfu-popupinfo-mode))
+    :hook (corfu-mode . corfu-popupinfo-mode)
+    :config
+    (setq corfu-popupinfo-delay '(0.5 . 0.3)))
 
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-bracket)

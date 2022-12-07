@@ -70,15 +70,6 @@
   (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
         (*sys/linux* (setq rime-user-data-dir "~/.rime")))
-  (defun +rime-sync ()
-    ;; HACK: force emacs-rime to use userdb.
-    ;; I am not sure if it is safe as the deploy may delete the old userdb.
-    (interactive)
-    (when rime--lib-loaded
-      (let ((lock-name (concat rime-user-data-dir "/rime-ice.userdb/LOCK")))
-        (when (file-exists-p lock-name)
-          (delete-file lock-name)
-          (rime-deploy)))))
   (defun activate-default-input-method ()
     (interactive)
     (activate-input-method default-input-method))

@@ -45,10 +45,7 @@
   :hook ((prog-mode LaTeX-mode org-mode) . yas-minor-mode)
   :bind
   (:map yas-minor-mode-map
-        ("C-c C-n" . yas-expand-from-trigger-key)
-        ("TAB" . my/yas-smart-next-field-or-maybe-expand)
-        ([tab] . my/yas-smart-next-field-or-maybe-expand)
-        )
+        ("C-c C-n" . yas-expand-from-trigger-key))
   (:map yas-keymap
         (("M-}" . smarter-yas-expand-next-field)
          ("TAB" . nil)

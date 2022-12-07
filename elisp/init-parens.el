@@ -67,7 +67,8 @@
     "C-M-f" 'puni-forward-sexp
     "C-M-b" 'puni-backward-sexp
     "C-M-a" 'puni-beginning-of-sexp
-    "C-M-e" 'puni-end-of-sexp)
+    "C-M-e" 'puni-end-of-sexp
+    "s-<backspace>" 'puni-force-delete)
   :config
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
