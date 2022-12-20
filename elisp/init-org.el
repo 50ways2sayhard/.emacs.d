@@ -41,24 +41,24 @@
 
 ;; OrgPac
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
-(defvar +org-capture-file-idea (concat +self/org-base-dir "ideas.org"))
 (defvar +org-capture-file-note (concat +self/org-base-dir "notes.org"))
-(defvar +org-capture-file-inbox (concat +self/org-base-dir "inbox.org"))
 (defvar +org-capture-file-someday (concat +self/org-base-dir "someday.org"))
 (defvar +org-capture-file-tickler (concat +self/org-base-dir "tickler.org"))
-(defun archive-done-tasks ()
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward
-            (concat "\\* " (regexp-opt org-done-keywords) " ") nil t)
-      (goto-char (line-beginning-position))
-      (org-archive-subtree))))
+(defvar +org-capture-file-done (concat +self/org-base-dir "done.org"))
+(defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
+
+(defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
+                                                              +org-capture-file-someday
+                                                              +org-capture-file-note
+                                                              +org-capture-file-routine)))
+
 (use-package org
   :straight nil
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
-         (org-mode . org-num-mode))
+         (org-mode . (lambda ()
+                       (unless (cl-member (buffer-file-name) +org-files :test 'equal)
+                         (org-num-mode)))))
   :bind
   (:map org-mode-map
         ([tab] . org-cycle))
@@ -89,8 +89,7 @@
   (add-hook 'org-clock-in-hook #'org-save-all-org-buffers)
   (add-hook 'org-clock-out-hook #'org-save-all-org-buffers)
   (add-hook 'org-after-todo-state-change-hook #'org-save-all-org-buffers)
-  (with-eval-after-load 'org
-    (org-clock-persistence-insinuate))
+  (org-clock-persistence-insinuate)
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (add-hook (quote hack-local-variables-hook)
             (lambda ()
@@ -136,26 +135,26 @@
         '((sequence "TODO(t!)" "DOING(i!)" "|" "DONE(d!)" "ABORT(a!)"))
         org-priority-faces '((?A . error)
                              (?B . warning)
-                             (?C . success))
-        )
+                             (?C . success)))
   (setq org-todo-keywords
         '((sequence
            "TODO(t)"  ; A task that needs doing & is ready to do
            "PROJ(p)"  ; An ongoing project that cannot be completed in one step
            "INPROCESS(s)"  ; A task that is in progress
            "WAITING(w)"  ; Something is holding up this task; or it is paused
-           "Testing️(u)"
            "|"
            "DONE(d)"  ; Task successfully completed
            "CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
-          (sequence
-           "NOTE(N)"
-           "FIXME(f)"
-           "BREAK(b)"
-           "Love(l)"
-           "REVIEW(r)"
-           )) ; Task was completed
+          )
         )
+
+  ;; HACK: fix folded org headings
+  ;; https://github.com/minad/consult/issues/563#issuecomment-1186612641
+  (defun org-show-entry-consult-a (fn &rest args)
+    (when-let ((pos (apply fn args)))
+      (when (derived-mode-p 'org-mode)
+        (org-fold-show-entry))))
+  (advice-add 'consult-outline :around #'org-show-entry-consult-a)
 
   (add-hook 'org-mode-hook (lambda ()
                              (show-paren-local-mode -1))
@@ -183,33 +182,6 @@
           (diary-chinese-anniversary lunar-month lunar-day y mark))
       (diary-chinese-anniversary lunar-month lunar-day year mark)))
 
-  ;; (add-hook 'org-mode-hook #'+org-enable-auto-reformat-tables-h)
-  (defun my:org-agenda-time-grid-spacing ()
-    "Set different line spacing w.r.t. time duration."
-    (save-excursion
-      (let* ((background (alist-get 'background-mode (frame-parameters)))
-             (background-dark-p (string= background "dark"))
-             (colors (if background-dark-p
-                         (list "#aa557f" "DarkGreen" "DarkSlateGray" "DarkSlateBlue")
-                       (list "#F6B1C3" "#FFFF9D" "#BEEB9F" "#ADD5F7")))
-             pos
-             duration)
-        (nconc colors colors)
-        (goto-char (point-min))
-        (while (setq pos (next-single-property-change (point) 'duration))
-          (goto-char pos)
-          (when (and (not (equal pos (point-at-eol)))
-                     (setq duration (org-get-at-bol 'duration)))
-            (let ((line-height (if (< duration 30) 1.0 (+ 0.5 (/ duration 60))))
-                  (ov (make-overlay (point-at-bol) (1+ (point-at-eol)))))
-              (overlay-put ov 'face `(:background ,(car colors)
-                                                  :foreground
-                                                  ,(if background-dark-p "black" "white")))
-              (setq colors (cdr colors))
-              (overlay-put ov 'line-height line-height)
-              (overlay-put ov 'line-spacing (1- line-height))))))))
-
-  (add-hook 'org-agenda-finalize-hook #'my:org-agenda-time-grid-spacing)
 
   ;; binding
   (evil-set-initial-state 'org-agenda-mode 'motion)
@@ -548,6 +520,7 @@ Optional MODE specifies major mode used for display."
 
 
   )
+
 
 (defun +my/open-org-agenda ()
   "open org agenda in left window"

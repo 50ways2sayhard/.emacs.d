@@ -157,8 +157,8 @@ current file). Only scans first 2048 bytes of the document."
              in (cl-remove-if-not #'listp org-todo-keywords)
              for keywords =
              (mapcar (lambda (x) (if (string-match "^\\([^(]+\\)(" x)
-                                (match-string 1 x)
-                              x))
+                                     (match-string 1 x)
+                                   x))
                      keyword-spec)
              if (eq type 'sequence)
              if (member keyword keywords)
@@ -555,7 +555,7 @@ unfold to point on startup."
       (-filter (lambda (item)
                  (not (member
                        (car (cdr (get-text-property 0 'consult-org--heading item)))
-                       '("✔DONE" "✘CANCELED"))))
+                       '("DONE" "CANCELED"))))
                (consult-org--headings nil nil 'agenda)))
      :prompt "Go to heading: "
      :category 'consult-org-heading
@@ -572,14 +572,35 @@ unfold to point on startup."
          (if transform cand name)))
      :lookup #'consult--lookup-candidate))
 
-  (defun consult-clock-in ()
-    "Clock into an Org agenda heading."
-    (interactive)
+  (defun consult-clock-in (&optional match scope resolve)
+    "Clock into an Org heading."
+    (interactive (list nil nil current-prefix-arg))
+    (require 'org-clock)
+    (org-clock-load)
     (save-window-excursion
-      (+my/retrieval-todo-items)
-      (org-clock-in)
-      (save-buffer)))
-  (consult-customize consult-clock-in :prompt "Clock in: ")
+      (consult-org-heading
+       match
+       (or scope
+           (thread-last org-clock-history
+                        (mapcar 'marker-buffer)
+                        (mapcar 'buffer-file-name)
+                        (delete-dups)
+                        (delq nil))
+           (user-error "No recent clocked tasks")))
+      (org-clock-in nil (when resolve
+                          (org-resolve-clocks)
+                          (org-read-date t t)))))
+
+  (consult-customize consult-clock-in
+                     :prompt "Clock in: "
+                     :preview-key (kbd "M-.")
+                     :group
+                     (lambda (cand transform)
+                       (let* ((marker (get-text-property 0 'consult--candidate cand))
+                              (name (if (member marker org-clock-history)
+                                        "*Recent*"
+                                      (buffer-name (marker-buffer marker)))))
+                         (if transform (substring cand (1+ (length name))) name))))
 
   (defun consult-mark-done ()
     "Clock into an Org agenda heading."
@@ -588,8 +609,37 @@ unfold to point on startup."
       (+my/retrieval-todo-items)
       (org-todo 'done)
       (save-buffer)))
-  (consult-customize consult-mark-done :prompt "Mark done: ")
-  )
+  (consult-customize consult-mark-done :prompt "Mark done: "))
+
+
+(defun +my-org/mark-done ()
+  (interactive)
+  (when (derived-mode-p 'org-mode)
+    (org-back-to-heading)
+    (when-let* ((close-time (org-entry-get (point) "CLOSED")) ;;  HACK: assume all DONE entries have CLOSED time
+                (close-time (org-time-string-to-time close-time))
+                (close-time (decode-time close-time))
+                (close-time (list (decoded-time-month close-time) (decoded-time-day close-time) (decoded-time-year close-time))))
+      (org-cut-subtree)
+      (with-current-buffer (find-file-noselect +org-capture-file-done)
+        (org-datetree-find-iso-week-create close-time)
+        (org-paste-subtree)
+        (org-next-visible-heading 1)
+        (when (and (null (nth 2 (org-heading-components)))
+                   (= (nth 0 (org-heading-components)) 3))
+          (org-cut-subtree))
+        (save-buffer)
+        (kill-buffer)))))
+
+(defun archive-done-tasks ()
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward
+            (concat "\\* " (regexp-opt org-done-keywords) " ") nil t)
+      (goto-char (line-beginning-position))
+      (+my-org/mark-done))))
+
 
 (provide 'org/+funcs)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
