@@ -70,7 +70,8 @@
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   ("C-h B" . embark-bindings)
+   ("C-/" . embark-export)) ;; alternative for `describe-bindings'
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")

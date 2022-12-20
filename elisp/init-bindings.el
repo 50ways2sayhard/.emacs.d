@@ -140,6 +140,7 @@
     "go" '(magit-open-repo :wk "Open repo")
     "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
     "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
+    "gt" '(git-timemachine :wk "Git timemachine")
 
     "j" '(:wk "Jump")
     "jj" '(evil-avy-goto-char :wk "Jump to character")
