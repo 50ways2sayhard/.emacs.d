@@ -51,6 +51,11 @@
    ("M-DEL" . delete-block-backward)))
 ;; -DeleteBlockPac
 
+(use-package avy
+  :diminish
+  :demand t
+  :commands (avy-goto-char avy-goto-line))
+
 (use-package rime
   :defer t
   :custom
