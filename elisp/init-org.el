@@ -48,6 +48,7 @@
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
+                                                              +org-capture-file-done
                                                               +org-capture-file-someday
                                                               +org-capture-file-note
                                                               +org-capture-file-routine)))

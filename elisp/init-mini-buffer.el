@@ -249,7 +249,6 @@ targets."
 
 (use-package consult
   :after orderless
-  :straight (:host github :repo "minad/consult")
   :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point consult-clock-in)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)

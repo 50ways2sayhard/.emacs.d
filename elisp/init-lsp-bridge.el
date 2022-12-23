@@ -38,22 +38,23 @@
   (let ((inhibit-message t)
         (num (length (acm-get-input-prefix))))
     (acm-insert-common)
-    (when (= num (length (acm-get-input-prefix)))
-      (acm-complete))))
+    (if (= num (length (acm-get-input-prefix)))
+        (acm-complete)
+      )))
 
 (defun +acm-setup ()
   (corfu-mode -1)
   (setq
-   ;; acm-candidate-match-function #'orderless-flex
    acm-enable-yas nil
+   acm-enable-tempel t
    acm-enable-search-words t
    acm-enable-tabnine-helper t
    acm-enable-telega nil
    acm-enable-search-sdcv-words nil)
 
-  (when (boundp 'acm-mode-map)
-    (define-key acm-mode-map (kbd "TAB") 'acm-insert-common-or-complete)
-    (define-key acm-mode-map (kbd "C-j") 'acm-complete)))
+  ;; (define-key acm-mode-map (kbd "<tab>") 'acm-insert-common-or-complete)
+  (define-key acm-mode-map (kbd "C-j") 'acm-complete)
+  )
 
 (use-package lsp-bridge
   :disabled
@@ -72,13 +73,14 @@
                                 "cF" '(lsp-bridge-find-impl :wk "Find implementation")
                                 "cD" '(lsp-bridge-find-references :wk "Find references")
                                 "cd" '(lsp-bridge-find-def :wk "Find definition")
-                                "ck" '(lsp-bridge-lookup-documentation :wk "Lookup documentation"))
+                                "ck" '(lsp-bridge-popup-documentation :wk "Lookup documentation"))
                               (setq-local corfu-auto-prefix 0)
 
                               (evil-define-key 'normal 'global
                                 "K" 'lsp-bridge-lookup-documentation))))
   :config
-  (setq lsp-bridge-enable-diagnostics (not (boundp 'eglot-managed-mode)))
+  (setq lsp-bridge-completion-popup-predicates (remove 'lsp-bridge-not-in-string lsp-bridge-completion-popup-predicates))
+  (setq lsp-bridge-enable-diagnostics nil)
   (setq lsp-bridge-enable-signature-help nil)
   (setq lsp-bridge-lookup-doc-tooltip-border-width 2)
 
@@ -107,24 +109,85 @@
                              "cs" '(lspce-signature-at-point :wk "Signature at point")
                              )
                            (setq completion-category-defaults nil)
+                           (setq eldoc-echo-area-use-multiline-p nil)
+                           (setq eldoc-documentation-functions
+                                 (cons #'flymake-eldoc-function
+                                       (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+                           ;; Show all eldoc feedback.
+                           (setq eldoc-documentation-strategy #'eldoc-documentation-compose)
+                           (add-function :before-until (local 'imenu-create-index-function)
+                                         #'lspce-imenu-create)
                            (setq-local completion-at-point-functions (my/convert-super-capf #'lspce-completion-at-point))
                            )))
+  :init
+  (advice-add #'lspce--clientCapabilities :around
+              (lambda (fn)
+                (let ((l (funcall fn)))
+                  (plist-put (plist-get l :textDocument)
+                             :documentSymbol
+                             (list
+                              :dynamicRegistration :json-false
+                              :hierarchicalDocumentSymbolSupport t
+                              :symbolKind `(:valueSet
+                                            [,@(mapcar
+                                                #'car lspce--symbol-kind-names)])))
+                  l)))
   :config
-  (add-to-list 'lspce-server-programs '("dart" "/usr/local/bin/dart" "language-server" lspce-dart-initializationOptions))
+  (add-to-list 'lspce-server-programs '("dart" "dart" "language-server"))
   (lspce-set-log-file "/Users/johngong/.emacs.d/.local/cache/lspce.log")
-  (setq lspce-enable-flymake nil
+  (setq lspce-enable-flymake t
         lspce-send-changes-idle-time 0.1
         lspce-eldoc-enable-signature t)
+  (defun lspce-imenu-create ()
+    (cl-labels
+        ((unfurl (obj)
+           (if-let ((children (gethash "children" obj))
+                    (name (gethash "name" obj)))
+               (cons obj
+                     (mapcar (lambda (c)
+                               (puthash
+                                "containerName"
+                                (let ((existing (gethash "containerName" c)))
+                                  (if existing (format "%s::%s" name existing)
+                                    name)) c) c)
+                             (mapcan #'unfurl children)))
+             (list obj))))
+      (mapcar
+       (lambda (obj)
+         (cons
+          (cdr (assoc (car obj) lspce--symbol-kind-names))
+          (mapcar
+           (lambda (obj)
+             (let ((content
+                    (cons (gethash "name" obj)
+                          (lspce--lsp-position-to-point
+                           (gethash "start"
+                                    (if-let ((range (gethash "selectionRange" obj)))
+                                        range
+                                      (gethash "range" (gethash "location" obj)))))))
+                   (container (gethash "containerName" obj)))
+               (if container (list container content)
+                 content)))
+           (cdr obj))))
+
+       (seq-group-by
+        (lambda (obj) (gethash "kind" obj))
+        (mapcan #'unfurl
+                (lspce--request "textDocument/documentSymbol" (list :textDocument (lspce--textDocumentIdenfitier (lspce--uri)))))))))
 
 
-  (defun lspce-dart-initializationOptions ()
-    (let ((options (make-hash-table :test #'equal)))
-      (setq options (lspce--add-option "dart.completeFunctionCalls" t options))
-      (setq options (lspce--add-option "dart.enableSnippets" t options))
-      options
-      )
-    )
-  )
+  (defun my/evil-collection-lspce-setup ()
+    "Set up `evil' bindings for `eglot'."
+    (evil-collection-define-key 'normal 'lspce-mode-map
+      "gd" 'xref-find-definitions
+      "gD" 'xref-find-definitions-other-window
+      "g5" 'xref-find-definitions-other-frame
+      (kbd "C-t") 'xref-pop-marker-stack
+      "K" 'lspce-help-at-point)
+
+    (when evil-collection-want-find-usages-bindings
+      (evil-collection-define-key 'normal 'lspce-mode-map
+        "gr" 'xref-find-references))))
 
 (provide 'init-lsp-bridge)
 
