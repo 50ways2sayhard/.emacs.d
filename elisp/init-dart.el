@@ -55,8 +55,9 @@
   :hook ((dart-mode . (lambda ()
                         (format-all-mode t)))
          (eglot-managed-mode . (lambda ()
-                                 (add-hook 'before-save-hook '+eglot-organize-imports nil t)
-                                 ))
+                                 (add-hook 'before-save-hook (lambda ()
+                                                               (call-interactively 'eglot-code-action-organize-imports)
+                                                               ) nil t)))
          )
   :config
   (require 'prog/+flutter)
@@ -68,11 +69,11 @@
   ;; (add-hook 'project-find-functions #'project-try-dart)
   ;; (cl-defmethod project-roots ((project (head dart)))
   ;;   (list (cdr project)))
-  (setq +my/flutter-pub-host "http://pub.futuoa.com")
 
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-mode :types
                                                    ((?c "Class"    font-lock-type-face)
+                                                    (?e "Enum" font-locl-type-face)
                                                     (?V "Constructor" font-lock-type-face)
                                                     (?C "Constant"    font-lock-constant-face)
                                                     (?f "Function"  font-lock-function-name-face)

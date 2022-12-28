@@ -46,21 +46,6 @@
 ;;
 ;;; Code:
 
-(use-package evil-easymotion
-  :after evil
-  :commands evilem-create evilem-default-keybindings
-  :config
-  ;; Use evil-search backend, instead of isearch
-  (evilem-make-motion evilem-motion-search-next #'evil-ex-search-next
-                      :bind ((evil-ex-search-highlight-all nil)))
-  (evilem-make-motion evilem-motion-search-previous #'evil-ex-search-previous
-                      :bind ((evil-ex-search-highlight-all nil)))
-
-  (evilem-make-motion evilem-motion-search-word-forward #'evil-ex-search-word-forward
-                      :bind ((evil-ex-search-highlight-all nil)))
-  (evilem-make-motion evilem-motion-search-word-backward #'evil-ex-search-word-backward
-                      :bind ((evil-ex-search-highlight-all nil))))
-
 (use-package evil-anzu
   :after evil
   :config
@@ -120,6 +105,7 @@
 (use-package evil-escape
   :after evil
   :commands  (evil-escape-pre-command-hook evil-escape)
+  :hook (+my/first-input-hook . evil-escape-mode)
   :init
   (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
         evil-escape-excluded-major-modes '(vterm-mode)
@@ -197,6 +183,60 @@
 
 (use-package evil-indent-plus
   :after evil)
+
+(use-package evil-textobj-tree-sitter
+  :after tree-sitter
+  :straight (evil-textobj-tree-sitter :type git
+                                      :host github
+                                      :repo "meain/evil-textobj-tree-sitter"
+                                      :files (:defaults "queries"))
+  :config
+  ;; bind `function.outer`(entire function block) to `f` for use in things like `vaf`, `yaf`
+  (define-key evil-outer-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
+  ;; bind `function.inner`(function block without name and args) to `f` for use in things like `vif`, `yif`
+  (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
+
+  (define-key evil-outer-text-objects-map "c" (evil-textobj-tree-sitter-get-textobj "class.outer"))
+  (define-key evil-inner-text-objects-map "c" (evil-textobj-tree-sitter-get-textobj "class.inner"))
+
+  ;; You can also bind multiple items and we will match the first one we can find
+  (define-key evil-outer-text-objects-map "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
+
+  ;; function
+  ;; Goto start of next function
+  (define-key evil-normal-state-map (kbd "]f") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "function.outer")))
+  ;; Goto start of previous function
+  (define-key evil-normal-state-map (kbd "[f") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "function.outer" t)))
+  ;; Goto end of next function
+  (define-key evil-normal-state-map (kbd "]F") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "function.outer" nil t)))
+  ;; Goto end of previous function
+  (define-key evil-normal-state-map (kbd "[F") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "function.outer" t t)))
+  ;; class
+  ;; Goto start of next class
+  (define-key evil-normal-state-map (kbd "]c") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "class.outer")))
+  ;; Goto start of previous class
+  (define-key evil-normal-state-map (kbd "[c") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "class.outer" t)))
+  ;; Goto end of next class
+  (define-key evil-normal-state-map (kbd "]C") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "class.outer" nil t)))
+  ;; Goto end of previous class
+  (define-key evil-normal-state-map (kbd "[C") (lambda ()
+                                                 (interactive)
+                                                 (evil-textobj-tree-sitter-goto-textobj "class.outer" t t)))
+  )
 
 (provide 'evil/+packages)
 

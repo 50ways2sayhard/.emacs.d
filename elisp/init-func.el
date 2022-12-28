@@ -180,11 +180,22 @@
                                    (append (mapcar 'file-name-directory recentf-list)))))
     (consult-recent-file)))
 
+(defun +complete--get-meta (setting)
+  "Get metadata SETTING from completion table."
+  (completion-metadata-get
+   (condition-case-unless-debug err
+       (completion-metadata (minibuffer-contents)
+                            minibuffer-completion-table
+                            minibuffer-completion-predicate)
+     (error (message (error-message-string err)) nil))
+   setting))
+
+
 ;;;###autoload
 (defun open-in-external-app ()
   "TODO: only for macos now."
   (interactive)
-  (let ((candidate (+complete-get-current-candidate)))
+  (let ((candidate (vertico--candidate)))
     (when (eq (+complete--get-meta 'category) 'file)
       (shell-command (concat "open " candidate))
       (abort-recursive-edit))))

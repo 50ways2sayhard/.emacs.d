@@ -311,6 +311,31 @@ window that already exists in that direction. It will split otherwise."
   ;; (evil-define-key 'normal 'smerge-mode-map ",c" 'smerge-keep-current)
   )
 
+(use-package git-timemachine
+  :commands (git-timemachine git-timemachine-toggle)
+  :straight (:repo "emacsmirror/git-timemachine" :host github)
+  :bind (:map vc-prefix-map
+              ("t" . git-timemachine))
+  :hook ((git-timemachine-mode . (lambda ()
+                                   "Improve `git-timemachine' buffers."
+                                   ;; Display different colors in mode-line
+                                   (if (facep 'mode-line-active)
+                                       (face-remap-add-relative 'mode-line-active 'custom-state)
+                                     (face-remap-add-relative 'mode-line 'custom-state))
+
+                                   ;; Highlight symbols in elisp
+                                   (and (derived-mode-p 'emacs-lisp-mode)
+                                        (fboundp 'highlight-defined-mode)
+                                        (highlight-defined-mode t))
+
+                                   ;; Display line numbers
+                                   (and (derived-mode-p 'prog-mode 'yaml-mode)
+                                        (fboundp 'display-line-numbers-mode)
+                                        (display-line-numbers-mode t))))
+         (before-revert . (lambda ()
+                            (when (bound-and-true-p git-timemachine-mode)
+                              (user-error "Cannot revert the timemachine buffer"))))))
+
 (provide 'init-magit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-magit.el ends here

@@ -17,6 +17,18 @@
     :keymaps 'override
     :prefix ",")
 
+  (general-create-definer tab-def
+    :states '(normal visual emacs motion)
+    :keymaps 'override
+    :prefix "C-s")
+
+  (tab-def
+    "" nil
+    "c" '(tab-new :wk "New")
+    "r" '(tab-bar-rename-tab :wk "Rename")
+    "d" '(tab-bar-close-tab :wk "Close")
+    "s" '(tab-bar-select-tab-by-name :wk "Select"))
+
   ;; evil mode
   (evil-define-key 'normal 'global
     "j" 'evil-next-visual-line
@@ -29,11 +41,11 @@
 
     ;; goto
     "gd" 'xref-find-definitions
-    "gD" 'xref-find-references
+    "gD" 'xref-find-definitions-other-window
+    "gI" 'xref-find-implementations
 
     "/" 'consult-line-symbol-at-point
-    "'" 'noct-consult-ripgrep-or-line
-    )
+    "'" 'noct-consult-ripgrep-or-line)
 
   (evil-ex-define-cmd "W" 'evil-write)
   (general-def "<escape>" 'keyboard-quit)
@@ -78,6 +90,7 @@
     "b[" '(previous-buffer :wk "Previous buffer")
     "b]" '(next-buffer :wk "Next buffer")
     "bb" '(switch-to-buffer :wk "Switch buffer")
+    "bB" '(switch-to-buffer-other-window :wk "Switch buffer other window")
     "bd" '(kill-current-buffer :wk "Kill buffer")
 
     "c" '(:wk "Code")
@@ -106,12 +119,15 @@
 
     "f" '(:wk "Files")
     "ff" '(find-file :wk "Find file")
+    "fF" '(find-file-other-window :wk "Find file in new Frame")
     "fr" '(recentf-open-files :wk "Recent file")
     "fR" '(+my-rename-file :wk "Rename file")
     "fp" '(+open-configuration-folder :wk ".emacs.d")
     "fD" '(+my-delete-file :wk "Delete file")
     "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
     "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
+    "fj" '(consult-dir :wk "Consult directory")
+    "fh" '((lambda() (interactive)(consult-fd default-directory)) :wk "Find file here")
 
     "g" '(:wk "Git")
     "gs" '(magit-status :wk "Git status")
@@ -124,6 +140,7 @@
     "go" '(magit-open-repo :wk "Open repo")
     "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
     "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
+    "gt" '(git-timemachine :wk "Git timemachine")
 
     "j" '(:wk "Jump")
     "jj" '(evil-avy-goto-char :wk "Jump to character")
@@ -185,6 +202,8 @@
     "wk" '(evil-window-up :wk "Focus window up")
     "wh" '(evil-window-left :wk "Focus window left")
     "wl" '(evil-window-right :wk "Focus window right")
+    "wu" '(winner-undo :wk "Undo window")
+    "wo" '(winner-redo :wk "Redo window")
 
     "x" '(org-capture :wk "Org capture")
 

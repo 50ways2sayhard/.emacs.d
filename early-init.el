@@ -70,6 +70,7 @@
 (setq gc-cons-threshold most-positive-fixnum)
 
 (setq byte-compile-warnings nil)
+(setq native-comp-async-report-warnings-errors nil)
 
 (provide 'early-init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

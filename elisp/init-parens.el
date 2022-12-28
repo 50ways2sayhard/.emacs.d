@@ -53,31 +53,24 @@
                                 (,electric-pair-inhibit-predicate c))))))
   (add-to-list 'electric-pair-pairs '(?` . ?`)))
 
-(use-package awesome-pair
+(use-package puni
   :defer t
-  :straight (:host github :repo "manateelazycat/awesome-pair")
-  :hook (prog-mode . awesome-pair-mode)
+  :hook ((prog-mode markdown-mode org-mode) . puni-mode)
+  :init
+  (general-def
+    :keymaps 'puni-mode-map
+    "DEL" 'puni-backward-delete-char
+    "C-d" 'puni-forward-delete-char
+    "C-k" 'puni-kill-line
+    "M-h" 'puni-force-delete
+    "C-u" 'puni-backward-kill-line
+    "C-M-f" 'puni-forward-sexp
+    "C-M-b" 'puni-backward-sexp
+    "C-M-a" 'puni-beginning-of-sexp
+    "C-M-e" 'puni-end-of-sexp
+    "s-<backspace>" 'puni-force-delete)
   :config
-  (define-key awesome-pair-mode-map (kbd "(") 'awesome-pair-open-round)
-  (define-key awesome-pair-mode-map (kbd "[") 'awesome-pair-open-bracket)
-  (define-key awesome-pair-mode-map (kbd "{") 'awesome-pair-open-curly)
-  (define-key awesome-pair-mode-map (kbd ")") 'awesome-pair-close-round)
-  (define-key awesome-pair-mode-map (kbd "]") 'awesome-pair-close-bracket)
-  (define-key awesome-pair-mode-map (kbd "}") 'awesome-pair-close-curly)
-
-
-  (define-key awesome-pair-mode-map (kbd "%") 'awesome-pair-match-paren)
-  (define-key awesome-pair-mode-map (kbd "\"") 'awesome-pair-double-quote)
-
-  (define-key awesome-pair-mode-map (kbd "M-o") 'awesome-pair-backward-delete)
-  (define-key awesome-pair-mode-map (kbd "C-d") 'awesome-pair-forward-delete)
-  (define-key awesome-pair-mode-map (kbd "C-k") 'awesome-pair-kill)
-
-  (define-key awesome-pair-mode-map (kbd "M-p") 'awesome-pair-jump-right)
-  (define-key awesome-pair-mode-map (kbd "M-n") 'awesome-pair-jump-left)
-  (define-key awesome-pair-mode-map (kbd "M-:") 'awesome-pair-jump-out-pair-and-newline)
-  )
-
+  (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
 ;; Show matching parens
 (use-package paren

@@ -1,7 +1,7 @@
 
 ;;; Code:
 
-(let ((file-name-handler-alist nil))
+(let ((file-name-handler-alist nil)))
 
 (use-package evil
   :hook (after-init . evil-mode)
@@ -33,7 +33,7 @@
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
-  (dolist (mode '(color-rg-mode smerge-mode vterm-mode))
+  (dolist (mode '(color-rg-mode smerge-mode vterm-mode git-timemachine-mode))
     (add-to-list 'evil-emacs-state-modes mode))
 
   ;; stop copying each visual state move to the clipboard:
@@ -63,7 +63,7 @@
                                                 (setq-local evil-auto-indent nil))))
 
   )
-  )
+
 
 ;;; Packages
 (require 'evil/+packages)

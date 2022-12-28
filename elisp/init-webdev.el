@@ -39,9 +39,6 @@
 
 ;; WebModePac
 (use-package web-mode
-  :custom-face
-  (css-selector ((t (:inherit default :foreground "#66CCFF"))))
-  (web-mode-current-element-highlight-face ((t (:inherit default :background "#434343"))))
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")

@@ -73,9 +73,16 @@
 (use-package ef-themes
   :straight (:repo "protesilaos/ef-themes" :host github)
   :config
-  ;; (ef-themes-select 'ef-trio-dark)
-  (ef-themes-select 'ef-summer)
-  )
+  (ef-themes-select 'ef-trio-light)
+  (with-eval-after-load 'org
+    (setq org-todo-keyword-faces
+          `(("TODO" . (:foreground ,(ef-themes-with-colors red-cooler) :weight bold))
+            ("INPROCESS"  . ,(ef-themes-with-colors yellow-cooler))
+            ("PROJ"  . ,(ef-themes-with-colors cyan-cooler))
+            ("WAITING" . ,(ef-themes-with-colors green-faint))
+            ("DONE" . (:foreground ,(ef-themes-with-colors fg-alt) :strike-through t))
+            ("CANCELED" . (:foreground ,(ef-themes-with-colors fg-dim) :weight bold :strike-through t))))
+    ))
 
 (provide 'init-theme)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

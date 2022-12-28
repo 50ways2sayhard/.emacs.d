@@ -199,7 +199,7 @@ That is, remove a non kept dired from the recent list."
 (setq ffap-machine-p-known 'reject)
 
 (use-package gcmh
-  :hook (+self/first-input . gcmh-mode)
+  :hook (emacs-startup . gcmh-mode)
   :diminish
   :init
   ;; from doom-emacs
@@ -248,6 +248,8 @@ don't offer a form of remote control."
 
 (dolist (hook '(conf-mode-hook emacs-lisp-mode-hook))
   (add-hook hook #'hexcolour-add-to-font-lock))
+
+(windmove-default-keybindings 'meta)
 
 (provide 'init-global-config)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -118,6 +118,9 @@ Install the doc if it's not installed."
   :defer t
   :mode ("\\.md\\'" . markdown-mode))
 
+(use-package lua-mode
+  :mode "\\.lua\\'")
+
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-prog.el ends here

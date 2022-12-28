@@ -47,7 +47,7 @@
 ;;; Code:
 
 (use-package corfu
-  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick) :files (:defaults "extensions/corfu-*.el"))
+  :straight (:host github :repo "minad/corfu" :includes (corfu-indexed corfu-quick corfu-popupinfo corfu-history) :files (:defaults "extensions/corfu-*.el"))
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -79,6 +79,8 @@
         ("C-d" . corfu-info-documentation)
         ("M-." . corfu-info-location)
         ("C-i" . nil)
+        ("M-j" . nil)
+        ("M-k" . nil)
         ([?\r] . nil)
         ([backtab] . corfu-previous))
   :init
@@ -86,18 +88,6 @@
   (evil-collection-define-key 'insert 'corfu-map
     (kbd "C-j") 'corfu-insert)
   :config
-  (defun eat/yas-next-field-or-maybe-expand ()
-    "Try complete current cond or `yas-next-field-or-maybe-expand'.
-
-Sometime lsp client return a snippet and complete didn't work(TAB will jump to next field),
-so try complete filst, if there nothing to complete then try to jump to next field or expand."
-    (interactive)
-    (or (corfu-insert) ;; NOTE this works
-        (yas-next-field-or-maybe-expand)))
-  (with-eval-after-load 'yasnippet
-    (define-key yas-keymap (kbd "<tab>") 'eat/yas-next-field-or-maybe-expand)
-    (define-key yas-keymap (kbd "TAB") 'eat/yas-next-field-or-maybe-expand))
-
   (use-package corfu-quick
     :after corfu
     :straight nil
@@ -111,6 +101,14 @@ so try complete filst, if there nothing to complete then try to jump to next fie
     :after corfu
     :config
     (corfu-history-mode))
+
+  (use-package corfu-popupinfo
+    :after corfu
+    :straight nil
+    :hook (corfu-mode . corfu-popupinfo-mode)
+    :config
+    (setq corfu-popupinfo-delay '(0.5 . 0.3)))
+
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-bracket)
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-curly)
@@ -221,6 +219,51 @@ function to the relevant margin-formatters list."
 	            (kind-all-the-icons-formatted t))))) ;; as a backup
     (add-to-list 'corfu-margin-formatters #'kind-all-the-icons-margin-formatter)
     )
+
+  ;; allow evil-repeat
+  ;; https://github.com/minad/corfu/pull/225
+  (defun corfu--unread-this-command-keys ()
+    (when (> (length (this-command-keys)) 0)
+      (setq unread-command-events (nconc
+                                   (listify-key-sequence (this-command-keys))
+                                   unread-command-events))
+      (clear-this-command-keys t)))
+
+  (defun corfu--pre-command ()
+    "Insert selected candidate unless command is marked to continue completion."
+    (when corfu--preview-ov
+      (delete-overlay corfu--preview-ov)
+      (setq corfu--preview-ov nil))
+    ;; (corfu--echo-cancel corfu--echo-message)
+    ;; Ensure that state is initialized before next Corfu command
+    (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
+      (corfu--update))
+    (when (and (eq corfu-preview-current 'insert)
+               (/= corfu--index corfu--preselect)
+               ;; See the comment about `overriding-local-map' in `corfu--post-command'.
+               (not (or overriding-terminal-local-map
+                        (corfu--match-symbol-p corfu-continue-commands this-command))))
+      (corfu--unread-this-command-keys)
+      (setq this-command 'corfu-insert-exact)))
+
+  (defun corfu-insert-exact ()
+    "Insert current candidate with the `exact' status.
+  Quit if no candidate is selected."
+    (interactive)
+    (if (>= corfu--index 0)
+        (corfu--insert 'exact)
+      (corfu-quit)))
+
+  (mapc #'evil-declare-ignore-repeat
+        '(corfu-next
+          corfu-previous
+          corfu-first
+          corfu-last))
+
+  (mapc #'evil-declare-change-repeat
+        '(corfu-insert
+          corfu-insert-exact
+          corfu-complete))
   )
 
 (use-package emacs
@@ -305,17 +348,6 @@ function to the relevant margin-formatters list."
     :straight (:host github :repo "50ways2sayhard/tabnine-capf" :files ("*.el" "*.sh"))
     :hook ((kill-emacs . tabnine-capf-kill-process)))
   )
-
-(use-package corfu-doc
-  :after corfu
-  :straight (:host github :repo "galeo/corfu-doc")
-  :hook (corfu-mode . corfu-doc-mode)
-  :bind (:map corfu-map
-              ("M-d" . corfu-doc-toggle))
-  :custom
-  (corfu-doc-display-within-parent-frame t)
-  )
-
 
 (provide 'init-complete)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -63,6 +63,82 @@
                       (match-end 0)
                       #'completion-file-name-table)))) 'append)
 
+
+(use-package embark
+  :straight (embark :files (:defaults "*.el"))
+  :ensure t
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("M-." . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)
+   ("C-/" . embark-export)) ;; alternative for `describe-bindings'
+  :custom
+  (embark-cycle-key ".")
+  (embark-help-key "?")
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;;  HACK: bind will be override by evil
+  (general-define-key :states '(normal insert visual emacs)
+                      "C-." 'embark-act
+                      "M-." 'embark-dwim
+                      "C-h B" 'embark-bindings)
+  (setq embark-candidate-collectors
+        (cl-substitute 'embark-sorted-minibuffer-candidates
+                       'embark-minibuffer-candidates
+                       embark-candidate-collectors))
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none))))
+  ;; which key indicator
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+The which-key help message will show the type and value of the
+current target followed by an ellipsis if there are further
+targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+
+  (setq embark-indicators
+        '(embark-which-key-indicator
+          embark-highlight-indicator
+          embark-isearch-highlight-indicator))
+
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator)
+  (add-hook 'embark-collect-post-revert-hook
+            (defun resize-embark-collect-window (&rest _)
+              (when (memq embark-collect--kind '(:live :completions))
+                (fit-window-to-buffer (get-buffer-window)
+                                      (floor (frame-height) 2) 1))))
+  )
+
+(use-package embark-consult
+  :after consult)
+
 (use-package vertico
   :straight (vertico :includes (vertico-quick vertico-repeat vertico-directory)
                      :files (:defaults "extensions/vertico-*.el"))
@@ -75,6 +151,50 @@
   :init
   ;; (vertico-mode)
   :config
+  (defun +vertico/jump-list (jump)
+    "Go to an entry in evil's (or better-jumper's) jumplist."
+    (interactive
+     (let (buffers)
+       (unwind-protect
+           (list
+            (consult--read
+             ;; REVIEW Refactor me
+             (nreverse
+              (delete-dups
+               (delq
+                nil (mapcar
+                     (lambda (mark)
+                       (when mark
+                         (cl-destructuring-bind (path pt _id) mark
+                           (let* ((visiting (find-buffer-visiting path))
+                                  (buf (or visiting (find-file-noselect path t)))
+                                  (dir default-directory))
+                             (unless visiting
+                               (push buf buffers))
+                             (with-current-buffer buf
+                               (goto-char pt)
+                               (font-lock-fontify-region
+                                (line-beginning-position) (line-end-position))
+                               (format "%s:%d: %s"
+                                       (car (cl-sort (list (abbreviate-file-name (buffer-file-name buf))
+                                                           (file-relative-name (buffer-file-name buf) dir))
+                                                     #'< :key #'length))
+                                       (line-number-at-pos)
+                                       (string-trim-right (or (thing-at-point 'line) ""))))))))
+                     (cddr (better-jumper-jump-list-struct-ring
+                            (better-jumper-get-jumps (better-jumper--get-current-context))))))))
+             :prompt "jumplist: "
+             :sort nil
+             :require-match t
+             :category 'jump-list))
+         (mapc #'kill-buffer buffers))))
+    (if (not (string-match "^\\([^:]+\\):\\([0-9]+\\): " jump))
+        (user-error "No match")
+      (let ((file (match-string-no-properties 1 jump))
+            (line (match-string-no-properties 2 jump)))
+        (find-file file)
+        (goto-char (point-min))
+        (forward-line (string-to-number line)))))
 
   ;; Configure directory extension.
   (use-package vertico-quick
@@ -83,6 +203,7 @@
     :bind (:map vertico-map
                 ("M-q" . vertico-quick-insert)
                 ("C-q" . vertico-quick-exit)))
+
   (use-package vertico-repeat
     :after vertico
     :ensure nil
@@ -128,7 +249,6 @@
 
 (use-package consult
   :after orderless
-  :straight (:host github :repo "minad/consult")
   :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point consult-clock-in)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
@@ -142,21 +262,6 @@
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :init
-  (use-package consult-project-extra
-    :after consult)
-  (use-package consult-flycheck
-    :after (consult flycheck))
-  (use-package consult-dir
-    :ensure t
-    :after consult
-    :bind (("C-x C-d" . consult-dir)
-           :map vertico-map
-           ("C-x C-d" . consult-dir)
-           ("C-x C-j" . consult-dir-jump-file)))
-
-  (use-package consult-eglot
-    :after (consult eglot))
-
   :config
   (setq consult-preview-key "M-p")
   (setq xref-show-xrefs-function #'consult-xref
@@ -257,7 +362,74 @@ When the number of characters in a buffer exceeds this threshold,
     (cons
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
-  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler))
+  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
+  (defvar consult--fd-command nil)
+  (defun consult--fd-builder (input)
+    (unless consult--fd-command
+      (setq consult--fd-command
+            (if (eq 0 (call-process-shell-command "fdfind"))
+                "fdfind"
+              "fd")))
+    (pcase-let* ((`(,arg . ,opts) (consult--command-split input))
+                 (`(,re . ,hl) (funcall consult--regexp-compiler
+                                        arg 'extended t)))
+      (when re
+        (list :command (append
+                        (list consult--fd-command
+                              "--color=never" "--full-path"
+                              (consult--join-regexps re 'extended))
+                        opts)
+              :highlight hl))))
+
+  (defun consult-fd (&optional dir initial)
+    (interactive "P")
+    (let* ((prompt-dir (consult--directory-prompt "Fd" dir))
+           (default-directory (cdr prompt-dir)))
+      (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial)))))
+
+(use-package consult-eglot
+  :after (consult eglot))
+
+
+(use-package consult-git-log-grep
+  :after consult
+  :commands consult-git-log-grep
+  :straight (:host github :repo "ghosty141/consult-git-log-grep")
+  :custom
+  (consult-git-log-grep-open-function #'magit-show-commit))
+
+(use-package consult-project-extra
+  :after consult)
+(use-package consult-flycheck
+  :after (consult flycheck))
+
+(use-package consult-dir
+  :ensure t
+  :after consult
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file))
+  :config
+  (defun consult-dir--zlua-dirs ()
+    "Return list of fasd dirs."
+    (reverse
+     (mapcar
+      (lambda (str) (format "%s/" (car (last (split-string str " ")))))
+      (split-string (shell-command-to-string "z -l | tail -n 50") "\n" t))))
+  (defvar consult-dir--source-zlua
+    `(:name     "z.lua dirs"
+                :narrow   ?z
+                :category file
+                :face     consult-file
+                :history  file-name-history
+                :enabled  ,(lambda () t)  ;;  FIXME: check whether z.lua is installed
+                :items    ,#'consult-dir--zlua-dirs)
+    "Fasd directory source for `consult-dir'.")
+  ;; (add-to-list 'consult-dir-sources 'consult-dir--source-zlua t)
+  (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zlua consult-dir--source-project)))
+
+
 
 
 (use-package orderless
@@ -332,7 +504,7 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (after-init . mini-frame-mode)
   :commands (mini-frame-mode)
   :custom
-  (mini-frame-detach-on-hide nil)
+  ;; (mini-frame-detach-on-hide nil)
   (resize-mini-frames t)
   :config
   (setq mini-frame-show-parameters `((left . 0.5)

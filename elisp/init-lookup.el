@@ -88,6 +88,13 @@ this list.")
 
 ;;
 ;;; xref
+(use-package xref
+  :straight nil
+  :init
+  (setq xref-search-program 'ripgrep)
+  (setq xref-show-xrefs-function #'xref-show-definitions-completing-read)
+  (setq xref-show-definitions-function #'xref-show-definitions-completing-read)
+  :hook ((xref-after-return xref-after-jump) . recenter))
 
 ;; The lookup commands are superior, and will consult xref if there are no
 ;; better backends available.
@@ -112,6 +119,13 @@ this list.")
     (let ((evil--jumps-jumping t)
           (better-jumper--jumping t))
       (apply fn args)))
+
+  (mapcar
+   (lambda (fn)
+     (advice-add fn :around #'doom-set-jump-a))
+   (list #'kill-current-buffer #'+my/imenu #'+my/consult-line
+         #'find-file #'+my/consult-line-symbol-at-point #'consult-fd #'consult-ripgrep
+         #'+consult-ripgrep-at-point))
 
   (defun doom-set-jump-maybe-a (fn &rest args)
     "Set a jump point if fn returns non-nil."
