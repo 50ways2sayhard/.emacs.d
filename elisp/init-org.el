@@ -384,23 +384,6 @@
          (setq org-download-screenshot-method "screencapture -i %s"))))
 ;; -OrgDownload
 
-(use-package plantuml-mode
-  :defer t
-  :config
-  (setq org-plantuml-jar-path (expand-file-name "plantuml.jar" user-emacs-directory))
-  (setq plantuml-default-exec-mode 'jar)
-  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
-  (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
-  (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
-                                        ; Make babel results blocks lowercase
-  (setq org-babel-results-keyword "results")
-
-  (defun bh/display-inline-images ()
-    (condition-case nil
-        (org-display-inline-images)
-      (error nil)))
-  )
-
 (use-package org-contrib
   :after org)
 
@@ -410,22 +393,6 @@
   :bind (([remap org-table-align] . valign-table))
   :hook (org-mode . valign-mode)
   )
-
-(use-package calfw
-  :commands (cfw:open-org-calendar)
-  :straight (:host github :repo "zemaye/emacs-calfw")
-  :bind (:map cfw:calendar-mode-map
-              ("s" . cfw:show-details-command))
-  :custom
-  (cfw:display-calendar-holidays nil)
-  :config
-  (with-eval-after-load 'calfw
-	  (use-package calfw-ical
-	    :straight (:host github :repo "zemaye/emacs-calfw"))
-	  (use-package calfw-org
-	    :straight (:host github :repo "zemaye/emacs-calfw"))
-	  (use-package calfw-cal
-	    :straight (:host github :repo "zemaye/emacs-calfw"))))
 
 (use-package electric-spacing
   :straight (:host github :repo "zk-phi/electric-spacing")
@@ -443,7 +410,6 @@
 
 
 (use-package org-modern
-  :straight (:host github :repo "minad/org-modern")
   :defer t
   :after org
   :hook ((org-mode . org-modern-mode)

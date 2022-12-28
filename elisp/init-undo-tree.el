@@ -38,7 +38,6 @@
 ;;; Code:
 
 (use-package vundo
-  :straight (:host github :repo "casouri/vundo")
   :commands vundo
   :defer t
   :config

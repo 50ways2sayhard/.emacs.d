@@ -64,35 +64,24 @@
   )
 ;; -ColorRGPac
 
-
-(use-package exec-path-from-shell
-  :defer t
-  :hook (+self/first-input . exec-path-from-shell-initialize)
-  :unless *sys/win32*
-  :init
-  (setq exec-path-from-shell-check-startup-files nil
-        exec-path-from-shell-variables '("PATH" "MANPATH" "https_proxy" "http_proxy" "all_proxy" "NO_PROXY" "LD_LIBRARY_PATH")
-        exec-path-from-shell-arguments '("-l"))
+(use-package multi-translate
+  :straight (:host github :repo "twlz0ne/multi-translate.el")
+  :commands (multi-translate multi-translate-at-point multi-translate-yank-at-point)
+  :custom
+  (multi-translate-sentence-backends '(google))
+  (multi-translate-word-backends '(bing youdao))
+  :config
+  (defun multi-translate-yank-at-point (arg)
+    "Used temporarily for thesis"
+    (interactive "P")
+    (let* ((bounds (if (region-active-p)
+                       (cons (region-beginning) (region-end))
+                     (bounds-of-thing-at-point 'word)))
+           (text (string-trim (buffer-substring-no-properties (car bounds) (cdr bounds)))))
+      (kill-new (multi-translate--google-translation "en" "zh-CN" text))
+      (evil-normal-state)
+      (message "Translate Done")))
   )
-
-(use-package youdao-dictionary
-  :defer t
-  :commands youdao-dictionary-play-voice-of-current-word
-  :bind (("C-c y" . my-youdao-search-at-point)
-         ("C-c Y" . youdao-dictionary-search-at-point)
-         :map youdao-dictionary-mode-map
-         ("h" . youdao-dictionary-hydra/body)
-         ("?" . youdao-dictionary-hydra/body))
-  :init
-  (setq url-automatic-caching t
-        youdao-dictionary-use-chinese-word-segmentation t) ; 中文分词
-
-  (defun my-youdao-search-at-point ()
-    "Search word at point and display result with `posframe', `pos-tip', or buffer."
-    (interactive)
-    (if (display-graphic-p)
-        (youdao-dictionary-search-at-point-posframe)
-      (youdao-dictionary-search-at-point))))
 
 (use-package pinyinlib
   :after orderless

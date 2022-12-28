@@ -148,7 +148,6 @@
 (defun +my/flutter-pub-get ()
   "Run pub get."
   (interactive)
-  ;; (start-process "flutter-pub-get" "*Flutter Pub Get*" "flutter" "pub" "get")
   (cd (+my/find-project-root))
   (let* ((temp (mapcar 'concat process-environment))
          (process-environment (setenv-internal temp "PUB_HOSTED_URL" +my/flutter-pub-host t)))

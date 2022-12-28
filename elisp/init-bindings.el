@@ -23,11 +23,11 @@
     :prefix "C-s")
 
   (tab-def
-    "" nil
-    "c" '(tab-new :wk "New")
-    "r" '(tab-bar-rename-tab :wk "Rename")
-    "d" '(tab-bar-close-tab :wk "Close")
-    "s" '(tab-bar-select-tab-by-name :wk "Select"))
+   "" nil
+   "c" '(tab-new :wk "New")
+   "r" '(tab-bar-rename-tab :wk "Rename")
+   "d" '(tab-bar-close-tab :wk "Close")
+   "s" '(tab-bar-select-tab-by-name :wk "Select"))
 
   ;; evil mode
   (evil-define-key 'normal 'global
@@ -193,7 +193,7 @@
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-    "ty" '(my-youdao-search-at-point :wk "youdao")
+    "ty" '(multi-translate-yank-at-point :wk "youdao")
 
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
