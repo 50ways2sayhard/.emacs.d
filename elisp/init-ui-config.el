@@ -123,6 +123,7 @@
           ;; "\\*Calendar\\*"              ; FIXME: https://github.com/karthink/popper/issues/29
           "\\*lspce-hover\\*"
           "\\*Embark Actions\\*"
+          "\\*Multi Translate\\*"
 
           bookmark-bmenu-mode
           compilation-mode

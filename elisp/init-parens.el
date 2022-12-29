@@ -76,11 +76,10 @@
 (use-package paren
   :hook (after-init . show-paren-mode)
   :config
-  (when emacs/>=29p
-    (setq show-paren-style 'parenthesis
-          show-paren-context-when-offscreen 'overlay
-          show-paren-when-point-in-periphery t
-          show-paren-when-point-inside-paren t)))
+  (setq show-paren-style 'parenthesis
+        show-paren-context-when-offscreen 'overlay
+        show-paren-when-point-in-periphery t
+        show-paren-when-point-inside-paren t))
 
 (provide 'init-parens)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

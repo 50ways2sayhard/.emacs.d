@@ -39,6 +39,14 @@
 (eval-when-compile
   (require 'init-global-config))
 
+(use-package vundo
+  :commands vundo
+  :defer t
+  :config
+  (setf (alist-get 'selected-node vundo-glyph-alist) ?X
+        (alist-get 'node vundo-glyph-alist) ?O)
+  )
+
 ;; DeleteBlockPac
 (use-package delete-block
   :defer
@@ -398,6 +406,10 @@ begin and end of the block surrounding point."
   (vimish-fold-global-mode +1))
 ;; (use-package ts-fold)
 ;; end of fold
+
+(use-package ws-butler
+  :hook (prog-mode . (lambda ()
+                       (ws-butler-mode))))
 
 
 (provide 'init-edit)

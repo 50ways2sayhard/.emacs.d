@@ -46,49 +46,26 @@
 ;;
 ;;; Code:
 
-;; From purcell
-
-(with-eval-after-load 'flymake
+(use-package flymake
+  :hook ((prog-mode text-mode) . flymake-mode)
+  :config
   (defun sanityinc/eldoc-flymake-first ()
     "Gives flymake's eldoc function priority in the minibuffer."
     (when flymake-mode
       (setq-local eldoc-documentation-functions
                   (cons 'flymake-eldoc-function
                         (delq 'flymake-eldoc-function eldoc-documentation-functions)))))
-
-  (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first))
-
-(setq elisp-flymake-byte-compile-load-path
-      (append elisp-flymake-byte-compile-load-path
-              load-path))
-
-(use-package flymake-flycheck
-  :after flymake
-  :diminish
-  :config
-  (with-eval-after-load 'flycheck
-    (setq-default flycheck-disabled-checkers
-                  (append (default-value 'flycheck-disabled-checkers)
-                          '(emacs-lisp emacs-lisp-checkdoc emacs-lisp-package))))
-  (defun sanityinc/enable-flymake-flycheck ()
-    (setq-local flymake-diagnostic-functions
-                (append flymake-diagnostic-functions
-                        (flymake-flycheck-all-chained-diagnostic-functions))))
-
-  (add-hook 'flymake-mode-hook 'sanityinc/enable-flymake-flycheck)
-  (add-hook 'prog-mode-hook 'flymake-mode)
-  (add-hook 'text-mode-hook 'flymake-mode)
+  (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first)
+  (setq elisp-flymake-byte-compile-load-path
+        (append elisp-flymake-byte-compile-load-path
+                load-path))
   (with-eval-after-load 'general
     (leader-def
       :keymaps 'override
       "el" '(consult-flymake :wk "List error")
-      "ef" '(consult-flymake :wk "Find error"))))
+      "ef" '(consult-flymake :wk "Find error")))
 
-
-(unless (version< emacs-version "28.1")
-  (setq eldoc-documentation-function 'eldoc-documentation-compose))
-
-(setq flymake-no-changes-timeout nil)
+  (setq flymake-no-changes-timeout nil))
 
 (provide 'init-flymake)
 

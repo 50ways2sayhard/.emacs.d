@@ -96,7 +96,6 @@
 (require 'init-search)
 (require 'init-tree-sitter)
 (require 'init-which-key)
-(require 'init-undo-tree)
 (require 'init-bindings)
 (require 'init-dired)
 
@@ -104,20 +103,17 @@
 (require 'init-ui-config)
 (require 'init-theme)
 (require 'init-fonts)
-;; (require 'init-dashboard)
 (require 'init-scroll)
-(require 'init-pretty-code)
+;; (require 'init-pretty-code)
 (require 'init-highlight)
 
 ;; General Programming
 (require 'init-magit)
 (require 'init-project)
 (require 'init-yasnippet)
-;; (require 'init-flycheck)
 (require 'init-flymake)
 (require 'init-parens)
 (require 'init-indent)
-(require 'init-format)
 (require 'init-edit)
 (require 'init-lookup)
 (require 'init-eglot)
@@ -129,8 +125,6 @@
 (require 'init-python)
 (require 'init-javascript)
 (require 'init-webdev)
-(require 'init-ml)
-;; (require 'init-dockerfile)
 (require 'init-dart)
 
 ;; (require 'init-lsp-bridge)

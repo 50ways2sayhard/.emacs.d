@@ -90,8 +90,7 @@
   ;;          return (set-fontset-font t '(#x4e00 . #x9fff) font)))
   (set-fontset-font t '(#x4e00 . #x9fff) "Maple Mono SC NF")
 
-  (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend)
-  )
+  (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend))
 
 (add-hook 'after-init-hook #'my-apply-font)
 

@@ -121,6 +121,26 @@ Install the doc if it's not installed."
 (use-package lua-mode
   :mode "\\.lua\\'")
 
+(use-package yaml-mode
+  :mode "\\.yaml\\'")
+
+(use-package toml-mode
+  :mode "\\.toml\\'")
+
+(use-package dockerfile-mode
+  :mode ("Dockerfile\\'" . dockerfile-mode))
+
+;; FormatAllPac
+(use-package format-all
+  :hook (((emacs-lisp-mode) . format-all-mode)
+         ((prog-mode) . format-all-ensure-formatter))
+  :config
+  ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
+  (setq format-all-show-errors 'never)
+  )
+;; -FormatAllPac
+
+
 (provide 'init-prog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init-prog.el ends here
