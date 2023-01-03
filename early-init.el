@@ -12,6 +12,12 @@
 
 (setq package-enable-at-startup nil)
 
+(setq use-package-enable-imenu-support t
+      use-package-expand-minimally t
+      use-package-compute-statistics t)
+(setq byte-compile-warnings nil)
+(setq native-comp-async-report-warnings-errors nil)
+
 (with-eval-after-load 'package
   (add-to-list 'package-archives
                (cons "melpa" "https://melpa.org/packages/")
