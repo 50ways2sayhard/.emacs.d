@@ -390,7 +390,6 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package consult-eglot
   :after (consult eglot))
 
-
 (use-package consult-git-log-grep
   :after consult
   :commands consult-git-log-grep
@@ -400,8 +399,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package consult-project-extra
   :after consult)
-(use-package consult-flycheck
-  :after (consult flycheck))
 
 (use-package consult-dir
   :ensure t

@@ -384,36 +384,6 @@ another level of headings on each invocation."
 ;;; Hooks
 
 ;;;###autoload
-(defun +org-indent-maybe-h ()
-  "Indent the current item (header or item), if possible.
-Made for `org-tab-first-hook' in evil-mode."
-  (interactive)
-  (cond ((not (and (bound-and-true-p evil-local-mode)
-                   (evil-insert-state-p)))
-         nil)
-        ((org-at-item-p)
-         (if (eq this-command 'org-shifttab)
-             (org-outdent-item-tree)
-           (org-indent-item-tree))
-         t)
-        ((org-at-heading-p)
-         (ignore-errors
-           (if (eq this-command 'org-shifttab)
-               (org-promote)
-             (org-demote)))
-         t)
-        ((org-in-src-block-p t)
-         (org-babel-do-in-edit-buffer
-          (call-interactively #'indent-for-tab-command))
-         t)
-        ((and (save-excursion
-                (skip-chars-backward " \t")
-                (bolp))
-              (org-in-subtree-not-table-p))
-         (call-interactively #'tab-to-tab-stop)
-         t)))
-
-;;;###autoload
 (defun +org-update-cookies-h ()
   "Update counts in headlines (aka \"cookies\")."
   (when (and buffer-file-name (file-exists-p buffer-file-name))

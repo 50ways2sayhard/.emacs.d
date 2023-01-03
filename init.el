@@ -94,7 +94,7 @@
 (let ((please-do-not-disable-file-name-handler-alist nil))
   (require 'init-evil))
 (require 'init-search)
-(require 'init-tree-sitter)
+;; (require 'init-tree-sitter)
 (require 'init-which-key)
 (require 'init-bindings)
 (require 'init-dired)
@@ -123,7 +123,6 @@
 
 ;; Programming
 (require 'init-python)
-(require 'init-javascript)
 (require 'init-webdev)
 (require 'init-dart)
 

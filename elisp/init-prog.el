@@ -121,12 +121,6 @@ Install the doc if it's not installed."
 (use-package lua-mode
   :mode "\\.lua\\'")
 
-(use-package yaml-mode
-  :mode "\\.yaml\\'")
-
-(use-package toml-mode
-  :mode "\\.toml\\'")
-
 (use-package dockerfile-mode
   :mode ("Dockerfile\\'" . dockerfile-mode))
 
@@ -139,6 +133,39 @@ Install the doc if it's not installed."
   (setq format-all-show-errors 'never)
   )
 ;; -FormatAllPac
+
+
+(use-package treesit
+  :if (treesit-available-p)
+  :straight (:type built-in)
+  :defer t
+  :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
+  :init
+  (setq treesit-language-source-alist
+        '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
+          (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+          (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+          (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+          (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+          (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+          (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+          (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+          ))
+  :config
+  (setq major-mode-remap-alist
+        '((javascript-mode . js-ts-mode)
+          (js-mode . js-ts-mode)
+          (python-mode . python-ts-mode)
+          (js-json-mode . json-ts-mode)
+          (sh-mode . bash-ts-mode)))
+  (defun nf/treesit-install-all-languages ()
+    "Install all languages specified by `treesit-language-source-alist'."
+    (interactive)
+    (let ((languages (mapcar 'car treesit-language-source-alist)))
+      (dolist (lang languages)
+	      (treesit-install-language-grammar lang)
+	      (message "`%s' parser was installed." lang)
+	      (sit-for 0.75)))))
 
 
 (provide 'init-prog)

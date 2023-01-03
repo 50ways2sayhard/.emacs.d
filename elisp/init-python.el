@@ -41,11 +41,12 @@
   (require 'init-const)
   (require 'init-func))
 
-(use-package python-mode
-  :mode "\\.py\\'"
-  :hook (inferior-python-mode . (lambda ()
-                                  (process-query-on-exit-flag
-                                   (get-process "Python"))))
+(use-package python
+  :straight nil
+  :hook (python-mode . (lambda ()
+                         (setq-local tab-width 4)
+                         (process-query-on-exit-flag
+                          (get-process "Python"))))
   :init
   ;; Disable readline based native completion
   (setq python-shell-completion-native-enable nil)
@@ -53,8 +54,6 @@
   (setq python-indent-offset 4)
   (setq python-shell-interpreter "python3")
   (setq py-tab-indent nil)
-  (add-hook 'python-mode-hook (lambda ()
-                                (setq-local tab-width 4)))
 
   (use-package pyvenv
     :defer t)

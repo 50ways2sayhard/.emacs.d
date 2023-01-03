@@ -87,11 +87,6 @@
   )
 ;; -WebModePac
 
-(use-package css-mode
-  :mode ("\\.css\\'" "\\.wxss\\'")
-  :init
-  (add-hook 'css-mode-hook #'rainbow-mode))
-
 
 ;; EmmetPac
 (use-package emmet-mode
@@ -112,10 +107,7 @@
   :bind ("C-z <" . instant-rename-tag))
 ;; -InstantRenameTagPac
 
-;; JsonPac
-(use-package json-mode
-  :mode "\\.json\\'")
-;; -JsonPac
+(use-package js-doc :defer t)
 
 (provide 'init-webdev)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
