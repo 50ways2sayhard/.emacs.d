@@ -81,14 +81,6 @@
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
 
-  (defun my-diff-hl-fringe-bmp-function (_type _pos)
-    "Fringe bitmap function for use as `diff-hl-fringe-bmp-function'."
-    (define-fringe-bitmap 'my-diff-hl-bmp
-      (vector (if *sys/mac* #b11100000 #b11111100))
-      1 8
-      '(center t)))
-  (setq diff-hl-fringe-bmp-function #'my-diff-hl-fringe-bmp-function)
-
   (dolist (hook '(conf-mode-hook prog-mode-hook))
     (add-hook hook #'diff-hl-update))
 
@@ -166,6 +158,10 @@
   :defer t
   :bind ("C-x g" . magit-status)
   :commands (magit-open-repo magit-add-section-hook)
+  :hook (magit-status-mode . (lambda ()
+                               (evil-mode -1)
+                               (evil-collection-init)
+                               (evil-mode 1)))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -280,11 +276,14 @@
                                       before-user-init-time)))
   (add-hook 'after-init-hook
             (lambda ()
-              (+my/open-org-agenda)
+
               (message
                "Loading %s...done (%.3fs) [after-init]" user-init-file
                (float-time (time-subtract (current-time)
-                                          before-user-init-time))))
+                                          before-user-init-time)))
+
+              (+my/open-org-agenda)
+              )
             t))
 
 (progn ;     personalize
@@ -465,7 +464,7 @@
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
-  (find-file (read-file-name ".emacs.d: " "~/.emacs.d/init.el")))
+  (find-file (concat user-emacs-directory "init.el")))
 
 (defun +my-rename-file()
   "Rename file while using current file as default."
@@ -725,6 +724,13 @@
                                                         (derived-mode-p 'text-mode)
                                                         (derived-mode-p 'snippet-mode))
                                                 (setq-local evil-auto-indent nil)))))
+
+(use-package evil-collection
+  :after evil
+  :init
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-collection-init))
 
 (use-package evil-escape
   :after evil
@@ -1448,6 +1454,10 @@ When the number of characters in a buffer exceeds this threshold,
            (default-directory (cdr prompt-dir)))
       (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial)))))
 
+(use-package consult-project-extra
+  :commands (consult-project-extra-find)
+  :after consult)
+
 (use-package orderless
   :demand t
   :config
@@ -1622,7 +1632,6 @@ When the number of characters in a buffer exceeds this threshold,
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 1)
   (corfu-auto-delay 0.01)
-  (corfu-echo-documentation 0.5)
   (corfu-max-width 120)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
@@ -1655,7 +1664,7 @@ When the number of characters in a buffer exceeds this threshold,
   (global-corfu-mode)
   (with-eval-after-load 'evil-collection
     (evil-collection-define-key 'insert 'corfu-map
-                                (kbd "C-j") 'corfu-insert))
+      (kbd "C-j") 'corfu-insert))
   :config
   (use-package corfu-quick
     :after corfu
@@ -1673,6 +1682,7 @@ When the number of characters in a buffer exceeds this threshold,
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :config
+    (set-face-attribute 'corfu-popupinfo nil :height 140)
     (setq corfu-popupinfo-delay '(0.5 . 0.3)))
 
   (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
@@ -2154,16 +2164,16 @@ function to the relevant margin-formatters list."
   (ef-themes-select 'ef-trio-light)
   (defun +my-custom-org-todo-faces()
     (ef-themes-with-colors
-      (setq org-todo-keywords-faces
-
-            `(("TODO" . (:foreground ,(ef-themes-with-colors red-cooler) :weight bold))
-              ("INPROCESS"  . ,(ef-themes-with-colors yellow-cooler))
-              ("PROJ"  . ,(ef-themes-with-colors cyan-cooler))
-              ("WAITING" . ,(ef-themes-with-colors green-faint))
-              ("DONE" . (:foreground ,(ef-themes-with-colors fg-alt) :strike-through t))
-              ("CANCELED" . (:foreground ,(ef-themes-with-colors fg-dim) :weight bold :strike-through t)))
+      (setq org-todo-keyword-faces
+            `(("TODO" . (:foreground ,red-cooler :weight bold))
+              ("INPROCESS"  . ,yellow-cooler)
+              ("PROJ"  . ,cyan-cooler)
+              ("WAITING" . ,green-faint)
+              ("DONE" . (:foreground ,fg-alt :strike-through t))
+              ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
             )))
-  (add-hook 'ef-themes-post-load-hook #'my-custom-org-todo-faces))
+  (with-eval-after-load 'org
+    (+my-custom-org-todo-faces)))
 
 ;; FontsList
 (defvar font-list '(("Cascadia Code" . 15) ("Iosevka Comfy" . 16) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
@@ -2215,7 +2225,6 @@ function to the relevant margin-formatters list."
   :custom-face (hl-line ((t (:extend t))))
   :hook ((after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
-
 
 ;; Colorize color names in buffers
 (use-package rainbow-mode
@@ -2780,21 +2789,21 @@ window that already exists in that direction. It will split otherwise."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
