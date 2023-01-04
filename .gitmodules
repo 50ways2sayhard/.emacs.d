@@ -43,6 +43,9 @@
 [submodule "consult"]
 	path = lib/consult
 	url = https://github.com/minad/consult
+[submodule "consult-project-extra"]
+	path = lib/consult-project-extra
+	url = https://github.com/Qkessler/consult-project-extra
 [submodule "corfu"]
 	path = lib/corfu
 	url = https://github.com/minad/corfu
@@ -308,9 +311,6 @@
 [submodule "unicode-escape"]
 	path = lib/unicode-escape
 	url = https://github.com/kosh04/unicode-escape.el
-[submodule "use-package"]
-	path = lib/use-package
-	url = git@github.com:jwiegley/use-package.git
 [submodule "valign"]
 	path = lib/valign
 	url = https://github.com/casouri/valign
