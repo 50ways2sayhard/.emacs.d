@@ -54,13 +54,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 ;; -YorN
 
-;; StartupScreen
-(setq inhibit-startup-screen t)
-(setq initial-major-mode 'text-mode)
-(setq-default initial-scratch-message
-              (concat ";; Happy hacking, " user-login-name " - Emacs ♥ you!\n\n"))
-;; -StartupScreen
-
 ;; DisLineNum
 ;; Hook line numbers to only when files are opened, also use linum-mode for emacs-version< 26
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
@@ -75,9 +68,6 @@
 (setq mac-control-modifier 'control) ; make Control key do Control
 (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
 
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
-(setq frame-resize-pixelwise t)
-(custom-set-variables '(x-select-enable-clipboard t))
 (setq blink-cursor-mode nil)
 (setq word-wrap t
       word-wrap-by-category t
@@ -92,11 +82,28 @@
 (setq highlight-nonselected-windows nil)
 (setq redisplay-skip-fontification-on-input t)
 
-(use-package transient-posframe
-  :straight (:host github :repo "yanghaoxie/transient-posframe")
-  :hook (after-init . transient-posframe-mode)
-  :custom
-  (transient-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
+;; SmoothScroll
+;; Vertical Scroll
+(setq scroll-step 1
+      ;; scroll-margin 0
+      ;; scroll-conservatively 100000
+      auto-window-vscroll t
+      scroll-preserve-screen-position 'always)
+(when (display-graphic-p)
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+        mouse-wheel-scroll-amount-horizontal 1
+        mouse-wheel-progressive-speed nil))
+;; (setq scroll-up-aggressively 0.01)
+;; (setq scroll-down-aggressively 0.01)
+(setq fast-but-imprecise-scrolling nil)
+(setq mouse-wheel-progressive-speed t)
+
+(setq pixel-scroll-precision-mode t)
+;; Horizontal Scroll
+(setq hscroll-step 1)
+(setq hscroll-margin 1)
+;; -SmoothScroll
+
 
 ;; Enforce rules for popups
 ;; from centaur emacs

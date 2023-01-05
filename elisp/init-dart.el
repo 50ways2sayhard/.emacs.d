@@ -61,14 +61,6 @@
          )
   :config
   (require 'prog/+flutter)
-  ;; (defun project-try-dart (dir)
-  ;;   (let ((project (or (locate-dominating-file dir "pubspec.yaml")
-  ;;                      (locate-dominating-file dir "BUILD"))))
-  ;;     (if project ;;         (cons 'dart project)
-  ;;         (cons 'transient dir))))
-  ;; (add-hook 'project-find-functions #'project-try-dart)
-  ;; (cl-defmethod project-roots ((project (head dart)))
-  ;;   (list (cdr project)))
 
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-mode :types
@@ -92,27 +84,6 @@
     "s" '(+my/flutter-run-or-attach :wk "Run or Attach")
     "p" '(+my/flutter-pub-get :wk "Pub get")
     )
-
-  (require 'flycheck)
-  (flycheck-define-checker dart
-    "Dart static analyzer using dartanalyze.
-https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli#dartanalyzer"
-    :command ("dart" "analyze" source)
-    :error-patterns
-    ((error line-start "ERROR" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
-            (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
-            (message) line-end)
-
-     (warning line-start "WARNING" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
-              (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
-              (message) line-end)
-
-     (info line-start "INFO" "|" (= 2 (+ (any "A-Z" "a-z" "0-9" "_")) "|")
-           (file-name) "|" line "|" column "|" (one-or-more (any digit)) "|"
-           (message) line-end))
-    :modes dart-mode)
-
-  (add-to-list 'flycheck-checkers 'dart)
   )
 
 (provide 'init-dart)

@@ -66,12 +66,19 @@
 
 (use-package embark
   :straight (embark :files (:defaults "*.el"))
+  :commands (embark-act embark-dwim)
   :ensure t
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)
-   ("C-/" . embark-export)) ;; alternative for `describe-bindings'
+   ("C-/" . embark-export)      ;; alternative for `describe-bindings'
+   :map embark-file-map
+   ("r" . +my-rename-file)
+   ("d" . +my-delete-file)
+   :map embark-symbol-map
+   ("M-s" . consult-ripgrep)
+   )
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
@@ -148,8 +155,6 @@ targets."
         ("C-<return>" . open-in-external-app))
   :custom
   (vertico-cycle nil)
-  :init
-  ;; (vertico-mode)
   :config
   (defun +vertico/jump-list (jump)
     "Go to an entry in evil's (or better-jumper's) jumplist."
@@ -438,7 +443,6 @@ When the number of characters in a buffer exceeds this threshold,
       (?`. orderless-initialism)
       (?= . orderless-literal)
       (?~ . orderless-flex)))
-  (savehist-mode)
   ;; Recognizes the following patterns:
   ;; * ~flex flex~
   ;; * =literal literal=

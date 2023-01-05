@@ -140,10 +140,6 @@
 
 ;; Highlight uncommitted changes using VC
 (use-package diff-hl
-  :custom-face
-  (diff-hl-change ((t (:foreground ,(face-background 'highlight) :background nil))))
-  (diff-hl-insert ((t (:background nil))))
-  (diff-hl-delete ((t (:background nil))))
   :bind (:map diff-hl-command-map
               ("SPC" . diff-hl-mark-hunk))
   :hook ((find-file . diff-hl-mode)
@@ -153,14 +149,6 @@
   :config
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
-
-  (defun my-diff-hl-fringe-bmp-function (_type _pos)
-    "Fringe bitmap function for use as `diff-hl-fringe-bmp-function'."
-    (define-fringe-bitmap 'my-diff-hl-bmp
-      (vector (if *sys/mac* #b11100000 #b11111100))
-      1 8
-      '(center t)))
-  (setq diff-hl-fringe-bmp-function #'my-diff-hl-fringe-bmp-function)
 
   (dolist (hook '(conf-mode-hook prog-mode-hook))
     (add-hook hook #'diff-hl-update))

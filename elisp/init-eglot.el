@@ -83,7 +83,7 @@
       (setq +lsp--optimization-init-p t))))
 
 (use-package eglot
-  :straight nil
+  :straight (:type built-in)
   :commands (+eglot-organize-imports +eglot-help-at-point)
   :hook (
          (eglot-managed-mode . (lambda ()
@@ -131,28 +131,29 @@
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
     (interactive)
     (+eglot-lookup-documentation nil))
 
-  (add-to-list 'eglot-server-programs '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
+  (add-to-list 'eglot-server-programs '((js-ts-mode typescript-ts-mode) . (eglot-deno "deno" "lsp")))
+  (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
   (defclass eglot-deno (eglot-lsp-server) ()
     :documentation "A custom class for deno lsp.")
@@ -163,11 +164,11 @@
           :lint t))
   )
 
-(use-package eldoc-box
-  :after eglot
-  :config
-  (leader-def :keymaps 'override
-    "ck" '(eldoc-box-eglot-help-at-point :wk "Documentation at point")))
+;; (use-package eldoc-box
+;;   :after eglot
+;;   :config
+;;   (leader-def :keymaps 'override
+;;     "ck" '(eldoc-box-eglot-help-at-point :wk "Documentation at point")))
 
 (provide 'init-eglot)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -65,12 +65,37 @@
 (push '(vertical-scroll-bars) default-frame-alist)
 ;; -DisableUnnecessaryInterface
 
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(custom-set-variables '(x-select-enable-clipboard t))
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+
+(setq byte-compile-warnings '(not obsolete))
+(setq warning-suppress-log-types '((comp) (bytecomp)))
+(setq display-time-default-load-average nil)
+
+(setq inhibit-startup-screen t
+      inhibit-startup-message t
+      inhibit-startup-echo-area-message user-login-name
+      inhibit-default-init t
+      initial-major-mode 'fundamental-mode
+      initial-scratch-message nil)
+
+;; Automatically reread from disk if the underlying file changes
+(setq auto-revert-interval 3)
+(setq auto-revert-check-vc-info t)
+(global-auto-revert-mode)
+
 ;; @see https://www.reddit.com/r/emacs/comments/ofhket/further_boost_start_up_time_with_a_simple_tweak/
 ;; 10% speed up of startup for my configuration
 (setq gc-cons-threshold most-positive-fixnum)
 
 (setq byte-compile-warnings nil)
 (setq native-comp-async-report-warnings-errors nil)
+
+(savehist-mode)
+
+;; Default frame configuration: full screen, good-looking title bar on macOS
+(setq frame-resize-pixelwise t)
 
 (provide 'early-init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

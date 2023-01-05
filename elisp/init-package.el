@@ -85,8 +85,14 @@
 (setq use-package-enable-imenu-support t
       use-package-verbose (not (bound-and-true-p byte-compile-current-file))
       use-package-expand-minimally t
-      use-package-compute-statistics t)
-(straight-use-package 'use-package)
+      use-package-compute-statistics nil)
+
+
+(add-to-list 'straight-built-in-pseudo-packages 'eglot)
+(add-to-list 'straight-built-in-pseudo-packages 'tramp)
+(add-to-list 'straight-built-in-pseudo-packages 'use-package)
+(add-to-list 'straight-built-in-pseudo-packages 'project)
+(add-to-list 'straight-built-in-pseudo-packages 'org)
 
 
 ;; DimPac

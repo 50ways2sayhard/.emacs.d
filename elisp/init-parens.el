@@ -46,12 +46,11 @@
   :config
   ;; disable <> auto pairing in electric-pair-mode for org-mode
   (add-hook 'org-mode-hook
-            '(lambda ()
-               (setq-local electric-pair-inhibit-predicate
-                           `(lambda (c)
-                              (if (char-equal c ?<) t
-                                (,electric-pair-inhibit-predicate c))))))
-  (add-to-list 'electric-pair-pairs '(?` . ?`)))
+            (lambda ()
+              (setq-local electric-pair-inhibit-predicate
+                          `(lambda (c)
+                             (if (char-equal c ?<) t
+                               (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
   :defer t

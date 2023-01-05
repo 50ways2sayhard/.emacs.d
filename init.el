@@ -37,12 +37,8 @@
 ;;
 ;;; Code:
 
-(load (concat user-emacs-directory "early-init") nil t)
-
 ;; Speed up startup
 (setq auto-mode-case-fold nil)
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.5)
 (add-hook 'emacs-startup-hook
           (lambda ()
             "Recover GC values after startup."
@@ -103,8 +99,6 @@
 (require 'init-ui-config)
 (require 'init-theme)
 (require 'init-fonts)
-(require 'init-scroll)
-;; (require 'init-pretty-code)
 (require 'init-highlight)
 
 ;; General Programming
