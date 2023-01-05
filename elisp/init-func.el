@@ -40,27 +40,13 @@
 (eval-when-compile
   (require 'init-global-config))
 
-;; BetterMiniBuffer
-(defun abort-minibuffer-using-mouse ()
-  "Abort the minibuffer when using the mouse."
-  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
-    (abort-recursive-edit)))
-
-(add-hook 'mouse-leave-buffer-hook 'abort-minibuffer-using-mouse)
-
-;; keep the point out of the minibuffer
-(setq-default minibuffer-prompt-properties '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
-;; -BetterMiniBuffer
-
-(defun font-installed-p (font-name)
-  "Check if font with FONT-NAME is available."
-  (find-font (font-spec :name font-name)))
-
+;;;###autoload
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
   (find-file (read-file-name ".emacs.d: " "~/.emacs.d/elisp/")))
 
+;;;###autoload
 (defun +my-rename-file()
   "Rename file while using current file as default."
   (interactive)
@@ -74,6 +60,7 @@
       (kill-buffer)
       (find-file file-to))))
 
+;;;###autoload
 (defun +my-delete-file ()
   "Put current buffer file to top."
   (interactive)
@@ -82,60 +69,7 @@
   (unless (file-exists-p (buffer-file-name))
     (kill-current-buffer)))
 
-(defun doom-enlist (exp)
-  "Return EXP wrapped in a list, or as-is if already a list."
-  (declare (pure t) (side-effect-free t))
-  (if (listp exp) exp (list exp)))
-
-(defun +modeline-update-env-in-all-windows-h (&rest _)
-  "Update version strings in all buffers."
-  (dolist (window (window-list))
-    (with-selected-window window
-      (doom-modeline-update-env)
-      (force-mode-line-update))))
-
-(defun +modeline-clear-env-in-all-windows-h (&rest _)
-  "Blank out version strings in all buffers."
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (setq doom-modeline-env--version
-            (bound-and-true-p doom-modeline-load-string))))
-  (force-mode-line-update t))
-
-
-(defvar my-load-user-customized-major-mode-hook t)
-(defvar my-force-buffer-file-temp-p nil)
-(defun is-buffer-file-temp ()
-  "If (buffer-file-name) is nil or a temp file or HTML file converted from org file."
-  (interactive)
-  (let* ((f (buffer-file-name)) (rlt t))
-    (cond
-     ((not my-load-user-customized-major-mode-hook)
-      (setq rlt t))
-
-     ((and (buffer-name) (string-match "\\* Org SRc" (buffer-name)))
-      ;; org-babel edit inline code block need calling hook
-      (setq rlt nil))
-
-     ((null f)
-      (setq rlt t))
-
-     ((string-match (concat "^" temporary-file-directory) f)
-      ;; file is create from temp directory
-      (setq rlt t))
-
-     ((and (string-match "\.html$" f)
-           (file-exists-p (replace-regexp-in-string "\.html$" ".org" f)))
-      ;; file is a html file exported from org-mode
-      (setq rlt t))
-
-     (my-force-buffer-file-temp-p
-      (setq rlt t))
-
-     (t
-      (setq rlt nil)))
-    rlt))
-
+;;;###autoload
 (defun +my-imenu (args)
   "Call 'consult-outline' in 'org-mode' else 'consult-imenu'."
   (interactive "P")
@@ -169,16 +103,6 @@
       (call-interactively 'evil-open-below)
     (end-of-line)
     (newline-and-indent)))
-
-(defun my-open-recent ()
-  "Open recent directory in dired or file otherwise."
-  (interactive)
-  (unless recentf-mode (recentf-mode 1))
-  (if (derived-mode-p 'dired-mode)
-      (find-file (completing-read "Find recent dirs: "
-                                  (delete-dups
-                                   (append (mapcar 'file-name-directory recentf-list)))))
-    (consult-recent-file)))
 
 (defun +complete--get-meta (setting)
   "Get metadata SETTING from completion table."

@@ -54,7 +54,10 @@
                                                               +org-capture-file-routine)))
 
 (use-package org
-  :straight nil
+  :defer t
+  :mode ("\\.org\\'" . org-mode)
+  :commands (+my/open-org-agenda org-assert-version)
+  :straight (:type built-in)
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
          (org-mode . (lambda ()
@@ -369,11 +372,17 @@
     "q" 'org-agenda-set-tags
     "r" 'org-agenda-refile
     "t" 'org-agenda-todo)
+
+  (defun +my/open-org-agenda ()
+    "open org agenda in left window"
+    (interactive)
+    (org-agenda nil "n"))
   )
 ;; -OrgPac
 
 ;; OrgDownload
 (use-package org-download
+  :after org
   :defer t
   :commands (org-download-clipboard org-download-delete org-download-image org-download-yank org-download-edit org-download-rename-at-point org-download-rename-last-file org-download-screenshot)
   :custom
@@ -399,6 +408,7 @@
   :after org)
 
 (use-package separate-inline
+  :after org
   :straight (:host github :repo "ingtshan/separate-inline.el")
   :hook ((org-mode-hook . separate-inline-mode)
          (org-mode-hook
@@ -488,11 +498,6 @@ Optional MODE specifies major mode used for display."
 
   )
 
-
-(defun +my/open-org-agenda ()
-  "open org agenda in left window"
-  (interactive)
-  (org-agenda nil "n"))
 
 ;; -Notification only for mac os
 (when *sys/mac*

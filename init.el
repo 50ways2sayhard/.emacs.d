@@ -87,10 +87,8 @@
 (require 'init-global-config)
 (require 'init-func)
 (require 'init-mini-buffer)
-(let ((please-do-not-disable-file-name-handler-alist nil))
-  (require 'init-evil))
+(require 'init-evil)
 (require 'init-search)
-;; (require 'init-tree-sitter)
 (require 'init-which-key)
 (require 'init-bindings)
 (require 'init-dired)
@@ -101,13 +99,12 @@
 (require 'init-fonts)
 (require 'init-highlight)
 
-;; General Programming
+;; ;; General Programming
 (require 'init-magit)
 (require 'init-project)
 (require 'init-yasnippet)
 (require 'init-flymake)
 (require 'init-parens)
-(require 'init-indent)
 (require 'init-edit)
 (require 'init-lookup)
 (require 'init-eglot)
@@ -115,21 +112,19 @@
 (require 'init-prog)
 (require 'init-shell)
 
-;; Programming
+;; ;; Programming
 (require 'init-python)
 (require 'init-webdev)
 (require 'init-dart)
 
-;; (require 'init-lsp-bridge)
-
-;; Miscellaneous
+;; ;; Miscellaneous
 (require 'init-org)
 (require 'init-restart-emacs)
 
-(add-hook 'after-init-hook
+(add-hook 'window-setup-hook
           #'(lambda ()
               (+my/open-org-agenda)
-              ))
+              (evil-window-right 1)))
 
 (provide 'init)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

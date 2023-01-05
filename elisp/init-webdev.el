@@ -39,6 +39,7 @@
 
 ;; WebModePac
 (use-package web-mode
+  :defer t
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")
@@ -92,8 +93,6 @@
 (use-package emmet-mode
   :defer t
   :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode)
-  ;; :bind (:map web-mode-map
-  ;;             ("C-j" . emmet-expand-yas))
   :config
   (add-hook 'emmet-mode-hook (lambda()
                                (setq emmet-indent-after-insert t))))
@@ -106,8 +105,6 @@
   :commands instant-rename-tag
   :bind ("C-z <" . instant-rename-tag))
 ;; -InstantRenameTagPac
-
-(use-package js-doc :defer t)
 
 (provide 'init-webdev)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

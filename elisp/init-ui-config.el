@@ -104,6 +104,14 @@
 (setq hscroll-margin 1)
 ;; -SmoothScroll
 
+(setq-default indent-tabs-mode nil)
+(setq-default indent-line-function 'insert-tab)
+(setq-default tab-width 2)
+(add-hook 'after-change-major-mode-hook
+          (lambda () (if (equal electric-indent-mode 't)
+                    (when (derived-mode-p 'text-mode)
+                      (electric-indent-mode -1))
+                  (electric-indent-mode 1))))
 
 ;; Enforce rules for popups
 ;; from centaur emacs

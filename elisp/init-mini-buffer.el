@@ -67,6 +67,7 @@
 (use-package embark
   :straight (embark :files (:defaults "*.el"))
   :commands (embark-act embark-dwim)
+  :after general
   :ensure t
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -149,10 +150,11 @@ targets."
 (use-package vertico
   :straight (vertico :includes (vertico-quick vertico-repeat vertico-directory)
                      :files (:defaults "extensions/vertico-*.el"))
-  :hook (+self/first-input . vertico-mode)
   :bind
   (:map vertico-map
         ("C-<return>" . open-in-external-app))
+  :init
+  (vertico-mode)
   :custom
   (vertico-cycle nil)
   :config
@@ -204,14 +206,12 @@ targets."
   ;; Configure directory extension.
   (use-package vertico-quick
     :after vertico
-    :ensure nil
     :bind (:map vertico-map
                 ("M-q" . vertico-quick-insert)
                 ("C-q" . vertico-quick-exit)))
 
   (use-package vertico-repeat
     :after vertico
-    :ensure nil
     :config
     (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
     (with-eval-after-load 'general
@@ -219,7 +219,6 @@ targets."
       ))
   (use-package vertico-directory
     :after vertico
-    :ensure nil
     ;; More convenient directory navigation commands
     :bind (:map vertico-map
                 ("RET" . vertico-directory-enter)
@@ -253,8 +252,8 @@ targets."
   (setq enable-recursive-minibuffers t))
 
 (use-package consult
+  :demand t
   :after orderless
-  :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point consult-clock-in)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -266,9 +265,8 @@ targets."
          ("M-s m" . consult-multi-occur)
          ;; Isearch integration
          ("M-s e" . consult-isearch))
-  :init
   :config
-  (setq consult-preview-key "M-p")
+  (setq consult-preview-key nil)
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
@@ -403,10 +401,11 @@ When the number of characters in a buffer exceeds this threshold,
   (consult-git-log-grep-open-function #'magit-show-commit))
 
 (use-package consult-project-extra
+  :commands (consult-project-extra-find consult-project-extra-find-other-window)
   :after consult)
 
 (use-package consult-dir
-  :ensure t
+  :commands (consult-dir consult-dir-jump-file)
   :after consult
   :bind (("C-x C-d" . consult-dir)
          :map vertico-map

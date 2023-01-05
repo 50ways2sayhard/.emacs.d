@@ -47,6 +47,7 @@
   :commands (color-rg-search-input color-rg-search-project color-rg-search-symbol-in-project)
   :straight (:host github :repo "manateelazycat/color-rg")
   :if *rg*
+  :demand t
   :bind
   (:map color-rg-mode-map
         ("q" . my-quit-color-rg))

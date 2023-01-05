@@ -41,11 +41,7 @@
 
 (use-package vundo
   :commands vundo
-  :defer t
-  :config
-  (setf (alist-get 'selected-node vundo-glyph-alist) ?X
-        (alist-get 'node vundo-glyph-alist) ?O)
-  )
+  :defer t)
 
 ;; DeleteBlockPac
 (use-package delete-block
@@ -63,6 +59,13 @@
   :diminish
   :demand t
   :commands (avy-goto-char avy-goto-line))
+
+
+;; SudoEditPac
+(use-package sudo-edit
+  :commands (sudo-edit))
+;; -SudoEditPac
+
 
 (use-package rime
   :defer t

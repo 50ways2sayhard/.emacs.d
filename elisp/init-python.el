@@ -42,7 +42,8 @@
   (require 'init-func))
 
 (use-package python
-  :straight nil
+  :defer t
+  :mode ("\\.py\\'" . python-mode)
   :hook (python-mode . (lambda ()
                          (setq-local tab-width 4)
                          (process-query-on-exit-flag

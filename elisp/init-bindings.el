@@ -4,7 +4,6 @@
   )
 
 (use-package general
-  :ensure
   :commands (leader-def local-leader-def)
   :config
   (general-create-definer leader-def
@@ -23,11 +22,11 @@
     :prefix "C-s")
 
   (tab-def
-   "" nil
-   "c" '(tab-new :wk "New")
-   "r" '(tab-bar-rename-tab :wk "Rename")
-   "d" '(tab-bar-close-tab :wk "Close")
-   "s" '(tab-bar-select-tab-by-name :wk "Select"))
+    "" nil
+    "c" '(tab-new :wk "New")
+    "r" '(tab-bar-rename-tab :wk "Rename")
+    "d" '(tab-bar-close-tab :wk "Close")
+    "s" '(tab-bar-select-tab-by-name :wk "Select"))
 
   ;; evil mode
   (evil-define-key 'normal 'global
@@ -164,6 +163,7 @@
     "pt" '(magit-todos-list :wk "List project tasks")
     "pS" '(save-some-buffers :wk "Save project buffers")
     "pd" '(project-find-dir :wk "Find dir in project")
+    "pF" '(consult-project-extra-find-other-window :wk "Find file in project other-window")
 
     "q" '(:wk "Quit")
     "qq" '(kill-emacs :wk "Quit")

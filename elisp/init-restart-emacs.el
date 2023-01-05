@@ -47,6 +47,7 @@
 ;;; Code:
 
 (use-package restart-emacs
+  :defer t
   :commands restart-emacs)
 
 (provide 'init-restart-emacs)

@@ -51,6 +51,7 @@
   (require 'init-func))
 
 (use-package dart-mode
+  :defer t
   :mode ("\\.dart\\'")
   :hook ((dart-mode . (lambda ()
                         (format-all-mode t)))

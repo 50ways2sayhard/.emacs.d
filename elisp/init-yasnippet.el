@@ -39,10 +39,10 @@
 
 ;; YASnippetPac
 (use-package yasnippet
-  :diminish yas-minor-mode
+  :diminish
+  :commands yas-expand-snippet
   :init
   (use-package yasnippet-snippets :after yasnippet)
-  :hook ((prog-mode LaTeX-mode org-mode) . yas-minor-mode)
   :bind
   (:map yas-minor-mode-map
         ("C-c C-n" . yas-expand-from-trigger-key))

@@ -40,11 +40,6 @@
 (eval-when-compile
   (require 'init-const))
 
-;; SudoEditPac
-(use-package sudo-edit
-  :commands (sudo-edit))
-;; -SudoEditPac
-
 ;; DefBindings
 ;; Unbind unneeded keys
 (global-set-key (kbd "C-z") nil)
@@ -86,6 +81,7 @@
 
 ;; History
 (use-package recentf
+  :defer t
   :hook (after-init . recentf-mode)
   :custom
   (recentf-auto-cleanup "05:00am")

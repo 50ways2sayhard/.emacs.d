@@ -39,6 +39,7 @@
 
 ;; DiredPackage
 (use-package dired
+  :commands (dired)
   :straight nil
   :custom
   ;; Always delete and copy recursively
@@ -163,8 +164,7 @@
 
   (use-package dirvish-extras
     :straight nil
-    :after dirvish)
-  )
+    :after dirvish))
 
 
 ;; SaveAllBuffers

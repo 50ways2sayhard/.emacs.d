@@ -93,6 +93,8 @@
 (add-to-list 'straight-built-in-pseudo-packages 'use-package)
 (add-to-list 'straight-built-in-pseudo-packages 'project)
 (add-to-list 'straight-built-in-pseudo-packages 'org)
+(add-to-list 'straight-built-in-pseudo-packages 'dired)
+(add-to-list 'straight-built-in-pseudo-packages 'org-agenda)
 
 
 ;; DimPac
