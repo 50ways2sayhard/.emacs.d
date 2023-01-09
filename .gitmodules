@@ -208,9 +208,6 @@
 [submodule "markdown-mode"]
 	path = lib/markdown-mode
 	url = https://github.com/jrblevin/markdown-mode
-[submodule "mini-frame"]
-	path = lib/mini-frame
-	url = https://github.com/muffinmad/emacs-mini-frame
 [submodule "multi-translate"]
 	path = lib/multi-translate
 	url = https://github.com/twlz0ne/multi-translate.el
@@ -302,9 +299,6 @@
 [submodule "transient"]
 	path = lib/transient
 	url = git@github.com:magit/transient.git
-[submodule "transient-posframe"]
-	path = lib/transient-posframe
-	url = https://github.com/yanghaoxie/transient-posframe
 [submodule "treepy"]
 	path = lib/treepy
 	url = git@github.com:volrath/treepy.el.git
@@ -319,6 +313,9 @@
 	url = https://github.com/minad/vertico
   load-path = .
   load-path = extensions
+[submodule "vertico-posframe"]
+	path = lib/vertico-posframe
+	url = https://github.com/tumashu/vertico-posframe
 [submodule "volatile-highlights"]
 	path = lib/volatile-highlights
 	url = https://github.com/k-talo/volatile-highlights.el
