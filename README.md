@@ -1,42 +1,47 @@
-Assimilate Emacs packages as Git submodules
+Emacs config for self use
 ===========================================
 
-*For more information see the [announcement][init] and the [manual].*
+Personal Emacs configuration, only tested on macOS with Emacs 29 or higher.
 
-About `borg.el`
----------------
+Main features:
+* Use Borg to manage Emacs packages as Git submodules.
+* Use use-package to organize config.
+* Use builtin eglot to provide LSP support.
+* Optimized for dart and flutter programing.
 
-[Borg] is a bare-bones package manager for Emacs packages.  It
-provides only a few essential features and should be combined with
-other tools such as Magit, `epkg`, `use-package`, and `auto-compile`.
+# Installation
 
-Borg assimilates packages into the `~/.emacs.d` repository as Git
-submodules.  An assimilated package is called a drone and a borg-based
-`~/.emacs.d` repository is called a collective.
+Run the following script to install Emacs and this configuration:
 
-About this collective
----------------------
+```bash
+cd ~
+mv .emacs.d .emacs.d.bak
+git clone https://github.com/50ways2sayhard/.emacs.d.git --branch borg
+cd .emacs.d
+cp init-custom-example.el init-custom.el
+make bootstrap-borg
+make bootstrap
+```
 
-This particular collective is intended to be used to bootstrap private
-configurations.  Fork your own copy and then start assimilating as you
-please.
 
-If you wish you can later merge changes from the upstream repository,
-to get updates for the drones that have been assimilated in the base
-configuration.  Very rarely additional drones might be assimilated or
-the configuration of existing drones might be tweaked.
+# Updating
 
-Or you can just update and further configure these drones as you would
-update the drones you have assimilated yourself.
+You can update this config with `git pull`. For Updating third-party packages, run:
 
-If you do base your own configuration on this collective and make it
-publicly available as source of inspiration for others, then please
-do so by forking the upstream repository, which is available from
-[Github].
+```bash
+cd ~/.emacs.d
+git submodule update --init ./lib/<package-name> # Update specific package
+git submodule foreach git pull # Update each submodule to latest commit
 
-You might also want to adjust this description.
+make clean # remove all byte-code and native files
+make build # byte-compile all drones and init files
 
-[init]:    https://emacsair.me/2016/05/17/assimilate-emacs-packages-as-git-submodules
-[Borg]:    https://github.com/emacscollective/borg
-[manual]:  https://emacsmirror.net/manual/borg
-[Github]:  https://github.com/emacscollective/emacs.g
+make help # show brief help
+```
+
+# Why borg?
+
+I used to manage third-party package with `straight.el`, but recently I meet some problem:
+* `eglot` becomes builtin package now, but `straight.el` keep pulling the `eglot` repository when some packages depend on it. `use-package` has the same problem.
+
+# Reference
