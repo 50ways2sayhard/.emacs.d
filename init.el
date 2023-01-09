@@ -1,4 +1,4 @@
-;;; init.el --- user-init-file                    -*- lexical-binding: t -*-
+;;; init.el --- user-init-file               exical-binding: t -*-
 ;;; Early birds
 (progn ;     startup
   (defvar before-user-init-time (current-time)
@@ -12,38 +12,114 @@
   (when (< emacs-major-version 27)
     (setq package-enable-at-startup nil)
     ;; (package-initialize)
-    (load-file (expand-file-name "early-init.el" user-emacs-directory)))
-  (setq inhibit-startup-buffer-menu t)
-  (setq inhibit-startup-screen t)
-  (setq inhibit-startup-echo-area-message "locutus")
-  (setq initial-buffer-choice t)
-  (setq initial-scratch-message "")
-  (when (fboundp 'scroll-bar-mode)
-    (scroll-bar-mode 0))
-  (when (fboundp 'tool-bar-mode)
-    (tool-bar-mode 0))
-  (menu-bar-mode 0))
+    (load-file (expand-file-name "early-init.el" user-emacs-directory))))
+
+;; (eval-and-compile ; `borg'
+;;   (add-to-list 'load-path (expand-file-name "lib/borg" user-emacs-directory))
+;;   (require 'borg)
+;;   (borg-initialize))
 
 (eval-and-compile ; `borg'
   (add-to-list 'load-path (expand-file-name "lib/borg" user-emacs-directory))
-  (require 'borg)
-  (borg-initialize))
+  (setq borg-compile-function #'borg-byte+native-compile-async)
+  (add-to-list 'load-path (expand-file-name "lib/names" user-emacs-directory))
+  (require 'names)
+
+  (defun lld-collect-autoloads (file)
+    "insert all enabled drone's autoloads file to a single file."
+    (make-directory (file-name-directory file) 'parents)
+
+    ;; cleanup obsolete autoloads file
+    (dolist (f (directory-files single-autoload-path t "autoload-[0-9]+-[0-9]+\\.elc?\\'"))
+      (unless (string= file f)
+        (delete-file f)))
+
+    (message "Generating single big autoload file.")
+    (condition-case-unless-debug e
+        (with-temp-file file
+          (setq-local coding-system-for-write 'utf-8)
+          (let ((standard-output (current-buffer))
+                (print-quoted t)
+                (print-level nil)
+                (print-length nil)
+                (home (expand-file-name "~"))
+                path-list
+                theme-path-list
+                drones-path
+                auto)
+            (insert ";; -*- lexical-binding: t; coding: utf-8; no-native-compile: t -*-\n"
+                    ";; This file is generated from enabled drones.\n")
+
+            ;; replace absolute path to ~
+            (dolist (p load-path)
+              ;; collect all drone's load-path
+              (when (string-prefix-p (expand-file-name user-emacs-directory) (expand-file-name p))
+                (push p drones-path))
+
+              (if (string-prefix-p home p)
+                  (push (concat "~" (string-remove-prefix home p)) path-list)
+                (push p path-list)))
+
+            (dolist (p custom-theme-load-path)
+              (if (and (stringp p)
+                       (string-prefix-p home p))
+                  (push (concat "~" (string-remove-prefix home p)) theme-path-list)
+                (push p theme-path-list)))
+
+            (prin1 `(set `load-path ',(nreverse path-list)))
+            (insert "\n")
+            (print `(set `custom-theme-load-path ',(nreverse theme-path-list)))
+            (insert "\n")
+
+            ;; insert all drone's autoloads.el to this file
+            (dolist (p drones-path)
+              (when (file-exists-p p)
+                (setq auto (car (directory-files p t ".*-autoloads.el\\'")))
+                (when (and auto
+                           (file-exists-p auto))
+                  (insert-file-contents auto))))
+            ;; remove all #$ load code
+            (goto-char (point-min))
+            (while (re-search-forward "\(add-to-list 'load-path.*#$.*\n" nil t)
+              (replace-match ""))
+
+            ;; write local variables region
+            (goto-char (point-max))
+            (insert  "\n"
+                     "\n;; Local Variables:"
+                     "\n;; version-control: never"
+                     "\n;; no-update-autoloads: t"
+                     "\n;; End:"
+                     ))
+          t)
+      (error (delete-file file)
+             (signal 'collect-autoload-error (list file e)))))
+
+  (defvar single-autoload-path (concat user-emacs-directory "etc/borg/autoload/") "single autoload file.")
+  (let ((file (concat single-autoload-path
+                      "autoload-"
+                      (format-time-string
+                       "%+4Y%m%d-%H%M%S"
+                       (file-attribute-modification-time
+                        (file-attributes (concat user-emacs-directory ".gitmodules"))))
+                      ".el")))
+    (if (file-exists-p file)
+        (load file nil t)
+      (require 'borg)
+      (borg-initialize)
+      (lld-collect-autoloads file))))
+
+(use-package borg
+  :commands (borg-assimilate))
 
 (eval-and-compile ; `use-package'
   (require  'use-package)
   (setq use-package-verbose t))
 
 (use-package dash
+  :defer t
   :config (global-dash-fontify-mode))
 (use-package eieio)
-
-(use-package auto-compile
-  :config
-  (setq auto-compile-display-buffer               nil)
-  (setq auto-compile-mode-line-counter            t)
-  (setq auto-compile-source-recreate-deletes-dest t)
-  (setq auto-compile-toggle-deletes-nonlib-dest   t)
-  (setq auto-compile-update-autoloads             t))
 
 (use-package epkg
   :defer t
@@ -56,7 +132,7 @@
 (use-package custom
   :no-require t
   :config
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (setq custom-file (expand-file-name "init-custom.el" user-emacs-directory))
   (when (file-exists-p custom-file)
     (load custom-file)))
 
@@ -72,6 +148,7 @@
 ;;; Long tail
 
 (use-package diff-hl
+  :defer t
   :bind (:map diff-hl-command-map
               ("SPC" . diff-hl-mark-hunk))
   :hook ((find-file . diff-hl-mode)
@@ -136,7 +213,8 @@
   )
 
 (use-package eldoc
-  :when (version< "25" emacs-version)
+  :defer t
+  :commands (eldoc)
   :config (global-eldoc-mode))
 
 (use-package help
@@ -158,10 +236,6 @@
   :defer t
   :bind ("C-x g" . magit-status)
   :commands (magit-open-repo magit-add-section-hook)
-  :hook (magit-status-mode . (lambda ()
-                               (evil-mode -1)
-                               (evil-collection-init)
-                               (evil-mode 1)))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -214,6 +288,7 @@
         show-paren-when-point-inside-paren t))
 
 (use-package prog-mode
+  :defer t
   :config (global-prettify-symbols-mode)
   (defun indicate-buffer-boundaries-left ()
     (setq indicate-buffer-boundaries 'left))
@@ -238,13 +313,6 @@
                           "undo-tree-hist"
                           "url"
                           "COMMIT_EDITMSG\\'")))
-
-(use-package savehist
-  :config (savehist-mode))
-
-(use-package saveplace
-  :when (version< "25" emacs-version)
-  :config (save-place-mode))
 
 (use-package simple
   :config (column-number-mode))
@@ -280,11 +348,11 @@
               (message
                "Loading %s...done (%.3fs) [after-init]" user-init-file
                (float-time (time-subtract (current-time)
-                                          before-user-init-time)))
-
-              (+my/open-org-agenda)
-              )
-            t))
+                                          before-user-init-time)))) t)
+  (add-hook 'window-setup-hook
+            (lambda ()
+              (+my/open-org-agenda)) t)
+  )
 
 (progn ;     personalize
   (let ((file (expand-file-name (concat (user-real-login-name) ".el")
@@ -299,13 +367,6 @@
     (setq +self/first-input-hook nil))
   (remove-hook 'pre-command-hook '+my/first-input-hook-fun))
 (add-hook 'pre-command-hook '+my/first-input-hook-fun)
-
-;; InitPrivate
-;; Load init-custom.el if it exists
-(when (file-exists-p (expand-file-name "init-custom.el" user-emacs-directory))
-  (load-file (expand-file-name "init-custom.el" user-emacs-directory)))
-;; -InitPrivate
-
 
 (let ((my-env-file (concat user-emacs-directory "env")))
   (when (and (or (display-graphic-p)
@@ -385,6 +446,7 @@
       compilation-scroll-output t)
 
 (use-package gcmh
+  :defer t
   :hook (emacs-startup . gcmh-mode)
   :diminish
   :init
@@ -443,29 +505,17 @@
 (setq hscroll-margin 1)
 ;; -SmoothScroll
 
-;; BetterMiniBuffer
-(defun abort-minibuffer-using-mouse ()
-  "Abort the minibuffer when using the mouse."
-  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
-    (abort-recursive-edit)))
-
-(add-hook 'mouse-leave-buffer-hook 'abort-minibuffer-using-mouse)
-
-;; BetterMiniBuffer
-
-;; keep the point out of the minibuffer
-(setq-default minibuffer-prompt-properties '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
-;; -BetterMiniBuffer
-
 (defun font-installed-p (font-name)
   "Check if font with FONT-NAME is available."
   (find-font (font-spec :name font-name)))
 
+;;;###autoload
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
   (find-file (concat user-emacs-directory "init.el")))
 
+;;;###autoload
 (defun +my-rename-file()
   "Rename file while using current file as default."
   (interactive)
@@ -479,6 +529,7 @@
       (kill-buffer)
       (find-file file-to))))
 
+;;;###autoload
 (defun +my-delete-file ()
   "Put current buffer file to top."
   (interactive)
@@ -487,60 +538,7 @@
   (unless (file-exists-p (buffer-file-name))
     (kill-current-buffer)))
 
-(defun doom-enlist (exp)
-  "Return EXP wrapped in a list, or as-is if already a list."
-  (declare (pure t) (side-effect-free t))
-  (if (listp exp) exp (list exp)))
-
-(defun +modeline-update-env-in-all-windows-h (&rest _)
-  "Update version strings in all buffers."
-  (dolist (window (window-list))
-    (with-selected-window window
-      (doom-modeline-update-env)
-      (force-mode-line-update))))
-
-(defun +modeline-clear-env-in-all-windows-h (&rest _)
-  "Blank out version strings in all buffers."
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (setq doom-modeline-env--version
-            (bound-and-true-p doom-modeline-load-string))))
-  (force-mode-line-update t))
-
-
-(defvar my-load-user-customized-major-mode-hook t)
-(defvar my-force-buffer-file-temp-p nil)
-(defun is-buffer-file-temp ()
-  "If (buffer-file-name) is nil or a temp file or HTML file converted from org file."
-  (interactive)
-  (let* ((f (buffer-file-name)) (rlt t))
-    (cond
-     ((not my-load-user-customized-major-mode-hook)
-      (setq rlt t))
-
-     ((and (buffer-name) (string-match "\\* Org SRc" (buffer-name)))
-      ;; org-babel edit inline code block need calling hook
-      (setq rlt nil))
-
-     ((null f)
-      (setq rlt t))
-
-     ((string-match (concat "^" temporary-file-directory) f)
-      ;; file is create from temp directory
-      (setq rlt t))
-
-     ((and (string-match "\.html$" f)
-           (file-exists-p (replace-regexp-in-string "\.html$" ".org" f)))
-      ;; file is a html file exported from org-mode
-      (setq rlt t))
-
-     (my-force-buffer-file-temp-p
-      (setq rlt t))
-
-     (t
-      (setq rlt nil)))
-    rlt))
-
+;;;###autoload
 (defun +my-imenu (args)
   "Call 'consult-outline' in 'org-mode' else 'consult-imenu'."
   (interactive "P")
@@ -554,7 +552,6 @@
       )
     )
   )
-
 
 ;;;###autoload
 (defun +default/newline-above ()
@@ -574,16 +571,6 @@
       (call-interactively 'evil-open-below)
     (end-of-line)
     (newline-and-indent)))
-
-(defun my-open-recent ()
-  "Open recent directory in dired or file otherwise."
-  (interactive)
-  (unless recentf-mode (recentf-mode 1))
-  (if (derived-mode-p 'dired-mode)
-      (find-file (completing-read "Find recent dirs: "
-                                  (delete-dups
-                                   (append (mapcar 'file-name-directory recentf-list)))))
-    (consult-recent-file)))
 
 (defun +complete--get-meta (setting)
   "Get metadata SETTING from completion table."
@@ -614,15 +601,8 @@
         (project-root project) ;;  HACK: original repo breaks here
       nil)))
 
-(defun my-project-root (&optional dir)
-  "Return the project root of DIR."
-  (when-let* ((default-directory (or dir default-directory))
-              (project (project-current)))
-    (expand-file-name (if (fboundp 'project-root)
-                          (project-root project)
-                        (cdr project)))))
 
-
+;;;###autoload
 (defun hexcolour-luminance (color)
   "Calculate the luminance of a color string (e.g. \"#ffaa00\", \"blue\").
   This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
@@ -632,6 +612,7 @@
          (b (caddr values)))
     (floor (+ (* .3 r) (* .59 g) (* .11 b)) 256)))
 
+;;;###autoload
 (defun hexcolour-add-to-font-lock ()
   (interactive)
   (font-lock-add-keywords
@@ -646,6 +627,7 @@
                     (:background ,colour)))))))))
 
 
+;;;###autoload
 (defun +my/google-it (&optional word)
   "Google it."
   (interactive (list
@@ -723,7 +705,9 @@
                                               (when (or (derived-mode-p 'fundamental-mode)
                                                         (derived-mode-p 'text-mode)
                                                         (derived-mode-p 'snippet-mode))
-                                                (setq-local evil-auto-indent nil)))))
+                                                (setq-local evil-auto-indent nil))))
+
+  )
 
 (use-package evil-collection
   :after evil
@@ -884,6 +868,7 @@
     "#" #'evil-visualstar/begin-search-backward))
 
 (use-package general
+  :defer t
   :commands (leader-def local-leader-def)
   :config
   (general-create-definer leader-def
@@ -1000,7 +985,7 @@
     "ff" '(find-file :wk "Find file")
     "fF" '(find-file-other-window :wk "Find file in new Frame")
     "fr" '(recentf-open-files :wk "Recent file")
-    "fR" '(+my-rename-file :wk "Rename file")
+    "fR" '(embark-rename-buffer :wk "Rename file")
     "fp" '(+open-configuration-folder :wk ".emacs.d")
     "fD" '(+my-delete-file :wk "Delete file")
     "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
@@ -1139,11 +1124,17 @@
     ))
 
 (use-package embark
+  :defer t
+  :commands (embark-act embark-dwim)
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)
-   ("C-/" . embark-export)) ;; alternative for `describe-bindings'
+   ("C-/" . embark-export)      ;; alternative for `describe-bindings'
+   :map embark-file-map
+   ("F" . find-file-other-window)
+   ("r" . +my-rename-file)
+   ("d" . +my-delete-file))
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
@@ -1151,10 +1142,11 @@
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
   ;;  HACK: bind will be override by evil
-  (general-define-key :states '(normal insert visual emacs)
-                      "C-." 'embark-act
-                      "M-." 'embark-dwim
-                      "C-h B" 'embark-bindings)
+  (with-eval-after-load 'general
+    (general-define-key :states '(normal insert visual emacs)
+                        "C-." 'embark-act
+                        "M-." 'embark-dwim
+                        "C-h B" 'embark-bindings))
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -1217,8 +1209,6 @@ targets."
         ("C-<return>" . open-in-external-app))
   :custom
   (vertico-cycle nil)
-  :init
-  ;; (vertico-mode)
   :config
   (defun +vertico/jump-list (jump)
     "Go to an entry in evil's (or better-jumper's) jumplist."
@@ -1467,7 +1457,6 @@ When the number of characters in a buffer exceeds this threshold,
       (?`. orderless-initialism)
       (?= . orderless-literal)
       (?~ . orderless-flex)))
-  (savehist-mode)
   ;; Recognizes the following patterns:
   ;; * ~flex flex~
   ;; * =literal literal=
@@ -1525,28 +1514,16 @@ When the number of characters in a buffer exceeds this threshold,
               ("M-A" . marginalia-cycle)
               ("C-i" . marginalia-cycle-annotators)))
 
-(use-package mini-frame
-  :hook (after-init . mini-frame-mode)
-  :commands (mini-frame-mode)
-  :custom
-  (resize-mini-frames t)
+(use-package vertico-posframe
+  :hook (vertico-mode . vertico-posframe-mode)
   :config
-  (setq mini-frame-show-parameters `((left . 0.5)
-                                     (top . ,(/ (frame-pixel-height) 2))
-                                     (min-width . 80)
-                                     (width . 0.618)
-                                     (no-accept-focus . t)))
-  (when (and (not noninteractive) (require 'mini-frame nil t)) ;batch 模式下miniframe 有问题
-    (add-to-list 'mini-frame-ignore-functions 'y-or-n-p)
-    (add-to-list 'mini-frame-ignore-functions 'yes-or-no-p)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex)
-    (add-to-list 'mini-frame-ignore-commands 'org-time-stamp)
-    (add-to-list 'mini-frame-ignore-commands 'org-deadline)
-    (add-to-list 'mini-frame-ignore-commands 'org-schedule)
-    (add-to-list 'mini-frame-ignore-commands 'pp-eval-expression)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-forward)
-    (add-to-list 'mini-frame-ignore-commands 'evil-ex-search-backward))
-  )
+  (setq vertico-posframe-parameters
+        '((width . 0.618)
+          (min-width . 80)
+          (min-height . 15)
+          (left-fringe . 8)
+          (right-fringe . 8)))
+  (evil-set-initial-state 'minibuffer-mode 'emacs))
 
 (use-package all-the-icons
   :config
@@ -1927,8 +1904,7 @@ function to the relevant margin-formatters list."
            (text (string-trim (buffer-substring-no-properties (car bounds) (cdr bounds)))))
       (kill-new (multi-translate--google-translation "en" "zh-CN" text))
       (evil-normal-state)
-      (message "Translate Done")))
-  )
+      (message "Translate Done"))))
 
 (use-package which-key
   :diminish
@@ -1949,6 +1925,7 @@ function to the relevant margin-formatters list."
 
 ;; Colourful dired
 (use-package diredfl
+  :after dired
   :hook (dired-mode . diredfl-mode))
 
 (use-package dired-git-info
@@ -1958,7 +1935,7 @@ function to the relevant margin-formatters list."
 
 ;; Extra Dired functionality
 (use-package dired-x
-  :demand
+  :after dired
   :hook (dired-mode . dired-omit-mode)
   :config
   (setq dired-omit-files
@@ -2036,12 +2013,8 @@ function to the relevant margin-formatters list."
   )
 ;; -SaveAllBuffers
 
-(use-package transient-posframe
-  :hook (magit . transient-posframe-mode)
-  :custom
-  (transient-posframe-poshandler #'posframe-poshandler-point-top-left-corner))
-
 (use-package project
+  :defer t
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
@@ -2059,6 +2032,7 @@ function to the relevant margin-formatters list."
             (or dirs (list (project-root project))))))
 
 (use-package popper
+  :defer t
   :after project
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
@@ -2160,8 +2134,9 @@ function to the relevant margin-formatters list."
   (doom-modeline-buffer-modification-icon t))
 
 (use-package ef-themes
-  :config
+  :init
   (ef-themes-select 'ef-trio-light)
+  :config
   (defun +my-custom-org-todo-faces()
     (ef-themes-with-colors
       (setq org-todo-keyword-faces
@@ -2176,7 +2151,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Iosevka Comfy" . 16) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
+(defvar font-list '(("Cascadia Code" . 15) ("Iosevka SS08" . 16) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2201,7 +2176,8 @@ function to the relevant margin-formatters list."
 (defun my-apply-font ()
   ;; Set default font
   (set-face-attribute 'default nil
-                      :font "Cascadia Code"
+                      ;; :font "Cascadia Code"
+                      :font "Iosevka SS08"
                       :height (cond (*sys/mac* 150)
                                     (t 130)))
 
@@ -2212,22 +2188,23 @@ function to the relevant margin-formatters list."
   (set-fontset-font t 'unicode "Apple Color Emoji" nil 'prepend)
 
   ;; Specify font for Chinese characters
-  ;; (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
-  ;;          when (font-installed-p font)
-  ;;          return (set-fontset-font t '(#x4e00 . #x9fff) font)))
-  (set-fontset-font t '(#x4e00 . #x9fff) "Maple Mono SC NF")
+  (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
+           when (font-installed-p font)
+           return (set-fontset-font t '(#x4e00 . #x9fff) font))
 
   (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend))
 
 (add-hook 'after-init-hook #'my-apply-font)
 
 (use-package hl-line
+  :defer t
   :custom-face (hl-line ((t (:extend t))))
   :hook ((after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
 
 ;; Colorize color names in buffers
 (use-package rainbow-mode
+  :defer t
   :diminish
   :bind (:map help-mode-map
               ("w" . rainbow-mode))
@@ -2514,34 +2491,35 @@ window that already exists in that direction. It will split otherwise."
   (when (>= emacs-major-version 27)
     (set-face-attribute 'smerge-refined-removed nil :extend t)
     (set-face-attribute 'smerge-refined-added   nil :extend t))
-  :pretty-hydra
-  ((:title "Smerge"
-           :color pink :quit-key "q")
-   ("Move"
-    (("n" smerge-next "next")
-     ("p" smerge-prev "previous"))
-    "Keep"
-    (("b" smerge-keep-base "base")
-     ("u" smerge-keep-upper "upper")
-     ("l" smerge-keep-lower "lower")
-     ("a" smerge-keep-all "all")
-     ("RET" smerge-keep-current "current")
-     ("C-m" smerge-keep-current "current"))
-    "Diff"
-    (("<" smerge-diff-base-upper "upper/base")
-     ("=" smerge-diff-upper-lower "upper/lower")
-     (">" smerge-diff-base-lower "upper/lower")
-     ("R" smerge-refine "refine")
-     ("E" smerge-ediff "ediff"))
-    "Other"
-    (("C" smerge-combine-with-next "combine")
-     ("r" smerge-resolve "resolve")
-     ("k" smerge-kill-current "kill")
-     ("ZZ" (lambda ()
-             (interactive)
-             (save-buffer)
-             (bury-buffer))
-      "Save and bury buffer" :exit t)))))
+  ;; :pretty-hydra
+  ;; ((:title "Smerge"
+  ;;          :color pink :quit-key "q")
+  ;;  ("Move"
+  ;;   (("n" smerge-next "next")
+  ;;    ("p" smerge-prev "previous"))
+  ;;   "Keep"
+  ;;   (("b" smerge-keep-base "base")
+  ;;    ("u" smerge-keep-upper "upper")
+  ;;    ("l" smerge-keep-lower "lower")
+  ;;    ("a" smerge-keep-all "all")
+  ;;    ("RET" smerge-keep-current "current")
+  ;;    ("C-m" smerge-keep-current "current"))
+  ;;   "Diff"
+  ;;   (("<" smerge-diff-base-upper "upper/base")
+  ;;    ("=" smerge-diff-upper-lower "upper/lower")
+  ;;    (">" smerge-diff-base-lower "upper/lower")
+  ;;    ("R" smerge-refine "refine")
+  ;;    ("E" smerge-ediff "ediff"))
+  ;;   "Other"
+  ;;   (("C" smerge-combine-with-next "combine")
+  ;;    ("r" smerge-resolve "resolve")
+  ;;    ("k" smerge-kill-current "kill")
+  ;;    ("ZZ" (lambda ()
+  ;;            (interactive)
+  ;;            (save-buffer)
+  ;;            (bury-buffer))
+  ;;     "Save and bury buffer" :exit t))))
+  )
 
 (use-package git-timemachine
   :commands (git-timemachine git-timemachine-toggle)
@@ -2570,7 +2548,7 @@ window that already exists in that direction. It will split otherwise."
 ;; YASnippetPac
 (use-package yasnippet
   :diminish yas-minor-mode
-  :hook ((prog-mode LaTeX-mode org-mode) . yas-minor-mode)
+  :commands (yas-expand-snippet)
   :bind
   (:map yas-minor-mode-map
         ("C-c C-n" . yas-expand-from-trigger-key))
@@ -2789,21 +2767,21 @@ window that already exists in that direction. It will split otherwise."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2822,7 +2800,7 @@ window that already exists in that direction. It will split otherwise."
 
 
 (use-package treesit
-  :if (and (boundp 'treesit-available-p) (treesit-available-p))
+  :if (and (fboundp 'treesit-available-p) (treesit-available-p))
   :defer t
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :init
@@ -2835,6 +2813,7 @@ window that already exists in that direction. It will split otherwise."
           (python . ("https://github.com/tree-sitter/tree-sitter-python"))
           (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
           ))
   :config
   (setq major-mode-remap-alist
@@ -2966,6 +2945,8 @@ Install the doc if it's not installed."
             (select-frame-set-input-focus vterm-posframe--frame)))))))
 
 (use-package python
+  :defer t
+  :mode ("\\.py\\'" . python-mode)
   :hook (python-mode . (lambda ()
                          (process-query-on-exit-flag
                           (get-process "Python"))))
@@ -2998,6 +2979,7 @@ Install the doc if it's not installed."
     ))
 
 (use-package web-mode
+  :defer t
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")
@@ -3299,6 +3281,8 @@ Install the doc if it's not installed."
 
 
 (use-package org
+  :mode ("\\.org\\'" . org-mode)
+  :commands (+my/open-org-agenda)
   :defer t
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
@@ -3330,6 +3314,10 @@ Install the doc if it's not installed."
   (org-babel-python-command "python3")
 
   :config
+  (defun +my/open-org-agenda ()
+    "open org agenda in left window"
+    (interactive)
+    (org-agenda nil "n"))
   (setq org-clock-persist t
         org-clock-persist-file (concat +self/org-base-dir "org-clock-save.el"))
   (add-hook 'org-clock-in-hook #'org-save-all-org-buffers)
@@ -3619,6 +3607,7 @@ Install the doc if it's not installed."
 
 ;; OrgDownload
 (use-package org-download
+  :after org
   :defer t
   :commands (org-download-clipboard org-download-delete org-download-image org-download-yank org-download-edit org-download-rename-at-point org-download-rename-last-file org-download-screenshot)
   :custom
@@ -3630,6 +3619,7 @@ Install the doc if it's not installed."
 ;; -OrgDownload
 
 (use-package org-contrib
+  :defer t
   :after org)
 
 (use-package valign
@@ -3640,9 +3630,11 @@ Install the doc if it's not installed."
   )
 
 (use-package electric-spacing
+  :defer t
   :after org)
 
 (use-package separate-inline
+  :defer t
   :after org
   :hook ((org-mode-hook . separate-inline-mode)
          (org-mode-hook
@@ -3722,13 +3714,6 @@ Install the doc if it's not installed."
                                   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
                                   ))))))
 ;; -Notification
-
-
-(defun +my/open-org-agenda ()
-  "open org agenda in left window"
-  (interactive)
-  (org-agenda nil "n"))
-
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
