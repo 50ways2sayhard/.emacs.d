@@ -21,3 +21,5 @@
 /projects
 /history
 /env
+/etc/borg/autoload
+/tree-sitter
