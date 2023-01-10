@@ -402,12 +402,12 @@ REST and STATE."
     (when (file-exists-p file)
       (load file))))
 
-(defvar +self/first-input-hook nil)
+(defvar +my/first-input-hook nil)
 (defun +my/first-input-hook-fun ()
   "Hook for first input."
-  (when +self/first-input-hook
-    (run-hooks '+self/first-input-hook)
-    (setq +self/first-input-hook nil))
+  (when +my/first-input-hook
+    (run-hooks '+my/first-input-hook)
+    (setq +my/first-input-hook nil))
   (remove-hook 'pre-command-hook '+my/first-input-hook-fun))
 (add-hook 'pre-command-hook '+my/first-input-hook-fun)
 
@@ -471,9 +471,9 @@ REST and STATE."
 (setq-default js-switch-indent-offset 2)
 (add-hook 'after-change-major-mode-hook
           (lambda () (if (equal electric-indent-mode 't)
-                    (when (derived-mode-p 'text-mode)
-                      (electric-indent-mode -1))
-                  (electric-indent-mode 1))))
+                         (when (derived-mode-p 'text-mode)
+                           (electric-indent-mode -1))
+                       (electric-indent-mode 1))))
 
 
 ;; When buffer is closed, saves the cursor location
@@ -786,7 +786,7 @@ REST and STATE."
 
 (use-package evil-indent-plus
   :after evil
-  :hook (+my/first-input . evil-indent-plus-default-bindins))
+  :hook (+my/first-input . evil-indent-plus-default-bindings))
 
 (use-package evil-embrace
   :after evil
@@ -1248,7 +1248,7 @@ targets."
   :after consult)
 
 (use-package vertico
-  :hook (+self/first-input . vertico-mode)
+  :hook (+my/first-input . vertico-mode)
   :bind
   (:map vertico-map
         ("C-<return>" . open-in-external-app))
@@ -1364,7 +1364,6 @@ targets."
          ("M-s m" . consult-multi-occur)
          ;; Isearch integration
          ("M-s e" . consult-isearch))
-  :init
   :config
   (setq consult-preview-key "M-p")
   (setq xref-show-xrefs-function #'consult-xref
@@ -1484,6 +1483,69 @@ When the number of characters in a buffer exceeds this threshold,
                         opts)
               :highlight hl))))
 
+  (defun +my/retrieval-todo-items ()
+    (require 'consult-org)
+    (consult--read
+     (consult--with-increased-gc
+      (-filter (lambda (item)
+                 (not (member
+                       (car (cdr (get-text-property 0 'consult-org--heading item)))
+                       '("DONE" "CANCELED"))))
+               (consult-org--headings nil nil 'agenda)))
+     :prompt "Go to heading: "
+     :category 'consult-org-heading
+     :sort nil
+     :require-match t
+     :history '(:input consult-org--history)
+     :narrow (consult-org--narrow)
+     :state (consult--jump-state)
+     :group
+     (lambda (cand transform)
+       (let ((name (buffer-name
+                    (marker-buffer
+                     (get-text-property 0 'consult--candidate cand)))))
+         (if transform cand name)))
+     :lookup #'consult--lookup-candidate))
+
+  (defun consult-clock-in (&optional match scope resolve)
+    "Clock into an Org heading."
+    (interactive (list nil nil current-prefix-arg))
+    (require 'org-clock)
+    (org-clock-load)
+    (save-window-excursion
+      (consult-org-heading
+       match
+       (or scope
+           (thread-last org-clock-history
+                        (mapcar 'marker-buffer)
+                        (mapcar 'buffer-file-name)
+                        (delete-dups)
+                        (delq nil))
+           (user-error "No recent clocked tasks")))
+      (org-clock-in nil (when resolve
+                          (org-resolve-clocks)
+                          (org-read-date t t)))))
+
+  (consult-customize consult-clock-in
+                     :prompt "Clock in: "
+                     :preview-key (kbd "M-.")
+                     :group
+                     (lambda (cand transform)
+                       (let* ((marker (get-text-property 0 'consult--candidate cand))
+                              (name (if (member marker org-clock-history)
+                                        "*Recent*"
+                                      (buffer-name (marker-buffer marker)))))
+                         (if transform (substring cand (1+ (length name))) name))))
+
+  (defun consult-mark-done ()
+    "Clock into an Org agenda heading."
+    (interactive)
+    (save-window-excursion
+      (+my/retrieval-todo-items)
+      (org-todo 'done)
+      (save-buffer)))
+  (consult-customize consult-mark-done :prompt "Mark done: ")
+
   (defun consult-fd (&optional dir initial)
     (interactive "P")
     (let* ((prompt-dir (consult--directory-prompt "Fd" dir))
@@ -1554,7 +1616,7 @@ When the number of characters in a buffer exceeds this threshold,
   )
 
 (use-package marginalia
-  :hook (+self/first-input . marginalia-mode)
+  :hook (+my/first-input . marginalia-mode)
   :config
   (setq marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light))
   :bind (:map minibuffer-local-completion-map
@@ -1562,16 +1624,19 @@ When the number of characters in a buffer exceeds this threshold,
               ("C-i" . marginalia-cycle-annotators)))
 
 (use-package vertico-posframe
+  :when (display-graphic-p)
   :hook (vertico-mode . vertico-posframe-mode)
   :config
   (setq vertico-posframe-parameters
         '((width . 0.618)
+          (max-width . 0.8)
           (min-width . 80)
           (left-fringe . 8)
           (right-fringe . 8)))
   (evil-set-initial-state 'minibuffer-mode 'emacs))
 
 (use-package all-the-icons
+  :when (display-graphic-p)
   :demand t
   :config
   (declare-function memoize 'memoize)
@@ -1992,7 +2057,7 @@ function to the relevant margin-formatters list."
 
 (use-package dirvish
   :after dired
-  :hook ((+self/first-input . dirvish-override-dired-mode)
+  :hook ((+my/first-input . dirvish-override-dired-mode)
          (evil-collection-setup . (lambda (&rest a)
                                     (evil-define-key '(normal) dired-mode-map
                                       (kbd "C-c f") 'dirvish-fd
@@ -2079,6 +2144,20 @@ function to the relevant margin-formatters list."
     (mapcan #'my/project-files-in-directory
             (or dirs (list (project-root project))))))
 
+(use-package winner
+  :commands (winner-undo winner-redo)
+  :hook (window-setup . winner-mode)
+  :init (setq winner-boring-buffers '("*Completions*"
+                                      "*Compile-Log*"
+                                      "*inferior-lisp*"
+                                      "*Fuzzy Completions*"
+                                      "*Apropos*"
+                                      "*Help*"
+                                      "*cvs*"
+                                      "*Buffer List*"
+                                      "*Ibuffer*"
+                                      "*esh command on file*")))
+
 (use-package popper
   :defer t
   :after project
@@ -2103,6 +2182,7 @@ function to the relevant margin-formatters list."
           ;; "\\*Calendar\\*"              ; FIXME: https://github.com/karthink/popper/issues/29
           "\\*lspce-hover\\*"
           "\\*Embark Actions\\*"
+          "\\*Embark Export: .*\\*"
 
           bookmark-bmenu-mode
           compilation-mode
@@ -2298,7 +2378,7 @@ function to the relevant margin-formatters list."
 
 (use-package volatile-highlights
   :diminish
-  :hook (+self/first-input . volatile-highlights-mode)
+  :hook (+my/first-input . volatile-highlights-mode)
   :config
   (when (fboundp 'pulse-momentary-highlight-region)
     (defun my-vhl-pulse (beg end &optional _buf face)
@@ -2597,6 +2677,7 @@ window that already exists in that direction. It will split otherwise."
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands (yas-expand-snippet)
+  :hook (prog-mode . yas-minor-mode)
   :bind
   (:map yas-minor-mode-map
         ("C-c C-n" . yas-expand-from-trigger-key))
@@ -2650,8 +2731,7 @@ window that already exists in that direction. It will split otherwise."
                (setq-local electric-pair-inhibit-predicate
                            `(lambda (c)
                               (if (char-equal c ?<) t
-                                (,electric-pair-inhibit-predicate c))))))
-  (add-to-list 'electric-pair-pairs '(?` . ?`)))
+                                (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
   :defer t
@@ -2677,8 +2757,7 @@ window that already exists in that direction. It will split otherwise."
          ((prog-mode) . format-all-ensure-formatter))
   :config
   ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
-  (setq format-all-show-errors 'never)
-  )
+  (setq format-all-show-errors 'never))
 
 ;; DeleteBlockPac
 (use-package delete-block
@@ -2735,7 +2814,12 @@ window that already exists in that direction. It will split otherwise."
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
   (super-save-mode 1)
-  (advice-add 'super-save-command :override 'save-all-buffers))
+
+  (defun +super-save-without-hook ()
+    (let ((before-save-hook (remove 'format-all--buffer-from-hook before-save-hook)))
+      (when (super-save-p)
+        (save-all-buffers))))
+  (advice-add 'super-save-command :override '+super-save-without-hook))
 
 (defvar +lsp--default-read-process-output-max nil)
 (defvar +lsp--default-gcmh-high-cons-threshold nil)
@@ -3226,9 +3310,7 @@ Install the doc if it's not installed."
   :hook ((dart-mode . (lambda ()
                         (format-all-mode t)))
          (eglot-managed-mode . (lambda ()
-                                 (add-hook 'before-save-hook (lambda ()
-                                                               (call-interactively 'eglot-code-action-organize-imports)
-                                                               ) nil t)))
+                                 (add-hook 'before-save-hook #'+eglot-organize-imports nil t)))
          )
   :config
 
