@@ -64,6 +64,7 @@
 (setq use-package-enable-imenu-support t
       use-package-verbose (not (bound-and-true-p byte-compile-current-file))
       use-package-expand-minimally t
+      use-package-always-defer t
       use-package-compute-statistics nil)
 
 (with-eval-after-load 'package

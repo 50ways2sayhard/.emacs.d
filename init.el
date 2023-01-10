@@ -1,5 +1,7 @@
-;;; init.el --- user-init-file               exical-binding: t -*-
+;;; init.el --- user-init-file               -*- lexical-binding: t -*-
 ;;; Early birds
+
+;;; Code:
 (progn ;     startup
   (defvar before-user-init-time (current-time)
     "Value of `current-time' when Emacs begins loading `user-init-file'.")
@@ -108,6 +110,46 @@
       (require 'borg)
       (borg-initialize)
       (lld-collect-autoloads file))))
+
+;; :after-call for use-package
+(defvar +use-package--deferred-pkgs '(t))
+(defun use-package-handler/:after-call (name _keyword hooks rest state)
+  "Add keyword `:after-call' to `use-package'.
+The purpose of this keyword is to expand the lazy-loading
+capabilities of `use-package'.  Consult `use-package-concat' and
+`use-package-process-keywords' for documentations of NAME, HOOKS,
+REST and STATE."
+  (if (plist-get state :demand)
+      (use-package-process-keywords name rest state)
+    (let ((fn (make-symbol (format "grandview--after-call-%s-h" name))))
+      (use-package-concat
+       `((fset ',fn
+               (lambda (&rest _)
+                 (condition-case e
+                     (let ((default-directory user-emacs-directory))
+                       (require ',name))
+                   ((debug error)
+                    (message "Failed to load deferred package %s: %s" ',name e)))
+                 (when-let (deferral-list (assq ',name +use-package--deferred-pkgs))
+                   (dolist (hook (cdr deferral-list))
+                     (advice-remove hook #',fn)
+                     (remove-hook hook #',fn))
+                   (setq +use-package--deferred-pkgs
+                         (delq deferral-list +use-package--deferred-pkgs))
+                   (unintern ',fn nil)))))
+       (cl-loop for hook in hooks
+                collect (if (string-match-p "-\\(?:functions\\|hook\\)$" (symbol-name hook))
+                            `(add-hook ',hook #',fn)
+                          `(advice-add #',hook :before #',fn)))
+       `((unless (assq ',name +use-package--deferred-pkgs)
+           (push '(,name) +use-package--deferred-pkgs))
+         (nconc (assq ',name +use-package--deferred-pkgs)
+                '(,@hooks)))
+       (use-package-process-keywords name rest state)))))
+(require 'use-package-core)
+(push :after-call use-package-deferring-keywords)
+(setq use-package-keywords (use-package-list-insert :after-call use-package-keywords :after))
+(defalias 'use-package-normalize/:after-call #'use-package-normalize-symlist)
 
 (use-package borg
   :commands (borg-assimilate))
@@ -362,6 +404,7 @@
 
 (defvar +self/first-input-hook nil)
 (defun +my/first-input-hook-fun ()
+  "Hook for first input."
   (when +self/first-input-hook
     (run-hooks '+self/first-input-hook)
     (setq +self/first-input-hook nil))
@@ -428,9 +471,9 @@
 (setq-default js-switch-indent-offset 2)
 (add-hook 'after-change-major-mode-hook
           (lambda () (if (equal electric-indent-mode 't)
-                         (when (derived-mode-p 'text-mode)
-                           (electric-indent-mode -1))
-                       (electric-indent-mode 1))))
+                    (when (derived-mode-p 'text-mode)
+                      (electric-indent-mode -1))
+                  (electric-indent-mode 1))))
 
 
 ;; When buffer is closed, saves the cursor location
@@ -710,10 +753,13 @@
   )
 
 (use-package evil-collection
+  :defer nil
   :after evil
   :init
   (setq evil-want-keybinding nil)
   :config
+  (require 'evil-collection)
+  (delete 'corfu evil-collection-mode-list)
   (evil-collection-init))
 
 (use-package evil-escape
@@ -733,18 +779,18 @@
 
 (use-package evil-anzu
   :after evil
+  :after-call evil-ex-search-next
   :config
   (global-anzu-mode)
   (add-hook 'evil-insert-state-entry-hook #'evil-ex-nohighlight))
 
 (use-package evil-indent-plus
   :after evil
-  :config
-  (evil-indent-plus-default-bindings))
+  :hook (+my/first-input . evil-indent-plus-default-bindins))
 
 (use-package evil-embrace
   :after evil
-  :commands embrace-add-pair embrace-add-pair-regexp
+  :commands (embrace-add-pair embrace-add-pair-regexp)
   :hook (LaTeX-mode . embrace-LaTeX-mode-hook)
   :hook (org-mode . embrace-org-mode-hook)
   :hook (emacs-lisp-mode . embrace-emacs-lisp-mode-hook)
@@ -805,7 +851,7 @@
                     :key ?f
                     :read-function #'+evil--embrace-elisp-fn
                     :left-regexp "([^ ]+ \"
-                    :right-regexp \")"))
+                                   :right-regexp \")"))
           embrace--pairs-list))
 
 
@@ -868,7 +914,6 @@
     "#" #'evil-visualstar/begin-search-backward))
 
 (use-package general
-  :defer t
   :commands (leader-def local-leader-def)
   :config
   (general-create-definer leader-def
@@ -1209,6 +1254,7 @@ targets."
         ("C-<return>" . open-in-external-app))
   :custom
   (vertico-cycle nil)
+  (vertico-preselect 'first)
   :config
   (defun +vertico/jump-list (jump)
     "Go to an entry in evil's (or better-jumper's) jumplist."
@@ -1449,6 +1495,7 @@ When the number of characters in a buffer exceeds this threshold,
   :after consult)
 
 (use-package orderless
+  :after-call +my/first-input-hook-fun
   :demand t
   :config
   (defvar +orderless-dispatch-alist
@@ -1520,12 +1567,12 @@ When the number of characters in a buffer exceeds this threshold,
   (setq vertico-posframe-parameters
         '((width . 0.618)
           (min-width . 80)
-          (min-height . 15)
           (left-fringe . 8)
           (right-fringe . 8)))
   (evil-set-initial-state 'minibuffer-mode 'emacs))
 
 (use-package all-the-icons
+  :demand t
   :config
   (declare-function memoize 'memoize)
   (declare-function memoize-restore 'memoize)
@@ -1602,6 +1649,7 @@ When the number of characters in a buffer exceeds this threshold,
   :commands (all-the-icons-completion-marginalia-setup)
   :hook (marginalia-mode . all-the-icons-completion-marginalia-setup))
 
+
 (use-package corfu
   ;; Optional customizations
   :custom
@@ -1645,6 +1693,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (use-package corfu-quick
     :after corfu
+    :commands (corfu-quick-insert corfu-quick-complete)
     :bind
     (:map corfu-map
           ("C-q" . corfu-quick-insert)
@@ -1652,8 +1701,7 @@ When the number of characters in a buffer exceeds this threshold,
 
   (use-package corfu-history
     :after corfu
-    :config
-    (corfu-history-mode))
+    :hook (corfu-mode . corfu-history-mode))
 
   (use-package corfu-popupinfo
     :after corfu
@@ -1863,6 +1911,7 @@ function to the relevant margin-formatters list."
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
 
   (use-package tempel
+    :after-call +my/first-input-hook-fun
     :after cape
     :config
     (defun my/tempel-expand-or-next ()
@@ -1883,6 +1932,7 @@ function to the relevant margin-formatters list."
     :hook ((kill-emacs . tabnine-capf-kill-process))))
 
 (use-package pinyinlib
+  :after-call +my/first-input-hook-fun
   :after orderless
   :config
   (defun completion--regex-pinyin (str)
@@ -1911,16 +1961,14 @@ function to the relevant margin-formatters list."
   :custom
   (which-key-separator " ")
   (which-key-prefix-prefix "+")
-  :config
-  (which-key-mode))
+  :hook (window-setup . which-key-mode))
 
 (use-package vundo
   :commands vundo
   :defer t
   :config
   (setf (alist-get 'selected-node vundo-glyph-alist) ?X
-        (alist-get 'node vundo-glyph-alist) ?O)
-  )
+        (alist-get 'node vundo-glyph-alist) ?O))
 
 
 ;; Colourful dired
@@ -2039,7 +2087,7 @@ function to the relevant margin-formatters list."
               ("C-h z" . popper-toggle-latest)
               ("C-<tab>"   . popper-cycle)
               ("C-M-<tab>" . popper-toggle-type))
-  :hook (+self/first-input . popper-mode)
+  :hook (window-setup . popper-mode)
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
@@ -2121,7 +2169,7 @@ function to the relevant margin-formatters list."
 
 
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
+  :hook (window-setup . doom-modeline-mode)
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
@@ -2174,7 +2222,7 @@ function to the relevant margin-formatters list."
       (add-to-list 'default-frame-alist (cons 'font font-setting)))))
 
 (defun my-apply-font ()
-  ;; Set default font
+  "Set default font."
   (set-face-attribute 'default nil
                       ;; :font "Cascadia Code"
                       :font "Iosevka SS08"
@@ -2558,7 +2606,6 @@ window that already exists in that direction. It will split otherwise."
          ([tab]. nil)
          ))
   :config
-  (yas-reload-all)
   (defun smarter-yas-expand-next-field ()
     "Try to `yas-expand' then `yas-next-field' at current cursor position."
     (interactive)
@@ -2573,6 +2620,8 @@ window that already exists in that direction. It will split otherwise."
 
 
 (use-package flymake
+  :defer t
+  :after-call +my/first-input-hook-fun
   :hook (emacs-lisp-mode . flymake-mode)
   :config
   (remove-hook 'flymake-diagnostic-functions #'flymake-proc-legacy-flymake)
@@ -2592,7 +2641,7 @@ window that already exists in that direction. It will split otherwise."
   (setq flymake-no-changes-timeout nil))
 
 (use-package elec-pair
-  :hook (after-init . electric-pair-mode)
+  :hook (+my/first-input . electric-pair-mode)
   :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
   :config
   ;; disable <> auto pairing in electric-pair-mode for org-mode
@@ -2648,6 +2697,7 @@ window that already exists in that direction. It will split otherwise."
   :commands (avy-goto-char avy-goto-line))
 
 (use-package rime
+  :after-call +my/first-input-hook-fun
   :defer t
   :custom
   (default-input-method "rime")
@@ -2767,21 +2817,21 @@ window that already exists in that direction. It will split otherwise."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2967,16 +3017,8 @@ Install the doc if it's not installed."
   (use-package py-isort
     :after python
     :defer t
-    :init
-    (setq python-sort-imports-on-save t)
-    (defun +python/python-sort-imports ()
-      (interactive)
-      (when (and python-sort-imports-on-save
-                 (derived-mode-p 'python-mode))
-        (py-isort-before-save)))
-    (add-hook 'python-mode-hook
-              (lambda() (add-hook 'before-save-hook #'+python/python-sort-imports)))
-    ))
+    :hook (python-mode . (lambda ()
+                           (add-hook 'before-save-hook #'py-isort-before-save)))))
 
 (use-package web-mode
   :defer t
