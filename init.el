@@ -471,9 +471,9 @@ REST and STATE."
 (setq-default js-switch-indent-offset 2)
 (add-hook 'after-change-major-mode-hook
           (lambda () (if (equal electric-indent-mode 't)
-                         (when (derived-mode-p 'text-mode)
-                           (electric-indent-mode -1))
-                       (electric-indent-mode 1))))
+                    (when (derived-mode-p 'text-mode)
+                      (electric-indent-mode -1))
+                  (electric-indent-mode 1))))
 
 
 ;; When buffer is closed, saves the cursor location
@@ -2322,7 +2322,8 @@ function to the relevant margin-formatters list."
 
   (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend))
 
-(add-hook 'after-init-hook #'my-apply-font)
+;; (add-hook 'after-init-hook #'my-apply-font)
+(add-hook 'window-setup-hook #'my-apply-font)
 
 (use-package hl-line
   :defer t
@@ -3345,10 +3346,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                                   +org-capture-file-done
-                                                                   +org-capture-file-someday
-                                                                   +org-capture-file-note
-                                                                   +org-capture-file-routine)))
+                                                              +org-capture-file-done
+                                                              +org-capture-file-someday
+                                                              +org-capture-file-note
+                                                              +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."

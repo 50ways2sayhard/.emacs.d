@@ -28,6 +28,7 @@
 [submodule "borg"]
 	path = lib/borg
 	url = git@github.com:emacscollective/borg.git
+	branch = main
 [submodule "cape"]
 	path = lib/cape
 	url = https://github.com/minad/cape
@@ -39,7 +40,7 @@
 	url = git@github.com:magit/closql.git
 [submodule "compat"]
 	path = lib/compat
-	url = https://git.sr.ht/~pkal/compat
+	url = https://github.com/emacs-compat/compat
 [submodule "consult"]
 	path = lib/consult
 	url = https://github.com/minad/consult
