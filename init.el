@@ -152,7 +152,7 @@ REST and STATE."
 (defalias 'use-package-normalize/:after-call #'use-package-normalize-symlist)
 
 (use-package borg
-  :commands (borg-assimilate))
+  :commands (borg-assimilate borg-insert-update-message))
 
 (eval-and-compile ; `use-package'
   (require  'use-package)
