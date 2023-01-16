@@ -2160,7 +2160,6 @@ function to the relevant margin-formatters list."
 
 (use-package popper
   :defer t
-  :after project
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
               ("C-h z" . popper-toggle-latest)
@@ -2223,7 +2222,8 @@ function to the relevant margin-formatters list."
           "\\*rustfmt\\*$" rustic-compilation-mode rustic-cargo-clippy-mode
           rustic-cargo-outdated-mode rustic-cargo-test-moed))
 
-  (setq popper-group-function 'popper-group-by-project)
+  (with-eval-after-load 'project
+    (setq popper-group-function 'popper-group-by-project))
   (setq popper-echo-dispatch-actions t)
   :config
   (popper-echo-mode 1)
