@@ -19,6 +19,7 @@ mv .emacs.d .emacs.d.bak
 git clone https://github.com/50ways2sayhard/.emacs.d.git --branch borg
 cd .emacs.d
 cp init-custom-example.el init-custom.el
+make env
 make bootstrap-borg
 make bootstrap
 ```
