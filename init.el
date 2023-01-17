@@ -2344,7 +2344,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Iosevka SS08" . 16) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
+(defvar font-list '(("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2368,17 +2368,14 @@ function to the relevant margin-formatters list."
 
 (defun my-apply-font ()
   "Set default font."
-  (set-face-attribute 'default nil
-                      ;; :font "Cascadia Code"
-                      :font "Iosevka SS08"
-                      :height (cond (*sys/mac* 150)
-                                    (t 130)))
+  (cl-loop for font in font-list
+           when (font-installed-p (car font))
+           return (set-face-attribute 'default nil :font (car font) :height (* 10 (cdr font))))
 
   ;; Specify font for all unicode characters
-  ;; (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
-  ;;          when (font-installed-p font)
-  ;;          return(set-fontset-font t 'unicode font nil 'prepend))
-  (set-fontset-font t 'unicode "Apple Color Emoji" nil 'prepend)
+  (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
+           when (font-installed-p font)
+           return(set-fontset-font t 'unicode font nil 'prepend))
 
   ;; Specify font for Chinese characters
   (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
