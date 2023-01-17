@@ -986,7 +986,7 @@ REST and STATE."
     "<SPC>" '(consult-project-extra-find :wk "Project Find File")
     ";" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
     ":" '(execute-extended-command :wk "M-x")
-    "/" '(consult-ripgrep :wk "Search in project")
+    "/" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
     "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
     "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
     "." '(noct-consult-ripgrep-or-line :wk "Swiper")
@@ -1169,8 +1169,7 @@ REST and STATE."
     ))
 
 (use-package embark
-  :defer t
-  :commands (embark-act embark-dwim)
+  :after-call +my/first-input-hook-fun
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
@@ -1550,7 +1549,74 @@ When the number of characters in a buffer exceeds this threshold,
     (interactive "P")
     (let* ((prompt-dir (consult--directory-prompt "Fd" dir))
            (default-directory (cdr prompt-dir)))
-      (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial)))))
+      (find-file (consult--find (car prompt-dir) #'consult--fd-builder initial))))
+
+  ;; Shorten candidates in consult-buffer:
+  ;; See: https://emacs-china.org/t/21-emacs-vertico-orderless-marginalia-embark-consult/19683/50
+  (defun vmacs-consult--source-recentf-items ()
+    (let ((ht (consult--buffer-file-hash))
+          file-name-handler-alist ;; No Tramp slowdown please.
+          items)
+      (dolist (file recentf-list (nreverse items))
+        ;; Emacs 29 abbreviates file paths by default, see
+        ;; `recentf-filename-handlers'.
+        (unless (eq (aref file 0) ?/)
+          (setq file (expand-file-name file)))
+        (unless (gethash file ht)
+          (push (propertize
+                 (vmacs-short-filename file)
+                 'multi-category `(file . ,file))
+                items)))))
+
+  (defun vmacs-short-filename(file)
+    "return filename with one parent directory.
+/a/b/c/d-> c/d"
+    (let* ((file (directory-file-name file))
+           (filename (file-name-nondirectory file))
+           ;; (dir (file-name-directory file))
+           short-name)
+      (setq short-name filename
+            ;; (if dir
+            ;;     (format "%s/%s" (file-name-nondirectory
+            ;;                      (directory-file-name dir))
+            ;;             filename)
+            ;;   filename)
+            )
+      (propertize short-name 'multi-category `(file . ,file))))
+
+  (plist-put consult--source-recent-file
+             :items #'vmacs-consult--source-recentf-items)
+  (advice-add 'marginalia--annotate-local-file :override
+              (defun marginalia--annotate-local-file-advice (cand)
+                (marginalia--fields
+                 ((marginalia--full-candidate cand)
+                  :face 'marginalia-size ))))
+  )
+
+(use-package consult-dir
+  :commands (consult-dir consult-dir-jump-file)
+  :after consult
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file))
+  :config
+  (defun consult-dir--zlua-dirs ()
+    "Return list of fasd dirs."
+    (reverse
+     (mapcar
+      (lambda (str) (format "%s/" (car (last (split-string str " ")))))
+      (split-string (shell-command-to-string "z -l | tail -n 50") "\n" t))))
+  (defvar consult-dir--source-zlua
+    `(:name     "z.lua dirs"
+                :narrow   ?z
+                :category file
+                :face     consult-file
+                :history  file-name-history
+                :enabled  ,(lambda () t)  ;;  FIXME: check whether z.lua is installed
+                :items    ,#'consult-dir--zlua-dirs)
+    "Fasd directory source for `consult-dir'.")
+  (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zlua consult-dir--source-project)))
 
 (use-package consult-project-extra
   :commands (consult-project-extra-find)
@@ -1628,9 +1694,8 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (vertico-mode . vertico-posframe-mode)
   :config
   (setq vertico-posframe-parameters
-        '((width . 0.618)
-          (max-width . 0.8)
-          (min-width . 80)
+        '((max-width . 80)
+          (min-width . 60)
           (left-fringe . 8)
           (right-fringe . 8)))
   (evil-set-initial-state 'minibuffer-mode 'emacs))
@@ -2620,34 +2685,36 @@ window that already exists in that direction. It will split otherwise."
   (when (>= emacs-major-version 27)
     (set-face-attribute 'smerge-refined-removed nil :extend t)
     (set-face-attribute 'smerge-refined-added   nil :extend t))
-  ;; :pretty-hydra
-  ;; ((:title "Smerge"
-  ;;          :color pink :quit-key "q")
-  ;;  ("Move"
-  ;;   (("n" smerge-next "next")
-  ;;    ("p" smerge-prev "previous"))
-  ;;   "Keep"
-  ;;   (("b" smerge-keep-base "base")
-  ;;    ("u" smerge-keep-upper "upper")
-  ;;    ("l" smerge-keep-lower "lower")
-  ;;    ("a" smerge-keep-all "all")
-  ;;    ("RET" smerge-keep-current "current")
-  ;;    ("C-m" smerge-keep-current "current"))
-  ;;   "Diff"
-  ;;   (("<" smerge-diff-base-upper "upper/base")
-  ;;    ("=" smerge-diff-upper-lower "upper/lower")
-  ;;    (">" smerge-diff-base-lower "upper/lower")
-  ;;    ("R" smerge-refine "refine")
-  ;;    ("E" smerge-ediff "ediff"))
-  ;;   "Other"
-  ;;   (("C" smerge-combine-with-next "combine")
-  ;;    ("r" smerge-resolve "resolve")
-  ;;    ("k" smerge-kill-current "kill")
-  ;;    ("ZZ" (lambda ()
-  ;;            (interactive)
-  ;;            (save-buffer)
-  ;;            (bury-buffer))
-  ;;     "Save and bury buffer" :exit t))))
+  (require 'transient)
+  (transient-define-prefix smerge-dispatch ()
+    "Invoke an SMerge command from a list of available commands."
+    [["Keep"
+      ("b" "Base" smerge-keep-base)
+      ("u" "Upper" smerge-keep-upper)
+      ("l" "Lower" smerge-keep-lower)
+      ("a" "All" smerge-keep-all) ("RET" "Current" smerge-keep-current)]
+     ["Diff"
+      ("<" "Base/upper" smerge-diff-base-upper)
+      ("=" "Upper/lower" smerge-diff-upper-lower)
+      (">" "Base/lower" smerge-diff-base-lower)
+      ("R" "Refine" smerge-refine :transient t)]
+     ["Other"
+      ("C" "Combine" smerge-combine-with-next)
+      ("r" "Resolve" smerge-resolve) ("x" "Kill current" smerge-kill-current)]])
+  (define-key (plist-get smerge-text-properties 'keymap)
+              (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
+  (evil-define-motion evil-forward-conflict (count)
+    "Move the cursor to the beginning of the COUNT-th next conflict."
+    :jump t
+    (require 'smerge-mode)
+    (smerge-next count)
+    (unless smerge-mode (smerge-mode)))
+  (evil-define-motion evil-backward-conflict (count)
+    "Move the cursor to the beginning of the COUNT-th previous conflict."
+    :jump t :type inclusive
+    (require 'smerge-mode)
+    (smerge-prev count)
+    (unless smerge-mode (smerge-mode)))
   )
 
 (use-package git-timemachine
@@ -2875,6 +2942,8 @@ window that already exists in that direction. It will split otherwise."
                         (unless (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
                           (eglot-ensure)))))
   :config
+  (use-package consult-eglot
+    :commands (consult-eglot-symbols))
   (setq
    ;; eglot-send-changes-idle-time 0.2
    eglot-send-changes-idle-time 0

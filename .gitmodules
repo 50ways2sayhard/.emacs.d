@@ -44,6 +44,12 @@
 [submodule "consult"]
 	path = lib/consult
 	url = https://github.com/minad/consult
+[submodule "consult-dir"]
+	path = lib/consult-dir
+	url = https://github.com/karthink/consult-dir
+[submodule "consult-eglot"]
+	path = lib/consult-eglot
+	url = https://github.com/mohkale/consult-eglot
 [submodule "consult-project-extra"]
 	path = lib/consult-project-extra
 	url = https://github.com/Qkessler/consult-project-extra
