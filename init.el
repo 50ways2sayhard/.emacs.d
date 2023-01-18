@@ -464,7 +464,6 @@ REST and STATE."
   (eq system-type 'gnu/linux)
   "Are we running on a GNU/Linux system?")
 
-
 ;; indentation
 (setq-default indent-tabs-mode nil)
 (setq-default indent-line-function 'insert-tab)
@@ -2013,8 +2012,24 @@ function to the relevant margin-formatters list."
           corfu-insert-exact
           corfu-complete)))
 
-(use-package cape
+(use-package tempel
+  :after-call +my/first-input-hook-fun
   :after corfu
+  :config
+  (defun my/tempel-expand-or-next ()
+    "Try tempel expand, if failed, try copilot expand."
+    (interactive)
+    (if tempel--active
+        (tempel-next 1)
+      (call-interactively #'tempel-expand)))
+
+  (with-eval-after-load 'general
+    (general-define-key
+     :keymaps '(evil-insert-state-map)
+     "C-o" 'my/tempel-expand-or-next)))
+
+(use-package cape
+  :after (corfu tempel)
   ;; Bind dedicated completion commands
   :bind (("C-x C-f" . cape-file)
          ("C-x C-k" . cape-keyword)
@@ -2041,37 +2056,21 @@ function to the relevant margin-formatters list."
      ;; #'cape-dabbrev
      ))
 
+  ;;;###autoload
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
 
+  ;;;###autoload
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
     )
-  (defun my/set-lsp-bridge-capf ()
-    (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'lsp-bridge-capf)))
+
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
-
-  (use-package tempel
-    :after-call +my/first-input-hook-fun
-    :after cape
-    :config
-    (defun my/tempel-expand-or-next ()
-      "Try tempel expand, if failed, try copilot expand."
-      (interactive)
-      (if tempel--active
-          (tempel-next 1)
-        (call-interactively #'tempel-expand)))
-
-    (with-eval-after-load 'general
-      (general-define-key
-       :keymaps '(evil-insert-state-map)
-       "C-o" 'my/tempel-expand-or-next)))
 
   (use-package tabnine-capf
     :after cape

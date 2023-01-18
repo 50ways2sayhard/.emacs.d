@@ -1,0 +1,49 @@
+;; -*- mode: lisp -*-
+
+prog-mode
+
+(fixme (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "FIXME ")
+(todo (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "TODO ")
+(bug (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "BUG ")
+(hack (if (derived-mode-p 'emacs-lisp-mode) ";; " (concatenate 'string comment-start " ")) "HACK ")
+
+
+emacs-lisp-mode
+
+(lambda "(lambda (" p ")" n> r> ")")
+(var "(defvar " p "\n  \"" p "\")")
+(fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")
+(let "(let (" p ")" n> r> ")")
+(command "(defun " p " (" p ")\n  \"" p "\"" n> "(interactive)" n> r> ")")
+(up "(use-package " p ")")
+(hook "(add-hook '" p " " p ")")
+
+org-mode
+
+(title "#+title: " p n "#+author: Daniel Mendler" n "#+language: en" n n)
+(quote "#+begin_quote" n> r> n> "#+end_quote")
+(center "#+begin_center" n> r> n> "#+end_center")
+(src "#+begin_src " p n> r> n> "#+end_src")
+(elisp "#+begin_src emacs-lisp" n> r> n "#+end_src"
+       :post (progn (tempel-done) (org-edit-src-code)))
+(link "[[" (s link) "][" (s description) "]]")
+(table "|" p "|" p "|" n> "|-+-|" n> "|||")
+
+dart-mode
+
+(header "/// " p n> "/// " n> "/// Created by johngong at " (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)) n>)
+
+(stateless "class " (s Name) " extends StatelessWidget {"
+           n> p n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
+
+(stateful "class " (s Name) " extends StatefulWidget {"
+          n> p n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
+          n> "}" n
+          n
+          "class _" (s Name) "State extends State<" (s Name) "> {" n>
+          "@override" n>
+          "Widget build(BuildContext context) {" n> n> "}"
+          n> "}"
+          )
+
+(nn "if ( " p " != null) {" n> p n> "}")
