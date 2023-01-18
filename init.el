@@ -541,8 +541,10 @@ REST and STATE."
 ;; (setq scroll-down-aggressively 0.01)
 (setq fast-but-imprecise-scrolling nil)
 (setq mouse-wheel-progressive-speed t)
+(global-set-key (kbd "<C-wheel-down>") nil)
+(global-set-key (kbd "<C-wheel-up>") nil)
 
-(setq pixel-scroll-precision-mode t)
+(pixel-scroll-precision-mode)
 ;; Horizontal Scroll
 (setq hscroll-step 1)
 (setq hscroll-margin 1)
