@@ -165,6 +165,7 @@ REST and STATE."
 
 (use-package epkg
   :defer t
+  :commands (epkg-describe-package epkg-update)
   :init
   (setq epkg-repository
         (expand-file-name "var/epkgs/" user-emacs-directory))
@@ -1180,13 +1181,17 @@ REST and STATE."
    :map embark-file-map
    ("F" . find-file-other-window)
    ("r" . +my-rename-file)
-   ("d" . +my-delete-file))
+   ("d" . +my-delete-file)
+   :map embark-region-map
+   ("/" . evilnc-comment-or-uncomment-lines))
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
+  (use-package embark-consult
+    :after consult)
   ;;  HACK: bind will be override by evil
   (with-eval-after-load 'general
     (general-define-key :states '(normal insert visual emacs)
@@ -1243,10 +1248,20 @@ targets."
             (defun resize-embark-collect-window (&rest _)
               (when (memq embark-collect--kind '(:live :completions))
                 (fit-window-to-buffer (get-buffer-window)
-                                      (floor (frame-height) 2) 1)))))
+                                      (floor (frame-height) 2) 1))))
 
-(use-package embark-consult
-  :after consult)
+  ;; smerge integration
+  (defun embark-target-smerge-at-point ()
+    (when-let (((bound-and-true-p smerge-mode))
+               (ov (cl-find-if (lambda (ov) (eq (overlay-get ov 'smerge) 'conflict))
+                               (overlays-at (point)))))
+      `(smerge-diff "conflict" ,(overlay-start ov) . ,(overlay-end ov))))
+
+  (add-to-list 'embark-keymap-alist '(smerge-diff . smerge-basic-map))
+  (add-to-list 'embark-target-finders 'embark-target-smerge-at-point)
+  (add-to-list 'embark-repeat-actions 'smerge-next)
+  (add-to-list 'embark-repeat-actions 'smerge-prev)
+  )
 
 (use-package vertico
   :hook (+my/first-input . vertico-mode)
