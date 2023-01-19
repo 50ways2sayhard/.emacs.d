@@ -346,7 +346,6 @@ REST and STATE."
 (progn ;    `isearch'
   (setq isearch-allow-scroll t))
 
-
 ;;; Version controll
 (use-package magit
   :defer t
@@ -1466,7 +1465,8 @@ window that already exists in that direction. It will split otherwise."
    ("r" . +my-rename-file)
    ("d" . +my-delete-file)
    :map embark-region-map
-   ("/" . evilnc-comment-or-uncomment-lines))
+   ("/" . evilnc-comment-or-uncomment-lines)
+   ("=" . er/expand-region))
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
@@ -1527,11 +1527,6 @@ targets."
 
   (advice-add #'embark-completing-read-prompter
               :around #'embark-hide-which-key-indicator)
-  (add-hook 'embark-collect-post-revert-hook
-            (defun resize-embark-collect-window (&rest _)
-              (when (memq embark-collect--kind '(:live :completions))
-                (fit-window-to-buffer (get-buffer-window)
-                                      (floor (frame-height) 2) 1))))
 
   ;; smerge integration
   (defun embark-target-smerge-at-point ()
@@ -1664,7 +1659,7 @@ targets."
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :config
-  (setq consult-preview-key "M-p")
+  (setq consult-preview-key (kbd "M-."))
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
@@ -2850,7 +2845,10 @@ function to the relevant margin-formatters list."
    ("M-<backspace>" . delete-block-backward)
    ("M-DEL" . delete-block-backward)))
 
-(use-package wgrep)
+(use-package wgrep
+  :commands wgrep-change-to-wgrep-mode
+  :custom
+  (wgrep-auto-save-buffer t))
 
 (use-package avy
   :diminish
