@@ -1,8 +1,7 @@
 ;;; init.el --- user-init-file               -*- lexical-binding: t -*-
-;;; Early birds
 
-;;; Code:
-(progn ;     startup
+;;; Early init
+(progn
   (defvar before-user-init-time (current-time)
     "Value of `current-time' when Emacs begins loading `user-init-file'.")
   (message "Loading Emacs...done (%.3fs)"
@@ -16,11 +15,7 @@
     ;; (package-initialize)
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
-;; (eval-and-compile ; `borg'
-;;   (add-to-list 'load-path (expand-file-name "lib/borg" user-emacs-directory))
-;;   (require 'borg)
-;;   (borg-initialize))
-
+;;; Package manager
 (eval-and-compile ; `borg'
   (add-to-list 'load-path (expand-file-name "lib/borg" user-emacs-directory))
   (setq borg-compile-function #'borg-byte+native-compile-async)
@@ -111,7 +106,10 @@
       (borg-initialize)
       (lld-collect-autoloads file))))
 
-;; :after-call for use-package
+(use-package borg
+  :commands (borg-assimilate borg-insert-update-message))
+
+;;;; :after-call for use-package
 (defvar +use-package--deferred-pkgs '(t))
 (defun use-package-handler/:after-call (name _keyword hooks rest state)
   "Add keyword `:after-call' to `use-package'.
@@ -151,8 +149,14 @@ REST and STATE."
 (setq use-package-keywords (use-package-list-insert :after-call use-package-keywords :after))
 (defalias 'use-package-normalize/:after-call #'use-package-normalize-symlist)
 
-(use-package borg
-  :commands (borg-assimilate borg-insert-update-message))
+(use-package epkg
+  :defer t
+  :commands (epkg-describe-package epkg-update)
+  :init
+  (setq epkg-repository
+        (expand-file-name "var/epkgs/" user-emacs-directory))
+  (setq epkg-database-connector
+        (if (>= emacs-major-version 29) 'sqlite-builtin 'sqlite-module)))
 
 (eval-and-compile ; `use-package'
   (require  'use-package)
@@ -163,15 +167,7 @@ REST and STATE."
   :config (global-dash-fontify-mode))
 (use-package eieio)
 
-(use-package epkg
-  :defer t
-  :commands (epkg-describe-package epkg-update)
-  :init
-  (setq epkg-repository
-        (expand-file-name "var/epkgs/" user-emacs-directory))
-  (setq epkg-database-connector
-        (if (>= emacs-major-version 29) 'sqlite-builtin 'sqlite-module)))
-
+;;; Custom settings
 (use-package custom
   :no-require t
   :config
@@ -179,17 +175,18 @@ REST and STATE."
   (when (file-exists-p custom-file)
     (load custom-file)))
 
+;;; Server mode
 (use-package server
   :commands (server-running-p)
   :config (or (server-running-p) (server-mode)))
 
+;;; Print startup time
 (progn ;     startup
   (message "Loading early birds...done (%.3fs)"
            (float-time (time-subtract (current-time)
                                       before-user-init-time))))
 
-;;; Long tail
-
+;;; Diff
 (use-package diff-hl
   :defer t
   :bind (:map diff-hl-command-map
@@ -218,6 +215,7 @@ REST and STATE."
     (set-face-attribute 'diff-refine-removed nil :extend t)
     (set-face-attribute 'diff-refine-added   nil :extend t)))
 
+;;; Dired and Dirvish file browser
 (use-package dired
   :defer t
   :custom
@@ -252,9 +250,87 @@ REST and STATE."
   (setq dired-listing-switches "-al --group-directories-first")
   (setq dired-open-extensions
         (mapcar (lambda (ext)
-                  (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx")))
-  )
+                  (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
+
+(use-package diredfl
+  :after dired
+  :hook (dired-mode . diredfl-mode))
+
+(use-package dired-git-info
+  :after dired
+  :config
+  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
+
+(use-package dired-x
+  :after dired
+  :hook (dired-mode . dired-omit-mode)
+  :config
+  (setq dired-omit-files
+        (concat dired-omit-files
+                "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+
+(use-package dirvish
+  :after dired
+  :hook ((+my/first-input . dirvish-override-dired-mode)
+         (evil-collection-setup . (lambda (&rest a)
+                                    (evil-define-key '(normal) dired-mode-map
+                                      (kbd "C-c f") 'dirvish-fd
+                                      "i" 'wdired-change-to-wdired-mode
+                                      "." 'dired-omit-mode
+                                      (kbd "TAB") 'dirvish-subtree-toggle
+                                      (kbd "M-s") 'dirvish-setup-menu
+                                      (kbd "M-f") 'dirvish-toggle-fullscreen
+                                      "*"   'dirvish-mark-menu
+                                      "f"   'dirvish-file-info-menu
+                                      [remap dired-sort-toggle-or-edit] 'dirvish-quicksort
+                                      [remap dired-do-redisplay] 'dirvish-ls-switches-menu
+                                      [remap dired-summary] 'dirvish-dispatch
+                                      [remap dired-do-copy] 'dirvish-yank-menu
+                                      [remap mode-line-other-buffer] 'dirvish-history-last))))
+  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish-fd)
+   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+   ("a"   . dirvish-quick-access)
+   ("f"   . dirvish-file-info-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("^"   . dirvish-history-last)
+   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-l" . dirvish-ls-switches-menu)
+   ("M-m" . dirvish-mark-menu)
+   ("M-t" . dirvish-layout-toggle)
+   ("M-s" . dirvish-setup-menu)
+   ("M-e" . dirvish-emerge-menu)
+   ("M-j" . dirvish-fd-jump))
+  :custom
+  (dirvish-attributes '(all-the-icons file-size))
+  (dirvish-mode-line-format ; it's ok to place string inside
+   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
+  (dirvish-side-follow-buffer-file t)
+  :config
+  (when (boundp 'dirvish-side-follow-mode)
+    (dirvish-side-follow-mode t))
+  (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
+  (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
+  (setq dired-dwim-target t)
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
+  (general-define-key :states '(normal)
+                      :keymaps 'dirvish-mode-map
+                      "?" 'dirvish-menu-all-cmds)
+
+  (use-package dirvish-extras
+    :after dirvish))
+
+
+;;; Documentation in echo area
 (use-package eldoc
   :defer t
   :commands (eldoc)
@@ -264,17 +340,12 @@ REST and STATE."
   :defer t
   :config (temp-buffer-resize-mode))
 
+;;; Isearch
 (progn ;    `isearch'
   (setq isearch-allow-scroll t))
 
-(use-package lisp-mode
-  :config
-  (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
-  (add-hook 'emacs-lisp-mode-hook 'reveal-mode)
-  (defun indent-spaces-mode ()
-    (setq indent-tabs-mode nil))
-  (add-hook 'lisp-interaction-mode-hook 'indent-spaces-mode))
 
+;;; Version controll
 (use-package magit
   :defer t
   :bind ("C-x g" . magit-status)
@@ -316,11 +387,280 @@ REST and STATE."
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-modules
                           'magit-insert-stashes
-                          'append))
+                          'append)
+  (defun magit-add-current-buffer-to-kill-ring ()
+    "Show the current branch in the echo-area and add it to the `kill-ring'."
+    (interactive)
+    (let ((branch (magit-get-current-branch)))
+      (if branch
+          (progn (kill-new branch)
+                 (message "%s" branch))
+        (user-error "There is not current branch")))))
 
-(use-package man
+(defvar +magit-open-windows-in-direction 'right
+  "What direction to open new windows from the status buffer.
+  For example, diffs and log buffers. Accepts `left', `right', `up', and `down'.")
+(defun +magit-display-buffer-fn (buffer)
+  "Same as `magit-display-buffer-traditional', except...
+- If opened from a commit window, it will open below it.
+- Magit process windows are always opened in small windows below the current.
+- Everything else will reuse the same window."
+  (let ((buffer-mode (buffer-local-value 'major-mode buffer)))
+    (display-buffer
+     buffer (cond
+             ((and (eq buffer-mode 'magit-status-mode)
+                   (get-buffer-window buffer))
+              '(display-buffer-reuse-window))
+             ;; Any magit buffers opened from a commit window should open below
+             ;; it. Also open magit process windows below.
+             ((or (bound-and-true-p git-commit-mode)
+                  (eq buffer-mode 'magit-process-mode))
+              (let ((size (if (eq buffer-mode 'magit-process-mode)
+                              0.35
+                            0.7)))
+                `(display-buffer-below-selected
+                  . ((window-height . ,(truncate (* (window-height) size)))))))
+
+             ;; Everything else should reuse the current window.
+             ((or (not (derived-mode-p 'magit-mode))
+                  (not (memq (with-current-buffer buffer major-mode)
+                             '(magit-process-mode
+                               magit-revision-mode
+                               magit-diff-mode
+                               magit-stash-mode
+                               magit-status-mode))))
+              '(display-buffer-same-window))
+
+             ('(+magit--display-buffer-in-direction))))))
+
+(defun +magit--display-buffer-in-direction (buffer alist)
+  "`display-buffer-alist' handler that opens BUFFER in a direction.
+This differs from `display-buffer-in-direction' in one way: it will try to use a
+window that already exists in that direction. It will split otherwise."
+  (let ((direction (or (alist-get 'direction alist)
+                       +magit-open-windows-in-direction))
+        (origin-window (selected-window)))
+    (if-let (window (window-in-direction direction))
+        (unless magit-display-buffer-noselect
+          (select-window window))
+      (if-let (window (and (not (one-window-p))
+                           (window-in-direction
+                            (pcase direction
+                              (`right 'left)
+                              (`left 'right)
+                              ((or `up `above) 'down)
+                              ((or `down `below) 'up)))))
+          (unless magit-display-buffer-noselect
+            (select-window window))
+        (let ((window (split-window nil nil direction)))
+          (when (and (not magit-display-buffer-noselect)
+                     (memq direction '(right down below)))
+            (select-window window))
+          (display-buffer-record-window 'reuse window buffer)
+          (set-window-buffer window buffer)
+          (set-window-parameter window 'quit-restore (list 'window 'window origin-window buffer))
+          (set-window-prev-buffers window nil))))
+    (unless magit-display-buffer-noselect
+      (switch-to-buffer buffer t t)
+      (selected-window))))
+
+
+(defvar gitmoji--all-emoji
+  '(("Improving structure / format of the code." . ":art:")
+    ("Improving performance." . ":zap:")
+    ("Removing code or files." . ":fire:")
+    ("Fixing a bug." . ":bug:")
+    ("Critical hotfix." . ":ambulance:")
+    ("Introducing new features." . ":sparkles:")
+    ("Writing docs." . ":memo:")
+    ("Deploying stuff." . ":rocket:")
+    ("Updating the UI and style files." . ":lipstick:")
+    ("Initial commit." . ":tada:")
+    ("Updating tests." . ":white_check_mark:")
+    ("Fixing security issues." . ":lock:")
+    ("Fixing something on macOS." . ":apple:")
+    ("Fixing something on Linux." . ":penguin:")
+    ("Fixing something on Windows." . ":checkered_flag:")
+    ("Fixing something on Android." . ":robot:")
+    ("Fixing something on iOS." . ":green_apple:")
+    ("Releasing / Version tags." . ":bookmark:")
+    ("Removing linter warnings." . ":rotating_light:")
+    ("Work in progress." . ":construction:")
+    ("Fixing CI Build." . ":green_heart:")
+    ("Downgrading dependencies." . ":arrow_down:")
+    ("Upgrading dependencies." . ":arrow_up:")
+    ("Pinning dependencies to specific versions." . ":pushpin:")
+    ("Adding CI build system." . ":construction_worker:")
+    ("Adding analytics or tracking code." . ":chart_with_upwards_trend:")
+    ("Refactoring code." . ":recycle:")
+    ("Work about Docker." . ":whale:")
+    ("Adding a dependency." . ":heavy_plus_sign:")
+    ("Removing a dependency." . ":heavy_minus_sign:")
+    ("Changing configuration files." . ":wrench:")
+    ("Internationalization and localization." . ":globe_with_meridians:")
+    ("Fixing typos." . ":pencil2:")
+    ("Writing bad code that needs to be improved." . ":hankey:")
+    ("Reverting changes." . ":rewind:")
+    ("Merging branches." . ":twisted_rightwards_arrows:")
+    ("Updating compiled files or packages." . ":package:")
+    ("Updating code due to external API changes." . ":alien:")
+    ("Moving or renaming files." . ":truck:")
+    ("Adding or updating license." . ":page_facing_up:")
+    ("Introducing breaking changes." . ":boom:")
+    ("Adding or updating assets." . ":bento:")
+    ("Updating code due to code review changes." . ":ok_hand:")
+    ("Improving accessibility." . ":wheelchair:")
+    ("Documenting source code." . ":bulb:")
+    ("Writing code drunkenly." . ":beers:")
+    ("Updating text and literals." . ":speech_balloon:")
+    ("Performing database related changes." . ":card_file_box:")
+    ("Adding logs." . ":loud_sound:")
+    ("Removing logs." . ":mute:")
+    ("Adding contributor(s)." . ":busts_in_silhouette:")
+    ("Improving user experience / usability." . ":children_crossing:")
+    ("Making architectural changes." . ":building_construction:")
+    ("Working on responsive design." . ":iphone:")
+    ("Mocking things." . ":clown_face:")
+    ("Adding an easter egg." . ":egg:")
+    ("Adding or updating a .gitignore file" . ":see_no_evil:")
+    ("Adding or updating snapshots" . ":camera_flash:")
+    ("Experimenting new things" . ":alembic:")
+    ("Improving SEO" . ":mag:")
+    ("Work about Kubernetes" . ":wheel_of_dharma:")
+    ("Catching errors" . ":goal_net:")
+    ("Adding or updating types (Flow, TypeScript)" . ":label:")
+    ("增加新特性" . "feat")
+    ("bug 修复" . "fix")
+    ("文档改动" . "docs")
+    ("功能、交互优化" . "improve")
+    ("格式改动（不影响代码运行的变动，例如加空格、换行、分号等）" . "style")
+    ("重构代码" . "refactor")
+    ("性能相关优化" . "perf")
+    ("测试代码" . "test")
+    ("构建过程或辅助工具变动" . "chore")
+    ("回滚" . "revert")
+    ("合并" . "merge")
+    ("上传资源文件" . "resource")))
+
+(defun gitmoji-picker ()
+  "Choose a gitmoji."
+  (interactive)
+  (let* ((choices gitmoji--all-emoji)
+         (candidates (mapcar (lambda (cell)
+                               (cons (format "%s — %s" (cdr cell) (car cell)) (concat (cdr cell) " ")))
+                             choices)))
+    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))
+    (evil-insert-state)))
+
+(use-package magit-todos
+  :after magit)
+
+(use-package smerge-mode
+  :after magit
+  :diminish
+  :bind (:map smerge-mode-map
+              ("C-c m" . smerge-mode-hydra/body))
+  :hook ((find-file . (lambda ()
+                        (save-excursion
+                          (goto-char (point-min))
+                          (when (re-search-forward "^<<<<<<< " nil t)
+                            (smerge-mode 1)))))
+         (magit-diff-visit-file . (lambda ()
+                                    (when smerge-mode
+                                      (smerge-mode-hydra/body))))
+         )
+  :config
+  (when (>= emacs-major-version 27)
+    (set-face-attribute 'smerge-refined-removed nil :extend t)
+    (set-face-attribute 'smerge-refined-added   nil :extend t))
+  (require 'transient)
+  (transient-define-prefix smerge-dispatch ()
+    "Invoke an SMerge command from a list of available commands."
+    [["Keep"
+      ("b" "Base" smerge-keep-base)
+      ("u" "Upper" smerge-keep-upper)
+      ("l" "Lower" smerge-keep-lower)
+      ("a" "All" smerge-keep-all) ("RET" "Current" smerge-keep-current)]
+     ["Diff"
+      ("<" "Base/upper" smerge-diff-base-upper)
+      ("=" "Upper/lower" smerge-diff-upper-lower)
+      (">" "Base/lower" smerge-diff-base-lower)
+      ("R" "Refine" smerge-refine :transient t)]
+     ["Other"
+      ("C" "Combine" smerge-combine-with-next)
+      ("r" "Resolve" smerge-resolve) ("x" "Kill current" smerge-kill-current)]])
+  (define-key (plist-get smerge-text-properties 'keymap)
+              (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
+  (evil-define-motion evil-forward-conflict (count)
+    "Move the cursor to the beginning of the COUNT-th next conflict."
+    :jump t
+    (require 'smerge-mode)
+    (smerge-next count)
+    (unless smerge-mode (smerge-mode)))
+  (evil-define-motion evil-backward-conflict (count)
+    "Move the cursor to the beginning of the COUNT-th previous conflict."
+    :jump t :type inclusive
+    (require 'smerge-mode)
+    (smerge-prev count)
+    (unless smerge-mode (smerge-mode)))
+  )
+
+(use-package git-timemachine
+  :commands (git-timemachine git-timemachine-toggle)
+  :bind (:map vc-prefix-map
+              ("t" . git-timemachine))
+  :hook ((git-timemachine-mode . (lambda ()
+                                   "Improve `git-timemachine' buffers."
+                                   ;; Display different colors in mode-line
+                                   (if (facep 'mode-line-active)
+                                       (face-remap-add-relative 'mode-line-active 'custom-state)
+                                     (face-remap-add-relative 'mode-line 'custom-state))
+
+                                   ;; Highlight symbols in elisp
+                                   (and (derived-mode-p 'emacs-lisp-mode)
+                                        (fboundp 'highlight-defined-mode)
+                                        (highlight-defined-mode t))
+
+                                   ;; Display line numbers
+                                   (and (derived-mode-p 'prog-mode 'yaml-mode)
+                                        (fboundp 'display-line-numbers-mode)
+                                        (display-line-numbers-mode t))))
+         (before-revert . (lambda ()
+                            (when (bound-and-true-p git-timemachine-mode)
+                              (user-error "Cannot revert the timemachine buffer"))))))
+
+
+;;; Parenthesis
+(use-package elec-pair
+  :hook (+my/first-input . electric-pair-mode)
+  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+  :config
+  ;; disable <> auto pairing in electric-pair-mode for org-mode
+  (add-hook 'org-mode-hook
+            '(lambda ()
+               (setq-local electric-pair-inhibit-predicate
+                           `(lambda (c)
+                              (if (char-equal c ?<) t
+                                (,electric-pair-inhibit-predicate c)))))))
+
+(use-package puni
   :defer t
-  :config (setq Man-width 80))
+  :hook ((prog-mode markdown-mode org-mode) . puni-mode)
+  :init
+  (general-def
+    :keymaps 'puni-mode-map
+    "DEL" 'puni-backward-delete-char
+    "C-d" 'puni-forward-delete-char
+    "C-k" 'puni-kill-line
+    "M-h" 'puni-force-delete
+    "C-u" 'puni-backward-kill-line
+    "C-M-f" 'puni-forward-sexp
+    "C-M-b" 'puni-backward-sexp
+    "C-M-a" 'puni-beginning-of-sexp
+    "C-M-e" 'puni-end-of-sexp
+    "s-<backspace>" 'puni-force-delete)
+  :config
+  (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
 (use-package paren
   :hook (after-init . show-paren-mode)
@@ -330,57 +670,8 @@ REST and STATE."
         show-paren-when-point-in-periphery t
         show-paren-when-point-inside-paren t))
 
-(use-package prog-mode
-  :defer t
-  :config (global-prettify-symbols-mode)
-  (defun indicate-buffer-boundaries-left ()
-    (setq indicate-buffer-boundaries 'left))
-  (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
 
-(use-package recentf
-  :demand t
-  :config
-  (recentf-mode)
-  (add-to-list 'recentf-exclude "^/\\(?:ssh\\|su\\|sudo\\)?x?:")
-  (setq recentf-auto-cleanup "05:00am")
-  (setq recentf-max-saved-items 200)
-  (setq recentf-exclude '((expand-file-name package-user-dir)
-                          ".cache"
-                          ".cask"
-                          ".elfeed"
-                          "bookmarks"
-                          "cache"
-                          "ido.*"
-                          "persp-confs"
-                          "recentf"
-                          "undo-tree-hist"
-                          "url"
-                          "COMMIT_EDITMSG\\'")))
-
-(use-package simple
-  :config (column-number-mode))
-
-(progn ;    `text-mode'
-  (add-hook 'text-mode-hook 'indicate-buffer-boundaries-left))
-
-(use-package tramp
-  :defer t
-  :config
-  (add-to-list 'tramp-default-proxies-alist '(nil "\\`root\\'" "/ssh:%h:"))
-  (add-to-list 'tramp-default-proxies-alist '("localhost" nil nil))
-  (add-to-list 'tramp-default-proxies-alist
-               (list (regexp-quote (system-name)) nil nil))
-  (setq vc-ignore-dir-regexp
-        (format "\\(%s\\)\\|\\(%s\\)"
-                vc-ignore-dir-regexp
-                tramp-file-name-regexp)))
-
-(use-package tramp-sh
-  :defer t
-  :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
-
-;;; Tequila worms
-
+;;; After initialization
 (progn ;     startup
   (message "Loading %s...done (%.3fs)" user-init-file
            (float-time (time-subtract (current-time)
@@ -397,12 +688,6 @@ REST and STATE."
               (+my/open-org-agenda)) t)
   )
 
-(progn ;     personalize
-  (let ((file (expand-file-name (concat (user-real-login-name) ".el")
-                                user-emacs-directory)))
-    (when (file-exists-p file)
-      (load file))))
-
 (defvar +my/first-input-hook nil)
 (defun +my/first-input-hook-fun ()
   "Hook for first input."
@@ -412,6 +697,7 @@ REST and STATE."
   (remove-hook 'pre-command-hook '+my/first-input-hook-fun))
 (add-hook 'pre-command-hook '+my/first-input-hook-fun)
 
+;;;; Load env
 (let ((my-env-file (concat user-emacs-directory "env")))
   (when (and (or (display-graphic-p)
                  (daemonp))
@@ -447,109 +733,95 @@ REST and STATE."
                   shell-file-name))
           envvars)))))
 
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(setq locale-coding-system 'utf-8)
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+;;; Global configuration
+(progn
 
-(defconst *sys/mac*
-  (eq system-type 'darwin)
-  "Are we running on a Mac system?")
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (setq locale-coding-system 'utf-8)
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-(defconst *sys/linux*
-  (eq system-type 'gnu/linux)
-  "Are we running on a GNU/Linux system?")
+  (defconst *sys/mac*
+    (eq system-type 'darwin)
+    "Are we running on a Mac system?")
 
-;; indentation
-(setq-default indent-tabs-mode nil)
-(setq-default indent-line-function 'insert-tab)
-(setq-default tab-width 2)
-(setq-default js-switch-indent-offset 2)
-(add-hook 'after-change-major-mode-hook
-          (lambda () (if (equal electric-indent-mode 't)
-                    (when (derived-mode-p 'text-mode)
-                      (electric-indent-mode -1))
-                  (electric-indent-mode 1))))
+  (defconst *sys/linux*
+    (eq system-type 'gnu/linux)
+    "Are we running on a GNU/Linux system?")
+
+  (setq-default indent-tabs-mode nil)
+  (setq-default indent-line-function 'insert-tab)
+  (setq-default tab-width 2)
+  (setq-default js-switch-indent-offset 2)
+  (add-hook 'after-change-major-mode-hook
+            (lambda () (if (equal electric-indent-mode 't)
+                           (when (derived-mode-p 'text-mode)
+                             (electric-indent-mode -1))
+                         (electric-indent-mode 1))))
 
 
-;; When buffer is closed, saves the cursor location
-(save-place-mode 1)
+  ;; When buffer is closed, saves the cursor location
+  (save-place-mode 1)
 
-(setq-default create-lockfiles nil
-              make-backup-files nil)
-(setq create-lockfiles nil
-      make-backup-files nil)
+  (setq-default create-lockfiles nil
+                make-backup-files nil)
+  (setq create-lockfiles nil
+        make-backup-files nil)
 
-(setq compilation-always-kill t
-      compilation-ask-about-save nil
-      compilation-scroll-output t)
+  (setq compilation-always-kill t
+        compilation-ask-about-save nil
+        compilation-scroll-output t)
 
-(use-package gcmh
-  :defer t
-  :hook (emacs-startup . gcmh-mode)
-  :diminish
-  :init
-  (setq gcmh-idle-delay 'auto
-        gcmh-auto-idle-delay-factor 10
-        gcmh-high-cons-threshold (* 64 1024 1024)))
 
-(windmove-default-keybindings 'meta)
 
-(fset 'yes-or-no-p 'y-or-n-p)
+  (windmove-default-keybindings 'meta)
+  (fset 'yes-or-no-p 'y-or-n-p)
+  (setq mac-command-modifier 'meta) ; make cmd key do Meta
+  (setq mac-option-modifier 'super) ; make opt key do Super
+  (setq mac-control-modifier 'control) ; make Control key do Control
+  (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
 
-(setq mac-command-modifier 'meta) ; make cmd key do Meta
-(setq mac-option-modifier 'super) ; make opt key do Super
-(setq mac-control-modifier 'control) ; make Control key do Control
-(setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
+  (setq display-line-numbers-type 'relative)
+  (add-hook 'text-mode-hook #'display-line-numbers-mode)
+  (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+  (setq blink-cursor-mode nil)
+  (setq word-wrap t
+        word-wrap-by-category t
+        require-final-newline t)
+  (setq split-width-threshold 0
+        split-height-threshold nil)
+  (setq-default cursor-in-non-selected-windows nil)
+  (setq highlight-nonselected-windows nil)
+  (setq redisplay-skip-fontification-on-input t)
 
-(setq inhibit-startup-screen t
-      initial-major-mode 'text-mode)
+  ;; Vertical Scroll
+  (setq scroll-step 1
+        ;; scroll-margin 0
+        ;; scroll-conservatively 100000
+        auto-window-vscroll t
+        scroll-preserve-screen-position 'always)
+  (when (display-graphic-p)
+    (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+          mouse-wheel-scroll-amount-horizontal 1
+          mouse-wheel-progressive-speed nil))
+  ;; (setq scroll-up-aggressively 0.01)
+  ;; (setq scroll-down-aggressively 0.01)
+  (setq fast-but-imprecise-scrolling nil)
+  (setq mouse-wheel-progressive-speed t)
+  (global-set-key (kbd "<C-wheel-down>") nil)
+  (global-set-key (kbd "<C-wheel-up>") nil)
+  (pixel-scroll-precision-mode)
+  ;; Horizontal Scroll
+  (setq hscroll-step 1)
+  (setq hscroll-margin 1)
+  ;; -SmoothScroll
 
-(setq display-line-numbers-type 'relative)
-(add-hook 'text-mode-hook #'display-line-numbers-mode)
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
-(setq frame-resize-pixelwise t)
-(custom-set-variables '(x-select-enable-clipboard t))
-(setq blink-cursor-mode nil)
-(setq word-wrap t
-      word-wrap-by-category t
-      require-final-newline t)
-(setq split-width-threshold 0
-      split-height-threshold nil)
-
-(setq-default cursor-in-non-selected-windows nil)
-(setq highlight-nonselected-windows nil)
-(setq redisplay-skip-fontification-on-input t)
-
-;; Vertical Scroll
-(setq scroll-step 1
-      ;; scroll-margin 0
-      ;; scroll-conservatively 100000
-      auto-window-vscroll t
-      scroll-preserve-screen-position 'always)
-(when (display-graphic-p)
-  (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
-        mouse-wheel-scroll-amount-horizontal 1
-        mouse-wheel-progressive-speed nil))
-;; (setq scroll-up-aggressively 0.01)
-;; (setq scroll-down-aggressively 0.01)
-(setq fast-but-imprecise-scrolling nil)
-(setq mouse-wheel-progressive-speed t)
-(global-set-key (kbd "<C-wheel-down>") nil)
-(global-set-key (kbd "<C-wheel-up>") nil)
-
-(pixel-scroll-precision-mode)
-;; Horizontal Scroll
-(setq hscroll-step 1)
-(setq hscroll-margin 1)
-;; -SmoothScroll
-
+  )
+;;; Helper functions
 (defun font-installed-p (font-name)
   "Check if font with FONT-NAME is available."
   (find-font (font-spec :name font-name)))
@@ -693,6 +965,7 @@ REST and STATE."
             (match-end 0)
             #'completion-file-name-table))))
 
+;;; Evil
 (use-package evil
   :hook (after-init . evil-mode)
   :demand t
@@ -915,6 +1188,7 @@ REST and STATE."
     "*" #'evil-visualstar/begin-search-forward
     "#" #'evil-visualstar/begin-search-backward))
 
+;;; Keybindings
 (use-package general
   :commands (leader-def local-leader-def)
   :config
@@ -1170,6 +1444,14 @@ REST and STATE."
     "mdt" '(js-doc-insert-tag :wk "Insert tag")
     ))
 
+(use-package which-key
+  :diminish
+  :custom
+  (which-key-separator " ")
+  (which-key-prefix-prefix "+")
+  :hook (window-setup . which-key-mode))
+
+;;; Minibuffer completion
 (use-package embark
   :after-call +my/first-input-hook-fun
   :bind
@@ -1259,9 +1541,9 @@ targets."
   (add-to-list 'embark-keymap-alist '(smerge-diff . smerge-basic-map))
   (add-to-list 'embark-target-finders 'embark-target-smerge-at-point)
   (add-to-list 'embark-repeat-actions 'smerge-next)
-  (add-to-list 'embark-repeat-actions 'smerge-prev)
-  )
+  (add-to-list 'embark-repeat-actions 'smerge-prev))
 
+;;;; Minibuffer completion UI
 (use-package vertico
   :hook (+my/first-input . vertico-mode)
   :bind
@@ -1693,9 +1975,7 @@ When the number of characters in a buffer exceeds this threshold,
                                         (variable (styles +orderless-with-initialism))
                                         (symbol (styles +orderless-with-initialism)))
         orderless-component-separator #'orderless-escapable-split-on-space ;; allow escaping space with backslash!
-        orderless-style-dispatchers '(+orderless-dispatch))
-
-  )
+        orderless-style-dispatchers '(+orderless-dispatch)))
 
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
@@ -1716,6 +1996,7 @@ When the number of characters in a buffer exceeds this threshold,
           (right-fringe . 8)))
   (evil-set-initial-state 'minibuffer-mode 'emacs))
 
+;;; Icons
 (use-package all-the-icons
   :when (display-graphic-p)
   :demand t
@@ -1795,7 +2076,7 @@ When the number of characters in a buffer exceeds this threshold,
   :commands (all-the-icons-completion-marginalia-setup)
   :hook (marginalia-mode . all-the-icons-completion-marginalia-setup))
 
-
+;;; Auto completion
 (use-package corfu
   ;; Optional customizations
   :custom
@@ -2028,6 +2309,29 @@ function to the relevant margin-formatters list."
      :keymaps '(evil-insert-state-map)
      "C-o" 'my/tempel-expand-or-next)))
 
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :commands (yas-expand-snippet)
+  :hook (prog-mode . yas-minor-mode)
+  :bind
+  (:map yas-minor-mode-map
+        ("C-c C-n" . yas-expand-from-trigger-key))
+  (:map yas-keymap
+        (("M-}" . smarter-yas-expand-next-field)
+         ("TAB" . nil)
+         ([tab]. nil)
+         ))
+  :config
+  (defun smarter-yas-expand-next-field ()
+    "Try to `yas-expand' then `yas-next-field' at current cursor position."
+    (interactive)
+    (let ((old-point (point))
+          (old-tick (buffer-chars-modified-tick)))
+      (yas-expand)
+      (when (and (eq old-point (point))
+                 (eq old-tick (buffer-chars-modified-tick)))
+        (ignore-errors (yas-next-field))))))
+
 (use-package cape
   :after (corfu tempel)
   ;; Bind dedicated completion commands
@@ -2064,8 +2368,7 @@ function to the relevant margin-formatters list."
   ;;;###autoload
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
-    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point))
-    )
+    (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
 
   (add-to-list 'completion-at-point-functions #'cape-file)
@@ -2076,6 +2379,57 @@ function to the relevant margin-formatters list."
     :after cape
     :commands (tabnine-completion-at-point tabnine-capf-start-process)
     :hook ((kill-emacs . tabnine-capf-kill-process))))
+
+;;; Utils
+(use-package gcmh
+  :defer t
+  :hook (emacs-startup . gcmh-mode)
+  :diminish
+  :init
+  (setq gcmh-idle-delay 'auto
+        gcmh-auto-idle-delay-factor 10
+        gcmh-high-cons-threshold (* 64 1024 1024)))
+(use-package recentf
+  :demand t
+  :config
+  (recentf-mode)
+  (add-to-list 'recentf-exclude "^/\\(?:ssh\\|su\\|sudo\\)?x?:")
+  (setq recentf-auto-cleanup "05:00am")
+  (setq recentf-max-saved-items 200)
+  (setq recentf-exclude '((expand-file-name package-user-dir)
+                          ".cache"
+                          ".cask"
+                          ".elfeed"
+                          "bookmarks"
+                          "cache"
+                          "ido.*"
+                          "persp-confs"
+                          "recentf"
+                          "undo-tree-hist"
+                          "url"
+                          "COMMIT_EDITMSG\\'")))
+
+(use-package simple
+  :config (column-number-mode))
+
+(progn ;    `text-mode'
+  (add-hook 'text-mode-hook 'indicate-buffer-boundaries-left))
+
+(use-package tramp
+  :defer t
+  :config
+  (add-to-list 'tramp-default-proxies-alist '(nil "\\`root\\'" "/ssh:%h:"))
+  (add-to-list 'tramp-default-proxies-alist '("localhost" nil nil))
+  (add-to-list 'tramp-default-proxies-alist
+               (list (regexp-quote (system-name)) nil nil))
+  (setq vc-ignore-dir-regexp
+        (format "\\(%s\\)\\|\\(%s\\)"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp)))
+
+(use-package tramp-sh
+  :defer t
+  :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
 
 (use-package pinyinlib
   :after-call +my/first-input-hook-fun
@@ -2102,13 +2456,6 @@ function to the relevant margin-formatters list."
       (evil-normal-state)
       (message "Translate Done"))))
 
-(use-package which-key
-  :diminish
-  :custom
-  (which-key-separator " ")
-  (which-key-prefix-prefix "+")
-  :hook (window-setup . which-key-mode))
-
 (use-package vundo
   :commands vundo
   :defer t
@@ -2116,85 +2463,6 @@ function to the relevant margin-formatters list."
   (setf (alist-get 'selected-node vundo-glyph-alist) ?X
         (alist-get 'node vundo-glyph-alist) ?O))
 
-
-;; Colourful dired
-(use-package diredfl
-  :after dired
-  :hook (dired-mode . diredfl-mode))
-
-(use-package dired-git-info
-  :after dired
-  :config
-  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
-
-;; Extra Dired functionality
-(use-package dired-x
-  :after dired
-  :hook (dired-mode . dired-omit-mode)
-  :config
-  (setq dired-omit-files
-        (concat dired-omit-files
-                "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
-
-(use-package dirvish
-  :after dired
-  :hook ((+my/first-input . dirvish-override-dired-mode)
-         (evil-collection-setup . (lambda (&rest a)
-                                    (evil-define-key '(normal) dired-mode-map
-                                      (kbd "C-c f") 'dirvish-fd
-                                      "i" 'wdired-change-to-wdired-mode
-                                      "." 'dired-omit-mode
-                                      (kbd "TAB") 'dirvish-subtree-toggle
-                                      (kbd "M-s") 'dirvish-setup-menu
-                                      (kbd "M-f") 'dirvish-toggle-fullscreen
-                                      "*"   'dirvish-mark-menu
-                                      "f"   'dirvish-file-info-menu
-                                      [remap dired-sort-toggle-or-edit] 'dirvish-quicksort
-                                      [remap dired-do-redisplay] 'dirvish-ls-switches-menu
-                                      [remap dired-summary] 'dirvish-dispatch
-                                      [remap dired-do-copy] 'dirvish-yank-menu
-                                      [remap mode-line-other-buffer] 'dirvish-history-last))))
-  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-  (("C-c f" . dirvish-fd)
-   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-   ("a"   . dirvish-quick-access)
-   ("f"   . dirvish-file-info-menu)
-   ("y"   . dirvish-yank-menu)
-   ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
-   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-   ("TAB" . dirvish-subtree-toggle)
-   ("M-f" . dirvish-history-go-forward)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-t" . dirvish-layout-toggle)
-   ("M-s" . dirvish-setup-menu)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-j" . dirvish-fd-jump))
-  :custom
-  (dirvish-attributes '(all-the-icons file-size))
-  (dirvish-mode-line-format ; it's ok to place string inside
-   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
-  (dirvish-side-follow-buffer-file t)
-  :config
-  (when (boundp 'dirvish-side-follow-mode)
-    (dirvish-side-follow-mode t))
-  (set-face-attribute 'ansi-color-blue nil :foreground "#FFFFFF")
-  (setq dired-recursive-deletes 'always)
-  (setq delete-by-moving-to-trash t)
-  (setq dired-dwim-target t)
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
-  (general-define-key :states '(normal)
-                      :keymaps 'dirvish-mode-map
-                      "?" 'dirvish-menu-all-cmds)
-
-  (use-package dirvish-extras
-    :after dirvish)
-  )
 
 ;; SaveAllBuffers
 (defun save-all-buffers ()
@@ -2329,6 +2597,7 @@ function to the relevant margin-formatters list."
     (advice-add #'keyboard-quit :before #'popper-close-window-hack)))
 
 
+;;; UI
 (use-package doom-modeline
   :hook (window-setup . doom-modeline-mode)
   :custom
@@ -2400,9 +2669,9 @@ function to the relevant margin-formatters list."
 
   (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend))
 
-;; (add-hook 'after-init-hook #'my-apply-font)
 (add-hook 'window-setup-hook #'my-apply-font)
 
+;;; Highlight
 (use-package hl-line
   :defer t
   :custom-face (hl-line ((t (:extend t))))
@@ -2435,7 +2704,6 @@ function to the relevant margin-formatters list."
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
@@ -2510,277 +2778,38 @@ function to the relevant margin-formatters list."
     (advice-add cmd :after #'my-recenter-and-pulse)))
 
 
-(defvar +magit-open-windows-in-direction 'right
-  "What direction to open new windows from the status buffer.
-  For example, diffs and log buffers. Accepts `left', `right', `up', and `down'.")
-(defun +magit-display-buffer-fn (buffer)
-  "Same as `magit-display-buffer-traditional', except...
-- If opened from a commit window, it will open below it.
-- Magit process windows are always opened in small windows below the current.
-- Everything else will reuse the same window."
-  (let ((buffer-mode (buffer-local-value 'major-mode buffer)))
-    (display-buffer
-     buffer (cond
-             ((and (eq buffer-mode 'magit-status-mode)
-                   (get-buffer-window buffer))
-              '(display-buffer-reuse-window))
-             ;; Any magit buffers opened from a commit window should open below
-             ;; it. Also open magit process windows below.
-             ((or (bound-and-true-p git-commit-mode)
-                  (eq buffer-mode 'magit-process-mode))
-              (let ((size (if (eq buffer-mode 'magit-process-mode)
-                              0.35
-                            0.7)))
-                `(display-buffer-below-selected
-                  . ((window-height . ,(truncate (* (window-height) size)))))))
-
-             ;; Everything else should reuse the current window.
-             ((or (not (derived-mode-p 'magit-mode))
-                  (not (memq (with-current-buffer buffer major-mode)
-                             '(magit-process-mode
-                               magit-revision-mode
-                               magit-diff-mode
-                               magit-stash-mode
-                               magit-status-mode))))
-              '(display-buffer-same-window))
-
-             ('(+magit--display-buffer-in-direction))))))
-
-(defun +magit--display-buffer-in-direction (buffer alist)
-  "`display-buffer-alist' handler that opens BUFFER in a direction.
-This differs from `display-buffer-in-direction' in one way: it will try to use a
-window that already exists in that direction. It will split otherwise."
-  (let ((direction (or (alist-get 'direction alist)
-                       +magit-open-windows-in-direction))
-        (origin-window (selected-window)))
-    (if-let (window (window-in-direction direction))
-        (unless magit-display-buffer-noselect
-          (select-window window))
-      (if-let (window (and (not (one-window-p))
-                           (window-in-direction
-                            (pcase direction
-                              (`right 'left)
-                              (`left 'right)
-                              ((or `up `above) 'down)
-                              ((or `down `below) 'up)))))
-          (unless magit-display-buffer-noselect
-            (select-window window))
-        (let ((window (split-window nil nil direction)))
-          (when (and (not magit-display-buffer-noselect)
-                     (memq direction '(right down below)))
-            (select-window window))
-          (display-buffer-record-window 'reuse window buffer)
-          (set-window-buffer window buffer)
-          (set-window-parameter window 'quit-restore (list 'window 'window origin-window buffer))
-          (set-window-prev-buffers window nil))))
-    (unless magit-display-buffer-noselect
-      (switch-to-buffer buffer t t)
-      (selected-window))))
-
-(defun magit-add-current-buffer-to-kill-ring ()
-  "Show the current branch in the echo-area and add it to the `kill-ring'."
-  (interactive)
-  (let ((branch (magit-get-current-branch)))
-    (if branch
-        (progn (kill-new branch)
-               (message "%s" branch))
-      (user-error "There is not current branch"))))
-
-
-(defvar gitmoji--all-emoji
-  '(("Improving structure / format of the code." . ":art:")
-    ("Improving performance." . ":zap:")
-    ("Removing code or files." . ":fire:")
-    ("Fixing a bug." . ":bug:")
-    ("Critical hotfix." . ":ambulance:")
-    ("Introducing new features." . ":sparkles:")
-    ("Writing docs." . ":memo:")
-    ("Deploying stuff." . ":rocket:")
-    ("Updating the UI and style files." . ":lipstick:")
-    ("Initial commit." . ":tada:")
-    ("Updating tests." . ":white_check_mark:")
-    ("Fixing security issues." . ":lock:")
-    ("Fixing something on macOS." . ":apple:")
-    ("Fixing something on Linux." . ":penguin:")
-    ("Fixing something on Windows." . ":checkered_flag:")
-    ("Fixing something on Android." . ":robot:")
-    ("Fixing something on iOS." . ":green_apple:")
-    ("Releasing / Version tags." . ":bookmark:")
-    ("Removing linter warnings." . ":rotating_light:")
-    ("Work in progress." . ":construction:")
-    ("Fixing CI Build." . ":green_heart:")
-    ("Downgrading dependencies." . ":arrow_down:")
-    ("Upgrading dependencies." . ":arrow_up:")
-    ("Pinning dependencies to specific versions." . ":pushpin:")
-    ("Adding CI build system." . ":construction_worker:")
-    ("Adding analytics or tracking code." . ":chart_with_upwards_trend:")
-    ("Refactoring code." . ":recycle:")
-    ("Work about Docker." . ":whale:")
-    ("Adding a dependency." . ":heavy_plus_sign:")
-    ("Removing a dependency." . ":heavy_minus_sign:")
-    ("Changing configuration files." . ":wrench:")
-    ("Internationalization and localization." . ":globe_with_meridians:")
-    ("Fixing typos." . ":pencil2:")
-    ("Writing bad code that needs to be improved." . ":hankey:")
-    ("Reverting changes." . ":rewind:")
-    ("Merging branches." . ":twisted_rightwards_arrows:")
-    ("Updating compiled files or packages." . ":package:")
-    ("Updating code due to external API changes." . ":alien:")
-    ("Moving or renaming files." . ":truck:")
-    ("Adding or updating license." . ":page_facing_up:")
-    ("Introducing breaking changes." . ":boom:")
-    ("Adding or updating assets." . ":bento:")
-    ("Updating code due to code review changes." . ":ok_hand:")
-    ("Improving accessibility." . ":wheelchair:")
-    ("Documenting source code." . ":bulb:")
-    ("Writing code drunkenly." . ":beers:")
-    ("Updating text and literals." . ":speech_balloon:")
-    ("Performing database related changes." . ":card_file_box:")
-    ("Adding logs." . ":loud_sound:")
-    ("Removing logs." . ":mute:")
-    ("Adding contributor(s)." . ":busts_in_silhouette:")
-    ("Improving user experience / usability." . ":children_crossing:")
-    ("Making architectural changes." . ":building_construction:")
-    ("Working on responsive design." . ":iphone:")
-    ("Mocking things." . ":clown_face:")
-    ("Adding an easter egg." . ":egg:")
-    ("Adding or updating a .gitignore file" . ":see_no_evil:")
-    ("Adding or updating snapshots" . ":camera_flash:")
-    ("Experimenting new things" . ":alembic:")
-    ("Improving SEO" . ":mag:")
-    ("Work about Kubernetes" . ":wheel_of_dharma:")
-    ("Catching errors" . ":goal_net:")
-    ("Adding or updating types (Flow, TypeScript)" . ":label:")
-    ("增加新特性" . "feat")
-    ("bug 修复" . "fix")
-    ("文档改动" . "docs")
-    ("功能、交互优化" . "improve")
-    ("格式改动（不影响代码运行的变动，例如加空格、换行、分号等）" . "style")
-    ("重构代码" . "refactor")
-    ("性能相关优化" . "perf")
-    ("测试代码" . "test")
-    ("构建过程或辅助工具变动" . "chore")
-    ("回滚" . "revert")
-    ("合并" . "merge")
-    ("上传资源文件" . "resource")))
-
-(defun gitmoji-picker ()
-  "Choose a gitmoji."
-  (interactive)
-  (let* ((choices gitmoji--all-emoji)
-         (candidates (mapcar (lambda (cell)
-                               (cons (format "%s — %s" (cdr cell) (car cell)) (concat (cdr cell) " ")))
-                             choices)))
-    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))
-    (evil-insert-state)))
-
-(use-package magit-todos
-  :after magit)
-
-(use-package pretty-hydra
-  :diminish)
-
-(use-package smerge-mode
-  :after magit
-  :diminish
-  :bind (:map smerge-mode-map
-              ("C-c m" . smerge-mode-hydra/body))
-  :hook ((find-file . (lambda ()
-                        (save-excursion
-                          (goto-char (point-min))
-                          (when (re-search-forward "^<<<<<<< " nil t)
-                            (smerge-mode 1)))))
-         (magit-diff-visit-file . (lambda ()
-                                    (when smerge-mode
-                                      (smerge-mode-hydra/body))))
-         )
+(use-package symbol-overlay
+  :functions (turn-off-symbol-overlay turn-on-symbol-overlay)
+  :custom-face (symbol-overlay-default-face ((t (:inherit (region bold)))))
+  :hook ((prog-mode . symbol-overlay-mode)
+         (iedit-mode . turn-off-symbol-overlay)
+         (iedit-mode-end . turn-on-symbol-overlay))
+  :init (setq symbol-overlay-idle-time 0.1)
+  (with-eval-after-load 'all-the-icons
+    (setq symbol-overlay-faces
+          '((:inherit (all-the-icons-blue bold) :inverse-video t)
+            (:inherit (all-the-icons-pink bold) :inverse-video t)
+            (:inherit (all-the-icons-yellow bold) :inverse-video t)
+            (:inherit (all-the-icons-purple bold) :inverse-video t)
+            (:inherit (all-the-icons-red bold) :inverse-video t)
+            (:inherit (all-the-icons-orange bold) :inverse-video t)
+            (:inherit (all-the-icons-green bold) :inverse-video t)
+            (:inherit (all-the-icons-cyan bold) :inverse-video t))))
   :config
-  (when (>= emacs-major-version 27)
-    (set-face-attribute 'smerge-refined-removed nil :extend t)
-    (set-face-attribute 'smerge-refined-added   nil :extend t))
-  (require 'transient)
-  (transient-define-prefix smerge-dispatch ()
-    "Invoke an SMerge command from a list of available commands."
-    [["Keep"
-      ("b" "Base" smerge-keep-base)
-      ("u" "Upper" smerge-keep-upper)
-      ("l" "Lower" smerge-keep-lower)
-      ("a" "All" smerge-keep-all) ("RET" "Current" smerge-keep-current)]
-     ["Diff"
-      ("<" "Base/upper" smerge-diff-base-upper)
-      ("=" "Upper/lower" smerge-diff-upper-lower)
-      (">" "Base/lower" smerge-diff-base-lower)
-      ("R" "Refine" smerge-refine :transient t)]
-     ["Other"
-      ("C" "Combine" smerge-combine-with-next)
-      ("r" "Resolve" smerge-resolve) ("x" "Kill current" smerge-kill-current)]])
-  (define-key (plist-get smerge-text-properties 'keymap)
-              (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
-  (evil-define-motion evil-forward-conflict (count)
-    "Move the cursor to the beginning of the COUNT-th next conflict."
-    :jump t
-    (require 'smerge-mode)
-    (smerge-next count)
-    (unless smerge-mode (smerge-mode)))
-  (evil-define-motion evil-backward-conflict (count)
-    "Move the cursor to the beginning of the COUNT-th previous conflict."
-    :jump t :type inclusive
-    (require 'smerge-mode)
-    (smerge-prev count)
-    (unless smerge-mode (smerge-mode)))
-  )
-
-(use-package git-timemachine
-  :commands (git-timemachine git-timemachine-toggle)
-  :bind (:map vc-prefix-map
-              ("t" . git-timemachine))
-  :hook ((git-timemachine-mode . (lambda ()
-                                   "Improve `git-timemachine' buffers."
-                                   ;; Display different colors in mode-line
-                                   (if (facep 'mode-line-active)
-                                       (face-remap-add-relative 'mode-line-active 'custom-state)
-                                     (face-remap-add-relative 'mode-line 'custom-state))
-
-                                   ;; Highlight symbols in elisp
-                                   (and (derived-mode-p 'emacs-lisp-mode)
-                                        (fboundp 'highlight-defined-mode)
-                                        (highlight-defined-mode t))
-
-                                   ;; Display line numbers
-                                   (and (derived-mode-p 'prog-mode 'yaml-mode)
-                                        (fboundp 'display-line-numbers-mode)
-                                        (display-line-numbers-mode t))))
-         (before-revert . (lambda ()
-                            (when (bound-and-true-p git-timemachine-mode)
-                              (user-error "Cannot revert the timemachine buffer"))))))
-
-;; YASnippetPac
-(use-package yasnippet
-  :diminish yas-minor-mode
-  :commands (yas-expand-snippet)
-  :hook (prog-mode . yas-minor-mode)
-  :bind
-  (:map yas-minor-mode-map
-        ("C-c C-n" . yas-expand-from-trigger-key))
-  (:map yas-keymap
-        (("M-}" . smarter-yas-expand-next-field)
-         ("TAB" . nil)
-         ([tab]. nil)
-         ))
-  :config
-  (defun smarter-yas-expand-next-field ()
-    "Try to `yas-expand' then `yas-next-field' at current cursor position."
+  ;; Disable symbol highlighting while selecting
+  (defun turn-off-symbol-overlay (&rest _)
+    "Turn off symbol highlighting."
     (interactive)
-    (let ((old-point (point))
-          (old-tick (buffer-chars-modified-tick)))
-      (yas-expand)
-      (when (and (eq old-point (point))
-                 (eq old-tick (buffer-chars-modified-tick)))
-        (ignore-errors (yas-next-field))))))
+    (symbol-overlay-mode -1))
+  (advice-add #'set-mark :after #'turn-off-symbol-overlay)
 
-;; -YASnippetPac
-
-
+  (defun turn-on-symbol-overlay (&rest _)
+    "Turn on symbol highlighting."
+    (interactive)
+    (when (derived-mode-p 'prog-mode)
+      (symbol-overlay-mode 1)))
+  (advice-add #'deactivate-mark :after #'turn-on-symbol-overlay))
+;;; Syntax checker
 (use-package flymake
   :defer t
   :after-call +my/first-input-hook-fun
@@ -2802,37 +2831,7 @@ window that already exists in that direction. It will split otherwise."
   (setq eldoc-documentation-function 'eldoc-documentation-compose)
   (setq flymake-no-changes-timeout nil))
 
-(use-package elec-pair
-  :hook (+my/first-input . electric-pair-mode)
-  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
-  :config
-  ;; disable <> auto pairing in electric-pair-mode for org-mode
-  (add-hook 'org-mode-hook
-            '(lambda ()
-               (setq-local electric-pair-inhibit-predicate
-                           `(lambda (c)
-                              (if (char-equal c ?<) t
-                                (,electric-pair-inhibit-predicate c)))))))
-
-(use-package puni
-  :defer t
-  :hook ((prog-mode markdown-mode org-mode) . puni-mode)
-  :init
-  (general-def
-    :keymaps 'puni-mode-map
-    "DEL" 'puni-backward-delete-char
-    "C-d" 'puni-forward-delete-char
-    "C-k" 'puni-kill-line
-    "M-h" 'puni-force-delete
-    "C-u" 'puni-backward-kill-line
-    "C-M-f" 'puni-forward-sexp
-    "C-M-b" 'puni-backward-sexp
-    "C-M-a" 'puni-beginning-of-sexp
-    "C-M-e" 'puni-end-of-sexp
-    "s-<backspace>" 'puni-force-delete)
-  :config
-  (setq puni-confirm-when-delete-unbalanced-active-region nil))
-
+;;; Better edit
 (use-package format-all
   :hook (((emacs-lisp-mode) . format-all-mode)
          ((prog-mode) . format-all-ensure-formatter))
@@ -2840,7 +2839,6 @@ window that already exists in that direction. It will split otherwise."
   ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
   (setq format-all-show-errors 'never))
 
-;; DeleteBlockPac
 (use-package delete-block
   :defer
   :commands (delete-block-for delete-bl-backward)
@@ -2849,13 +2847,13 @@ window that already exists in that direction. It will split otherwise."
    ("C-<backspace>" . delete-block-backward)
    ("M-<backspace>" . delete-block-backward)
    ("M-DEL" . delete-block-backward)))
-;; -DeleteBlockPac
 
 (use-package avy
   :diminish
   :demand t
   :commands (avy-goto-char avy-goto-line))
 
+;;;; Input method
 (use-package rime
   :after-call +my/first-input-hook-fun
   :defer t
@@ -2896,44 +2894,29 @@ window that already exists in that direction. It will split otherwise."
   (setq save-silently t)
   (super-save-mode 1)
 
-  (defun +super-save-without-hook ()
+  (defun +super-save-without-format ()
     (let ((before-save-hook (remove 'format-all--buffer-from-hook before-save-hook)))
       (when (super-save-p)
         (save-all-buffers))))
-  (advice-add 'super-save-command :override '+super-save-without-hook))
+  (advice-add 'super-save-command :override '+super-save-without-format))
 
-(defvar +lsp--default-read-process-output-max nil)
-(defvar +lsp--default-gcmh-high-cons-threshold nil)
-(defvar +lsp--optimization-init-p nil)
+;;; Programing
+(use-package prog-mode
+  :defer t
+  :config (global-prettify-symbols-mode)
+  (defun indicate-buffer-boundaries-left ()
+    (setq indicate-buffer-boundaries 'left))
+  (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
 
-(define-minor-mode +lsp-optimization-mode
-  "Deploys universal GC and IPC optimizations for `lsp-mode' and `eglot'."
-  :global t
-  :init-value nil
-  (if (not +lsp-optimization-mode)
-      (setq-default read-process-output-max +lsp--default-read-process-output-max
-                    gcmh-high-cons-threshold +lsp--default-gcmh-high-cons-threshold
-                    +lsp--optimization-init-p nil)
-    ;; Only apply these settings once!
-    (unless +lsp--optimization-init-p
-      (setq +lsp--default-read-process-output-max
-            ;; DEPRECATED Remove check when 26 support is dropped
-            (if (boundp 'read-process-output-max)
-                (default-value 'read-process-output-max))
-            +lsp--default-gcmh-high-cons-threshold
-            (default-value 'gcmh-high-cons-threshold))
-      ;; `read-process-output-max' is only available on recent development
-      ;; builds of Emacs 27 and above.
-      (setq-default read-process-output-max (* 1024 1024))
-      ;; REVIEW LSP causes a lot of allocations, with or without Emacs 27+'s
-      ;;        native JSON library, so we up the GC threshold to stave off
-      ;;        GC-induced slowdowns/freezes. Doom uses `gcmh' to enforce its
-      ;;        GC strategy, so we modify its variables rather than
-      ;;        `gc-cons-threshold' directly.
-      (setq-default gcmh-high-cons-threshold (* 2 +lsp--default-gcmh-high-cons-threshold))
-      (gcmh-set-high-threshold)
-      (setq +lsp--optimization-init-p t))))
+(use-package lisp-mode
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
+  (add-hook 'emacs-lisp-mode-hook 'reveal-mode)
+  (defun indent-spaces-mode ()
+    (setq indent-tabs-mode nil))
+  (add-hook 'lisp-interaction-mode-hook 'indent-spaces-mode))
 
+;;;; Lsp integration
 (use-package eglot
   :commands (+eglot-organize-imports +eglot-help-at-point)
   :hook (
@@ -2954,6 +2937,39 @@ window that already exists in that direction. It will split otherwise."
          (prog-mode . (lambda ()
                         (unless (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
                           (eglot-ensure)))))
+  :init
+  (defvar +lsp--default-read-process-output-max nil)
+  (defvar +lsp--default-gcmh-high-cons-threshold nil)
+  (defvar +lsp--optimization-init-p nil)
+
+  (define-minor-mode +lsp-optimization-mode
+    "Deploys universal GC and IPC optimizations for `lsp-mode' and `eglot'."
+    :global t
+    :init-value nil
+    (if (not +lsp-optimization-mode)
+        (setq-default read-process-output-max +lsp--default-read-process-output-max
+                      gcmh-high-cons-threshold +lsp--default-gcmh-high-cons-threshold
+                      +lsp--optimization-init-p nil)
+      ;; Only apply these settings once!
+      (unless +lsp--optimization-init-p
+        (setq +lsp--default-read-process-output-max
+              ;; DEPRECATED Remove check when 26 support is dropped
+              (if (boundp 'read-process-output-max)
+                  (default-value 'read-process-output-max))
+              +lsp--default-gcmh-high-cons-threshold
+              (default-value 'gcmh-high-cons-threshold))
+        ;; `read-process-output-max' is only available on recent development
+        ;; builds of Emacs 27 and above.
+        (setq-default read-process-output-max (* 1024 1024))
+        ;; REVIEW LSP causes a lot of allocations, with or without Emacs 27+'s
+        ;;        native JSON library, so we up the GC threshold to stave off
+        ;;        GC-induced slowdowns/freezes. Doom uses `gcmh' to enforce its
+        ;;        GC strategy, so we modify its variables rather than
+        ;;        `gc-cons-threshold' directly.
+        (setq-default gcmh-high-cons-threshold (* 2 +lsp--default-gcmh-high-cons-threshold))
+        (gcmh-set-high-threshold)
+        (setq +lsp--optimization-init-p t))))
+
   :config
   (use-package consult-eglot
     :commands (consult-eglot-symbols))
@@ -3015,7 +3031,7 @@ window that already exists in that direction. It will split otherwise."
     (list :enable t
           :lint t)))
 
-
+;;;; Builtin tree sitter
 (use-package treesit
   :if (and (fboundp 'treesit-available-p) (treesit-available-p))
   :defer t
@@ -3048,6 +3064,7 @@ window that already exists in that direction. It will split otherwise."
 	      (message "`%s' parser was installed." lang)
 	      (sit-for 0.75)))))
 
+;;;; Online document
 (use-package devdocs
   :commands (devdocs-lookup-at-point devdocs-search-at-point)
   :init
@@ -3089,9 +3106,9 @@ Install the doc if it's not installed."
      (alist-get major-mode devdocs-major-mode-docs-alist))
 
     ;; Lookup the symbol at point
-    (devdocs-lookup nil (thing-at-point 'symbol t)))
-  )
+    (devdocs-lookup nil (thing-at-point 'symbol t))))
 
+;;;; recenter after imenu jump
 (use-package imenu
   :commands (imenu)
   :hook (imenu-after-jump . recenter))
@@ -3109,57 +3126,6 @@ Install the doc if it's not installed."
 (use-package markdown-mode
   :defer t
   :mode ("\\.md\\'" . markdown-mode))
-
-(use-package vterm
-  :commands (vterm--internal vterm-posframe-toggle)
-  :init
-  (setq vterm-always-compile-module t)
-  (setq vterm-shell "/usr/local/bin/fish")
-  (setq vterm-timer-delay 0.001
-        process-adaptive-read-buffering nil)
-
-  (with-no-warnings
-    (defvar vterm-posframe--frame nil)
-
-    (defun vterm-posframe-hidehandler (_)
-      "Hidehandler used by `vterm-posframe-toggle'."
-      (not (eq (selected-frame) posframe--frame)))
-
-    (defun vterm-posframe-toggle ()
-      "Toggle `vterm' child frame."
-      (interactive)
-      (let ((buffer (vterm--internal #'ignore 100)))
-        (if (and vterm-posframe--frame
-                 (frame-live-p vterm-posframe--frame)
-                 (frame-visible-p vterm-posframe--frame))
-            (progn
-              (posframe-hide buffer)
-              ;; Focus the parent frame
-              (select-frame-set-input-focus (frame-parent vterm-posframe--frame)))
-          (let ((width  (max 80 (/ (frame-width) 2)))
-                (height (/ (frame-height) 2)))
-            (setq vterm-posframe--frame
-                  (posframe-show
-                   buffer
-                   :poshandler #'posframe-poshandler-frame-center
-                   :hidehandler #'vterm-posframe-hidehandler
-                   :left-fringe 8
-                   :right-fringe 8
-                   :width width
-                   :height height
-                   :min-width width
-                   :min-height height
-                   :internal-border-width 3
-                   :internal-border-color (face-foreground 'font-lock-comment-face nil t)
-                   :background-color (face-background 'tooltip nil t)
-                   :override-parameters '((cursor-type . t))
-                   :accept-focus t))
-            ;; Blink cursor
-            (with-current-buffer buffer
-              (save-excursion (vterm-clear t))
-              (setq-local cursor-type 'box))
-            ;; Focus the child frame
-            (select-frame-set-input-focus vterm-posframe--frame)))))))
 
 (use-package python
   :defer t
@@ -3385,8 +3351,7 @@ Install the doc if it's not installed."
                   )
     )
   (cd (file-name-directory buffer-file-name))
-  (display-buffer "*Flutter Pub Get*")
-  )
+  (display-buffer "*Flutter Pub Get*"))
 
 (use-package dart-mode
   :mode ("\\.dart\\'")
@@ -3420,6 +3385,59 @@ Install the doc if it's not installed."
     "p" '(+my/flutter-pub-get :wk "Pub get")
     ))
 
+;;; Terminal integration
+(use-package vterm
+  :commands (vterm--internal vterm-posframe-toggle)
+  :init
+  (setq vterm-always-compile-module t)
+  (setq vterm-shell "/usr/local/bin/fish")
+  (setq vterm-timer-delay 0.001
+        process-adaptive-read-buffering nil)
+
+  (with-no-warnings
+    (defvar vterm-posframe--frame nil)
+
+    (defun vterm-posframe-hidehandler (_)
+      "Hidehandler used by `vterm-posframe-toggle'."
+      (not (eq (selected-frame) posframe--frame)))
+
+    (defun vterm-posframe-toggle ()
+      "Toggle `vterm' child frame."
+      (interactive)
+      (let ((buffer (vterm--internal #'ignore 100)))
+        (if (and vterm-posframe--frame
+                 (frame-live-p vterm-posframe--frame)
+                 (frame-visible-p vterm-posframe--frame))
+            (progn
+              (posframe-hide buffer)
+              ;; Focus the parent frame
+              (select-frame-set-input-focus (frame-parent vterm-posframe--frame)))
+          (let ((width  (max 80 (/ (frame-width) 2)))
+                (height (/ (frame-height) 2)))
+            (setq vterm-posframe--frame
+                  (posframe-show
+                   buffer
+                   :poshandler #'posframe-poshandler-frame-center
+                   :hidehandler #'vterm-posframe-hidehandler
+                   :left-fringe 8
+                   :right-fringe 8
+                   :width width
+                   :height height
+                   :min-width width
+                   :min-height height
+                   :internal-border-width 3
+                   :internal-border-color (face-foreground 'font-lock-comment-face nil t)
+                   :background-color (face-background 'tooltip nil t)
+                   :override-parameters '((cursor-type . t))
+                   :accept-focus t))
+            ;; Blink cursor
+            (with-current-buffer buffer
+              (save-excursion (vterm-clear t))
+              (setq-local cursor-type 'box))
+            ;; Focus the child frame
+            (select-frame-set-input-focus vterm-posframe--frame)))))))
+
+;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
 (defvar +org-capture-file-note (concat +self/org-base-dir "notes.org"))
 (defvar +org-capture-file-someday (concat +self/org-base-dir "someday.org"))
@@ -3428,10 +3446,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                              +org-capture-file-done
-                                                              +org-capture-file-someday
-                                                              +org-capture-file-note
-                                                              +org-capture-file-routine)))
+                                                                   +org-capture-file-done
+                                                                   +org-capture-file-someday
+                                                                   +org-capture-file-note
+                                                                   +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3851,7 +3869,6 @@ Install the doc if it's not installed."
                       'separate-inline-use-default-rules-for-org-local
                       nil 'make-it-local)))))
 
-
 (use-package org-modern
   :defer t
   :after org
@@ -3880,6 +3897,7 @@ Install the doc if it's not installed."
   (defalias 'org-align-tags #'ignore))
 
 
+;;;; Notification for org todos
 ;; -Notification only for mac os
 (when *sys/mac*
   (add-hook '+my/first-input-hook
