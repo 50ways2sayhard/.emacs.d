@@ -761,9 +761,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -851,13 +851,11 @@ window that already exists in that direction. It will split otherwise."
 ;;;###autoload
 (defun +my/replace (&optional word)
   "Make it eary to use `:%s' to replace WORD."
-  (interactive (list
-                (if (use-region-p)
-                    (buffer-substring-no-properties (region-beginning) (region-end))
-                  (thing-at-point 'symbol))))
-  ;;  HACK: replace `/' with `\/'
-  (let ((word (replace-regexp-in-string "/" "\\\\/" word)))
-    (evil-ex (concat "%s/" word "/" word))))
+  (interactive)
+  (let* ((from (replace-regexp-in-string "/" "\\\\/" (or word (read-string "Replace: " (thing-at-point 'symbol 'no-properties)))))
+         ;; (to (replace-regexp-in-string "/" "\\\\/" (read-string (format "Replace '%s' with: " from))))
+         )
+    (evil-ex (concat "%s/" from "/"))))
 
 ;;;###autoload
 (defun +my-delete-file ()
@@ -2886,8 +2884,7 @@ function to the relevant margin-formatters list."
   (add-hook 'text-mode-hook 'activate-default-input-method))
 
 (use-package super-save
-  :diminish
-  :defer 0.5
+  :hook (window-setup . super-save-mode)
   :init
   (setq auto-save-default nil)
   :config
@@ -2898,7 +2895,6 @@ function to the relevant margin-formatters list."
   (setq super-save-idle-duration 5)
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
-  (super-save-mode 1)
 
   (defun +super-save-without-format ()
     (let ((before-save-hook (remove 'format-all--buffer-from-hook before-save-hook)))
@@ -2915,6 +2911,7 @@ function to the relevant margin-formatters list."
   (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
 
 (use-package lisp-mode
+  :mode ("\\.el\\'" . emacs-lisp-mode)
   :config
   (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
   (add-hook 'emacs-lisp-mode-hook 'reveal-mode)
@@ -3315,10 +3312,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                              +org-capture-file-done
-                                                              +org-capture-file-someday
-                                                              +org-capture-file-note
-                                                              +org-capture-file-routine)))
+                                                                   +org-capture-file-done
+                                                                   +org-capture-file-someday
+                                                                   +org-capture-file-note
+                                                                   +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
