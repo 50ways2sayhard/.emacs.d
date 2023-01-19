@@ -109,6 +109,8 @@
 (use-package borg
   :commands (borg-assimilate borg-insert-update-message))
 
+(push (expand-file-name "site-lisp" user-emacs-directory) load-path)
+
 ;;;; :after-call for use-package
 (defvar +use-package--deferred-pkgs '(t))
 (defun use-package-handler/:after-call (name _keyword hooks rest state)
@@ -637,11 +639,11 @@ window that already exists in that direction. It will split otherwise."
   :config
   ;; disable <> auto pairing in electric-pair-mode for org-mode
   (add-hook 'org-mode-hook
-            '(lambda ()
-               (setq-local electric-pair-inhibit-predicate
-                           `(lambda (c)
-                              (if (char-equal c ?<) t
-                                (,electric-pair-inhibit-predicate c)))))))
+            #'(lambda ()
+                (setq-local electric-pair-inhibit-predicate
+                            `(lambda (c)
+                               (if (char-equal c ?<) t
+                                 (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
   :defer t
@@ -677,15 +679,15 @@ window that already exists in that direction. It will split otherwise."
            (float-time (time-subtract (current-time)
                                       before-user-init-time)))
   (add-hook 'after-init-hook
-            (lambda ()
+            #'(lambda ()
 
-              (message
-               "Loading %s...done (%.3fs) [after-init]" user-init-file
-               (float-time (time-subtract (current-time)
-                                          before-user-init-time)))) t)
+                (message
+                 "Loading %s...done (%.3fs) [after-init]" user-init-file
+                 (float-time (time-subtract (current-time)
+                                            before-user-init-time)))) t)
   (add-hook 'window-setup-hook
-            (lambda ()
-              (+my/open-org-agenda)) t)
+            #'(lambda ()
+                (+my/open-org-agenda)) t)
   )
 
 (defvar +my/first-input-hook nil)
@@ -758,10 +760,10 @@ window that already exists in that direction. It will split otherwise."
   (setq-default tab-width 2)
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
-            (lambda () (if (equal electric-indent-mode 't)
-                           (when (derived-mode-p 'text-mode)
-                             (electric-indent-mode -1))
-                         (electric-indent-mode 1))))
+            #'(lambda () (if (equal electric-indent-mode 't)
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -847,6 +849,17 @@ window that already exists in that direction. It will split otherwise."
       (find-file file-to))))
 
 ;;;###autoload
+(defun +my/replace (&optional word)
+  "Make it eary to use `:%s' to replace WORD."
+  (interactive (list
+                (if (use-region-p)
+                    (buffer-substring-no-properties (region-beginning) (region-end))
+                  (thing-at-point 'symbol))))
+  ;;  HACK: replace `/' with `\/'
+  (let ((word (replace-regexp-in-string "/" "\\\\/" word)))
+    (evil-ex (concat "%s/" word "/" word))))
+
+;;;###autoload
 (defun +my-delete-file ()
   "Put current buffer file to top."
   (interactive)
@@ -908,15 +921,6 @@ window that already exists in that direction. It will split otherwise."
     (when (eq (+complete--get-meta 'category) 'file)
       (shell-command (concat "open " candidate))
       (abort-recursive-edit))))
-
-
-;;;###autoload
-(defun +my/find-project-root()
-  (interactive)
-  (let ((project (project-current)))
-    (if project
-        (project-root project) ;;  HACK: original repo breaks here
-      nil)))
 
 
 ;;;###autoload
@@ -2848,6 +2852,8 @@ function to the relevant margin-formatters list."
    ("M-<backspace>" . delete-block-backward)
    ("M-DEL" . delete-block-backward)))
 
+(use-package wgrep)
+
 (use-package avy
   :diminish
   :demand t
@@ -3217,142 +3223,6 @@ Install the doc if it's not installed."
   (add-hook 'emmet-mode-hook (lambda()
                                (setq emmet-indent-after-insert t))))
 ;; -EmmetPac
-
-(require 'comint)
-(require 'subr-x)
-
-(defvar +my/flutter--app-id-alist '())
-(defvar +my/flutter--device-alist '())
-
-(defvar +my/flutter-pub-host "https://pub.dev")
-
-(defun +my/flutter--process-name ()
-  "Return the name of the flutter process."
-  (let ((project-name (+my/find-project-root)))
-    (if project-name
-        (concat "flutter-" project-name)
-      nil)))
-
-(defun +my/flutter--buffer-name()
-  "Return the name of the flutter buffer."
-  (concat "*Flutter Daemon - " (+my/find-project-root) "*"))
-
-(defun +my/flutter--process-running-p ()
-  "Return t if the flutter process is running."
-  (get-process (+my/flutter--process-name)))
-
-(defun +my/flutter--process-filter (output)
-  "Capture app-id from OUTPUT."
-  (let ((output-splitted (split-string (string-trim output) " ")))
-    (when (string-equal (car output-splitted) "flutter")
-      (let ((app-id (string-join (nthcdr 3 output-splitted) " ")))
-        (message "capture app-id: %s" app-id)
-        (unless (member app-id +my/flutter--app-id-alist)
-          (add-to-list '+my/flutter--app-id-alist app-id)))))
-  )
-
-(defun +my/flutter--command (mode &optional app-id)
-  "Create flutter command.MODE is 'attach' or 'run'.APP-ID is the app-id to attach to."
-  (if app-id
-      (list "flutter" mode "--app-id" app-id)
-    (list "flutter" mode)))
-
-(defun +my/flutter--sentinel (_ event)
-  "Sentinel for flutter process.EVENT is the event that triggered the sentinel."
-  (message "[Flutter] event: %s" event)
-  (when (string-prefix-p "finished" event)
-    (kill-buffer (+my/flutter--buffer-name))))
-
-(defun +my/flutter-run-or-attach ()
-  "Interactively run or attach to a running flutter app."
-  (interactive)
-  (if (+my/flutter--process-running-p)
-      (message "Flutter Process of project %s is already running." (+my/find-project-root))
-    (progn
-      (let ((mode (completing-read "Mode: " '("attach" "run") nil t)))
-        (if (and (string-equal mode "attach") (> (length +my/flutter--app-id-alist) 0))
-            (+my/flutter--run-or-attach
-             mode (completing-read "App-id: " +my/flutter--app-id-alist nil t))
-          (+my/flutter--run-or-attach mode)
-          )))))
-
-(defun +my/flutter--run-or-attach (mode &optional app-id)
-  "Run or attach to a running flutter app.MODE is 'attach' or 'run'.APP-ID is the app-id to attach to."
-  ;; (interactive (list (completing-read "Mode: " '("run" "attach") nil t)))
-  (unless (+my/flutter--process-running-p)
-    (let* ((project (+my/find-project-root))
-           (process-name (+my/flutter--process-name))
-           (buffer (get-buffer-create (+my/flutter--buffer-name)))
-           (command (+my/flutter--command mode app-id))
-           (temp (mapcar 'concat process-environment))
-           (process-environment (setenv-internal temp "PUB_HOSTED_URL" +my/flutter-pub-host t)))
-      (if (file-exists-p (concat project "lib/main.dart"))
-          (cd project)
-        (cd (concat project "example")))
-      (make-process
-       :name process-name
-       :buffer buffer
-       :command (+my/flutter--command mode app-id)
-       :coding 'utf-8
-       ;; :filter '+my/flutter--process-filter
-       :sentinel '+my/flutter--sentinel
-       :noquery t)
-      (with-current-buffer buffer
-        (unless (derived-mode-p 'comint-mode)
-          (comint-mode)
-          (setq-local comint-output-filter-functions #'+my/flutter--process-filter)))
-      (cd (file-name-directory buffer-file-name))
-      (display-buffer buffer))))
-
-(defun +my/flutter--send (command)
-  "Send a command to a running Flutter application.COMMAND is the command to send."
-  (if (+my/flutter--process-running-p)
-      (process-send-string (+my/flutter--process-name) command)
-    (call-interactively #'+my/flutter-run-or-attach)))
-
-(defun +my/flutter-run-or-hot-reload ()
-  "Hot reload the current Flutter application."
-  (interactive)
-  (+my/flutter--send "r"))
-
-(defun +my/flutter-run-or-hot-restart ()
-  "Hot restart the current Flutter application."
-  (interactive)
-  (+my/flutter--send "R"))
-
-(defun +my/flutter-open-devtools ()
-  "Open the Flutter DevTools."
-  (interactive)
-  (+my/flutter--send "v"))
-
-(defun +my/flutter-quit ()
-  "Quit the Flutter application."
-  (interactive)
-  (when (+my/flutter--process-running-p)
-    (+my/flutter--send "q")
-    (display-buffer (+my/flutter--buffer-name))))
-
-(defun +my/flutter-pub-get ()
-  "Run pub get."
-  (interactive)
-  ;; (start-process "flutter-pub-get" "*Flutter Pub Get*" "flutter" "pub" "get")
-  (cd (+my/find-project-root))
-  (let* ((temp (mapcar 'concat process-environment))
-         (process-environment (setenv-internal temp "PUB_HOSTED_URL" +my/flutter-pub-host t)))
-    (make-process :name "flutter-pub-get"
-                  :buffer "*Flutter Pub Get*"
-                  :command '("flutter" "pub" "get")
-                  :coding 'utf-8
-                  :noquery t
-                  :sentinel (lambda (process event)
-                              (message "[Flutter] run pub get: %s" event)
-                              (when (string-prefix-p "finished" event)
-                                (kill-buffer "*Flutter Pub Get*")))
-                  )
-    )
-  (cd (file-name-directory buffer-file-name))
-  (display-buffer "*Flutter Pub Get*"))
-
 (use-package dart-mode
   :mode ("\\.dart\\'")
   :hook ((dart-mode . (lambda ()
@@ -3361,7 +3231,6 @@ Install the doc if it's not installed."
                                  (add-hook 'before-save-hook #'+eglot-organize-imports nil t)))
          )
   :config
-
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-mode :types
                                                    ((?c "Class"    font-lock-type-face)
@@ -3373,17 +3242,17 @@ Install the doc if it's not installed."
                                                     (?p "Property" font-lock-variable-name-face)
                                                     (?F "Field"  font-lock-variable-name-face)))))
 
+  (require 'flutter-utils)
   (local-leader-def
     :keymaps 'dart-mode-map
-    "r" '(+my/flutter-run-or-hot-reload :wk "Run or hot reload")
-    "R" '(+my/flutter-run-or-hot-restart :wk "Run or hot restart")
+    "r" '(flutter-utils-run-or-hot-reload :wk "Run or hot reload")
+    "R" '(flutter-utils-run-or-hot-restart :wk "Run or hot restart")
 
-    "v" '(+my/flutter-open-devtools :wk "Open devtools")
-    "Q" '(+my/flutter-quit :wk "Quit application")
+    "v" '(flutter-utils-open-devtools :wk "Open devtools")
+    "Q" '(flutter-utils-quit :wk "Quit application")
 
-    "s" '(+my/flutter-run-or-attach :wk "Run or Attach")
-    "p" '(+my/flutter-pub-get :wk "Pub get")
-    ))
+    "s" '(flutter-utils-run-or-attach :wk "Run or Attach")
+    "p" '(flutter-utils-pub-get :wk "Pub get")))
 
 ;;; Terminal integration
 (use-package vterm
@@ -3446,10 +3315,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                                   +org-capture-file-done
-                                                                   +org-capture-file-someday
-                                                                   +org-capture-file-note
-                                                                   +org-capture-file-routine)))
+                                                              +org-capture-file-done
+                                                              +org-capture-file-someday
+                                                              +org-capture-file-note
+                                                              +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3615,8 +3484,8 @@ Install the doc if it's not installed."
         (org-fold-show-entry))))
   (advice-add 'consult-outline :around #'org-show-entry-consult-a)
 
-  (add-hook 'org-mode-hook (lambda ()
-                             (show-paren-local-mode -1))
+  (add-hook 'org-mode-hook #'(lambda ()
+                               (show-paren-local-mode -1))
             (defface org-checkbox-done-text
               '((t (:strike-through t)))
               "Face for the text part of a checked org-mode checkbox.")
