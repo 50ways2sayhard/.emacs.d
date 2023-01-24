@@ -18,7 +18,7 @@
 	url = https://github.com/jwiegley/emacs-async
 [submodule "auto-compile"]
 	path = lib/auto-compile
-	url = git@github.com:emacscollective/auto-compile.git
+	url = https://www.github.com/emacscollective/auto-compile.git
 [submodule "avy"]
 	path = lib/avy
 	url = https://github.com/abo-abo/avy
@@ -27,7 +27,7 @@
 	url = https://github.com/cute-jumper/bing-dict.el
 [submodule "borg"]
 	path = lib/borg
-	url = git@github.com:emacscollective/borg.git
+	url = https://github.com/emacscollective/borg.git
 	branch = main
 [submodule "cape"]
 	path = lib/cape
@@ -37,7 +37,7 @@
 	url = https://github.com/xuchunyang/chinese-word-at-point.el
 [submodule "closql"]
 	path = lib/closql
-	url = git@github.com:magit/closql.git
+	url = https://github.com/magit/closql.git
 [submodule "compat"]
 	path = lib/compat
 	url = https://github.com/emacs-compat/compat
@@ -65,7 +65,7 @@
 	no-byte-compile = dash-functional.el
 	no-makeinfo = dash-template.texi
 	path = lib/dash
-	url = git@github.com:magnars/dash.el.git
+	url = https://github.com/magnars/dash.el.git
 [submodule "delete-block"]
 	path = lib/delete-block
 	url = https://github.com/manateelazycat/delete-block
@@ -74,7 +74,7 @@
 	url = https://github.com/astoff/devdocs.el
 [submodule "diff-hl"]
 	path = lib/diff-hl
-	url = git@github.com:dgutov/diff-hl.git
+	url = https://github.com/dgutov/diff-hl.git
 [submodule "dired-git-info"]
 	path = lib/dired-git-info
 	url = https://github.com/clemera/dired-git-info
@@ -97,7 +97,7 @@
 	url = https://github.com/Fanael/edit-indirect
 [submodule "ef-themes"]
 	path = lib/ef-themes
-	url = git@github.com:emacsmirror/ef-themes.git
+	url = https://github.com/emacsmirror/ef-themes.git
   no-byte-compile	= *.el
 [submodule "electric-spacing"]
 	path = lib/electric-spacing
@@ -105,7 +105,7 @@
 [submodule "emacsql"]
 	no-byte-compile = emacsql-pg.el
 	path = lib/emacsql
-	url = git@github.com:magit/emacsql.git
+	url = https://www.github.com/magit/emacsql.git
 [submodule "embark"]
 	path = lib/embark
 	url = https://github.com/oantolin/embark
@@ -117,7 +117,7 @@
 	url = https://github.com/smihica/emmet-mode
 [submodule "epkg"]
 	path = lib/epkg
-	url = git@github.com:emacscollective/epkg.git
+	url = https://github.com/emacscollective/epkg.git
 [submodule "evil"]
 	path = lib/evil
 	url = https://github.com/emacs-evil/evil
@@ -142,9 +142,6 @@
 [submodule "evil-snipe"]
 	path = lib/evil-snipe
 	url = https://github.com/hlissner/evil-snipe
-[submodule "evil-surround"]
-	path = lib/evil-surround
-	url = https://github.com/emacs-evil/evil-surround
 [submodule "evil-traces"]
 	path = lib/evil-traces
 	url = https://github.com/mamapanda/evil-traces
@@ -171,10 +168,10 @@
 	url = https://github.com/noctuid/general.el
 [submodule "git-modes"]
 	path = lib/git-modes
-	url = git@github.com:magit/git-modes.git
+	url = https://github.com/magit/git-modes.git
 [submodule "git-timemachine"]
 	path = lib/git-timemachine
-	url = git@github.com:emacsmirror/git-timemachine.git
+	url = https://github.com/emacsmirror/git-timemachine.git
 [submodule "google-translate"]
 	path = lib/google-translate
 	url = https://github.com/atykhonov/google-translate
@@ -202,7 +199,7 @@
 [submodule "magit"]
 	no-byte-compile = lisp/magit-libgit.el
 	path = lib/magit
-	url = git@github.com:magit/magit.git
+	url = https://github.com/magit/magit.git
 [submodule "magit-todos"]
 	path = lib/magit-todos
 	url = https://github.com/alphapapa/magit-todos
@@ -226,7 +223,7 @@
 	url = https://github.com/oantolin/orderless
 [submodule "org-contrib"]
 	path = lib/org-contrib
-	url = git@github.com:emacsmirror/org-contrib.git
+	url = https://github.com/emacsmirror/org-contrib.git
 [submodule "org-download"]
 	path = lib/org-download
 	url = https://github.com/abo-abo/org-download
@@ -265,7 +262,7 @@
 	url = https://github.com/Fanael/rainbow-delimiters
 [submodule "rainbow-mode"]
 	path = lib/rainbow-mode
-	url = git@github.com:emacsmirror/rainbow-mode.git
+	url = https://github.com/emacsmirror/rainbow-mode.git
 [submodule "rime"]
 	path = lib/rime
 	url = https://github.com/DogLooksGood/emacs-rime
@@ -290,7 +287,7 @@
 [submodule "sqlite3"]
 	build-step = make
 	path = lib/sqlite3
-	url = git@github.com:pekingduck/emacs-sqlite3-api.git
+	url = https://github.com/pekingduck/emacs-sqlite3-api.git
 [submodule "super-save"]
 	path = lib/super-save
 	url = https://github.com/bbatsov/super-save
@@ -305,10 +302,10 @@
 	url = https://github.com/minad/tempel
 [submodule "transient"]
 	path = lib/transient
-	url = git@github.com:magit/transient.git
+	url = https://github.com/magit/transient.git
 [submodule "treepy"]
 	path = lib/treepy
-	url = git@github.com:volrath/treepy.el.git
+	url = https://github.com/volrath/treepy.el.git
 [submodule "unicode-escape"]
 	path = lib/unicode-escape
 	url = https://github.com/kosh04/unicode-escape.el
@@ -343,7 +340,7 @@
 	url = https://github.com/justbur/emacs-which-key
 [submodule "with-editor"]
 	path = lib/with-editor
-	url = git@github.com:magit/with-editor.git
+	url = https://github.com/magit/with-editor.git
 [submodule "yasnippet"]
 	path = lib/yasnippet
 	url = https://github.com/joaotavora/yasnippet

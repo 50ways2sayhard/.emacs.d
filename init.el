@@ -107,7 +107,7 @@
       (lld-collect-autoloads file))))
 
 (use-package borg
-  :commands (borg-assimilate borg-insert-update-message))
+  :commands (borg-assimilate borg-insert-update-message borg-remove))
 
 (push (expand-file-name "site-lisp" user-emacs-directory) load-path)
 
@@ -760,9 +760,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -908,16 +908,6 @@ window that already exists in that direction. It will split otherwise."
                             minibuffer-completion-predicate)
      (error (message (error-message-string err)) nil))
    setting))
-
-
-;;;###autoload
-(defun open-in-external-app ()
-  "TODO: only for macos now."
-  (interactive)
-  (let ((candidate (vertico--candidate)))
-    (when (eq (+complete--get-meta 'category) 'file)
-      (shell-command (concat "open " candidate))
-      (abort-recursive-edit))))
 
 
 ;;;###autoload
@@ -1070,8 +1060,6 @@ window that already exists in that direction. It will split otherwise."
   :hook (LaTeX-mode . embrace-LaTeX-mode-hook)
   :hook (org-mode . embrace-org-mode-hook)
   :hook (emacs-lisp-mode . embrace-emacs-lisp-mode-hook)
-  :hook ((c++-mode rustic-mode csharp-mode java-mode swift-mode typescript-mode)
-         . +evil-embrace-angle-bracket-modes-hook-h)
   :config
 ;;;###autoload
   (defun +evil--embrace-get-pair (char)
@@ -1114,9 +1102,6 @@ window that already exists in that direction. It will split otherwise."
 
   (setq evil-embrace-show-help-p nil)
 
-  (with-eval-after-load 'evil-surround
-    (evil-embrace-enable-evil-surround-integration))
-
   (defun +evil-embrace-latex-mode-hook-h ()
     (embrace-add-pair-regexp ?l "\\[a-z]+{\" \"}" #'+evil--embrace-latex))
 
@@ -1129,14 +1114,6 @@ window that already exists in that direction. It will split otherwise."
                     :left-regexp "([^ ]+ \"
                                    :right-regexp \")"))
           embrace--pairs-list))
-
-
-
-  (defun +evil-embrace-angle-bracket-modes-hook-h ()
-    (let ((var (make-local-variable 'evil-embrace-evil-surround-keys)))
-      (set var (delq ?< evil-embrace-evil-surround-keys))
-      (set var (delq ?> evil-embrace-evil-surround-keys)))
-    (embrace-add-pair ?> "<" ">"))
 
   ;; Add escaped-sequence support to embrace
   (setf (alist-get ?\\ (default-value 'embrace--pairs-list))
@@ -1165,14 +1142,6 @@ window that already exists in that direction. It will split otherwise."
   :config
   (evil-snipe-mode +1)
   (evil-snipe-override-mode +1))
-
-(use-package evil-surround
-  :after evil
-  :commands (global-evil-surround-mode
-             evil-surround-edit
-             evil-Surround-edit
-             evil-surround-region)
-  :config (global-evil-surround-mode 1))
 
 (use-package evil-traces
   :after evil-ex
@@ -1466,7 +1435,10 @@ window that already exists in that direction. It will split otherwise."
    ("d" . +my-delete-file)
    :map embark-region-map
    ("/" . evilnc-comment-or-uncomment-lines)
-   ("=" . er/expand-region))
+   ("=" . er/expand-region)
+   (";" . embrace-commander)
+   :map embark-identifier-map
+   (";" . embrace-commander))
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
@@ -1543,9 +1515,6 @@ targets."
 ;;;; Minibuffer completion UI
 (use-package vertico
   :hook (+my/first-input . vertico-mode)
-  :bind
-  (:map vertico-map
-        ("C-<return>" . open-in-external-app))
   :custom
   (vertico-cycle nil)
   (vertico-preselect 'first)
@@ -2626,7 +2595,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
+(defvar font-list '(("Iosevka SS17" . 16) ("Cascadia Code" . 15) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -3001,21 +2970,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3310,10 +3279,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                                   +org-capture-file-done
-                                                                   +org-capture-file-someday
-                                                                   +org-capture-file-note
-                                                                   +org-capture-file-routine)))
+                                                              +org-capture-file-done
+                                                              +org-capture-file-someday
+                                                              +org-capture-file-note
+                                                              +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
