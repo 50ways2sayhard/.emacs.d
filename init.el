@@ -152,7 +152,6 @@ REST and STATE."
 (defalias 'use-package-normalize/:after-call #'use-package-normalize-symlist)
 
 (use-package epkg
-  :defer t
   :commands (epkg-describe-package epkg-update)
   :init
   (setq epkg-repository
@@ -165,7 +164,6 @@ REST and STATE."
   (setq use-package-verbose t))
 
 (use-package dash
-  :defer t
   :config (global-dash-fontify-mode))
 (use-package eieio)
 
@@ -190,7 +188,6 @@ REST and STATE."
 
 ;;; Diff
 (use-package diff-hl
-  :defer t
   :bind (:map diff-hl-command-map
               ("SPC" . diff-hl-mark-hunk))
   :hook ((find-file . diff-hl-mode)
@@ -210,7 +207,6 @@ REST and STATE."
   (setq diff-hl-draw-borders nil))
 
 (use-package diff-mode
-  :defer t
   :config
   (when (>= emacs-major-version 27)
     (set-face-attribute 'diff-refine-changed nil :extend t)
@@ -219,7 +215,6 @@ REST and STATE."
 
 ;;; Dired and Dirvish file browser
 (use-package dired
-  :defer t
   :custom
   ;; Always delete and copy recursively
   (dired-recursive-deletes 'always)
@@ -334,12 +329,12 @@ REST and STATE."
 
 ;;; Documentation in echo area
 (use-package eldoc
-  :defer t
+
   :commands (eldoc)
   :config (global-eldoc-mode))
 
 (use-package help
-  :defer t
+
   :config (temp-buffer-resize-mode))
 
 ;;; Isearch
@@ -348,7 +343,6 @@ REST and STATE."
 
 ;;; Version controll
 (use-package magit
-  :defer t
   :bind ("C-x g" . magit-status)
   :commands (magit-open-repo magit-add-section-hook)
   :config
@@ -645,7 +639,6 @@ window that already exists in that direction. It will split otherwise."
                                  (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
-  :defer t
   :hook ((prog-mode markdown-mode org-mode) . puni-mode)
   :init
   (general-def
@@ -899,17 +892,6 @@ window that already exists in that direction. It will split otherwise."
     (end-of-line)
     (newline-and-indent)))
 
-(defun +complete--get-meta (setting)
-  "Get metadata SETTING from completion table."
-  (completion-metadata-get
-   (condition-case-unless-debug err
-       (completion-metadata (minibuffer-contents)
-                            minibuffer-completion-table
-                            minibuffer-completion-predicate)
-     (error (message (error-message-string err)) nil))
-   setting))
-
-
 ;;;###autoload
 (defun hexcolour-luminance (color)
   "Calculate the luminance of a color string (e.g. \"#ffaa00\", \"blue\").
@@ -944,17 +926,6 @@ window that already exists in that direction. It will split otherwise."
                                                     (region-end))
                   (thing-at-point 'symbol))))
   (browse-url (concat "https://www.google.com/search?q=" word)))
-
-(defun complete-path-at-point+ ()
-  (let ((fn (ffap-file-at-point))
-        (fap (thing-at-point 'filename)))
-    (when (and (or fn
-                   (equal "/" fap))
-               (save-excursion
-                 (search-backward fap (line-beginning-position) t)))
-      (list (match-beginning 0)
-            (match-end 0)
-            #'completion-file-name-table))))
 
 ;;; Evil
 (use-package evil
@@ -1353,10 +1324,6 @@ window that already exists in that direction. It will split otherwise."
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
     "wH" '(split-window-horizontally :wk "Split window horizontally")
-    "wj" '(evil-window-down :wk "Focus window down")
-    "wk" '(evil-window-up :wk "Focus window up")
-    "wh" '(evil-window-left :wk "Focus window left")
-    "wl" '(evil-window-right :wk "Focus window right")
     "wu" '(winner-undo :wk "Undo window")
     "wo" '(winner-redo :wk "Redo window")
 
@@ -1576,8 +1543,7 @@ targets."
     :config
     (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
     (with-eval-after-load 'general
-      (general-def "C-c r" 'vertico-repeat)
-      ))
+      (general-def "C-c r" 'vertico-repeat)))
   (use-package vertico-directory
     :after vertico
     ;; More convenient directory navigation commands
@@ -1586,8 +1552,7 @@ targets."
                 ("DEL" . vertico-directory-delete-char)
                 ("M-DEL" . vertico-directory-delete-word)
                 ("C-w" . vertico-directory-up))
-    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)
-    ))
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)))
 
 (use-package emacs
   :init
@@ -2211,8 +2176,7 @@ function to the relevant margin-formatters list."
 	          (if-let ((kind (funcall kind-func cand)))
 	              (kind-all-the-icons-formatted kind)
 	            (kind-all-the-icons-formatted t))))) ;; as a backup
-    (add-to-list 'corfu-margin-formatters #'kind-all-the-icons-margin-formatter)
-    )
+    (add-to-list 'corfu-margin-formatters #'kind-all-the-icons-margin-formatter))
 
   ;; allow evil-repeat
   ;; https://github.com/minad/corfu/pull/225
@@ -2348,7 +2312,6 @@ function to the relevant margin-formatters list."
 
 ;;; Utils
 (use-package gcmh
-  :defer t
   :hook (emacs-startup . gcmh-mode)
   :diminish
   :init
@@ -2382,7 +2345,6 @@ function to the relevant margin-formatters list."
   (add-hook 'text-mode-hook 'indicate-buffer-boundaries-left))
 
 (use-package tramp
-  :defer t
   :config
   (add-to-list 'tramp-default-proxies-alist '(nil "\\`root\\'" "/ssh:%h:"))
   (add-to-list 'tramp-default-proxies-alist '("localhost" nil nil))
@@ -2394,7 +2356,6 @@ function to the relevant margin-formatters list."
                 tramp-file-name-regexp)))
 
 (use-package tramp-sh
-  :defer t
   :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
 
 (use-package pinyinlib
@@ -2424,7 +2385,6 @@ function to the relevant margin-formatters list."
 
 (use-package vundo
   :commands vundo
-  :defer t
   :config
   (setf (alist-get 'selected-node vundo-glyph-alist) ?X
         (alist-get 'node vundo-glyph-alist) ?O))
@@ -2442,7 +2402,6 @@ function to the relevant margin-formatters list."
 ;; -SaveAllBuffers
 
 (use-package project
-  :defer t
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
@@ -2474,7 +2433,6 @@ function to the relevant margin-formatters list."
                                       "*esh command on file*")))
 
 (use-package popper
-  :defer t
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
               ("C-h z" . popper-toggle-latest)
@@ -2639,14 +2597,12 @@ function to the relevant margin-formatters list."
 
 ;;; Highlight
 (use-package hl-line
-  :defer t
   :custom-face (hl-line ((t (:extend t))))
   :hook ((after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
 
 ;; Colorize color names in buffers
 (use-package rainbow-mode
-  :defer t
   :diminish
   :bind (:map help-mode-map
               ("w" . rainbow-mode))
@@ -2743,7 +2699,6 @@ function to the relevant margin-formatters list."
                  goto-last-change))
     (advice-add cmd :after #'my-recenter-and-pulse)))
 
-
 (use-package symbol-overlay
   :functions (turn-off-symbol-overlay turn-on-symbol-overlay)
   :custom-face (symbol-overlay-default-face ((t (:inherit (region bold)))))
@@ -2777,7 +2732,6 @@ function to the relevant margin-formatters list."
   (advice-add #'deactivate-mark :after #'turn-on-symbol-overlay))
 ;;; Syntax checker
 (use-package flymake
-  :defer t
   :after-call +my/first-input-hook-fun
   :hook (emacs-lisp-mode . flymake-mode)
   :config
@@ -2806,7 +2760,6 @@ function to the relevant margin-formatters list."
   (setq format-all-show-errors 'never))
 
 (use-package delete-block
-  :defer
   :commands (delete-block-for delete-bl-backward)
   :bind
   (("M-d" . delete-block-forward)
@@ -2827,7 +2780,6 @@ function to the relevant margin-formatters list."
 ;;;; Input method
 (use-package rime
   :after-call +my/first-input-hook-fun
-  :defer t
   :custom
   (default-input-method "rime")
   (rime-show-candidate 'posframe)
@@ -2871,7 +2823,6 @@ function to the relevant margin-formatters list."
 
 ;;; Programing
 (use-package prog-mode
-  :defer t
   :config (global-prettify-symbols-mode)
   (defun indicate-buffer-boundaries-left ()
     (setq indicate-buffer-boundaries 'left))
@@ -3004,7 +2955,6 @@ function to the relevant margin-formatters list."
 ;;;; Builtin tree sitter
 (use-package treesit
   :if (and (fboundp 'treesit-available-p) (treesit-available-p))
-  :defer t
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :init
   (setq treesit-language-source-alist
@@ -3094,11 +3044,9 @@ Install the doc if it's not installed."
   :hook ((xref-after-return xref-after-jump) . recenter))
 
 (use-package markdown-mode
-  :defer t
   :mode ("\\.md\\'" . markdown-mode))
 
 (use-package python
-  :defer t
   :mode ("\\.py\\'" . python-mode)
   :hook (python-mode . (lambda ()
                          (process-query-on-exit-flag
@@ -3114,17 +3062,14 @@ Install the doc if it's not installed."
                                 (setq-local tab-width 4)))
 
   (use-package pyvenv
-    :after python
-    :defer t)
+    :after python)
 
   (use-package py-isort
     :after python
-    :defer t
     :hook (python-mode . (lambda ()
                            (add-hook 'before-save-hook #'py-isort-before-save)))))
 
 (use-package web-mode
-  :defer t
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
    "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.[t]?html?\\'" "\\.wxml\\'")
@@ -3179,7 +3124,6 @@ Install the doc if it's not installed."
 
 ;; EmmetPac
 (use-package emmet-mode
-  :defer t
   :hook (web-mode css-mode scss-mode sgml-mode rjsx-mode)
   ;; :bind (:map web-mode-map
   ;;             ("C-j" . emmet-expand-yas))
@@ -3341,7 +3285,6 @@ Install the doc if it's not installed."
 (use-package org
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda)
-  :defer t
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
          (org-mode . (lambda ()
@@ -3666,7 +3609,6 @@ Install the doc if it's not installed."
 ;; OrgDownload
 (use-package org-download
   :after org
-  :defer t
   :commands (org-download-clipboard org-download-delete org-download-image org-download-yank org-download-edit org-download-rename-at-point org-download-rename-last-file org-download-screenshot)
   :custom
   (org-download-image-dir "img/")
@@ -3677,22 +3619,18 @@ Install the doc if it's not installed."
 ;; -OrgDownload
 
 (use-package org-contrib
-  :defer t
   :after org)
 
 (use-package valign
   :after org
-  :defer t
   :bind (([remap org-table-align] . valign-table))
   :hook (org-mode . valign-mode)
   )
 
 (use-package electric-spacing
-  :defer t
   :after org)
 
 (use-package separate-inline
-  :defer t
   :after org
   :hook ((org-mode-hook . separate-inline-mode)
          (org-mode-hook
@@ -3703,7 +3641,6 @@ Install the doc if it's not installed."
                       nil 'make-it-local)))))
 
 (use-package org-modern
-  :defer t
   :after org
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda))
