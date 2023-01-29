@@ -75,12 +75,6 @@
 [submodule "diff-hl"]
 	path = lib/diff-hl
 	url = https://github.com/dgutov/diff-hl.git
-[submodule "dired-git-info"]
-	path = lib/dired-git-info
-	url = https://github.com/clemera/dired-git-info
-[submodule "diredfl"]
-	path = lib/diredfl
-	url = https://github.com/purcell/diredfl
 [submodule "direx"]
 	path = lib/direx
 	url = https://github.com/emacsorphanage/direx
@@ -157,9 +151,6 @@
 [submodule "f"]
 	path = lib/f
 	url = https://github.com/rejeep/f.el
-[submodule "fd-dired"]
-	path = lib/fd-dired
-	url = https://github.com/yqrashawn/fd-dired
 [submodule "format-all"]
 	path = lib/format-all
 	url = https://github.com/lassik/emacs-format-all-the-code
