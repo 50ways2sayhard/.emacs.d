@@ -344,7 +344,7 @@ REST and STATE."
 ;;; Version controll
 (use-package magit
   :bind ("C-x g" . magit-status)
-  :commands (magit-open-repo magit-add-section-hook)
+  :commands (magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -369,15 +369,15 @@ REST and STATE."
       (save-buffer))
     (magit-stage-modified)
     (magit-diff-staged)
-    (setq msg (read-string "Commit Message: "))
-    (when (length= msg 0)
-      (setq msg (format-time-string "commit by magit in emacs@%Y-%m-%d %H:%M:%S"
-                                    (current-time))))
-    (magit-call-git "commit" "-m" msg)
-    (when (magit-get "remote" "origin" "url")
-      (magit-push-current-to-upstream nil)
-      (message "now do async push to %s" (magit-get "remote" "origin" "url")))
-    (magit-mode-bury-buffer))
+    (let ((msg (read-string "Commit Message: ")))
+      (when (length= msg 0)
+        (setq msg (format-time-string "commit by magit in emacs@%Y-%m-%d %H:%M:%S"
+                                      (current-time))))
+      (magit-call-git "commit" "-m" msg)
+      (when (magit-get "remote" "origin" "url")
+        (magit-push-current-to-upstream nil)
+        (message "now do async push to %s" (magit-get "remote" "origin" "url")))
+      (magit-mode-bury-buffer)))
 
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-modules
@@ -729,7 +729,6 @@ window that already exists in that direction. It will split otherwise."
 
 ;;; Global configuration
 (progn
-
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
   (set-language-environment "UTF-8")
@@ -769,8 +768,6 @@ window that already exists in that direction. It will split otherwise."
   (setq compilation-always-kill t
         compilation-ask-about-save nil
         compilation-scroll-output t)
-
-
 
   (windmove-default-keybindings 'meta)
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -1297,7 +1294,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
     "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-    "ty" '(my-youdao-search-at-point :wk "youdao")
+    "ty" '(multi-translate-at-point :wk "youdao")
 
     "w" '(:wk "Window")
     "wv" '(split-window-vertically :wk "Split window vertically")
@@ -2257,6 +2254,7 @@ function to the relevant margin-formatters list."
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
+  (setq cape-dabbrev-check-other-buffers nil)
 
   (defun my/convert-super-capf (arg-capf)
     (list
@@ -2294,6 +2292,7 @@ function to the relevant margin-formatters list."
   (setq gcmh-idle-delay 'auto
         gcmh-auto-idle-delay-factor 10
         gcmh-high-cons-threshold (* 64 1024 1024)))
+
 (use-package recentf
   :demand t
   :config
