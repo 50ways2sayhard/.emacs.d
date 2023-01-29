@@ -1374,7 +1374,8 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("=" . er/expand-region)
    (";" . embrace-commander)
    :map embark-identifier-map
-   (";" . embrace-commander))
+   (";" . embrace-commander)
+   ("D" . xref-find-definitions-other-window))
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
@@ -1818,7 +1819,19 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package consult-project-extra
   :commands (consult-project-extra-find)
-  :after consult)
+  :after consult
+  :config
+  (defun consult-project-extra--find-with-concat-root (candidate)
+    "Find-file concatenating root with CANDIDATE."
+    (find-file candidate))
+
+  (defun consult-project-extra--project-files (root)
+    "Compute the project files given the ROOT."
+    (let* ((project (consult-project-extra--project-with-root root))
+           (files (project-files project)))
+      (mapcar (lambda (f)
+                (let ((filename (file-relative-name f root)))
+                  (propertize filename 'multi-category `(file . ,f)))) files))))
 
 (use-package orderless
   :after-call +my/first-input-hook-fun
@@ -2895,21 +2908,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3214,10 +3227,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                              +org-capture-file-done
-                                                              +org-capture-file-someday
-                                                              +org-capture-file-note
-                                                              +org-capture-file-routine)))
+                                                                   +org-capture-file-done
+                                                                   +org-capture-file-someday
+                                                                   +org-capture-file-note
+                                                                   +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
