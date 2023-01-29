@@ -142,6 +142,9 @@
 [submodule "evil-snipe"]
 	path = lib/evil-snipe
 	url = https://github.com/hlissner/evil-snipe
+[submodule "evil-surround"]
+	path = lib/evil-surround
+	url = https://github.com/emacs-evil/evil-surround
 [submodule "evil-traces"]
 	path = lib/evil-traces
 	url = https://github.com/mamapanda/evil-traces
