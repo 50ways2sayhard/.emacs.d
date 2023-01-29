@@ -215,6 +215,10 @@ REST and STATE."
 
 ;;; Dired and Dirvish file browser
 (use-package dired
+  :bind
+  (:map dired-mode-map
+        ("j" . dired-next-line)
+        ("k" . dired-previous-line))
   :custom
   ;; Always delete and copy recursively
   (dired-recursive-deletes 'always)
@@ -249,27 +253,10 @@ REST and STATE."
         (mapcar (lambda (ext)
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
-
-(use-package diredfl
-  :after dired
-  :hook (dired-mode . diredfl-mode))
-
-(use-package dired-git-info
-  :after dired
-  :config
-  (evil-define-key 'normal dired-mode-map ")" 'dired-git-info-mode))
-
-(use-package dired-x
-  :after dired
-  :hook (dired-mode . dired-omit-mode)
-  :config
-  (setq dired-omit-files
-        (concat dired-omit-files
-                "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
-
 (use-package dirvish
   :after dired
   :hook ((+my/first-input . dirvish-override-dired-mode)
+         (dirvish-mode . evil-emacs-state)
          (evil-collection-setup . (lambda (&rest _)
                                     (evil-define-key '(normal) dired-mode-map
                                       (kbd "C-c f") 'dirvish-fd
@@ -280,6 +267,7 @@ REST and STATE."
                                       (kbd "M-f") 'dirvish-toggle-fullscreen
                                       "*"   'dirvish-mark-menu
                                       "f"   'dirvish-file-info-menu
+                                      "q"   'dirvish-quit
                                       [remap dired-sort-toggle-or-edit] 'dirvish-quicksort
                                       [remap dired-do-redisplay] 'dirvish-ls-switches-menu
                                       [remap dired-summary] 'dirvish-dispatch
@@ -293,9 +281,10 @@ REST and STATE."
    ("y"   . dirvish-yank-menu)
    ("N"   . dirvish-narrow)
    ("^"   . dirvish-history-last)
-   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("H"   . dirvish-history-jump) ; remapped `describe-mode'
    ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
    ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("q"   . dirvish-quit)
    ("TAB" . dirvish-subtree-toggle)
    ("M-f" . dirvish-history-go-forward)
    ("M-b" . dirvish-history-go-backward)
@@ -310,6 +299,7 @@ REST and STATE."
   (dirvish-mode-line-format ; it's ok to place string inside
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (dirvish-side-follow-buffer-file t)
+  (dirvish-attributes '(all-the-icons file-size vc-state git-msg))
   :config
   (when (boundp 'dirvish-side-follow-mode)
     (dirvish-side-follow-mode t))
@@ -752,9 +742,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -853,7 +843,7 @@ window that already exists in that direction. It will split otherwise."
 
 (defun +my-imenu ()
   "In 'org-mode', call 'consult-outline'.Otherwise call 'consult-imenu'."
-  (interactive "P")
+  (interactive)
   (if (derived-mode-p 'org-mode)
       (consult-outline)
     (consult-imenu)))
@@ -939,7 +929,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
-  (dolist (mode '(color-rg-mode smerge-mode vterm-mode git-timemachine-mode))
+  (dolist (mode '(color-rg-mode smerge-mode vterm-mode git-timemachine-mode dired-mode))
     (add-to-list 'evil-emacs-state-modes mode))
 
   ;; stop copying each visual state move to the clipboard:
@@ -1106,7 +1096,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 ;;; Keybindings
 (use-package general
-  :commands (leader-def local-leader-def)
+  :commands (leader-def local-leader-def general-def)
   :config
   (general-create-definer leader-def
     :states '(normal visual emacs motion)
@@ -1134,7 +1124,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (evil-define-key 'normal 'global
     "j" 'evil-next-visual-line
     "k" 'evil-previous-visual-line
-    ;; "K" 'lsp-ui-doc-glance
     ;; Comment
     "gcc" 'evilnc-comment-or-uncomment-lines
     "gcC" 'evilnc-comment-or-uncomment-to-the-line
@@ -1159,6 +1148,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (general-def "M->" '+lookup-xref-references-backend-fn)
   (general-def "M-y" 'consult-yank-from-kill-ring)
   (general-def "C-0" 'vterm-posframe-toggle)
+  (general-def "C-<mouse-wheel>" nil)
 
   ;; Navigation
   (general-define-key
@@ -2896,21 +2886,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3195,10 +3185,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                              +org-capture-file-done
-                                                              +org-capture-file-someday
-                                                              +org-capture-file-note
-                                                              +org-capture-file-routine)))
+                                                                   +org-capture-file-done
+                                                                   +org-capture-file-someday
+                                                                   +org-capture-file-note
+                                                                   +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
