@@ -270,7 +270,7 @@ REST and STATE."
 (use-package dirvish
   :after dired
   :hook ((+my/first-input . dirvish-override-dired-mode)
-         (evil-collection-setup . (lambda (&rest a)
+         (evil-collection-setup . (lambda (&rest _)
                                     (evil-define-key '(normal) dired-mode-map
                                       (kbd "C-c f") 'dirvish-fd
                                       "i" 'wdired-change-to-wdired-mode
@@ -820,13 +820,11 @@ window that already exists in that direction. It will split otherwise."
   "Check if font with FONT-NAME is available."
   (find-font (font-spec :name font-name)))
 
-;;;###autoload
 (defun +open-configuration-folder ()
   "Open configuration folder."
   (interactive)
   (find-file (concat user-emacs-directory "init.el")))
 
-;;;###autoload
 (defun +my-rename-file()
   "Rename file while using current file as default."
   (interactive)
@@ -840,7 +838,6 @@ window that already exists in that direction. It will split otherwise."
       (kill-buffer)
       (find-file file-to))))
 
-;;;###autoload
 (defun +my/replace (&optional word)
   "Make it eary to use `:%s' to replace WORD."
   (interactive)
@@ -849,7 +846,6 @@ window that already exists in that direction. It will split otherwise."
          )
     (evil-ex (concat "%s/" from "/"))))
 
-;;;###autoload
 (defun +my-delete-file ()
   "Put current buffer file to top."
   (interactive)
@@ -858,22 +854,13 @@ window that already exists in that direction. It will split otherwise."
   (unless (file-exists-p (buffer-file-name))
     (kill-current-buffer)))
 
-;;;###autoload
-(defun +my-imenu (args)
-  "Call 'consult-outline' in 'org-mode' else 'consult-imenu'."
+(defun +my-imenu ()
+  "In 'org-mode', call 'consult-outline'.Otherwise call 'consult-imenu'."
   (interactive "P")
   (if (derived-mode-p 'org-mode)
       (consult-outline)
-    (if (boundp 'lsp-mode)
-        (if (and lsp-mode lsp-enable-imenu (not lsp-use-plists))
-            (consult-lsp-file-symbols args)
-          (consult-imenu))
-      (consult-imenu)
-      )
-    )
-  )
+    (consult-imenu)))
 
-;;;###autoload
 (defun +default/newline-above ()
   "Insert an indented new line before the current one."
   (interactive)
@@ -883,7 +870,6 @@ window that already exists in that direction. It will split otherwise."
     (save-excursion (newline))
     (indent-according-to-mode)))
 
-;;;###autoload
 (defun +default/newline-below ()
   "Insert an indented new line after the current one."
   (interactive)
@@ -892,18 +878,17 @@ window that already exists in that direction. It will split otherwise."
     (end-of-line)
     (newline-and-indent)))
 
-;;;###autoload
 (defun hexcolour-luminance (color)
-  "Calculate the luminance of a color string (e.g. \"#ffaa00\", \"blue\").
-  This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
+  "Calculate the luminance of a COLOR string (e.g. \"#ffaa00\", \"blue\").
+This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (let* ((values (x-color-values color))
          (r (car values))
          (g (cadr values))
          (b (caddr values)))
     (floor (+ (* .3 r) (* .59 g) (* .11 b)) 256)))
 
-;;;###autoload
 (defun hexcolour-add-to-font-lock ()
+  "Add hex color to font lock."
   (interactive)
   (font-lock-add-keywords
    nil
@@ -917,7 +902,6 @@ window that already exists in that direction. It will split otherwise."
                     (:background ,colour)))))))))
 
 
-;;;###autoload
 (defun +my/google-it (&optional word)
   "Google it."
   (interactive (list
@@ -1032,7 +1016,6 @@ window that already exists in that direction. It will split otherwise."
   :hook (org-mode . embrace-org-mode-hook)
   :hook (emacs-lisp-mode . embrace-emacs-lisp-mode-hook)
   :config
-;;;###autoload
   (defun +evil--embrace-get-pair (char)
     (if-let* ((pair (cdr-safe (assoc (string-to-char char) evil-surround-pairs-alist))))
         pair
@@ -1043,7 +1026,6 @@ window that already exists in that direction. It will split otherwise."
             (cons (embrace-pair-struct-left pair) (embrace-pair-struct-right pair)))
         (cons char char))))
 
-;;;###autoload
   (defun +evil--embrace-escaped ()
     "Backslash-escaped surround character support for embrace."
     (let ((char (read-char "\\")))
@@ -1054,22 +1036,18 @@ window that already exists in that direction. It will split otherwise."
           (cons (format text (car pair))
                 (format text (cdr pair)))))))
 
-;;;###autoload
   (defun +evil--embrace-latex ()
     "LaTeX command support for embrace."
     (cons (format "\\%s{" (read-string "\\")) "}"))
 
-;;;###autoload
   (defun +evil--embrace-elisp-fn ()
     "Elisp function support for embrace."
     (cons (format "(%s " (or (read-string "(") "")) ")"))
 
-;;;###autoload
   (defun +evil--embrace-angle-brackets ()
     "Type/generic angle brackets."
     (cons (format "%s<" (or (read-string "") ""))
           ">"))
-
 
   (setq evil-embrace-show-help-p nil)
 
@@ -2290,12 +2268,10 @@ function to the relevant margin-formatters list."
      ;; #'cape-dabbrev
      ))
 
-  ;;;###autoload
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
 
-  ;;;###autoload
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
@@ -2986,7 +2962,7 @@ function to the relevant margin-formatters list."
 
 ;;;; Online document
 (use-package devdocs
-  :commands (devdocs-lookup-at-point devdocs-search-at-point)
+  :commands (devdocs-lookup-at-point devdocs-search-at-point +devdocs-lookup-at-point +devdocs-search-at-point +devdocs-dwim)
   :init
   (defvar devdocs-major-mode-docs-alist
     '((web-mode . ("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))
@@ -2997,17 +2973,14 @@ function to the relevant margin-formatters list."
                  (setq-local devdocs-current-docs (cdr e)))))
    devdocs-major-mode-docs-alist)
   :config
-;;;###autoload
   (defun +devdocs-lookup-at-point()
     (interactive)
     (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
 
-;;;###autoload
   (defun +devdocs-search-at-point()
     (interactive)
     (devdocs-search (thing-at-point 'symbol)))
 
-;;;###autoload
   (defun devdocs-dwim()
     "Look up a DevDocs documentation entry.
 Install the doc if it's not installed."
@@ -3273,7 +3246,6 @@ Install the doc if it's not installed."
   (add-hook 'org-capture-mode-hook #'evil-insert-state)
   )
 
-;;;###autoload
 (defun +org-update-cookies-h ()
   "Update counts in headlines (aka \"cookies\")."
   (when (and buffer-file-name (file-exists-p buffer-file-name))
@@ -3712,6 +3684,6 @@ Install the doc if it's not installed."
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
-;; no-byte-compile: t
+;; no-byte-compile: nil
 ;; End:
 ;;; init.el ends here
