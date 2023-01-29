@@ -324,7 +324,6 @@ REST and STATE."
   :config (global-eldoc-mode))
 
 (use-package help
-
   :config (temp-buffer-resize-mode))
 
 ;;; Isearch
@@ -334,7 +333,7 @@ REST and STATE."
 ;;; Version controll
 (use-package magit
   :bind ("C-x g" . magit-status)
-  :commands (magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
+  :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -929,7 +928,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (setcdr evil-insert-state-map nil)
   (evil-select-search-module 'evil-search-module 'evil-search)
   (put 'evil-define-key* 'lisp-indent-function 'defun)
-  (dolist (mode '(color-rg-mode smerge-mode vterm-mode git-timemachine-mode dired-mode))
+  (dolist (mode '(smerge-mode vterm-mode git-timemachine-mode dired-mode))
     (add-to-list 'evil-emacs-state-modes mode))
 
   ;; stop copying each visual state move to the clipboard:
@@ -1116,9 +1115,16 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (tab-def
     "" nil
     "c" '(tab-new :wk "New")
-    "r" '(tab-bar-rename-tab :wk "Rename")
+    "r" '(tab-bar-switch-to-recent-tab)
+    "R" '(tab-bar-rename-tab :wk "Rename")
     "d" '(tab-bar-close-tab :wk "Close")
-    "s" '(tab-bar-select-tab-by-name :wk "Select"))
+    "s" '(tab-bar-select-tab-by-name :wk "Select")
+    "t" '(+my/smart-switch-to-vterm-tab :wk "Vterm tab")
+    "1" '((lambda () (interactive) (tab-bar-select-tab 1)) :wk "Select 1")
+    "2" '((lambda () (interactive) (tab-bar-select-tab 2)) :wk "Select 2")
+    "3" '((lambda () (interactive) (tab-bar-select-tab 3)) :wk "Select 3")
+    "4" '((lambda () (interactive) (tab-bar-select-tab 4)) :wk "Select 4")
+    "5" '((lambda () (interactive) (tab-bar-select-tab 5)) :wk "Select 5"))
 
   ;; evil mode
   (evil-define-key 'normal 'global
@@ -1243,7 +1249,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
     "o" '(:wk "Open")
     "ot" '(org-todo-list :wk "Org todos")
     "ox" '(org-agenda :wk "Org agenda")
-    "oc" '(cfw:open-org-calendar :wk "Open calendar")
     "oi" '(consult-clock-in :wk "Clock in")
     "oo" '((lambda () (interactive)(org-clock-out)(org-save-all-org-buffers)) :wk "Clock out")
     "od" '(consult-mark-done :wk "Mark done")
@@ -1262,7 +1267,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
     "s" '(:wk "Search")
     "sa" '(consult-org-agenda :wk "Search agenda")
-    ;; "sd" '(+devdocs-lookup-at-point :wk "Devdocs lookup")
     "sd" '(devdocs-dwim :wk "Devdocs lookup")
     "sD" '(+devdocs-search-at-point :wk "Devdocs search")
     "sf" '(locate :wk "Locate file")
@@ -1279,7 +1283,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
     "sg" '(+my/google-it :wk "Google")
 
     "t" '(:wk "Toggle")
-    "te" '(vterm-posframe-toggle :wk "Shell")
+    "te" '(+my/smart-switch-to-vterm-tab :wk "Shell")
     "tt" '(dirvish-side :wk "Tree view")
     "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
     "td" '(toggle-debug-on-error :wk "Toggle debug on error")
@@ -1291,9 +1295,9 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
     "wH" '(split-window-horizontally :wk "Split window horizontally")
     "wu" '(winner-undo :wk "Undo window")
     "wo" '(winner-redo :wk "Redo window")
+    "wK" '(delete-other-windows :wk "Kill other windows")
 
     "x" '(org-capture :wk "Org capture")
-
 
     "=" '(er/expand-region :wk "Expand Region")
     )
@@ -2397,6 +2401,11 @@ function to the relevant margin-formatters list."
                                       "*Ibuffer*"
                                       "*esh command on file*")))
 
+(use-package tab-bar
+  :commands (tab-new tab-bar-rename-tab tab-bar-close-tab tab-bar-select-tab-by-name)
+  :config
+  (setq tab-bar-show nil))
+
 (use-package popper
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
@@ -2886,21 +2895,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3126,13 +3135,15 @@ Install the doc if it's not installed."
 
 ;;; Terminal integration
 (use-package vterm
-  :commands (vterm--internal vterm-posframe-toggle)
+  :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab)
+  :bind
+  (:map vterm-mode-map
+        ("C-x" . #'vterm--self-insert))
   :init
   (setq vterm-always-compile-module t)
-  (setq vterm-shell "/usr/local/bin/fish")
+  (setq vterm-shell "fish")
   (setq vterm-timer-delay 0.001
         process-adaptive-read-buffering nil)
-
   (with-no-warnings
     (defvar vterm-posframe--frame nil)
 
@@ -3174,7 +3185,25 @@ Install the doc if it's not installed."
               (save-excursion (vterm-clear t))
               (setq-local cursor-type 'box))
             ;; Focus the child frame
-            (select-frame-set-input-focus vterm-posframe--frame)))))))
+            (select-frame-set-input-focus vterm-posframe--frame))))))
+  :config
+  (evil-collection-define-key 'insert 'vterm-mode-map
+    (kbd "C-s") 'tab-bar-switch-to-recent-tab)
+  (defun +my/smart-switch-to-vterm-tab ()
+    "Switch to vterm tab if exists, otherwise create a new vterm tab."
+    (interactive)
+    (defvar vterm-buffer-name)
+    (defvar vterm-shell)
+    (let ((vterm-buffer-name "vterm-tab"))
+      (if (get-buffer vterm-buffer-name)
+          (progn
+            (tab-bar-select-tab-by-name "vterm")
+            (switch-to-buffer vterm-buffer-name))
+        (let ((vterm-shell "tmux"))
+          (tab-new)
+          (tab-bar-rename-tab "vterm")
+          (call-interactively #'vterm)
+          (delete-other-windows))))))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
@@ -3185,10 +3214,10 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
 (defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                                   +org-capture-file-done
-                                                                   +org-capture-file-someday
-                                                                   +org-capture-file-note
-                                                                   +org-capture-file-routine)))
+                                                              +org-capture-file-done
+                                                              +org-capture-file-someday
+                                                              +org-capture-file-note
+                                                              +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3673,6 +3702,6 @@ Install the doc if it's not installed."
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
-;; no-byte-compile: nil
+;; no-byte-compile: t
 ;; End:
 ;;; init.el ends here
