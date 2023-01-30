@@ -217,6 +217,7 @@ REST and STATE."
 (use-package dired
   :bind
   (:map dired-mode-map
+        ("'" . +my/quick-look)
         ("j" . dired-next-line)
         ("k" . dired-previous-line))
   :custom
@@ -244,6 +245,7 @@ REST and STATE."
   (with-eval-after-load 'general
     (general-define-key :states '(normal)
                         :keymaps 'dired-mode-map
+                        "'" '+my/quick-look
                         "l" 'dired-find-alternate-file
                         "h"  'dired-up-directory)
     )
@@ -741,9 +743,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -889,13 +891,35 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 
 (defun +my/google-it (&optional word)
-  "Google it."
+  "Google WORD."
   (interactive (list
                 (if (use-region-p)
                     (buffer-substring-no-properties (region-beginning)
                                                     (region-end))
                   (thing-at-point 'symbol))))
   (browse-url (concat "https://www.google.com/search?q=" word)))
+
+(defun +my/open-in-osx-finder ()
+  "Open file in finder."
+  (interactive)
+  (let* ((file (read-file-name "Open:" default-directory buffer-file-name))
+         (file (expand-file-name file))
+         (script (concat
+	                "set thePath to POSIX file \"" file "\"\n"
+	                "tell application \"Finder\"\n"
+	                " set frontmost to true\n"
+	                " reveal thePath \n"
+	                "end tell\n")))
+    (start-process "osascript-getinfo" nil "osascript" "-e" script)))
+
+(defun +my/quick-look (&optional file)
+  "Open FILE with quick look."
+  (interactive
+   (list
+    (if (derived-mode-p 'dired-mode)
+        (car (dired-get-marked-files))
+      (read-file-name "File:" default-directory buffer-file-name))))
+  (call-process-shell-command (concat "qlmanage -p " (expand-file-name file))))
 
 ;;; Evil
 (use-package evil
@@ -1369,6 +1393,8 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("F" . find-file-other-window)
    ("r" . +my-rename-file)
    ("d" . +my-delete-file)
+   ("X" . +my/open-in-osx-finder)
+   ("SPC" . +my/quick-look)
    :map embark-region-map
    ("/" . evilnc-comment-or-uncomment-lines)
    ("=" . er/expand-region)
@@ -3201,7 +3227,8 @@ Install the doc if it's not installed."
             (select-frame-set-input-focus vterm-posframe--frame))))))
   :config
   (evil-collection-define-key 'insert 'vterm-mode-map
-    (kbd "C-s") 'tab-bar-switch-to-recent-tab)
+    (kbd "C-s") 'tab-bar-switch-to-prev-tab
+    (kbd "C-y") 'yank)
   (defun +my/smart-switch-to-vterm-tab ()
     "Switch to vterm tab if exists, otherwise create a new vterm tab."
     (interactive)
@@ -3226,11 +3253,12 @@ Install the doc if it's not installed."
 (defvar +org-capture-file-done (concat +self/org-base-dir "done.org"))
 (defvar +org-capture-file-routine (concat +self/org-base-dir "routine.org"))
 
-(defvar +org-files (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                                   +org-capture-file-done
-                                                                   +org-capture-file-someday
-                                                                   +org-capture-file-note
-                                                                   +org-capture-file-routine)))
+(defvar +org-files
+  (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
