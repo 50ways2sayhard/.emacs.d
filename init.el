@@ -743,9 +743,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -1139,7 +1139,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (tab-def
     "" nil
     "c" '(tab-new :wk "New")
-    "r" '(tab-bar-switch-to-recent-tab)
+    "r" '(tab-bar-switch-to-recent-tab :wk "Recent")
     "R" '(tab-bar-rename-tab :wk "Rename")
     "d" '(tab-bar-close-tab :wk "Close")
     "s" '(tab-bar-select-tab-by-name :wk "Select")
@@ -2441,7 +2441,7 @@ function to the relevant margin-formatters list."
                                       "*esh command on file*")))
 
 (use-package tab-bar
-  :commands (tab-new tab-bar-rename-tab tab-bar-close-tab tab-bar-select-tab-by-name)
+  :commands (tab-new tab-bar-rename-tab tab-bar-close-tab tab-bar-select-tab-by-name tab-bar-switch-to-recent-tab)
   :config
   (setq tab-bar-show nil))
 
@@ -3227,23 +3227,34 @@ Install the doc if it's not installed."
             (select-frame-set-input-focus vterm-posframe--frame))))))
   :config
   (evil-collection-define-key 'insert 'vterm-mode-map
-    (kbd "C-s") 'tab-bar-switch-to-prev-tab
+    (kbd "C-s") 'tab-bar-switch-to-recent-tab
     (kbd "C-y") 'yank)
+  (defvar +my-vterm-tab-buffer-name "vterm-tab")
+  (defvar +my-vterm-tab-name "vterm")
   (defun +my/smart-switch-to-vterm-tab ()
     "Switch to vterm tab if exists, otherwise create a new vterm tab."
     (interactive)
     (defvar vterm-buffer-name)
     (defvar vterm-shell)
-    (let ((vterm-buffer-name "vterm-tab"))
+    (let ((vterm-buffer-name +my-vterm-tab-buffer-name))
       (if (get-buffer vterm-buffer-name)
           (progn
             (tab-bar-select-tab-by-name "vterm")
             (switch-to-buffer vterm-buffer-name))
         (let ((vterm-shell "tmux"))
           (tab-new)
-          (tab-bar-rename-tab "vterm")
+          (tab-bar-rename-tab +my-vterm-tab-name)
           (call-interactively #'vterm)
-          (delete-other-windows))))))
+          (delete-other-windows)))))
+
+  (defun +my/smart-vterm-find-file (filename)
+    (interactive)
+    (if (string= (buffer-name) +my-vterm-tab-buffer-name)
+        (progn
+          (tab-bar-switch-to-recent-tab)
+          (find-file filename))
+      (find-file filename)))
+  (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file)))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
