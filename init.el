@@ -3357,6 +3357,7 @@ Install the doc if it's not installed."
   (org-babel-python-command "python3")
 
   :config
+  (require '+org-helper)
   (defun +my/open-org-agenda ()
     "open org agenda in left window"
     (interactive)
