@@ -1851,13 +1851,20 @@ When the number of characters in a buffer exceeds this threshold,
     "Find-file concatenating root with CANDIDATE."
     (find-file candidate))
 
+  ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
+  (defun consult-project-extra--file (selected-root)
+    "Create a view for selecting project files for the project at SELECTED-ROOT."
+    (let ((project-current-directory-override selected-root))
+      (project-find-file)))
+
   (defun consult-project-extra--project-files (root)
     "Compute the project files given the ROOT."
     (let* ((project (consult-project-extra--project-with-root root))
            (files (project-files project)))
       (mapcar (lambda (f)
-                (let ((filename (file-relative-name f root)))
-                  (propertize filename 'multi-category `(file . ,f)))) files))))
+                (let ((filename (file-relative-name f root))
+                      (abs-filename (expand-file-name f root)))
+                  (propertize filename 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
 
 (use-package orderless
   :after-call +my/first-input-hook-fun
@@ -2566,7 +2573,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Iosevka SS17" . 16) ("Cascadia Code" . 15) ("Maple Mono SC NF" . 14) ("Fira Code" . 15) ("SF Mono" . 15))
+(defvar font-list '(("Iosevka SS17" . 16) ("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
