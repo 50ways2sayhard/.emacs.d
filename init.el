@@ -188,8 +188,7 @@ REST and STATE."
 
 ;;; Diff
 (use-package diff-hl
-  :bind (:map diff-hl-command-map
-              ("SPC" . diff-hl-mark-hunk))
+  :commands (diff-hl-revert-hunk diff-hl-show-hunk)
   :hook ((find-file . diff-hl-mode)
          (vc-dir-mode . diff-hl-dir-mode)
          (dired-mode . diff-hl-dired-mode))
@@ -197,8 +196,7 @@ REST and STATE."
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
 
-  (dolist (hook '(conf-mode-hook prog-mode-hook))
-    (add-hook hook #'diff-hl-update))
+  (add-hook 'after-change-major-mode-hook 'diff-hl-update-once)
 
   ;; Integration with magit
   (with-eval-after-load 'magit
@@ -1152,6 +1150,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
   ;; evil mode
   (evil-define-key 'normal 'global
+    "r" nil
     "j" 'evil-next-visual-line
     "k" 'evil-previous-visual-line
     ;; Comment
@@ -1179,6 +1178,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (general-def "M-y" 'consult-yank-from-kill-ring)
   (general-def "C-0" 'vterm-posframe-toggle)
   (general-def "C-<mouse-wheel>" nil)
+  (general-def "C-M-<mouse-wheel>" nil)
 
   ;; Navigation
   (general-define-key
@@ -1390,12 +1390,12 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("C-h B" . embark-bindings)
    ("C-/" . embark-export)      ;; alternative for `describe-bindings'
    :map embark-file-map
-   ("F" . find-file-other-window)
    ("r" . +my-rename-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
    ("SPC" . +my/quick-look)
    :map embark-region-map
+   ("V" . diff-hl-show-hunk)
    ("/" . evilnc-comment-or-uncomment-lines)
    ("=" . er/expand-region)
    (";" . embrace-commander)
@@ -2773,7 +2773,7 @@ function to the relevant margin-formatters list."
   (setq format-all-show-errors 'never))
 
 (use-package delete-block
-  :commands (delete-block-for delete-bl-backward)
+  :commands (delete-block-backward)
   :bind
   (("M-d" . delete-block-forward)
    ("C-<backspace>" . delete-block-backward)
