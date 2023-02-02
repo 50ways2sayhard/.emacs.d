@@ -206,6 +206,9 @@
 [submodule "markdown-mode"]
 	path = lib/markdown-mode
 	url = https://github.com/jrblevin/markdown-mode
+[submodule "meow"]
+	path = lib/meow
+	url = https://github.com/meow-edit/meow
 [submodule "multi-translate"]
 	path = lib/multi-translate
 	url = https://github.com/twlz0ne/multi-translate.el

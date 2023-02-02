@@ -792,8 +792,7 @@ window that already exists in that direction. It will split otherwise."
   ;; (setq scroll-down-aggressively 0.01)
   (setq fast-but-imprecise-scrolling nil)
   (setq mouse-wheel-progressive-speed t)
-  (global-set-key (kbd "<C-wheel-down>") nil)
-  (global-set-key (kbd "<C-wheel-up>") nil)
+  (mouse-wheel-mode -1)
   (pixel-scroll-precision-mode)
   ;; Horizontal Scroll
   (setq hscroll-step 1)
@@ -1855,7 +1854,7 @@ When the number of characters in a buffer exceeds this threshold,
   (defun consult-project-extra--file (selected-root)
     "Create a view for selecting project files for the project at SELECTED-ROOT."
     (let ((project-current-directory-override selected-root))
-      (project-find-file)))
+      (call-interactively #'project-find-file)))
 
   (defun consult-project-extra--project-files (root)
     "Compute the project files given the ROOT."
@@ -2941,21 +2940,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3273,10 +3272,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
