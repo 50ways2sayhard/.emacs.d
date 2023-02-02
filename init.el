@@ -240,13 +240,13 @@ REST and STATE."
   ;; Reuse same dired buffer, to prevent numerous buffers while navigating in dired
   (put 'dired-find-alternate-file 'disabled nil)
 
-  (with-eval-after-load 'general
-    (general-define-key :states '(normal)
-                        :keymaps 'dired-mode-map
-                        "'" '+my/quick-look
-                        "l" 'dired-find-alternate-file
-                        "h"  'dired-up-directory)
-    )
+  ;; (with-eval-after-load 'general
+  ;;   (general-define-key :states '(normal)
+  ;;                       :keymaps 'dired-mode-map
+  ;;                       "'" '+my/quick-look
+  ;;                       "l" 'dired-find-alternate-file
+  ;;                       "h"  'dired-up-directory)
+  ;;   )
   (setq insert-directory-program "gls" dired-use-ls-dired t)
   (setq dired-listing-switches "-al --group-directories-first")
   (setq dired-open-extensions
@@ -255,45 +255,27 @@ REST and STATE."
 
 (use-package dirvish
   :after dired
-  :hook ((+my/first-input . dirvish-override-dired-mode)
-         (dirvish-mode . evil-emacs-state)
-         (evil-collection-setup . (lambda (&rest _)
-                                    (evil-define-key '(normal) dired-mode-map
-                                      (kbd "C-c f") 'dirvish-fd
-                                      "i" 'wdired-change-to-wdired-mode
-                                      "." 'dired-omit-mode
-                                      (kbd "TAB") 'dirvish-subtree-toggle
-                                      (kbd "M-s") 'dirvish-setup-menu
-                                      (kbd "M-f") 'dirvish-toggle-fullscreen
-                                      "*"   'dirvish-mark-menu
-                                      "f"   'dirvish-file-info-menu
-                                      "q"   'dirvish-quit
-                                      [remap dired-sort-toggle-or-edit] 'dirvish-quicksort
-                                      [remap dired-do-redisplay] 'dirvish-ls-switches-menu
-                                      [remap dired-summary] 'dirvish-dispatch
-                                      [remap dired-do-copy] 'dirvish-yank-menu
-                                      [remap mode-line-other-buffer] 'dirvish-history-last))))
-  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-  (("C-c f" . dirvish-fd)
-   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-   ("a"   . dirvish-quick-access)
-   ("f"   . dirvish-file-info-menu)
-   ("y"   . dirvish-yank-menu)
-   ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
-   ("H"   . dirvish-history-jump) ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-   ("q"   . dirvish-quit)
-   ("TAB" . dirvish-subtree-toggle)
-   ("M-f" . dirvish-history-go-forward)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-t" . dirvish-layout-toggle)
-   ("M-s" . dirvish-setup-menu)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-j" . dirvish-fd-jump))
+  :hook ((+my/first-input . dirvish-override-dired-mode))
+  :bind
+  (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+        ("a"   . dirvish-quick-access)
+        ("f"   . dirvish-file-info-menu)
+        ("y"   . dirvish-yank-menu)
+        ("N"   . dirvish-narrow)
+        ("^"   . dirvish-history-last)
+        ("H"   . dirvish-history-jump) ; remapped `describe-mode'
+        ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+        ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+        ("q"   . dirvish-quit)
+        ("TAB" . dirvish-subtree-toggle)
+        ("M-f" . dirvish-history-go-forward)
+        ("M-b" . dirvish-history-go-backward)
+        ("M-l" . dirvish-ls-switches-menu)
+        ("M-m" . dirvish-mark-menu)
+        ("M-t" . dirvish-layout-toggle)
+        ("M-s" . dirvish-setup-menu)
+        ("M-e" . dirvish-emerge-menu)
+        ("M-j" . dirvish-fd-jump))
   :custom
   (dirvish-attributes '(all-the-icons file-size))
   (dirvish-mode-line-format ; it's ok to place string inside
@@ -533,8 +515,7 @@ window that already exists in that direction. It will split otherwise."
          (candidates (mapcar (lambda (cell)
                                (cons (format "%s — %s" (cdr cell) (car cell)) (concat (cdr cell) " ")))
                              choices)))
-    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))
-    (evil-insert-state)))
+    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))))
 
 (use-package magit-todos
   :after magit)
@@ -573,20 +554,20 @@ window that already exists in that direction. It will split otherwise."
      ["Other"
       ("C" "Combine" smerge-combine-with-next)
       ("r" "Resolve" smerge-resolve) ("x" "Kill current" smerge-kill-current)]])
-  (define-key (plist-get smerge-text-properties 'keymap)
-              (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
-  (evil-define-motion evil-forward-conflict (count)
-    "Move the cursor to the beginning of the COUNT-th next conflict."
-    :jump t
-    (require 'smerge-mode)
-    (smerge-next count)
-    (unless smerge-mode (smerge-mode)))
-  (evil-define-motion evil-backward-conflict (count)
-    "Move the cursor to the beginning of the COUNT-th previous conflict."
-    :jump t :type inclusive
-    (require 'smerge-mode)
-    (smerge-prev count)
-    (unless smerge-mode (smerge-mode)))
+  ;; (define-key (plist-get smerge-text-properties 'keymap)
+  ;;             (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
+  ;; (evil-define-motion evil-forward-conflict (count)
+  ;;   "Move the cursor to the beginning of the COUNT-th next conflict."
+  ;;   :jump t
+  ;;   (require 'smerge-mode)
+  ;;   (smerge-next count)
+  ;;   (unless smerge-mode (smerge-mode)))
+  ;; (evil-define-motion evil-backward-conflict (count)
+  ;;   "Move the cursor to the beginning of the COUNT-th previous conflict."
+  ;;   :jump t :type inclusive
+  ;;   (require 'smerge-mode)
+  ;;   (smerge-prev count)
+  ;;   (unless smerge-mode (smerge-mode)))
   )
 
 (use-package git-timemachine
@@ -629,19 +610,17 @@ window that already exists in that direction. It will split otherwise."
 
 (use-package puni
   :hook ((prog-mode markdown-mode org-mode) . puni-mode)
+  :bind
+  (:map puni-mode-map
+        ("DEL" . puni-backward-delete-char)
+        ("C-d" . puni-forward-delete-char)
+        ("C-k" . puni-kill-line)
+        ("M-h" . puni-force-delete)
+        ("C-M-f" . puni-forward-sexp)
+        ("C-M-b" . puni-backward-sexp)
+        ("C-M-a" . puni-beginning-of-sexp)
+        ("C-M-e" . puni-end-of-sexp))
   :init
-  (general-def
-    :keymaps 'puni-mode-map
-    "DEL" 'puni-backward-delete-char
-    "C-d" 'puni-forward-delete-char
-    "C-k" 'puni-kill-line
-    "M-h" 'puni-force-delete
-    "C-u" 'puni-backward-kill-line
-    "C-M-f" 'puni-forward-sexp
-    "C-M-b" 'puni-backward-sexp
-    "C-M-a" 'puni-beginning-of-sexp
-    "C-M-e" 'puni-end-of-sexp
-    "s-<backspace>" 'puni-force-delete)
   :config
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
@@ -652,7 +631,6 @@ window that already exists in that direction. It will split otherwise."
         show-paren-context-when-offscreen 'overlay
         show-paren-when-point-in-periphery t
         show-paren-when-point-inside-paren t))
-
 
 ;;; After initialization
 (progn ;     startup
@@ -741,9 +719,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -919,253 +897,55 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (call-process-shell-command (concat "qlmanage -p " (expand-file-name file))))
 
 ;;; Evil
-(use-package evil
-  :hook (after-init . evil-mode)
-  :demand t
-  :preface
-  (setq evil-want-visual-char-semi-exclusive t
-        evil-ex-search-vim-style-regexp t
-        evil-ex-substitute-global t
-        evil-ex-visual-char-range t  ; column range for ex commands
-        evil-mode-line-format nil
-        ;; more vim-like behavior
-        evil-symbol-word-search t
-        ;; cursor appearance
-        evil-normal-state-cursor 'box
-        evil-insert-state-cursor 'bar
-        evil-visual-state-cursor 'hollow
-        evil-want-keybinding nil
-        ;; Only do highlighting in selected window so that Emacs has less work
-        ;; to do highlighting them all.
-        evil-ex-interactive-search-highlight 'selected-window
-        evil-split-window-below t
-        evil-vsplit-window-right t
-        evil-undo-system 'undo-redo
-        evil-want-C-w-delete nil
-        evil-want-fine-undo t
-        )
-
-  :config
-  (setcdr evil-insert-state-map nil)
-  (evil-select-search-module 'evil-search-module 'evil-search)
-  (put 'evil-define-key* 'lisp-indent-function 'defun)
-  (dolist (mode '(smerge-mode vterm-mode git-timemachine-mode dired-mode))
-    (add-to-list 'evil-emacs-state-modes mode))
-
-  ;; stop copying each visual state move to the clipboard:
-  ;; https://bitbucket.org/lyro/evil/issue/336/osx-visual-state-copies-the-region-on
-  ;; grokked from:
-  ;; http://stackoverflow.com/questions/15873346/elisp-rename-macro
-  (advice-add #'evil-visual-update-x-selection :override #'ignore)
-
-  ;; Start help-with-tutorial in emacs state
-  (advice-add #'help-with-tutorial :after (lambda (&rest _) (evil-emacs-state +1)))
-
-  ;; Allows you to click buttons without initiating a selection
-  (define-key evil-motion-state-map [down-mouse-1] nil)
-
-  (with-eval-after-load 'general
-    (general-define-key :keymaps 'evil-window-map
-                        "C-h" 'evil-window-left
-                        "C-j" 'evil-window-down
-                        "C-k" 'evil-window-up
-                        "C-l" 'evil-window-right)
-    )
-
-  (add-hook 'after-change-major-mode-hook #'(lambda ()
-                                              (when (or (derived-mode-p 'fundamental-mode)
-                                                        (derived-mode-p 'text-mode)
-                                                        (derived-mode-p 'snippet-mode))
-                                                (setq-local evil-auto-indent nil))))
-
-  )
-
-(use-package evil-collection
-  :defer nil
-  :after evil
-  :init
-  (setq evil-want-keybinding nil)
-  :config
-  (require 'evil-collection)
-  (delete 'corfu evil-collection-mode-list)
-  (evil-collection-init))
-
-(use-package evil-escape
-  :after evil
-  :commands  (evil-escape-pre-command-hook evil-escape)
-  :hook (+my/first-input-hook . evil-escape-mode)
-  :init
-  (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
-        evil-escape-excluded-major-modes '(vterm-mode)
-        evil-escape-key-sequence "jk"
-        evil-escape-delay 0.15)
-  (evil-define-key* '(insert replace visual operator) 'global "\C-g" #'evil-escape)
-  (add-hook 'pre-command-hook 'evil-escape-pre-command-hook)
-  :config
-  ;; no `evil-escape' in minibuffer
-  (add-hook 'evil-escape-inhibit-functions #'minibufferp))
-
-(use-package evil-anzu
-  :after evil
-  :after-call evil-ex-search-next
-  :config
-  (global-anzu-mode)
-  (add-hook 'evil-insert-state-entry-hook #'evil-ex-nohighlight))
-
-(use-package evil-indent-plus
-  :after evil
-  :hook (+my/first-input . evil-indent-plus-default-bindings))
-
-(use-package evil-embrace
-  :after evil
-  :commands (embrace-add-pair embrace-add-pair-regexp)
-  :hook (LaTeX-mode . embrace-LaTeX-mode-hook)
-  :hook (org-mode . embrace-org-mode-hook)
-  :hook (emacs-lisp-mode . embrace-emacs-lisp-mode-hook)
-  :config
-  (defun +evil--embrace-get-pair (char)
-    (if-let* ((pair (cdr-safe (assoc (string-to-char char) evil-surround-pairs-alist))))
-        pair
-      (if-let* ((pair (assoc-default char embrace--pairs-list)))
-          (if-let* ((real-pair (and (functionp (embrace-pair-struct-read-function pair))
-                                    (funcall (embrace-pair-struct-read-function pair)))))
-              real-pair
-            (cons (embrace-pair-struct-left pair) (embrace-pair-struct-right pair)))
-        (cons char char))))
-
-  (defun +evil--embrace-escaped ()
-    "Backslash-escaped surround character support for embrace."
-    (let ((char (read-char "\\")))
-      (if (eq char 27)
-          (cons "" "")
-        (let ((pair (+evil--embrace-get-pair (string char)))
-              (text (if (sp-point-in-string) "\\\\%s" "\\%s")))
-          (cons (format text (car pair))
-                (format text (cdr pair)))))))
-
-  (defun +evil--embrace-latex ()
-    "LaTeX command support for embrace."
-    (cons (format "\\%s{" (read-string "\\")) "}"))
-
-  (defun +evil--embrace-elisp-fn ()
-    "Elisp function support for embrace."
-    (cons (format "(%s " (or (read-string "(") "")) ")"))
-
-  (defun +evil--embrace-angle-brackets ()
-    "Type/generic angle brackets."
-    (cons (format "%s<" (or (read-string "") ""))
-          ">"))
-
-  (setq evil-embrace-show-help-p nil)
-
-  (defun +evil-embrace-latex-mode-hook-h ()
-    (embrace-add-pair-regexp ?l "\\[a-z]+{\" \"}" #'+evil--embrace-latex))
-
-  (defun +evil-embrace-lisp-mode-hook-h ()
-    ;; Avoid `embrace-add-pair-regexp' because it would overwrite the default
-    ;; `f' rule, which we want for other modes
-    (push (cons ?f (make-embrace-pair-struct
-                    :key ?f
-                    :read-function #'+evil--embrace-elisp-fn
-                    :left-regexp "([^ ]+ \"
-                                   :right-regexp \")"))
-          embrace--pairs-list))
-
-  ;; Add escaped-sequence support to embrace
-  (setf (alist-get ?\\ (default-value 'embrace--pairs-list))
-        (make-embrace-pair-struct
-         :key ?\\
-         :left-regexp "\\[[{(]"
-         :right-regexp "\\[]})]")))
-
 (use-package evil-nerd-commenter
   :after evil
   :commands (evilnc-comment-operator
              evilnc-inner-comment
              evilnc-outer-commenter))
 
-(use-package evil-snipe
-  :after evil
-  :commands (evil-snipe-mode
-             evil-snipe-override-mode
-             evil-snipe-local-mode
-             evil-snipe-override-local-mode)
-  :init
-  (setq evil-snipe-smart-case t
-        evil-snipe-scope 'line
-        evil-snipe-repeat-scope 'visible
-        evil-snipe-char-fold t)
+(use-package meow
+  :defer nil
   :config
-  (evil-snipe-mode +1)
-  (evil-snipe-override-mode +1))
-
-(use-package evil-traces
-  :after evil-ex
-  :config
-  (evil-traces-mode))
-
-(use-package evil-visualstar
-  :after evil
-  :commands (evil-visualstar/begin-search
-             evil-visualstar/begin-search-forward
-             evil-visualstar/begin-search-backward)
-  :init
-  (evil-define-key* 'visual 'global
-    "*" #'evil-visualstar/begin-search-forward
-    "#" #'evil-visualstar/begin-search-backward))
+  (require 'meow-config)
+  (meow-setup)
+  (meow-setup-indicator)
+  (meow-global-mode 1))
 
 ;;; Keybindings
 (use-package general
+  :disabled
   :commands (leader-def local-leader-def general-def)
   :config
+  (setq general-keymap-aliases '())
+  (push '(override . general-override-mode-map) general-keymap-aliases)
+  (push '(normal . meow-normal-state-keymap) general-keymap-aliases)
+
   (general-create-definer leader-def
-    :states '(normal visual emacs motion)
     :keymaps 'override
-    :prefix "SPC"
-    )
+    :prefix "C-c")
   (general-create-definer local-leader-def
-    :states '(normal visual emacs motion)
     :keymaps 'override
-    :prefix ",")
+    :prefix "C-c ,")
 
   (general-create-definer tab-def
-    :states '(normal visual emacs motion)
+    :states '(normal)
     :keymaps 'override
     :prefix "C-s")
 
   (tab-def
-    "" nil
-    "c" '(tab-new :wk "New")
-    "r" '(tab-bar-switch-to-recent-tab :wk "Recent")
-    "R" '(tab-bar-rename-tab :wk "Rename")
-    "d" '(tab-bar-close-tab :wk "Close")
-    "s" '(tab-bar-select-tab-by-name :wk "Select")
-    "t" '(+my/smart-switch-to-vterm-tab :wk "Vterm tab")
-    "1" '((lambda () (interactive) (tab-bar-select-tab 1)) :wk "Select 1")
-    "2" '((lambda () (interactive) (tab-bar-select-tab 2)) :wk "Select 2")
-    "3" '((lambda () (interactive) (tab-bar-select-tab 3)) :wk "Select 3")
-    "4" '((lambda () (interactive) (tab-bar-select-tab 4)) :wk "Select 4")
-    "5" '((lambda () (interactive) (tab-bar-select-tab 5)) :wk "Select 5"))
+   "" nil
+   "c" '(tab-new :wk "New")
+   "r" '(tab-bar-switch-to-recent-tab :wk "Recent")
+   "R" '(tab-bar-rename-tab :wk "Rename")
+   "d" '(tab-bar-close-tab :wk "Close")
+   "s" '(tab-bar-select-tab-by-name :wk "Select")
+   "t" '(+my/smart-switch-to-vterm-tab :wk "Vterm tab")
+   "1" '((lambda () (interactive) (tab-bar-select-tab 1)) :wk "Select 1")
+   "2" '((lambda () (interactive) (tab-bar-select-tab 2)) :wk "Select 2")
+   "3" '((lambda () (interactive) (tab-bar-select-tab 3)) :wk "Select 3")
+   "4" '((lambda () (interactive) (tab-bar-select-tab 4)) :wk "Select 4")
+   "5" '((lambda () (interactive) (tab-bar-select-tab 5)) :wk "Select 5"))
 
-  ;; evil mode
-  (evil-define-key 'normal 'global
-    "r" nil
-    "j" 'evil-next-visual-line
-    "k" 'evil-previous-visual-line
-    ;; Comment
-    "gcc" 'evilnc-comment-or-uncomment-lines
-    "gcC" 'evilnc-comment-or-uncomment-to-the-line
-    "gcr" 'comment-or-uncomment-region
-
-    ;; goto
-    "gd" 'xref-find-definitions
-    "gD" 'xref-find-definitions-other-window
-    "gI" 'xref-find-implementations
-
-    "/" 'consult-line-symbol-at-point
-    "'" 'noct-consult-ripgrep-or-line)
-
-  (evil-ex-define-cmd "W" 'evil-write)
   (general-def "<escape>" 'keyboard-quit)
   (general-def "C-;" 'embrace-commander)
   (general-def [C-return] '+default/newline-below)
@@ -1193,185 +973,185 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
   ;; Leader def
   (leader-def
-    :keymaps 'override
-    "<SPC>" '(consult-project-extra-find :wk "Project Find File")
-    ";" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
-    ":" '(execute-extended-command :wk "M-x")
-    "/" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
-    "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
-    "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
-    "." '(noct-consult-ripgrep-or-line :wk "Swiper")
-    "`" '(vertico-repeat-last :wk "Repeat last search")
-    "-" '(vertico-repeat-select :wk "Repeat historical search")
-    "[" '(previous-buffer :wk "Previous buffer")
-    "]" '(next-buffer :wk "Next buffer")
+   :keymaps 'override
+   "<SPC>" '(consult-project-extra-find :wk "Project Find File")
+   ";" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
+   ":" '(execute-extended-command :wk "M-x")
+   "/" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
+   "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
+   "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
+   "." '(noct-consult-ripgrep-or-line :wk "Swiper")
+   "`" '(vertico-repeat-last :wk "Repeat last search")
+   "-" '(vertico-repeat-select :wk "Repeat historical search")
+   "[" '(previous-buffer :wk "Previous buffer")
+   "]" '(next-buffer :wk "Next buffer")
 
-    "b" '(:wk "Buffer")
-    "b[" '(previous-buffer :wk "Previous buffer")
-    "b]" '(next-buffer :wk "Next buffer")
-    "bb" '(switch-to-buffer :wk "Switch buffer")
-    "bB" '(switch-to-buffer-other-window :wk "Switch buffer other window")
-    "bd" '(kill-current-buffer :wk "Kill buffer")
+   "b" '(:wk "Buffer")
+   "b[" '(previous-buffer :wk "Previous buffer")
+   "b]" '(next-buffer :wk "Next buffer")
+   "bb" '(switch-to-buffer :wk "Switch buffer")
+   "bB" '(switch-to-buffer-other-window :wk "Switch buffer other window")
+   "bd" '(kill-current-buffer :wk "Kill buffer")
 
-    "c" '(:wk "Code")
-    "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
-    "cf" '(format-all-buffer :wk "Format buffer")
-    "cF" '(eglot-find-implementation :wk "Find implementation")
-    "cD" '(eglot-find-typeDefinition :wk "Find References")
-    "cd" '(eglot-find-declaration :wk "Jump to definition")
-    "cI" '(+eglot-organize-imports :wk "Organize import")
-    "ci" '(consult-eglot-symbols :wk "Symbols in current file")
-    "cr" '(eglot-rename :wk "LSP rename")
-    "co" '(imenu :wk "Outline")
-    "ca" '(eglot-code-actions :wk "Code Actions")
-    "cc" '(separedit-dwim :wk "Write comment")
-    "ch" '(+eglot-help-at-point :wk "Toggle lsp-ui-doc")
+   "c" '(:wk "Code")
+   "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
+   "cf" '(format-all-buffer :wk "Format buffer")
+   "cF" '(eglot-find-implementation :wk "Find implementation")
+   "cD" '(eglot-find-typeDefinition :wk "Find References")
+   "cd" '(eglot-find-declaration :wk "Jump to definition")
+   "cI" '(+eglot-organize-imports :wk "Organize import")
+   "ci" '(consult-eglot-symbols :wk "Symbols in current file")
+   "cr" '(eglot-rename :wk "LSP rename")
+   "co" '(imenu :wk "Outline")
+   "ca" '(eglot-code-actions :wk "Code Actions")
+   "cc" '(separedit-dwim :wk "Write comment")
+   "ch" '(+eglot-help-at-point :wk "Toggle lsp-ui-doc")
 
-    "d" '(:wk "Debug")
-    "dt" '(dap-breakpoint-toggle :wk "Add breakpoint")
+   "d" '(:wk "Debug")
+   "dt" '(dap-breakpoint-toggle :wk "Add breakpoint")
 
-    "e" '(:wk "Error")
-    "eb" '(flymake-start :wk "Check current buffer")
-    "el" '(consult-flymake :wk "List errors")
-    "eP" '(flymake-show-project-diagnostics :wk "Show project errors")
-    "en" '(flymake-goto-next-error :wk "Next error")
-    "ep" '(flymake-goto-prev-error :wk "Previous error")
+   "e" '(:wk "Error")
+   "eb" '(flymake-start :wk "Check current buffer")
+   "el" '(consult-flymake :wk "List errors")
+   "eP" '(flymake-show-project-diagnostics :wk "Show project errors")
+   "en" '(flymake-goto-next-error :wk "Next error")
+   "ep" '(flymake-goto-prev-error :wk "Previous error")
 
-    "f" '(:wk "Files")
-    "ff" '(find-file :wk "Find file")
-    "fF" '(find-file-other-window :wk "Find file in new Frame")
-    "fr" '(recentf-open-files :wk "Recent file")
-    "fR" '(embark-rename-buffer :wk "Rename file")
-    "fp" '(+open-configuration-folder :wk ".emacs.d")
-    "fD" '(+my-delete-file :wk "Delete file")
-    "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
-    "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
-    "fj" '(consult-dir :wk "Consult directory")
-    "fh" '((lambda() (interactive)(consult-fd default-directory)) :wk "Find file here")
+   "f" '(:wk "Files")
+   "ff" '(find-file :wk "Find file")
+   "fF" '(find-file-other-window :wk "Find file in new Frame")
+   "fr" '(recentf-open-files :wk "Recent file")
+   "fR" '(embark-rename-buffer :wk "Rename file")
+   "fp" '(+open-configuration-folder :wk ".emacs.d")
+   "fD" '(+my-delete-file :wk "Delete file")
+   "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
+   "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
+   "fj" '(consult-dir :wk "Consult directory")
+   "fh" '((lambda() (interactive)(consult-fd default-directory)) :wk "Find file here")
 
-    "g" '(:wk "Git")
-    "gs" '(magit-status :wk "Git status")
-    "gb" '(magit-branch-checkout :wk "Git checkout")
-    "gB" '(magit-blame :wk "Git blame")
-    "gm" '(gitmoji-picker :wk "Gitmoji")
-    "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
-    "gf" '(magit-fetch :wk "Git fetch")
-    "gF" '(magit-pull :wk "Git pull")
-    "go" '(magit-open-repo :wk "Open repo")
-    "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
-    "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
-    "gt" '(git-timemachine :wk "Git timemachine")
+   "g" '(:wk "Git")
+   "gs" '(magit-status :wk "Git status")
+   "gb" '(magit-branch-checkout :wk "Git checkout")
+   "gB" '(magit-blame :wk "Git blame")
+   "gm" '(gitmoji-picker :wk "Gitmoji")
+   "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
+   "gf" '(magit-fetch :wk "Git fetch")
+   "gF" '(magit-pull :wk "Git pull")
+   "go" '(magit-open-repo :wk "Open repo")
+   "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
+   "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
+   "gt" '(git-timemachine :wk "Git timemachine")
 
-    "j" '(:wk "Jump")
-    "jj" '(evil-avy-goto-char :wk "Jump to character")
-    "jl" '(evil-avy-goto-line :wk "Jump to line")
-    "jJ" '(evil-avy-goto-char-2 :wk "Jump to character 2")
+   "j" '(:wk "Jump")
+   "jj" '(avy-goto-char :wk "Jump to character")
+   "jl" '(avy-goto-line :wk "Jump to line")
+   "jJ" '(avy-goto-char-2 :wk "Jump to character 2")
 
-    "m" '(:wk "Local leader")
+   "m" '(:wk "Local leader")
 
-    "o" '(:wk "Open")
-    "ot" '(org-todo-list :wk "Org todos")
-    "ox" '(org-agenda :wk "Org agenda")
-    "oi" '(consult-clock-in :wk "Clock in")
-    "oo" '((lambda () (interactive)(org-clock-out)(org-save-all-org-buffers)) :wk "Clock out")
-    "od" '(consult-mark-done :wk "Mark done")
+   "o" '(:wk "Open")
+   "ot" '(org-todo-list :wk "Org todos")
+   "ox" '(org-agenda :wk "Org agenda")
+   "oi" '(consult-clock-in :wk "Clock in")
+   "oo" '((lambda () (interactive)(org-clock-out)(org-save-all-org-buffers)) :wk "Clock out")
+   "od" '(consult-mark-done :wk "Mark done")
 
-    "p" '(:wk "Project")
-    "pk" '(project-kill-buffers :wk "Kill project buffers" )
-    "pp" '(project-switch-project :wk "Switch project")
-    "pf" '(project-find-file :wk "Find file in project")
-    "pt" '(magit-todos-list :wk "List project tasks")
-    "pS" '(save-some-buffers :wk "Save project buffers")
-    "pd" '(project-find-dir :wk "Find dir in project")
+   "p" '(:wk "Project")
+   "pk" '(project-kill-buffers :wk "Kill project buffers" )
+   "pp" '(project-switch-project :wk "Switch project")
+   "pf" '(project-find-file :wk "Find file in project")
+   "pt" '(magit-todos-list :wk "List project tasks")
+   "pS" '(save-some-buffers :wk "Save project buffers")
+   "pd" '(project-find-dir :wk "Find dir in project")
 
-    "q" '(:wk "Quit")
-    "qq" '(kill-emacs :wk "Quit")
-    "qr" '(restart-emacs :wk "Restart")
+   "q" '(:wk "Quit")
+   "qq" '(kill-emacs :wk "Quit")
+   "qr" '(restart-emacs :wk "Restart")
 
-    "s" '(:wk "Search")
-    "sa" '(consult-org-agenda :wk "Search agenda")
-    "sd" '(devdocs-dwim :wk "Devdocs lookup")
-    "sD" '(+devdocs-search-at-point :wk "Devdocs search")
-    "sf" '(locate :wk "Locate file")
-    "sh" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
-    "si" '(+my-imenu :wk "Jump to symbol")
-    "sI" '(consult-imenu-multi :wk "Jump to symbol all buffer")
-    "sp" '(consult-ripgrep :wk "Search project")
-    "sP" '(color-rg-search-project :wk "Color-rg Search project")
-    "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
-    "sT" '(load-theme :wk "Load theme")
-    "sc" '(:wk "In current file")
-    "scs" '(color-rg-search-input-in-current-file :wk "Search input")
-    "sci" '(color-rg-search-symbol-in-current-file :wk "Search symbol at point")
-    "sg" '(+my/google-it :wk "Google")
+   "s" '(:wk "Search")
+   "sa" '(consult-org-agenda :wk "Search agenda")
+   "sd" '(devdocs-dwim :wk "Devdocs lookup")
+   "sD" '(+devdocs-search-at-point :wk "Devdocs search")
+   "sf" '(locate :wk "Locate file")
+   "sh" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
+   "si" '(+my-imenu :wk "Jump to symbol")
+   "sI" '(consult-imenu-multi :wk "Jump to symbol all buffer")
+   "sp" '(consult-ripgrep :wk "Search project")
+   "sP" '(color-rg-search-project :wk "Color-rg Search project")
+   "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
+   "sT" '(load-theme :wk "Load theme")
+   "sc" '(:wk "In current file")
+   "scs" '(color-rg-search-input-in-current-file :wk "Search input")
+   "sci" '(color-rg-search-symbol-in-current-file :wk "Search symbol at point")
+   "sg" '(+my/google-it :wk "Google")
 
-    "t" '(:wk "Toggle")
-    "te" '(+my/smart-switch-to-vterm-tab :wk "Shell")
-    "tt" '(dirvish-side :wk "Tree view")
-    "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
-    "td" '(toggle-debug-on-error :wk "Toggle debug on error")
-    "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-    "ty" '(multi-translate-at-point :wk "youdao")
+   "t" '(:wk "Toggle")
+   "te" '(+my/smart-switch-to-vterm-tab :wk "Shell")
+   "tt" '(dirvish-side :wk "Tree view")
+   "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
+   "td" '(toggle-debug-on-error :wk "Toggle debug on error")
+   "ti" '(imenu-list-smart-toggle :wk "imenu-list")
+   "ty" '(multi-translate-at-point :wk "youdao")
 
-    "w" '(:wk "Window")
-    "wv" '(split-window-vertically :wk "Split window vertically")
-    "wH" '(split-window-horizontally :wk "Split window horizontally")
-    "wu" '(winner-undo :wk "Undo window")
-    "wo" '(winner-redo :wk "Redo window")
-    "wK" '(delete-other-windows :wk "Kill other windows")
+   "w" '(:wk "Window")
+   "wv" '(split-window-vertically :wk "Split window vertically")
+   "wH" '(split-window-horizontally :wk "Split window horizontally")
+   "wu" '(winner-undo :wk "Undo window")
+   "wo" '(winner-redo :wk "Redo window")
+   "wK" '(delete-other-windows :wk "Kill other windows")
 
-    "x" '(org-capture :wk "Org capture")
+   "x" '(org-capture :wk "Org capture")
 
-    "=" '(er/expand-region :wk "Expand Region")
-    )
+   "=" '(er/expand-region :wk "Expand Region")
+   )
 
   ;; Python
   (leader-def
-    :states 'normal
-    :keymaps 'python-mode-map
-    "md" '(sphinx-doc :wk "Docstring")
+   :states 'normal
+   :keymaps 'python-mode-map
+   "md" '(sphinx-doc :wk "Docstring")
 
-    "mv" '(:wk "Virtualenv")
-    "mvw" '(pyvenv-workon :wk "Pyvenv workon")
-    "mva" '(pyvenv-activate :wk "Pyvenv activate")
-    "mvd" '(pyvenv-deactivate :wk "Pyvenv deactivate")
+   "mv" '(:wk "Virtualenv")
+   "mvw" '(pyvenv-workon :wk "Pyvenv workon")
+   "mva" '(pyvenv-activate :wk "Pyvenv activate")
+   "mvd" '(pyvenv-deactivate :wk "Pyvenv deactivate")
 
-    "mi" '(:wk "Imports")
-    "mis" '(+python/python-sort-imports :wk "Sort imports")
-    "mii" '(importmagic-fix-imports :wk "Fix imports")
+   "mi" '(:wk "Imports")
+   "mis" '(+python/python-sort-imports :wk "Sort imports")
+   "mii" '(importmagic-fix-imports :wk "Fix imports")
 
-    "mt" '(:wk "Tests")
-    "mtp" '(python-pytest-popup :wk "Pytest popup")
-    "mtf" '(python-pytest-file :wk "Pytest file")
-    "mtF" '(python-pytest-file-dwim :wk "Pytest file dwim")
-    "mtt" '(python-pytest-function :wk "Pytest function")
-    "mtT" '(python-pytest-function-dwim :wk "Pytest function dwin")
-    "mtr" '(python-pytest-repeat :wk "Pytest repeat")
-    "mtl" '(python-pytest-last-failed :wk "Pytest last failed")
+   "mt" '(:wk "Tests")
+   "mtp" '(python-pytest-popup :wk "Pytest popup")
+   "mtf" '(python-pytest-file :wk "Pytest file")
+   "mtF" '(python-pytest-file-dwim :wk "Pytest file dwim")
+   "mtt" '(python-pytest-function :wk "Pytest function")
+   "mtT" '(python-pytest-function-dwim :wk "Pytest function dwin")
+   "mtr" '(python-pytest-repeat :wk "Pytest repeat")
+   "mtl" '(python-pytest-last-failed :wk "Pytest last failed")
 
-    "mp" '(:wk "Poetry")
-    "mpv" '(poetry-venv-workon :wk "Poetry workon")
-    "mpV" '(poetry-venv-deactivate :wk "Poetry deactivate workon")
-    "mpp" '(poetry :wk "Poetry popup")
-    "mpa" '(poetry-add :wk "Poetry add dep")
-    "mpr" '(poetry-run :wk "Run poetry command")
-    "mpR" '(poetry-remove :wk "Poetry remove dep")
-    )
+   "mp" '(:wk "Poetry")
+   "mpv" '(poetry-venv-workon :wk "Poetry workon")
+   "mpV" '(poetry-venv-deactivate :wk "Poetry deactivate workon")
+   "mpp" '(poetry :wk "Poetry popup")
+   "mpa" '(poetry-add :wk "Poetry add dep")
+   "mpr" '(poetry-run :wk "Run poetry command")
+   "mpR" '(poetry-remove :wk "Poetry remove dep")
+   )
 
   ;; JS
   (leader-def
-    :states 'normal
-    :keymaps '(js-mode-map js2-mode-map rjsx-mode-map)
-    "mi" '(:wk "Imports")
-    "mif" '(import-js-fix :wk "Fix imports")
-    "mir" '(run-import-js :wk "Run import js")
-    "mii" '(import-js-import :wk "Import module")
+   :states 'normal
+   :keymaps '(js-mode-map js2-mode-map rjsx-mode-map)
+   "mi" '(:wk "Imports")
+   "mif" '(import-js-fix :wk "Fix imports")
+   "mir" '(run-import-js :wk "Run import js")
+   "mii" '(import-js-import :wk "Import module")
 
-    "md" '(:wk "Docs")
-    "mdf" '(js-doc-insert-function-doc :wk "Insert function doc")
-    "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
-    "mdt" '(js-doc-insert-tag :wk "Insert tag")
-    ))
+   "md" '(:wk "Docs")
+   "mdf" '(js-doc-insert-function-doc :wk "Insert function doc")
+   "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
+   "mdt" '(js-doc-insert-tag :wk "Insert tag")
+   ))
 
 (use-package which-key
   :diminish
@@ -1410,11 +1190,11 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (use-package embark-consult
     :after consult)
   ;;  HACK: bind will be override by evil
-  (with-eval-after-load 'general
-    (general-define-key :states '(normal insert visual emacs)
-                        "C-." 'embark-act
-                        "M-." 'embark-dwim
-                        "C-h B" 'embark-bindings))
+  ;; (with-eval-after-load 'general
+  ;;   (general-define-key :states '(normal insert visual emacs)
+  ;;                       "C-." 'embark-act
+  ;;                       "M-." 'embark-dwim
+  ;;                       "C-h B" 'embark-bindings))
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -1536,9 +1316,7 @@ targets."
   (use-package vertico-repeat
     :after vertico
     :config
-    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
-    (with-eval-after-load 'general
-      (general-def "C-c r" 'vertico-repeat)))
+    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save))
   (use-package vertico-directory
     :after vertico
     ;; More convenient directory navigation commands
@@ -1611,22 +1389,23 @@ targets."
                 :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
   (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
 
-  (defun my-consult-set-evil-search-pattern (&optional condition)
-    (let ((re
-           (cond
-            ((eq condition 'rg) (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
-            ((or t (eq condition 'line)) (car consult--line-history))
-            )))
-      (add-to-history 'evil-ex-search-history re)
-      (setq evil-ex-search-pattern (list re t t))
-      (setq evil-ex-search-direction 'forward)
-      (anzu-mode t)))
+  ;; (defun my-consult-set-evil-search-pattern (&optional condition)
+  ;;   (let ((re
+  ;;          (cond
+  ;;           ((eq condition 'rg) (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
+  ;;           ((or t (eq condition 'line)) (car consult--line-history))
+  ;;           )))
+  ;;     (add-to-history 'evil-ex-search-history re)
+  ;;     (setq evil-ex-search-pattern (list re t t))
+  ;;     (setq evil-ex-search-direction 'forward)
+  ;;     (anzu-mode t)))
 
   ;; simulate swiper
   (defun consult-line-symbol-at-point ()
     (interactive)
     (consult-line (thing-at-point 'symbol))
-    (my-consult-set-evil-search-pattern))
+    ;; (my-consult-set-evil-search-pattern)
+    )
 
   (defcustom noct-consult-ripgrep-or-line-limit 300000
     "Buffer size threshold for `noct-consult-ripgrep-or-line'.
@@ -1638,39 +1417,40 @@ When the number of characters in a buffer exceeds this threshold,
   (defun noct-consult-ripgrep-or-line ()
     "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
     (interactive)
-    (evil-without-repeat
-      (if (or (not buffer-file-name)
-              (buffer-narrowed-p)
-              (ignore-errors
-                (file-remote-p buffer-file-name))
-              (jka-compr-get-compression-info buffer-file-name)
-              (<= (buffer-size)
-                  (/ noct-consult-ripgrep-or-line-limit
-                     (if (eq major-mode 'org-mode) 4 1))))
-          (progn (consult-line)
-                 (my-consult-set-evil-search-pattern))
+    (if (or (not buffer-file-name)
+            (buffer-narrowed-p)
+            (ignore-errors
+              (file-remote-p buffer-file-name))
+            (jka-compr-get-compression-info buffer-file-name)
+            (<= (buffer-size)
+                (/ noct-consult-ripgrep-or-line-limit
+                   (if (eq major-mode 'org-mode) 4 1))))
+        (progn (consult-line)
+               ;; (my-consult-set-evil-search-pattern)
+               )
 
-        (when (file-writable-p buffer-file-name)
-          (save-buffer))
-        (let ((consult-ripgrep-args
-               (concat "rg "
-                       "--null "
-                       "--line-buffered "
-                       "--color=ansi "
-                       "--max-columns=250 "
-                       "--no-heading "
-                       "--line-number "
-                       ;; adding these to default
-                       "--smart-case "
-                       "--hidden "
-                       "--max-columns-preview "
-                       ;; add back filename to get parsing to work
-                       "--with-filename "
-                       ;; defaults
-                       "-e ARG OPTS "
-                       (shell-quote-argument buffer-file-name))))
-          (consult-ripgrep)
-          (my-consult-set-evil-search-pattern 'rg)))))
+      (when (file-writable-p buffer-file-name)
+        (save-buffer))
+      (let ((consult-ripgrep-args
+             (concat "rg "
+                     "--null "
+                     "--line-buffered "
+                     "--color=ansi "
+                     "--max-columns=250 "
+                     "--no-heading "
+                     "--line-number "
+                     ;; adding these to default
+                     "--smart-case "
+                     "--hidden "
+                     "--max-columns-preview "
+                     ;; add back filename to get parsing to work
+                     "--with-filename "
+                     ;; defaults
+                     "-e ARG OPTS "
+                     (shell-quote-argument buffer-file-name))))
+        (consult-ripgrep)
+        ;; (my-consult-set-evil-search-pattern 'rg)
+        )))
 
   ;; Configure initial narrowing per command
   (dolist (src consult-buffer-sources)
@@ -1939,7 +1719,8 @@ When the number of characters in a buffer exceeds this threshold,
           (min-width . 60)
           (left-fringe . 8)
           (right-fringe . 8)))
-  (evil-set-initial-state 'minibuffer-mode 'emacs))
+  ;; (evil-set-initial-state 'minibuffer-mode 'emacs)
+  )
 
 ;;; Icons
 (use-package all-the-icons
@@ -2059,9 +1840,6 @@ When the number of characters in a buffer exceeds this threshold,
         ([backtab] . corfu-previous))
   :init
   (global-corfu-mode)
-  (with-eval-after-load 'evil-collection
-    (evil-collection-define-key 'insert 'corfu-map
-      (kbd "C-j") 'corfu-insert))
   :config
   (use-package corfu-quick
     :after corfu
@@ -2088,11 +1866,6 @@ When the number of characters in a buffer exceeds this threshold,
 
   (advice-add #'keyboard-quit :before #'corfu-quit)
   (add-to-list 'corfu-auto-commands 'end-of-visual-line)
-
-  ;; https://github.com/minad/corfu/issues/12#issuecomment-869037519
-  (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
-  (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
-  (evil-make-overriding-map corfu-map)
 
   (defun corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
@@ -2224,18 +1997,7 @@ function to the relevant margin-formatters list."
     (interactive)
     (if (>= corfu--index 0)
         (corfu--insert 'exact)
-      (corfu-quit)))
-
-  (mapc #'evil-declare-ignore-repeat
-        '(corfu-next
-          corfu-previous
-          corfu-first
-          corfu-last))
-
-  (mapc #'evil-declare-change-repeat
-        '(corfu-insert
-          corfu-insert-exact
-          corfu-complete)))
+      (corfu-quit))))
 
 (use-package tempel
   :after-call +my/first-input-hook-fun
@@ -2246,24 +2008,17 @@ function to the relevant margin-formatters list."
     (interactive)
     (if tempel--active
         (tempel-next 1)
-      (call-interactively #'tempel-expand)))
-
-  (with-eval-after-load 'general
-    (general-define-key
-     :keymaps '(evil-insert-state-map)
-     "C-o" 'my/tempel-expand-or-next)))
+      (call-interactively #'tempel-expand))))
 
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands (yas-expand-snippet)
   :hook (prog-mode . yas-minor-mode)
   :bind
-  (:map yas-minor-mode-map
-        ("C-c C-n" . yas-expand-from-trigger-key))
   (:map yas-keymap
         (("M-}" . smarter-yas-expand-next-field)
          ("TAB" . nil)
-         ([tab]. nil)
+         ([tab] . nil)
          ))
   :config
   (defun smarter-yas-expand-next-field ()
@@ -2277,13 +2032,7 @@ function to the relevant margin-formatters list."
         (ignore-errors (yas-next-field))))))
 
 (use-package cape
-  :after (corfu tempel)
-  ;; Bind dedicated completion commands
-  :bind (("C-x C-f" . cape-file)
-         ("C-x C-k" . cape-keyword)
-         ("C-x C-s" . cape-symbol)
-         ("C-x C-l" . cape-line)
-         ("C-x C-w" . cape-dict))
+  :after (corfu tempel)e
   :hook ((prog-mode . my/set-basic-capf)
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
@@ -2394,7 +2143,6 @@ function to the relevant margin-formatters list."
                      (bounds-of-thing-at-point 'word)))
            (text (string-trim (buffer-substring-no-properties (car bounds) (cdr bounds)))))
       (kill-new (multi-translate--google-translation "en" "zh-CN" text))
-      (evil-normal-state)
       (message "Translate Done"))))
 
 (use-package vundo
@@ -2409,10 +2157,10 @@ function to the relevant margin-formatters list."
   "Instead of `save-buffer', save all opened buffers by calling `save-some-buffers' with ARG t."
   (interactive)
   (save-some-buffers t))
-(with-eval-after-load 'general
-  (general-def "C-x C-s" nil)
-  (general-def "C-x C-s" 'save-all-buffers)
-  )
+;; (with-eval-after-load 'general
+;;   (general-def "C-x C-s" nil)
+;;   (general-def "C-x C-s" 'save-all-buffers)
+;;   )
 ;; -SaveAllBuffers
 
 (use-package project
@@ -2648,11 +2396,6 @@ function to the relevant margin-formatters list."
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
-  :bind (:map hl-todo-mode-map
-              ([C-f3] . hl-todo-occur)
-              ("C-c t p" . hl-todo-previous)
-              ("C-c t n" . hl-todo-next)
-              ("C-c t o" . hl-todo-occur))
   :hook (after-init . global-hl-todo-mode)
   :config
   (dolist (keyword '("BUG" "DEFECT" "ISSUE" "DONT" "GOTCHA" "DEBUG"))
@@ -2803,11 +2546,13 @@ function to the relevant margin-formatters list."
   (default-input-method "rime")
   (rime-show-candidate 'posframe)
   (rime-disable-predicates
-   '(rime-predicate-evil-mode-p
+   '(
+     ;; rime-predicate-evil-mode-p
      rime-predicate-after-alphabet-char-p
      rime-predicate-prog-in-code-p
      rime-predicate-after-ascii-char-p
-     rime-predicate-space-after-cc-p))
+     rime-predicate-space-after-cc-p
+     meow-normal-mode-p))
   (rime-posframe-properties
    (list :internal-border-width 5))
   :config
@@ -3096,10 +2841,6 @@ Install the doc if it's not installed."
   (web-mode-part-padding 0)
   :init
   (defun my/web-vue-setup()
-    (with-eval-after-load 'general
-      (local-leader-def
-        :keymaps 'web-mode-map
-        "f" 'lsp-eslint-fix-all))
     (setq-local lsp-enable-imenu t)
     (make-local-variable 'before-save-hook)
     (with-eval-after-load 'lsp-eslint
@@ -3123,15 +2864,7 @@ Install the doc if it's not installed."
   (add-hook 'web-mode-hook
             (lambda ()
               (cond ((equal web-mode-content-type "vue")
-                     (my/web-vue-setup)))))
-
-  (local-leader-def
-    :keymaps 'web-mode-map
-    "d" '(web-mode-element-vanish :wk "Remove current element")
-    "D" '(web-mode-element-kill :wk "Remove region")
-    "r" '(instant-rename-tag :wk "Rename current tag")
-    )
-  )
+                     (my/web-vue-setup))))))
 
 (use-package css-mode
   :mode ("\\.css\\'" "\\.wxss\\'")
@@ -3167,16 +2900,17 @@ Install the doc if it's not installed."
                                                     (?F "Field"  font-lock-variable-name-face)))))
 
   (require 'flutter-utils)
-  (local-leader-def
-    :keymaps 'dart-mode-map
-    "r" '(flutter-utils-run-or-hot-reload :wk "Run or hot reload")
-    "R" '(flutter-utils-run-or-hot-restart :wk "Run or hot restart")
+  ;; (local-leader-def
+  ;;  :keymaps 'dart-mode-map
+  ;;  "r" '(flutter-utils-run-or-hot-reload :wk "Run or hot reload")
+  ;;  "R" '(flutter-utils-run-or-hot-restart :wk "Run or hot restart")
 
-    "v" '(flutter-utils-open-devtools :wk "Open devtools")
-    "Q" '(flutter-utils-quit :wk "Quit application")
+  ;;  "v" '(flutter-utils-open-devtools :wk "Open devtools")
+  ;;  "Q" '(flutter-utils-quit :wk "Quit application")
 
-    "s" '(flutter-utils-run-or-attach :wk "Run or Attach")
-    "p" '(flutter-utils-pub-get :wk "Pub get")))
+  ;;  "s" '(flutter-utils-run-or-attach :wk "Run or Attach")
+  ;;  "p" '(flutter-utils-pub-get :wk "Pub get"))
+  )
 
 ;;; Terminal integration
 (use-package vterm
@@ -3232,9 +2966,6 @@ Install the doc if it's not installed."
             ;; Focus the child frame
             (select-frame-set-input-focus vterm-posframe--frame))))))
   :config
-  (evil-collection-define-key 'insert 'vterm-mode-map
-    (kbd "C-s") 'tab-bar-switch-to-recent-tab
-    (kbd "C-y") 'yank)
   (defvar +my-vterm-tab-buffer-name "vterm-tab")
   (defvar +my-vterm-tab-name "vterm")
   (defun +my/smart-switch-to-vterm-tab ()
@@ -3272,10 +3003,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                  +org-capture-file-done
-                                                  +org-capture-file-someday
-                                                  +org-capture-file-note
-                                                  +org-capture-file-routine)))
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3316,11 +3047,6 @@ Install the doc if it's not installed."
    org-agenda-span 10
    org-agenda-start-on-weekday nil
    org-agenda-start-day "-3d"))
-
-(defun +org-init-capture-defaults-h()
-  ;; enter insert state for org-capture
-  (add-hook 'org-capture-mode-hook #'evil-insert-state)
-  )
 
 (defun +org-update-cookies-h ()
   "Update counts in headlines (aka \"cookies\")."
@@ -3387,7 +3113,6 @@ Install the doc if it's not installed."
 
   (+org-init-appearance-h)
   (+org-init-agenda-h)
-  (+org-init-capture-defaults-h)
 
   (setq org-log-into-drawer "LOGBOOK")
   (setq org-agenda-files (list +org-capture-file-gtd
@@ -3468,190 +3193,189 @@ Install the doc if it's not installed."
 
 
   ;; binding
-  (evil-set-initial-state 'org-agenda-mode 'motion)
-  (general-define-key :states '(normal insert)
-                      :keymaps 'org-mode-map
-                      "C-<return>" #'+org/insert-item-below
-                      "C-S-<return>" #'org-insert-subheading
-                      )
-  (general-define-key :states '(normal)
-                      :keymaps 'org-mode-map
-                      "<return>" #'+org/dwim-at-point)
+  ;; (general-define-key :states '(normal insert)
+  ;;                     :keymaps 'org-mode-map
+  ;;                     "C-<return>" #'+org/insert-item-below
+  ;;                     "C-S-<return>" #'org-insert-subheading
+  ;;                     )
+  ;; (general-define-key :states '(normal)
+  ;;                     :keymaps 'org-mode-map
+  ;;                     "<return>" #'+org/dwim-at-point)
 
-  (local-leader-def
-    :keymaps 'org-mode-map
-    "'" 'org-edit-special
-    "*" 'org-ctrl-c-star
-    "+" 'org-ctrl-c-minus
-    "," 'org-switchb
-    ;; "." 'org-goto
+  ;; (local-leader-def
+  ;;   :keymaps 'org-mode-map
+  ;;   "'" 'org-edit-special
+  ;;   "*" 'org-ctrl-c-star
+  ;;   "+" 'org-ctrl-c-minus
+  ;;   "," 'org-switchb
+  ;;   ;; "." 'org-goto
 
-    "." 'consult-org-heading
+  ;;   "." 'consult-org-heading
 
-    "A" 'org-archive-subtree
-    "e" 'org-export-dispatch
-    "f" 'org-footnote-new
-    "h" 'org-toggle-heading
-    "i" 'org-toggle-item
-    "I" 'org-toggle-inline-images
-    "n" 'org-store-link
-    "o" 'org-set-property
-    "q" 'org-set-tags-command
-    "t" 'org-todo
-    "T" 'org-todo-list
-    "x" 'org-toggle-checkbox
+  ;;   "A" 'org-archive-subtree
+  ;;   "e" 'org-export-dispatch
+  ;;   "f" 'org-footnote-new
+  ;;   "h" 'org-toggle-heading
+  ;;   "i" 'org-toggle-item
+  ;;   "I" 'org-toggle-inline-images
+  ;;   "n" 'org-store-link
+  ;;   "o" 'org-set-property
+  ;;   "q" 'org-set-tags-command
+  ;;   "t" 'org-todo
+  ;;   "T" 'org-todo-list
+  ;;   "x" 'org-toggle-checkbox
 
-    "a" '(:wk "attackments")
-    "aa" 'org-attach
-    "ad" 'org-attach-delete-one
-    "aD" 'org-attach-delete-all
-    "af" '+org/find-file-in-attachments
-    "al" '+org/attach-file-and-insert-link
-    "an" 'org-attach-new
-    "ao" 'org-attach-open
-    "aO" 'org-attach-open-in-emacs
-    "ar" 'org-attach-reveal
-    "aR" 'org-attach-reveal-in-emacs
-    "au" 'org-attach-url
-    "as" 'org-attach-set-directory
-    "aS" 'org-attach-sync
+  ;;   "a" '(:wk "attackments")
+  ;;   "aa" 'org-attach
+  ;;   "ad" 'org-attach-delete-one
+  ;;   "aD" 'org-attach-delete-all
+  ;;   "af" '+org/find-file-in-attachments
+  ;;   "al" '+org/attach-file-and-insert-link
+  ;;   "an" 'org-attach-new
+  ;;   "ao" 'org-attach-open
+  ;;   "aO" 'org-attach-open-in-emacs
+  ;;   "ar" 'org-attach-reveal
+  ;;   "aR" 'org-attach-reveal-in-emacs
+  ;;   "au" 'org-attach-url
+  ;;   "as" 'org-attach-set-directory
+  ;;   "aS" 'org-attach-sync
 
-    "b"  '(:wk "tables")
-    "b-" 'org-table-insert-hline
-    "ba" 'org-table-align
-    "bb" 'org-table-blank-field
-    "bc" 'org-table-create-or-convert-from-region
-    "be" 'org-table-edit-field
-    "bf" 'org-table-edit-formulas
-    "bh" 'org-table-field-info
-    "bs" 'org-table-sort-lines
-    "br" 'org-table-recalculate
-    "bR" 'org-table-recalculate-buffer-tables
-    "bd" '(:wk "delete")
-    "bdc" 'org-table-delete-column
-    "bdr" 'org-table-kill-row
-    "bi" '(:wk "insert")
-    "bic" 'org-table-insert-column
-    "bih" 'org-table-insert-hline
-    "bir" 'org-table-insert-row
-    "biH" 'org-table-hline-and-move
-    "bt" '("toggle")
-    "btf" 'org-table-toggle-formula-debugger
-    "bto" 'org-table-toggle-coordinate-overlays
+  ;;   "b"  '(:wk "tables")
+  ;;   "b-" 'org-table-insert-hline
+  ;;   "ba" 'org-table-align
+  ;;   "bb" 'org-table-blank-field
+  ;;   "bc" 'org-table-create-or-convert-from-region
+  ;;   "be" 'org-table-edit-field
+  ;;   "bf" 'org-table-edit-formulas
+  ;;   "bh" 'org-table-field-info
+  ;;   "bs" 'org-table-sort-lines
+  ;;   "br" 'org-table-recalculate
+  ;;   "bR" 'org-table-recalculate-buffer-tables
+  ;;   "bd" '(:wk "delete")
+  ;;   "bdc" 'org-table-delete-column
+  ;;   "bdr" 'org-table-kill-row
+  ;;   "bi" '(:wk "insert")
+  ;;   "bic" 'org-table-insert-column
+  ;;   "bih" 'org-table-insert-hline
+  ;;   "bir" 'org-table-insert-row
+  ;;   "biH" 'org-table-hline-and-move
+  ;;   "bt" '("toggle")
+  ;;   "btf" 'org-table-toggle-formula-debugger
+  ;;   "bto" 'org-table-toggle-coordinate-overlays
 
-    "c" '(:wk "clock")
-    "cc" 'org-clock-cancel
-    "cd" 'org-clock-mark-default-task
-    "ce" 'org-clock-modify-effort-estimate
-    "cE" 'org-set-effort
-    "cg" 'org-clock-goto
-    "cl" '+org/toggle-last-clock
-    "ci" 'org-clock-in
-    "cI" 'org-clock-in-last
-    "co" 'org-clock-out
-    "cr" 'org-resolve-clocks
-    "cR" 'org-clock-report
-    "ct" 'org-evaluate-time-range
-    "c=" 'org-clock-timestamps-up
-    "c-" 'org-clock-timestamps-down
+  ;;   "c" '(:wk "clock")
+  ;;   "cc" 'org-clock-cancel
+  ;;   "cd" 'org-clock-mark-default-task
+  ;;   "ce" 'org-clock-modify-effort-estimate
+  ;;   "cE" 'org-set-effort
+  ;;   "cg" 'org-clock-goto
+  ;;   "cl" '+org/toggle-last-clock
+  ;;   "ci" 'org-clock-in
+  ;;   "cI" 'org-clock-in-last
+  ;;   "co" 'org-clock-out
+  ;;   "cr" 'org-resolve-clocks
+  ;;   "cR" 'org-clock-report
+  ;;   "ct" 'org-evaluate-time-range
+  ;;   "c=" 'org-clock-timestamps-up
+  ;;   "c-" 'org-clock-timestamps-down
 
-    "d" '(:wk "date/deadline")
-    "dd" 'org-deadline
-    "ds" 'org-schedule
-    "dt" 'org-time-stamp
-    "dT" 'org-time-stamp-inactive
+  ;;   "d" '(:wk "date/deadline")
+  ;;   "dd" 'org-deadline
+  ;;   "ds" 'org-schedule
+  ;;   "dt" 'org-time-stamp
+  ;;   "dT" 'org-time-stamp-inactive
 
-    "D" 'archive-done-tasks
+  ;;   "D" 'archive-done-tasks
 
-    "g" '(:wk "goto")
-    "gg" 'consult-org-heading
-    "gc" 'org-clock-goto
-    "gi" 'org-id-goto
-    "gr" 'org-refile-goto-last-stored
-    "gv" '+org/goto-visible
-    "gx" 'org-capture-goto-last-stored
+  ;;   "g" '(:wk "goto")
+  ;;   "gg" 'consult-org-heading
+  ;;   "gc" 'org-clock-goto
+  ;;   "gi" 'org-id-goto
+  ;;   "gr" 'org-refile-goto-last-stored
+  ;;   "gv" '+org/goto-visible
+  ;;   "gx" 'org-capture-goto-last-stored
 
-    "l" '(:wk "links")
-    "lc" 'org-cliplink
-    "ld" '+org/remove-link
-    "li" 'org-id-store-link
-    "ll" 'org-insert-link
-    "lL" 'org-insert-all-links
-    "ls" 'org-store-link
-    "lS" 'org-insert-last-stored-link
-    "lt" 'org-toggle-link-display
+  ;;   "l" '(:wk "links")
+  ;;   "lc" 'org-cliplink
+  ;;   "ld" '+org/remove-link
+  ;;   "li" 'org-id-store-link
+  ;;   "ll" 'org-insert-link
+  ;;   "lL" 'org-insert-all-links
+  ;;   "ls" 'org-store-link
+  ;;   "lS" 'org-insert-last-stored-link
+  ;;   "lt" 'org-toggle-link-display
 
-    "P" '(:wk "publish")
-    "Pa" 'org-publish-all
-    "Pf" 'org-publish-current-file
-    "Pp" 'org-publish
-    "PP" 'org-publish-current-project
-    "Ps" 'org-publish-sitemap
+  ;;   "P" '(:wk "publish")
+  ;;   "Pa" 'org-publish-all
+  ;;   "Pf" 'org-publish-current-file
+  ;;   "Pp" 'org-publish
+  ;;   "PP" 'org-publish-current-project
+  ;;   "Ps" 'org-publish-sitemap
 
-    "r" '(:wk "refile")
-    "r." '+org/refile-to-current-file
-    "rc" '+org/refile-to-running-clock
-    "rl" '+org/refile-to-last-location
-    "rf" '+org/refile-to-file
-    "ro" '+org/refile-to-other-window
-    "rO" '+org/refile-to-other-buffer
-    "rv" '+org/refile-to-visible
-    "rr" 'org-refile
+  ;;   "r" '(:wk "refile")
+  ;;   "r." '+org/refile-to-current-file
+  ;;   "rc" '+org/refile-to-running-clock
+  ;;   "rl" '+org/refile-to-last-location
+  ;;   "rf" '+org/refile-to-file
+  ;;   "ro" '+org/refile-to-other-window
+  ;;   "rO" '+org/refile-to-other-buffer
+  ;;   "rv" '+org/refile-to-visible
+  ;;   "rr" 'org-refile
 
-    "s" '(:wk "tree/subtree")
-    "sa" 'org-toggle-archive-tag
-    "sb" 'org-tree-to-indirect-buffer
-    "sd" 'org-cut-subtree
-    "sh" 'org-promote-subtree
-    "sj" 'org-move-subtree-down
-    "sk" 'org-move-subtree-up
-    "sl" 'org-demote-subtree
-    "sn" 'org-narrow-to-subtree
-    "sr" 'org-refile
-    "ss" 'org-sparse-tree
-    "sA" 'org-archive-subtree
-    "sN" 'widen
-    "sS" 'org-sort
+  ;;   "s" '(:wk "tree/subtree")
+  ;;   "sa" 'org-toggle-archive-tag
+  ;;   "sb" 'org-tree-to-indirect-buffer
+  ;;   "sd" 'org-cut-subtree
+  ;;   "sh" 'org-promote-subtree
+  ;;   "sj" 'org-move-subtree-down
+  ;;   "sk" 'org-move-subtree-up
+  ;;   "sl" 'org-demote-subtree
+  ;;   "sn" 'org-narrow-to-subtree
+  ;;   "sr" 'org-refile
+  ;;   "ss" 'org-sparse-tree
+  ;;   "sA" 'org-archive-subtree
+  ;;   "sN" 'widen
+  ;;   "sS" 'org-sort
 
-    "p" '(:wk "priority")
-    "pd" 'org-priority-down
-    "pp" 'org-priority
-    "pu" 'org-priority-up
+  ;;   "p" '(:wk "priority")
+  ;;   "pd" 'org-priority-down
+  ;;   "pp" 'org-priority
+  ;;   "pu" 'org-priority-up
 
 
-    "x" '(:wk "Download")
-    "xc" 'org-download-clipboard
-    "xd" 'org-download-delete
-    "xi" 'org-download-image
-    "xy" 'org-download-yank
-    "xe" 'org-download-edit
-    "xr" 'org-download-rename-at-point
-    "xR" 'org-download-rename-last-file
-    "xs" 'org-download-screenshot
-    )
+  ;;   "x" '(:wk "Download")
+  ;;   "xc" 'org-download-clipboard
+  ;;   "xd" 'org-download-delete
+  ;;   "xi" 'org-download-image
+  ;;   "xy" 'org-download-yank
+  ;;   "xe" 'org-download-edit
+  ;;   "xr" 'org-download-rename-at-point
+  ;;   "xR" 'org-download-rename-last-file
+  ;;   "xs" 'org-download-screenshot
+  ;;   )
 
-  (local-leader-def
-    :keymaps 'org-agenda-mode-map
-    "d" '(:wk "date/deadline")
-    "dd" 'org-agenda-deadline
-    "ds" 'org-agenda-schedule
+  ;; (local-leader-def
+  ;;   :keymaps 'org-agenda-mode-map
+  ;;   "d" '(:wk "date/deadline")
+  ;;   "dd" 'org-agenda-deadline
+  ;;   "ds" 'org-agenda-schedule
 
-    "c" '(:wk "clock")
-    "cc" 'org-agenda-clock-cancel
-    "cg" 'org-agenda-clock-goto
-    "ci" 'org-agenda-clock-in
-    "co" 'org-agenda-clock-out
-    "cr" 'org-agenda-clockreport-mode
-    "cs" 'org-agenda-show-clocking-issues
+  ;;   "c" '(:wk "clock")
+  ;;   "cc" 'org-agenda-clock-cancel
+  ;;   "cg" 'org-agenda-clock-goto
+  ;;   "ci" 'org-agenda-clock-in
+  ;;   "co" 'org-agenda-clock-out
+  ;;   "cr" 'org-agenda-clockreport-mode
+  ;;   "cs" 'org-agenda-show-clocking-issues
 
-    "p" '(:wk "priority")
-    "pd" 'org-agenda-priority-down
-    "pp" 'org-agenda-priority
-    "pu" 'org-agenda-priority-up
+  ;;   "p" '(:wk "priority")
+  ;;   "pd" 'org-agenda-priority-down
+  ;;   "pp" 'org-agenda-priority
+  ;;   "pu" 'org-agenda-priority-up
 
-    "q" 'org-agenda-set-tags
-    "r" 'org-agenda-refile
-    "t" 'org-agenda-todo)
+  ;;   "q" 'org-agenda-set-tags
+  ;;   "r" 'org-agenda-refile
+  ;;   "t" 'org-agenda-todo)
   )
 ;; -OrgPac
 
@@ -3764,3 +3488,4 @@ Install the doc if it's not installed."
 ;; no-byte-compile: t
 ;; End:
 ;;; init.el ends here
+(put 'upcase-region 'disabled nil)
