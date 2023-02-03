@@ -724,9 +724,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -875,12 +875,10 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 (defun +my/google-it (&optional word)
   "Google WORD."
-  (interactive (list
-                (if (use-region-p)
-                    (buffer-substring-no-properties (region-beginning)
-                                                    (region-end))
-                  (thing-at-point 'symbol))))
-  (browse-url (concat "https://www.google.com/search?q=" word)))
+  (interactive)
+  (let ((target (read-string "Search for: ")))
+    (browse-url (concat "http://www.google.com/search?q="
+			                  (url-hexify-string target)))))
 
 (defun +my/open-in-osx-finder ()
   "Open file in finder."
@@ -1337,7 +1335,7 @@ targets."
 
 (use-package consult
   :after orderless
-  :commands (+consult-ripgrep-at-point noct-consult-ripgrep-or-line consult-line-symbol-at-point consult-clock-in)
+  :commands (noct-consult-ripgrep-or-line consult-clock-in +consult-ripgrep-current-directory)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -1385,13 +1383,6 @@ targets."
   ;;     (setq evil-ex-search-pattern (list re t t))
   ;;     (setq evil-ex-search-direction 'forward)
   ;;     (anzu-mode t)))
-
-  ;; simulate swiper
-  (defun consult-line-symbol-at-point ()
-    (interactive)
-    (consult-line (thing-at-point 'symbol))
-    ;; (my-consult-set-evil-search-pattern)
-    )
 
   (defcustom noct-consult-ripgrep-or-line-limit 300000
     "Buffer size threshold for `noct-consult-ripgrep-or-line'.
@@ -1443,10 +1434,9 @@ When the number of characters in a buffer exceeds this threshold,
     (unless (eq src 'consult--source-buffer)
       (set src (plist-put (symbol-value src) :hidden t))))
 
-  (defun +consult-ripgrep-at-point (&optional dir initial)
-    (interactive (list prefix-arg (when-let ((s (symbol-at-point)))
-                                    (symbol-name s))))
-    (consult-ripgrep dir initial))
+  (defun +consult-ripgrep-current-directory (&optional initial)
+    (interactive)
+    (consult-ripgrep default-directory initial))
 
   (defun consult--orderless-regexp-compiler (input type &rest _config)
     (setq input (orderless-pattern-compiler input))
@@ -1637,6 +1627,49 @@ When the number of characters in a buffer exceeds this threshold,
   :init
   (setq xref-show-xrefs-function #'consult-xref)
   (setq xref-show-definitions-function #'consult-xref))
+
+;;;; Better xxx-thing-at-point,
+;; from: https://github.com/Elilif/.elemacs/blob/master/lisp/init-completion.el
+(progn
+  (defvar mcfly-commands
+    '(consult-line
+      consult-outline
+      consult-git-grep
+      consult-ripgrep
+      noct-consult-ripgrep-or-line
+      +my/google-it))
+
+  (defvar mcfly-back-commands
+    '(self-insert-command
+      yank
+      yank-pop
+      org-yank))
+
+  (defun mcfly-back-to-present ()
+    (remove-hook 'pre-command-hook 'mcfly-back-to-present t)
+    (cond ((and (memq last-command mcfly-commands)
+                (equal (this-command-keys-vector) (kbd "M-p")))
+           ;; repeat one time to get straight to the first history item
+           (setq unread-command-events
+                 (append unread-command-events
+                         (listify-key-sequence (kbd "M-p")))))
+          ((memq this-command mcfly-back-commands)
+           (delete-region (point) (point-max)))))
+
+  (defun mcfly-time-travel ()
+    (when (memq this-command mcfly-commands)
+      (let ((pre-insert-string (with-minibuffer-selected-window
+                                 (or (seq-some
+                                      (lambda (thing) (thing-at-point thing t))
+					                            '(region url symbol))
+					                           ;; '(symbol url region sexp))
+			                               ""))))
+        (save-excursion
+          (insert (propertize pre-insert-string 'face 'shadow))))
+      (add-hook 'pre-command-hook 'mcfly-back-to-present nil t)))
+
+  ;; setup code
+  (add-hook 'minibuffer-setup-hook #'mcfly-time-travel))
 
 (use-package orderless
   :after-call +my/first-input-hook-fun
@@ -2710,21 +2743,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -3030,10 +3063,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                  +org-capture-file-done
-                                                  +org-capture-file-someday
-                                                  +org-capture-file-note
-                                                  +org-capture-file-routine)))
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."

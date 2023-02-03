@@ -130,7 +130,7 @@ S is string of the two-key sequence."
 
  '("x" . org-capture)
  '("=" . er/expand-region)
- '("?" . +consult-ripgrep-at-point)
+ '("?" . +consult-ripgrep-current-directory)
  '("/" . "f h")
  '("." . noct-consult-ripgrep-or-line)
  '("SPC" . consult-project-extra-find)
@@ -264,7 +264,8 @@ S is string of the two-key sequence."
    '(": w" . save-buffer)
    '(": v s p" . +meow-window-vsplit)
    '("$" . end-of-line)
-   '("/" . consult-line-symbol-at-point)
+   '("/" . consult-line)
+   '("?" . consult-ripgrep)
    '("RET" . ignore)
    '("<escape>" . ignore)
    '("C-w v" . +meow-window-vsplit)
