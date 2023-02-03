@@ -1,5 +1,10 @@
 ;;; -*- lexical-binding: t -*-
 
+;; TODO: g bindings
+;; TODO: better undo/redo
+;; TODO: x for magit-discard
+;; TODO: mode specified bindings
+
 (require 'meow)
 
 (when window-system
@@ -13,9 +18,6 @@
 (meow-thing-register 'angle
                      '(pair ("<") (">"))
                      '(pair ("<") (">")))
-(meow-thing-register 'bracket
-                     '(pair ("(") (")"))
-                     '(pair ("(") (")")))
 
 (add-to-list 'meow-char-thing-table
              '(?a . angle))
@@ -121,9 +123,6 @@ S is string of the two-key sequence."
     "o" #'winner-redo
     "k" #'delete-other-windows))
 
-(global-unset-key (kbd "C-c g"))
-
-
 (meow-leader-define-key
  `("f" . ,+meow-file-map)
  `("b" . ,+meow-buffer-map)
@@ -144,11 +143,35 @@ S is string of the two-key sequence."
  '("." . noct-consult-ripgrep-or-line)
  '("SPC" . consult-project-extra-find))
 
+(defun +meow-window-vsplit (&optional count file)
+  "Split window right and move to the created window."
+  (interactive "P<f>")
+  (select-window
+   (split-window (selected-window) (when count (- count)) 'right))
+  (when (not count)
+    (balance-windows (window-parent))))
+
+(defun +meow-window-split (&optional count file)
+  "Split window right and move to the created window."
+  (interactive "P<f>")
+  (select-window
+   (split-window (selected-window) (when count (- count)) 'below))
+  (when (not count)
+    (balance-windows (window-parent))))
+
+(add-hook 'meow-insert-exit-hook
+          #'(lambda ()
+              (corfu-quit)))
+
 (defun meow-setup ()
   (interactive)
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
   (setq meow-use-keypad-when-execute-kbd nil
-        meow-expand-hint-remove-delay 5.0)
+        meow-expand-hint-remove-delay 5.0
+        meow-use-clipboard t
+        meow-keypad-ctrl-meta-prefix ?M)
+  ;; I use C-w for windmove
+  (setq meow--kbd-kill-region "s-x")
   (meow-motion-overwrite-define-key
    '("j" . meow-next)
    '("k" . meow-prev)
@@ -234,11 +257,13 @@ S is string of the two-key sequence."
    '("z" . meow-pop-selection)
    '("'" . noct-consult-ripgrep-or-line)
    '(": w" . save-buffer)
-   '(": v s p" . split-window-horizontally)
+   '(": v s p" . +meow-window-vsplit)
    '("$" . end-of-line)
    '("/" . consult-line-symbol-at-point)
    '("RET" . ignore)
    '("<escape>" . ignore)
+   '("C-w v" . +meow-window-vsplit)
+   '("C-w s" . +meow-window-split)
    '("C-w j" . windmove-down)
    '("C-w k" . windmove-up)
    '("C-w l" . windmove-right)
