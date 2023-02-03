@@ -2,19 +2,9 @@
 
 ;; TODO: g bindings
 ;; TODO: better undo/redo
-;; TODO: x for magit-discard
 ;; TODO: mode specified bindings
 
 (require 'meow)
-
-(when window-system
-  (setq meow-replace-state-name-list
-        '((normal . "🅝")
-          (beacon . "🅑")
-          (insert . "🅘")
-          (motion . "🅜")
-          (keypad . "🅚"))))
-
 (meow-thing-register 'angle
                      '(pair ("<") (">"))
                      '(pair ("<") (">")))
@@ -127,6 +117,7 @@ S is string of the two-key sequence."
  `("f" . ,+meow-file-map)
  `("b" . ,+meow-buffer-map)
  `("c" . ,+meow-code-map)
+ `("e" . ,+meow-diagnostics-map)
  `("j" . ,+meow-jump-map)
  `("g" . ,+meow-vc-map)
  `("o" . ,+meow-open-map)
@@ -141,7 +132,14 @@ S is string of the two-key sequence."
  '("?" . +consult-ripgrep-at-point)
  '("/" . "f h")
  '("." . noct-consult-ripgrep-or-line)
- '("SPC" . consult-project-extra-find))
+ '("SPC" . consult-project-extra-find)
+ '("," . "C-x ,"))
+
+(with-no-warnings
+  (defvar-keymap +meow-g-map
+    "d" #'xref-find-definitions
+    "r" #'xref-find-references
+    "c c" #'evilnc-comment-or-uncomment-lines))
 
 (defun +meow-window-vsplit (&optional count file)
   "Split window right and move to the created window."
@@ -166,22 +164,24 @@ S is string of the two-key sequence."
 (defun meow-setup ()
   (interactive)
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-  (setq meow-use-keypad-when-execute-kbd nil
+  (setq meow-use-keypad-when-execute-kbd t
         meow-expand-hint-remove-delay 5.0
         meow-use-clipboard t
-        meow-keypad-ctrl-meta-prefix ?M)
+        ;; meow-keypad-leader-dispatch "H-c"
+
+        meow-keypad-ctrl-meta-prefix ?M
+        meow-keypad-start-keys '((?C . ?c)
+                                 (?h . ?h)
+                                 (?X . ?x)))
   ;; I use C-w for windmove
   (setq meow--kbd-kill-region "s-x")
   (meow-motion-overwrite-define-key
    '("j" . meow-next)
    '("k" . meow-prev)
-   '("{" . previous-buffer)
-   '("}" . next-buffer)
+   '("-" . previous-buffer)
+   '("+" . next-buffer)
    '("<escape>" . ignore))
   (meow-leader-define-key
-   ;; SPC j/k will run the original command in MOTION state.
-   '("j" . "H-j")
-   '("k" . "H-k")
    ;; Use SPC (0-9) for digit arguments.
    '("1" . meow-digit-argument)
    '("2" . meow-digit-argument)
@@ -204,14 +204,14 @@ S is string of the two-key sequence."
    '("3" . meow-expand-3)
    '("2" . meow-expand-2)
    '("1" . meow-expand-1)
-   '("-" . negative-argument)
+   '("," . "C-x ,")
    '(";" . meow-reverse)
-   '("," . meow-inner-of-thing)
-   '("." . meow-bounds-of-thing)
+   '("{" . meow-inner-of-thing)
+   '("}" . meow-bounds-of-thing)
    '("[" . meow-beginning-of-thing)
    '("]" . meow-end-of-thing)
-   '("{" . previous-buffer)
-   '("}" . next-buffer)
+   '("-" . previous-buffer)
+   '("=" . next-buffer)
    '("a" . meow-append)
    '("A" . meow-open-below)
    '("b" . meow-back-word)
@@ -222,7 +222,8 @@ S is string of the two-key sequence."
    '("e" . meow-next-word)
    '("E" . meow-next-symbol)
    '("f" . meow-find)
-   '("g c c" . evilnc-comment-or-uncomment-lines)
+   ;; '("g c c" . evilnc-comment-or-uncomment-lines)
+   `("g" . ,+meow-g-map)
    '("G" . meow-grab)
    '("h" . meow-left)
    '("H" . meow-left-expand)
@@ -245,8 +246,10 @@ S is string of the two-key sequence."
    '("R" . meow-swap-grab)
    '("s" . meow-kill)
    '("t" . meow-till)
-   '("u" . meow-undo)
-   '("U" . meow-undo-in-selection)
+   '("u" . undo)
+   '("U" . undo-redo)
+   '("N" . meow-undo)
+   '("M" . meow-undo-in-selection)
    '("v" . meow-visit)
    '("w" . meow-mark-word)
    '("W" . meow-mark-symbol)
@@ -267,6 +270,7 @@ S is string of the two-key sequence."
    '("C-w j" . windmove-down)
    '("C-w k" . windmove-up)
    '("C-w l" . windmove-right)
-   '("C-w h" . windmove-left)))
+   '("C-w h" . windmove-left)
+   ))
 
 (provide 'meow-config)

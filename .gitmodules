@@ -22,6 +22,9 @@
 [submodule "avy"]
 	path = lib/avy
 	url = https://github.com/abo-abo/avy
+[submodule "better-jumper"]
+	path = lib/better-jumper
+	url = https://github.com/gilbertw1/better-jumper
 [submodule "bing-dict"]
 	path = lib/bing-dict
 	url = https://github.com/cute-jumper/bing-dict.el
@@ -86,6 +89,9 @@
 [submodule "doom-modeline"]
 	path = lib/doom-modeline
 	url = https://github.com/seagle0128/doom-modeline
+[submodule "dumb-jump"]
+	path = lib/dumb-jump
+	url = https://github.com/jacktasia/dumb-jump
 [submodule "edit-indirect"]
 	path = lib/edit-indirect
 	url = https://github.com/Fanael/edit-indirect
@@ -112,39 +118,9 @@
 [submodule "epkg"]
 	path = lib/epkg
 	url = https://github.com/emacscollective/epkg.git
-[submodule "evil"]
-	path = lib/evil
-	url = https://github.com/emacs-evil/evil
-[submodule "evil-anzu"]
-	path = lib/evil-anzu
-	url = https://github.com/emacsorphanage/evil-anzu
-[submodule "evil-collection"]
-	path = lib/evil-collection
-	url = https://github.com/emacs-evil/evil-collection
-[submodule "evil-embrace"]
-	path = lib/evil-embrace
-	url = https://github.com/cute-jumper/evil-embrace.el
-[submodule "evil-escape"]
-	path = lib/evil-escape
-	url = https://github.com/emacsorphanage/evil-escape
-[submodule "evil-indent-plus"]
-	path = lib/evil-indent-plus
-	url = https://github.com/TheBB/evil-indent-plus
 [submodule "evil-nerd-commenter"]
 	path = lib/evil-nerd-commenter
 	url = https://github.com/redguardtoo/evil-nerd-commenter
-[submodule "evil-snipe"]
-	path = lib/evil-snipe
-	url = https://github.com/hlissner/evil-snipe
-[submodule "evil-surround"]
-	path = lib/evil-surround
-	url = https://github.com/emacs-evil/evil-surround
-[submodule "evil-traces"]
-	path = lib/evil-traces
-	url = https://github.com/mamapanda/evil-traces
-[submodule "evil-visualstar"]
-	path = lib/evil-visualstar
-	url = https://github.com/bling/evil-visualstar
 [submodule "expand-region"]
 	path = lib/expand-region
 	url = https://github.com/magnars/expand-region.el

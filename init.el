@@ -314,8 +314,10 @@ REST and STATE."
 
 ;;; Version controll
 (use-package magit
-  :bind ("C-x g" . magit-status)
   :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
+  :bind
+  (:map magit-mode-map
+        ("x" . magit-discard))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -719,9 +721,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -743,7 +745,7 @@ window that already exists in that direction. It will split otherwise."
   (setq mac-control-modifier 'control) ; make Control key do Control
   (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
 
-  (setq display-line-numbers-type 'relative)
+  (setq display-line-numbers-type t)
   (add-hook 'text-mode-hook #'display-line-numbers-mode)
   (add-hook 'prog-mode-hook #'display-line-numbers-mode)
   (setq blink-cursor-mode nil)
@@ -807,7 +809,8 @@ window that already exists in that direction. It will split otherwise."
   (let* ((from (replace-regexp-in-string "/" "\\\\/" (or word (read-string "Replace: " (thing-at-point 'symbol 'no-properties)))))
          ;; (to (replace-regexp-in-string "/" "\\\\/" (read-string (format "Replace '%s' with: " from))))
          )
-    (evil-ex (concat "%s/" from "/"))))
+    ;; (evil-ex (concat "%s/" from "/"))
+    ))
 
 (defun +my-delete-file ()
   "Put current buffer file to top."
@@ -832,6 +835,8 @@ window that already exists in that direction. It will split otherwise."
     (beginning-of-line)
     (save-excursion (newline))
     (indent-according-to-mode)))
+(global-set-key (kbd "C-RET") '+default/newline-below)
+(global-set-key (kbd "C-S-RET") '+default/newline-above)
 
 (defun +default/newline-below ()
   "Insert an indented new line after the current one."
@@ -898,7 +903,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 ;;; Evil
 (use-package evil-nerd-commenter
-  :after evil
   :commands (evilnc-comment-operator
              evilnc-inner-comment
              evilnc-outer-commenter))
@@ -908,7 +912,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :config
   (require 'meow-config)
   (meow-setup)
-  (meow-setup-indicator)
+  ;; (meow-setup-indicator)
   (meow-global-mode 1))
 
 ;;; Keybindings
@@ -916,20 +920,19 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :disabled
   :commands (leader-def local-leader-def general-def)
   :config
-  (setq general-keymap-aliases '())
   (push '(override . general-override-mode-map) general-keymap-aliases)
-  (push '(normal . meow-normal-state-keymap) general-keymap-aliases)
+  (setq general-keymap-aliases '((override . general-override-mode-map)
+                                 (normal . meow-normal-mode-map)
+                                 (keypad . meow-keypad-mode-map)
+                                 (motion . meow-motion-mode-map)))
 
   (general-create-definer leader-def
-    :keymaps 'override
-    :prefix "C-c")
+    :prefix "H-c")
+
   (general-create-definer local-leader-def
-    :keymaps 'override
-    :prefix "C-c ,")
+    :prefix "H-c ,")
 
   (general-create-definer tab-def
-    :states '(normal)
-    :keymaps 'override
     :prefix "C-s")
 
   (tab-def
@@ -948,28 +951,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
   (general-def "<escape>" 'keyboard-quit)
   (general-def "C-;" 'embrace-commander)
-  (general-def [C-return] '+default/newline-below)
-  (general-def "C-RET" '+default/newline-below)
-  (general-def [C-S-return] '+default/newline-above)
-  (general-def "C-S-RET" '+default/newline-above)
-  (general-def "M-?" '+consult-ripgrep-at-point)
-  (general-def "M->" '+lookup-xref-references-backend-fn)
-  (general-def "M-y" 'consult-yank-from-kill-ring)
-  (general-def "C-0" 'vterm-posframe-toggle)
-  (general-def "C-<mouse-wheel>" nil)
-  (general-def "C-M-<mouse-wheel>" nil)
-
-  ;; Navigation
-  (general-define-key
-   :states 'insert
-   :keymaps 'evil-insert-state-map
-   "C-n" 'next-line
-   "C-p" 'previous-line
-   "C-a" 'beginning-of-line
-   "C-d" 'delete-char
-   "C-e" 'end-of-line
-   "C-k" 'kill-line
-   )
 
   ;; Leader def
   (leader-def
@@ -1357,6 +1338,8 @@ targets."
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
+         ([remap yank-pop] . consult-yank-from-kill-ring)
+         ("M-?" . +consult-ripgrep-at-point)
          ("M-g o" . consult-outline)
          ("M-g h" . consult-org-heading)
          ("M-g a" . consult-org-agenda)
@@ -1644,6 +1627,13 @@ When the number of characters in a buffer exceeds this threshold,
                 (let ((filename (file-relative-name f root))
                       (abs-filename (expand-file-name f root)))
                   (propertize filename 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
+
+(use-package consult-xref
+  :after consult
+  :commands consult-xref
+  :init
+  (setq xref-show-xrefs-function #'consult-xref)
+  (setq xref-show-definitions-function #'consult-xref))
 
 (use-package orderless
   :after-call +my/first-input-hook-fun
@@ -2032,7 +2022,7 @@ function to the relevant margin-formatters list."
         (ignore-errors (yas-next-field))))))
 
 (use-package cape
-  :after (corfu tempel)e
+  :after (corfu tempel)
   :hook ((prog-mode . my/set-basic-capf)
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
@@ -2061,7 +2051,6 @@ function to the relevant margin-formatters list."
   (defun my/set-eglot-capf ()
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
-
 
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -2539,6 +2528,10 @@ function to the relevant margin-formatters list."
   :demand t
   :commands (avy-goto-char avy-goto-line))
 
+(use-package embrace
+  :commands (embrace-commander)
+  :bind ("C-;" . embrace-commander))
+
 ;;;; Input method
 (use-package rime
   :after-call +my/first-input-hook-fun
@@ -2685,21 +2678,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2900,24 +2893,25 @@ Install the doc if it's not installed."
                                                     (?F "Field"  font-lock-variable-name-face)))))
 
   (require 'flutter-utils)
-  ;; (local-leader-def
-  ;;  :keymaps 'dart-mode-map
-  ;;  "r" '(flutter-utils-run-or-hot-reload :wk "Run or hot reload")
-  ;;  "R" '(flutter-utils-run-or-hot-restart :wk "Run or hot restart")
+  (bind-keys
+   :map dart-mode-map
+   :prefix "C-x ,"
+   :prefix-map meow-normal-state-keymap
+   ("r" . flutter-utils-run-or-hot-reload)
+   ("R" . flutter-utils-run-or-hot-restart)
+   ("v" . flutter-utils-open-devtools)
+   ("Q" . flutter-utils-quit)
+   ("s" . flutter-utils-run-or-attach)
+   ("p" . flutter-utils.pub-get)))
 
-  ;;  "v" '(flutter-utils-open-devtools :wk "Open devtools")
-  ;;  "Q" '(flutter-utils-quit :wk "Quit application")
-
-  ;;  "s" '(flutter-utils-run-or-attach :wk "Run or Attach")
-  ;;  "p" '(flutter-utils-pub-get :wk "Pub get"))
-  )
 
 ;;; Terminal integration
 (use-package vterm
   :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab)
   :bind
-  (:map vterm-mode-map
-        ("C-x" . #'vterm--self-insert))
+  (("C-0" . #'vterm-posframe-toggle)
+   :map vterm-mode-map
+   ("C-x" . #'vterm--self-insert))
   :init
   (setq vterm-always-compile-module t)
   (setq vterm-shell "fish")
@@ -3003,10 +2997,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3053,8 +3047,6 @@ Install the doc if it's not installed."
   (when (and buffer-file-name (file-exists-p buffer-file-name))
     (let (org-hierarchical-todo-statistics)
       (org-update-parent-todo-statistics))))
-
-
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
@@ -3191,191 +3183,192 @@ Install the doc if it's not installed."
           (diary-chinese-anniversary lunar-month lunar-day y mark))
       (diary-chinese-anniversary lunar-month lunar-day year mark)))
 
-
   ;; binding
-  ;; (general-define-key :states '(normal insert)
-  ;;                     :keymaps 'org-mode-map
-  ;;                     "C-<return>" #'+org/insert-item-below
-  ;;                     "C-S-<return>" #'org-insert-subheading
-  ;;                     )
-  ;; (general-define-key :states '(normal)
-  ;;                     :keymaps 'org-mode-map
-  ;;                     "<return>" #'+org/dwim-at-point)
+  (general-define-key :states '(normal insert)
+                      :keymaps 'org-mode-map
+                      "C-<return>" #'+org/insert-item-below
+                      "C-S-<return>" #'org-insert-subheading
+                      )
+  (general-define-key :states '(normal)
+                      :keymaps 'org-mode-map
+                      "<return>" #'+org/dwim-at-point)
 
-  ;; (local-leader-def
-  ;;   :keymaps 'org-mode-map
-  ;;   "'" 'org-edit-special
-  ;;   "*" 'org-ctrl-c-star
-  ;;   "+" 'org-ctrl-c-minus
-  ;;   "," 'org-switchb
-  ;;   ;; "." 'org-goto
+  ;; (with-eval-after-load 'general
+  ;;   (local-leader-def
+  ;;    :keymaps 'org-mode-map
+  ;;    "'" 'org-edit-special
+  ;;    "*" 'org-ctrl-c-star
+  ;;    "+" 'org-ctrl-c-minus
+  ;;    "," 'org-switchb
+  ;;    ;; "." 'org-goto
 
-  ;;   "." 'consult-org-heading
+  ;;    "." 'consult-org-heading
 
-  ;;   "A" 'org-archive-subtree
-  ;;   "e" 'org-export-dispatch
-  ;;   "f" 'org-footnote-new
-  ;;   "h" 'org-toggle-heading
-  ;;   "i" 'org-toggle-item
-  ;;   "I" 'org-toggle-inline-images
-  ;;   "n" 'org-store-link
-  ;;   "o" 'org-set-property
-  ;;   "q" 'org-set-tags-command
-  ;;   "t" 'org-todo
-  ;;   "T" 'org-todo-list
-  ;;   "x" 'org-toggle-checkbox
+  ;;    "A" 'org-archive-subtree
+  ;;    "e" 'org-export-dispatch
+  ;;    "f" 'org-footnote-new
+  ;;    "h" 'org-toggle-heading
+  ;;    "i" 'org-toggle-item
+  ;;    "I" 'org-toggle-inline-images
+  ;;    "n" 'org-store-link
+  ;;    "o" 'org-set-property
+  ;;    "q" 'org-set-tags-command
+  ;;    "t" 'org-todo
+  ;;    "T" 'org-todo-list
+  ;;    "x" 'org-toggle-checkbox
 
-  ;;   "a" '(:wk "attackments")
-  ;;   "aa" 'org-attach
-  ;;   "ad" 'org-attach-delete-one
-  ;;   "aD" 'org-attach-delete-all
-  ;;   "af" '+org/find-file-in-attachments
-  ;;   "al" '+org/attach-file-and-insert-link
-  ;;   "an" 'org-attach-new
-  ;;   "ao" 'org-attach-open
-  ;;   "aO" 'org-attach-open-in-emacs
-  ;;   "ar" 'org-attach-reveal
-  ;;   "aR" 'org-attach-reveal-in-emacs
-  ;;   "au" 'org-attach-url
-  ;;   "as" 'org-attach-set-directory
-  ;;   "aS" 'org-attach-sync
+  ;;    "a" '(:wk "attackments")
+  ;;    "aa" 'org-attach
+  ;;    "ad" 'org-attach-delete-one
+  ;;    "aD" 'org-attach-delete-all
+  ;;    "af" '+org/find-file-in-attachments
+  ;;    "al" '+org/attach-file-and-insert-link
+  ;;    "an" 'org-attach-new
+  ;;    "ao" 'org-attach-open
+  ;;    "aO" 'org-attach-open-in-emacs
+  ;;    "ar" 'org-attach-reveal
+  ;;    "aR" 'org-attach-reveal-in-emacs
+  ;;    "au" 'org-attach-url
+  ;;    "as" 'org-attach-set-directory
+  ;;    "aS" 'org-attach-sync
 
-  ;;   "b"  '(:wk "tables")
-  ;;   "b-" 'org-table-insert-hline
-  ;;   "ba" 'org-table-align
-  ;;   "bb" 'org-table-blank-field
-  ;;   "bc" 'org-table-create-or-convert-from-region
-  ;;   "be" 'org-table-edit-field
-  ;;   "bf" 'org-table-edit-formulas
-  ;;   "bh" 'org-table-field-info
-  ;;   "bs" 'org-table-sort-lines
-  ;;   "br" 'org-table-recalculate
-  ;;   "bR" 'org-table-recalculate-buffer-tables
-  ;;   "bd" '(:wk "delete")
-  ;;   "bdc" 'org-table-delete-column
-  ;;   "bdr" 'org-table-kill-row
-  ;;   "bi" '(:wk "insert")
-  ;;   "bic" 'org-table-insert-column
-  ;;   "bih" 'org-table-insert-hline
-  ;;   "bir" 'org-table-insert-row
-  ;;   "biH" 'org-table-hline-and-move
-  ;;   "bt" '("toggle")
-  ;;   "btf" 'org-table-toggle-formula-debugger
-  ;;   "bto" 'org-table-toggle-coordinate-overlays
+  ;;    "b"  '(:wk "tables")
+  ;;    "b-" 'org-table-insert-hline
+  ;;    "ba" 'org-table-align
+  ;;    "bb" 'org-table-blank-field
+  ;;    "bc" 'org-table-create-or-convert-from-region
+  ;;    "be" 'org-table-edit-field
+  ;;    "bf" 'org-table-edit-formulas
+  ;;    "bh" 'org-table-field-info
+  ;;    "bs" 'org-table-sort-lines
+  ;;    "br" 'org-table-recalculate
+  ;;    "bR" 'org-table-recalculate-buffer-tables
+  ;;    "bd" '(:wk "delete")
+  ;;    "bdc" 'org-table-delete-column
+  ;;    "bdr" 'org-table-kill-row
+  ;;    "bi" '(:wk "insert")
+  ;;    "bic" 'org-table-insert-column
+  ;;    "bih" 'org-table-insert-hline
+  ;;    "bir" 'org-table-insert-row
+  ;;    "biH" 'org-table-hline-and-move
+  ;;    "bt" '("toggle")
+  ;;    "btf" 'org-table-toggle-formula-debugger
+  ;;    "bto" 'org-table-toggle-coordinate-overlays
 
-  ;;   "c" '(:wk "clock")
-  ;;   "cc" 'org-clock-cancel
-  ;;   "cd" 'org-clock-mark-default-task
-  ;;   "ce" 'org-clock-modify-effort-estimate
-  ;;   "cE" 'org-set-effort
-  ;;   "cg" 'org-clock-goto
-  ;;   "cl" '+org/toggle-last-clock
-  ;;   "ci" 'org-clock-in
-  ;;   "cI" 'org-clock-in-last
-  ;;   "co" 'org-clock-out
-  ;;   "cr" 'org-resolve-clocks
-  ;;   "cR" 'org-clock-report
-  ;;   "ct" 'org-evaluate-time-range
-  ;;   "c=" 'org-clock-timestamps-up
-  ;;   "c-" 'org-clock-timestamps-down
+  ;;    "c" '(:wk "clock")
+  ;;    "cc" 'org-clock-cancel
+  ;;    "cd" 'org-clock-mark-default-task
+  ;;    "ce" 'org-clock-modify-effort-estimate
+  ;;    "cE" 'org-set-effort
+  ;;    "cg" 'org-clock-goto
+  ;;    "cl" '+org/toggle-last-clock
+  ;;    "ci" 'org-clock-in
+  ;;    "cI" 'org-clock-in-last
+  ;;    "co" 'org-clock-out
+  ;;    "cr" 'org-resolve-clocks
+  ;;    "cR" 'org-clock-report
+  ;;    "ct" 'org-evaluate-time-range
+  ;;    "c=" 'org-clock-timestamps-up
+  ;;    "c-" 'org-clock-timestamps-down
 
-  ;;   "d" '(:wk "date/deadline")
-  ;;   "dd" 'org-deadline
-  ;;   "ds" 'org-schedule
-  ;;   "dt" 'org-time-stamp
-  ;;   "dT" 'org-time-stamp-inactive
+  ;;    "d" '(:wk "date/deadline")
+  ;;    "dd" 'org-deadline
+  ;;    "ds" 'org-schedule
+  ;;    "dt" 'org-time-stamp
+  ;;    "dT" 'org-time-stamp-inactive
 
-  ;;   "D" 'archive-done-tasks
+  ;;    "D" 'archive-done-tasks
 
-  ;;   "g" '(:wk "goto")
-  ;;   "gg" 'consult-org-heading
-  ;;   "gc" 'org-clock-goto
-  ;;   "gi" 'org-id-goto
-  ;;   "gr" 'org-refile-goto-last-stored
-  ;;   "gv" '+org/goto-visible
-  ;;   "gx" 'org-capture-goto-last-stored
+  ;;    "g" '(:wk "goto")
+  ;;    "gg" 'consult-org-heading
+  ;;    "gc" 'org-clock-goto
+  ;;    "gi" 'org-id-goto
+  ;;    "gr" 'org-refile-goto-last-stored
+  ;;    "gv" '+org/goto-visible
+  ;;    "gx" 'org-capture-goto-last-stored
 
-  ;;   "l" '(:wk "links")
-  ;;   "lc" 'org-cliplink
-  ;;   "ld" '+org/remove-link
-  ;;   "li" 'org-id-store-link
-  ;;   "ll" 'org-insert-link
-  ;;   "lL" 'org-insert-all-links
-  ;;   "ls" 'org-store-link
-  ;;   "lS" 'org-insert-last-stored-link
-  ;;   "lt" 'org-toggle-link-display
+  ;;    "l" '(:wk "links")
+  ;;    "lc" 'org-cliplink
+  ;;    "ld" '+org/remove-link
+  ;;    "li" 'org-id-store-link
+  ;;    "ll" 'org-insert-link
+  ;;    "lL" 'org-insert-all-links
+  ;;    "ls" 'org-store-link
+  ;;    "lS" 'org-insert-last-stored-link
+  ;;    "lt" 'org-toggle-link-display
 
-  ;;   "P" '(:wk "publish")
-  ;;   "Pa" 'org-publish-all
-  ;;   "Pf" 'org-publish-current-file
-  ;;   "Pp" 'org-publish
-  ;;   "PP" 'org-publish-current-project
-  ;;   "Ps" 'org-publish-sitemap
+  ;;    "P" '(:wk "publish")
+  ;;    "Pa" 'org-publish-all
+  ;;    "Pf" 'org-publish-current-file
+  ;;    "Pp" 'org-publish
+  ;;    "PP" 'org-publish-current-project
+  ;;    "Ps" 'org-publish-sitemap
 
-  ;;   "r" '(:wk "refile")
-  ;;   "r." '+org/refile-to-current-file
-  ;;   "rc" '+org/refile-to-running-clock
-  ;;   "rl" '+org/refile-to-last-location
-  ;;   "rf" '+org/refile-to-file
-  ;;   "ro" '+org/refile-to-other-window
-  ;;   "rO" '+org/refile-to-other-buffer
-  ;;   "rv" '+org/refile-to-visible
-  ;;   "rr" 'org-refile
+  ;;    "r" '(:wk "refile")
+  ;;    "r." '+org/refile-to-current-file
+  ;;    "rc" '+org/refile-to-running-clock
+  ;;    "rl" '+org/refile-to-last-location
+  ;;    "rf" '+org/refile-to-file
+  ;;    "ro" '+org/refile-to-other-window
+  ;;    "rO" '+org/refile-to-other-buffer
+  ;;    "rv" '+org/refile-to-visible
+  ;;    "rr" 'org-refile
 
-  ;;   "s" '(:wk "tree/subtree")
-  ;;   "sa" 'org-toggle-archive-tag
-  ;;   "sb" 'org-tree-to-indirect-buffer
-  ;;   "sd" 'org-cut-subtree
-  ;;   "sh" 'org-promote-subtree
-  ;;   "sj" 'org-move-subtree-down
-  ;;   "sk" 'org-move-subtree-up
-  ;;   "sl" 'org-demote-subtree
-  ;;   "sn" 'org-narrow-to-subtree
-  ;;   "sr" 'org-refile
-  ;;   "ss" 'org-sparse-tree
-  ;;   "sA" 'org-archive-subtree
-  ;;   "sN" 'widen
-  ;;   "sS" 'org-sort
+  ;;    "s" '(:wk "tree/subtree")
+  ;;    "sa" 'org-toggle-archive-tag
+  ;;    "sb" 'org-tree-to-indirect-buffer
+  ;;    "sd" 'org-cut-subtree
+  ;;    "sh" 'org-promote-subtree
+  ;;    "sj" 'org-move-subtree-down
+  ;;    "sk" 'org-move-subtree-up
+  ;;    "sl" 'org-demote-subtree
+  ;;    "sn" 'org-narrow-to-subtree
+  ;;    "sr" 'org-refile
+  ;;    "ss" 'org-sparse-tree
+  ;;    "sA" 'org-archive-subtree
+  ;;    "sN" 'widen
+  ;;    "sS" 'org-sort
 
-  ;;   "p" '(:wk "priority")
-  ;;   "pd" 'org-priority-down
-  ;;   "pp" 'org-priority
-  ;;   "pu" 'org-priority-up
+  ;;    "p" '(:wk "priority")
+  ;;    "pd" 'org-priority-down
+  ;;    "pp" 'org-priority
+  ;;    "pu" 'org-priority-up
 
 
-  ;;   "x" '(:wk "Download")
-  ;;   "xc" 'org-download-clipboard
-  ;;   "xd" 'org-download-delete
-  ;;   "xi" 'org-download-image
-  ;;   "xy" 'org-download-yank
-  ;;   "xe" 'org-download-edit
-  ;;   "xr" 'org-download-rename-at-point
-  ;;   "xR" 'org-download-rename-last-file
-  ;;   "xs" 'org-download-screenshot
-  ;;   )
+  ;;    "x" '(:wk "Download")
+  ;;    "xc" 'org-download-clipboard
+  ;;    "xd" 'org-download-delete
+  ;;    "xi" 'org-download-image
+  ;;    "xy" 'org-download-yank
+  ;;    "xe" 'org-download-edit
+  ;;    "xr" 'org-download-rename-at-point
+  ;;    "xR" 'org-download-rename-last-file
+  ;;    "xs" 'org-download-screenshot
+  ;;    )
+  ;;   (local-leader-def
+  ;;    :keymaps 'org-agenda-mode-map
+  ;;    "d" '(:wk "date/deadline")
+  ;;    "dd" 'org-agenda-deadline
+  ;;    "ds" 'org-agenda-schedule
 
-  ;; (local-leader-def
-  ;;   :keymaps 'org-agenda-mode-map
-  ;;   "d" '(:wk "date/deadline")
-  ;;   "dd" 'org-agenda-deadline
-  ;;   "ds" 'org-agenda-schedule
+  ;;    "c" '(:wk "clock")
+  ;;    "cc" 'org-agenda-clock-cancel
+  ;;    "cg" 'org-agenda-clock-goto
+  ;;    "ci" 'org-agenda-clock-in
+  ;;    "co" 'org-agenda-clock-out
+  ;;    "cr" 'org-agenda-clockreport-mode
+  ;;    "cs" 'org-agenda-show-clocking-issues
 
-  ;;   "c" '(:wk "clock")
-  ;;   "cc" 'org-agenda-clock-cancel
-  ;;   "cg" 'org-agenda-clock-goto
-  ;;   "ci" 'org-agenda-clock-in
-  ;;   "co" 'org-agenda-clock-out
-  ;;   "cr" 'org-agenda-clockreport-mode
-  ;;   "cs" 'org-agenda-show-clocking-issues
+  ;;    "p" '(:wk "priority")
+  ;;    "pd" 'org-agenda-priority-down
+  ;;    "pp" 'org-agenda-priority
+  ;;    "pu" 'org-agenda-priority-up
 
-  ;;   "p" '(:wk "priority")
-  ;;   "pd" 'org-agenda-priority-down
-  ;;   "pp" 'org-agenda-priority
-  ;;   "pu" 'org-agenda-priority-up
+  ;;    "q" 'org-agenda-set-tags
+  ;;    "r" 'org-agenda-refile
+  ;;    "t" 'org-agenda-todo))
 
-  ;;   "q" 'org-agenda-set-tags
-  ;;   "r" 'org-agenda-refile
-  ;;   "t" 'org-agenda-todo)
+
   )
 ;; -OrgPac
 

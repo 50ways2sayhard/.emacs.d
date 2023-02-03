@@ -6,7 +6,6 @@
 
 (require 'org)
 (require 'org-element)
-(require 'evil)
 (require 'org-fold)
 (require 'org-cycle)
 
@@ -110,10 +109,7 @@ re-align the table if necessary. (Necessary because org-mode has a
                                ('todo)))))))
 
     (when (org-invisible-p)
-      (org-fold-show-hidden-entry))
-    (when (and (bound-and-true-p evil-local-mode)
-               (not (evil-emacs-state-p)))
-      (evil-insert 1))))
+      (org-fold-show-hidden-entry))))
 
 ;;;###autoload
 (defun +org/insert-item-below (count)
@@ -208,10 +204,7 @@ If on a:
 
       (`table-cell
        (org-table-blank-field)
-       (org-table-recalculate)
-       (when (and (string-empty-p (string-trim (org-table-get-field)))
-                  (bound-and-true-p evil-local-mode))
-         (evil-change-state 'insert)))
+       (org-table-recalculate))
 
       (`src-block
        (org-ctrl-c-ctrl-c))
