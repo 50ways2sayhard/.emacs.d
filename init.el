@@ -317,7 +317,10 @@ REST and STATE."
   :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
   :bind
   (:map magit-mode-map
-        ("x" . magit-discard))
+        ("x" . magit-discard)
+        ("N" . magit-section-forward)
+        ("P" . magit-section-backward)
+        ("p" . magit-push))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -2585,6 +2588,36 @@ function to the relevant margin-formatters list."
     (setq indicate-buffer-boundaries 'left))
   (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
 
+(use-package better-jumper
+  :after-call +my/first-input-hook-fun
+  :commands better-jump-set-jump-a
+  :init
+  (global-set-key [remap xref-pop-marker-stack] #'better-jumper-jump-backward)
+  (global-set-key [remap xref-go-back] #'better-jumper-jump-backward)
+  (global-set-key [remap xref-go-forward] #'better-jumper-jump-forward)
+  :config
+  (defun better-jump-set-jump-a (fn &rest args)
+    (better-jumper-set-jump (if (markerp (car args)) (car args)))
+    (let ((better-jumper--jumping t))
+      (apply fn args)))
+
+  (mapcar
+   (lambda (fn)
+     (advice-add fn :around #'better-jump-set-jump-a))
+   (list #'kill-current-buffer #'consult-imenu #'consult-line
+         #'find-file #'consult-fd #'consult-ripgrep #'xref-pop-to-location)))
+
+(use-package dumb-jump
+  :defer nil
+  :after-call +my/first-input-hook-fun
+  :commands dumb-jump-result-follow dumb-jump-go dumb-jump-xref-activate
+  :config
+  (setq dumb-jump-prefer-searcher 'rg
+        dumb-jump-aggressive nil)
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+  (add-hook 'xref-after-jump-hook #'better-jumper-set-jump)
+  (add-hook 'xref-after-return-hook #'better-jumper-set-jump))
+
 (use-package lisp-mode
   :mode ("\\.el\\'" . emacs-lisp-mode)
   :config
@@ -2605,7 +2638,6 @@ function to the relevant margin-formatters list."
                                              (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; Show all eldoc feedback.
                                  (setq eldoc-documentation-strategy #'eldoc-documentation-compose)
-
                                  (if (or (boundp 'lsp-bridge-mode) (boundp 'lspce-mode))
                                      (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
                                    (my/set-eglot-capf))
@@ -2788,6 +2820,7 @@ Install the doc if it's not installed."
   :hook (imenu-after-jump . recenter))
 
 (use-package xref
+  :defer nil
   :init
   ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
   ;; `project-find-regexp' benefits from that.

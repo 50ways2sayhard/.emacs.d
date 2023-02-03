@@ -81,6 +81,7 @@ S is string of the two-key sequence."
     "B" #'magit-blame
     "u" #'aborn/simple-git-commit-push
     "y" #'magit-add-current-buffer-to-kill-ring
+    "o" #'magit-open-repo
     "t" #'git-timemachine)
   (defvar-keymap +meow-open-map
     "t" #'org-todo-list
@@ -133,6 +134,7 @@ S is string of the two-key sequence."
  '("/" . "f h")
  '("." . noct-consult-ripgrep-or-line)
  '("SPC" . consult-project-extra-find)
+ '(";" . +my/open-org-agenda)
  '("," . "C-x ,"))
 
 (with-no-warnings
@@ -271,6 +273,7 @@ S is string of the two-key sequence."
    '("C-w k" . windmove-up)
    '("C-w l" . windmove-right)
    '("C-w h" . windmove-left)
-   ))
+   '("C-i" . xref-go-back)
+   '("C-o" . xref-go-forward)))
 
 (provide 'meow-config)
