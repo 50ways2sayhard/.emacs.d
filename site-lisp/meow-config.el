@@ -132,6 +132,7 @@ S is string of the two-key sequence."
  '("=" . er/expand-region)
  '("?" . +consult-ripgrep-current-directory)
  '("/" . "f h")
+ '(":" . "M-x")
  '("." . noct-consult-ripgrep-or-line)
  '("SPC" . consult-project-extra-find)
  '(";" . +my/open-org-agenda)

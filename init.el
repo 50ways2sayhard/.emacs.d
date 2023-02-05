@@ -724,9 +724,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -1149,6 +1149,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)
+   :map minibuffer-mode-map
    ("C-/" . embark-export)      ;; alternative for `describe-bindings'
    :map embark-file-map
    ("r" . +my-rename-file)
@@ -1553,15 +1554,9 @@ When the number of characters in a buffer exceeds this threshold,
 /a/b/c/d-> c/d"
     (let* ((file (directory-file-name file))
            (filename (file-name-nondirectory file))
-           ;; (dir (file-name-directory file))
+
            short-name)
-      (setq short-name filename
-            ;; (if dir
-            ;;     (format "%s/%s" (file-name-nondirectory
-            ;;                      (directory-file-name dir))
-            ;;             filename)
-            ;;   filename)
-            )
+      (setq short-name filename)
       (propertize short-name 'multi-category `(file . ,file))))
 
   (plist-put consult--source-recent-file
@@ -1605,21 +1600,32 @@ When the number of characters in a buffer exceeds this threshold,
   (defun consult-project-extra--find-with-concat-root (candidate)
     "Find-file concatenating root with CANDIDATE."
     (find-file candidate))
+  (defvar consult-project-extra--source-project
+    `(:name      "Known Project"
+                 :narrow    (?p . "Project")
+                 :category  'consult-project-extra-project
+                 :face      consult-project-extra-projects
+                 :history   consult-project-extra--project-history
+                 :annotate  ,(lambda (dir) (if consult-project-extra-display-info (progn
+                                                                                    (format "Project: %s"
+                                                                                            (file-name-nondirectory (directory-file-name dir))))))
+                 :action    ,#'consult-project-extra--file
+                 :items     ,#'project-known-project-roots))
 
   ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
   (defun consult-project-extra--file (selected-root)
     "Create a view for selecting project files for the project at SELECTED-ROOT."
-    (let ((project-current-directory-override selected-root))
-      (call-interactively #'project-find-file)))
+    (consult-fd selected-root))
 
-  (defun consult-project-extra--project-files (root)
+  (defun consult-project-extra--project-files (root &optional include-root)
     "Compute the project files given the ROOT."
     (let* ((project (consult-project-extra--project-with-root root))
            (files (project-files project)))
       (mapcar (lambda (f)
-                (let ((filename (file-relative-name f root))
-                      (abs-filename (expand-file-name f root)))
-                  (propertize filename 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
+                (let* ((filename (file-relative-name f root))
+                       (abs-filename (expand-file-name f root))
+                       (result (if include-root (abbreviate-file-name abs-filename) filename)))
+                  (propertize result 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
 
 (use-package consult-xref
   :after consult
@@ -2173,8 +2179,7 @@ function to the relevant margin-formatters list."
 (use-package vundo
   :commands vundo
   :config
-  (setf (alist-get 'selected-node vundo-glyph-alist) ?X
-        (alist-get 'node vundo-glyph-alist) ?O))
+  (setq vundo-glyph-alist vundo-unicode-symbols))
 
 
 ;; SaveAllBuffers
@@ -2623,7 +2628,7 @@ function to the relevant margin-formatters list."
 
 (use-package better-jumper
   :after-call +my/first-input-hook-fun
-  :commands better-jump-set-jump-a
+  :commands better-jump-set-jump-a better-jumper-mode
   :init
   (global-set-key [remap xref-pop-marker-stack] #'better-jumper-jump-backward)
   (global-set-key [remap xref-go-back] #'better-jumper-jump-backward)
@@ -3063,10 +3068,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -3250,14 +3255,14 @@ Install the doc if it's not installed."
       (diary-chinese-anniversary lunar-month lunar-day year mark)))
 
   ;; binding
-  (general-define-key :states '(normal insert)
-                      :keymaps 'org-mode-map
-                      "C-<return>" #'+org/insert-item-below
-                      "C-S-<return>" #'org-insert-subheading
-                      )
-  (general-define-key :states '(normal)
-                      :keymaps 'org-mode-map
-                      "<return>" #'+org/dwim-at-point)
+  ;; (general-define-key :states '(normal insert)
+  ;;                     :keymaps 'org-mode-map
+  ;;                     "C-<return>" #'+org/insert-item-below
+  ;;                     "C-S-<return>" #'org-insert-subheading
+  ;;                     )
+  ;; (general-define-key :states '(normal)
+  ;;                     :keymaps 'org-mode-map
+  ;;                     "<return>" #'+org/dwim-at-point)
 
   ;; (with-eval-after-load 'general
   ;;   (local-leader-def
@@ -3547,4 +3552,3 @@ Install the doc if it's not installed."
 ;; no-byte-compile: t
 ;; End:
 ;;; init.el ends here
-(put 'upcase-region 'disabled nil)

@@ -308,6 +308,8 @@
 [submodule "wgrep"]
 	path = lib/wgrep
 	url = https://github.com/mhayashi1120/Emacs-wgrep
+	no-byte-compile	= wgrep-ag.el
+	no-byte-compile = wgrep-subtest.el
 [submodule "which-key"]
 	path = lib/which-key
 	url = https://github.com/justbur/emacs-which-key
