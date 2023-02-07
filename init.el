@@ -320,7 +320,8 @@ REST and STATE."
         ("x" . magit-discard)
         ("N" . magit-section-forward)
         ("P" . magit-section-backward)
-        ("p" . magit-push))
+        ("p" . magit-push)
+        ("'" . magit-process-buffer))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (magit-auto-revert-mode -1)
@@ -913,8 +914,8 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :config
   (require 'meow-config)
   (meow-setup)
-  ;; (meow-setup-indicator)
-  (meow-global-mode 1))
+  (meow-setup-indicator)
+  (meow-global-mode))
 
 ;;; Keybindings
 (use-package general
