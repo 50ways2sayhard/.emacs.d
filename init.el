@@ -1299,8 +1299,8 @@ targets."
 
   (use-package vertico-repeat
     :after vertico
-    :config
-    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save))
+    :bind ("C-c r" . vertico-repeat)
+    :hook (minibuffer-setup . vertico-repeat-save))
   (use-package vertico-directory
     :after vertico
     ;; More convenient directory navigation commands
@@ -2542,7 +2542,9 @@ function to the relevant margin-formatters list."
                 load-path))
 
   (setq eldoc-documentation-function 'eldoc-documentation-compose)
-  (setq flymake-no-changes-timeout nil))
+  (setq flymake-no-changes-timeout nil
+        flymake-fringe-indicator-position 'right-fringe)
+  )
 
 ;;; Better edit
 (use-package format-all
@@ -2610,7 +2612,7 @@ function to the relevant margin-formatters list."
   (add-to-list 'super-save-triggers 'switch-to-buffer)
   (add-to-list 'super-save-triggers 'eglot-rename)
   (setq super-save-exclude '(".gpg"))
-  (setq super-save-idle-duration 5)
+  (setq super-save-idle-duration 1)
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
 
