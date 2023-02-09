@@ -55,12 +55,14 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-buffer-map
     :doc "Buffer operations"
     "b" #'consult-buffer
-    "d" #'kill-current-buffer)
+    "d" #'kill-current-buffer
+    "s" #'save-buffer)
   (defvar-keymap +meow-code-map
     :doc "Code operations"
     "r" #'eglot-rename
     "a" #'eglot-code-actions
     "h" #'+eglot-help-at-point
+    "f" #'format-all-buffer
     "I" #'+eglot-organize-imports
     "i" #'consult-eglot-symbols)
   (defvar-keymap +meow-diagnostics-map
@@ -99,6 +101,7 @@ S is string of the two-key sequence."
     "a" #'consult-org-agenda
     "d" #'+devdocs-dwim
     "D" #'+devdocs-search-at-point
+    "h" #'+consult-ripgrep-current-directory
     "i" #'+my-imenu
     "I" #'consult-imenu-multi
     "p" #'consult-ripgrep
@@ -112,7 +115,18 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-window-map
     "u" #'winner-undo
     "o" #'winner-redo
-    "k" #'delete-other-windows))
+    "k" #'delete-other-windows)
+  (defvar-keymap +meow-tab-map
+    "c" #'tab-new
+    "r" #'tab-bar-switch-to-recent-tab
+    "d" #'tab-bar-close-tab
+    "s" #'tab-bar-select-tab-by-name
+    "t" #'+my/smart-switch-to-vterm-tab
+    "1" #'(lambda () (interactive) (tab-bar-select-tab 1))
+    "2" #'(lambda () (interactive) (tab-bar-select-tab 2))
+    "3" #'(lambda () (interactive) (tab-bar-select-tab 3))
+    "4" #'(lambda () (interactive) (tab-bar-select-tab 4))
+    "5" #'(lambda () (interactive) (tab-bar-select-tab 5))))
 
 (meow-leader-define-key
  `("f" . ,+meow-file-map)
@@ -130,10 +144,9 @@ S is string of the two-key sequence."
 
  '("x" . org-capture)
  '("=" . er/expand-region)
- '("?" . +consult-ripgrep-current-directory)
- '("/" . "f h")
+ '("?" . consult-ripgrep)
+ '("/" . noct-consult-ripgrep-or-line)
  '(":" . "M-x")
- '("." . noct-consult-ripgrep-or-line)
  '("SPC" . consult-project-extra-find)
  '(";" . +my/open-org-agenda)
  '("," . "C-x ,"))
@@ -261,12 +274,7 @@ S is string of the two-key sequence."
    '("y" . meow-save)
    '("Y" . meow-sync-grab)
    '("z" . meow-pop-selection)
-   '("'" . noct-consult-ripgrep-or-line)
-   '(": w" . save-buffer)
-   '(": v s p" . +meow-window-vsplit)
    '("$" . end-of-line)
-   '("/" . consult-line)
-   '("?" . consult-ripgrep)
    '("RET" . ignore)
    '("<escape>" . ignore)
    '("C-w v" . +meow-window-vsplit)
@@ -278,6 +286,9 @@ S is string of the two-key sequence."
    '("C-w h" . windmove-left)
    '("C-i" . xref-go-back)
    '("C-o" . xref-go-forward)
+   '("?" . consult-ripgrep)
+   '("/" . noct-consult-ripgrep-or-line)
+   `("C-s" . ,+meow-tab-map)
    ))
 
 (provide 'meow-config)
