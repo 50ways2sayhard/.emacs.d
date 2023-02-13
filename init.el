@@ -258,6 +258,7 @@ REST and STATE."
   :hook ((+my/first-input . dirvish-override-dired-mode))
   :bind
   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+        ("?"   . dirvish-menu-all-cmds)
         ("a"   . dirvish-quick-access)
         ("f"   . dirvish-file-info-menu)
         ("y"   . dirvish-yank-menu)
@@ -291,9 +292,6 @@ REST and STATE."
   (setq dired-dwim-target t)
   (setq dired-listing-switches
         "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
-  (general-define-key :states '(normal)
-                      :keymaps 'dirvish-mode-map
-                      "?" 'dirvish-menu-all-cmds)
 
   (use-package dirvish-extras
     :after dirvish))
@@ -913,228 +911,11 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :defer nil
   :config
   (require 'meow-config)
+  (add-to-list 'meow-mode-state-list (cons vterm-mode insert))
+  (add-to-list 'meow-mode-state-list (cons comint-mode insert))
   (meow-setup)
   (meow-setup-indicator)
   (meow-global-mode))
-
-;;; Keybindings
-(use-package general
-  :disabled
-  :commands (leader-def local-leader-def general-def)
-  :config
-  (push '(override . general-override-mode-map) general-keymap-aliases)
-  (setq general-keymap-aliases '((override . general-override-mode-map)
-                                 (normal . meow-normal-mode-map)
-                                 (keypad . meow-keypad-mode-map)
-                                 (motion . meow-motion-mode-map)))
-
-  (general-create-definer leader-def
-    :prefix "H-c")
-
-  (general-create-definer local-leader-def
-    :prefix "H-c ,")
-
-  (general-create-definer tab-def
-    :prefix "C-s")
-
-  (tab-def
-   "" nil
-   "c" '(tab-new :wk "New")
-   "r" '(tab-bar-switch-to-recent-tab :wk "Recent")
-   "R" '(tab-bar-rename-tab :wk "Rename")
-   "d" '(tab-bar-close-tab :wk "Close")
-   "s" '(tab-bar-select-tab-by-name :wk "Select")
-   "t" '(+my/smart-switch-to-vterm-tab :wk "Vterm tab")
-   "1" '((lambda () (interactive) (tab-bar-select-tab 1)) :wk "Select 1")
-   "2" '((lambda () (interactive) (tab-bar-select-tab 2)) :wk "Select 2")
-   "3" '((lambda () (interactive) (tab-bar-select-tab 3)) :wk "Select 3")
-   "4" '((lambda () (interactive) (tab-bar-select-tab 4)) :wk "Select 4")
-   "5" '((lambda () (interactive) (tab-bar-select-tab 5)) :wk "Select 5"))
-
-  (general-def "<escape>" 'keyboard-quit)
-  (general-def "C-;" 'embrace-commander)
-
-  ;; Leader def
-  (leader-def
-   :keymaps 'override
-   "<SPC>" '(consult-project-extra-find :wk "Project Find File")
-   ";" '((lambda() (interactive "") (org-agenda nil "n")) :wk "Agenda")
-   ":" '(execute-extended-command :wk "M-x")
-   "/" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
-   "?" '(+consult-ripgrep-at-point :wk "Search symbol here")
-   "\\" '(evilnc-comment-or-uncomment-to-the-line :wk "Comment to line")
-   "." '(noct-consult-ripgrep-or-line :wk "Swiper")
-   "`" '(vertico-repeat-last :wk "Repeat last search")
-   "-" '(vertico-repeat-select :wk "Repeat historical search")
-   "[" '(previous-buffer :wk "Previous buffer")
-   "]" '(next-buffer :wk "Next buffer")
-
-   "b" '(:wk "Buffer")
-   "b[" '(previous-buffer :wk "Previous buffer")
-   "b]" '(next-buffer :wk "Next buffer")
-   "bb" '(switch-to-buffer :wk "Switch buffer")
-   "bB" '(switch-to-buffer-other-window :wk "Switch buffer other window")
-   "bd" '(kill-current-buffer :wk "Kill buffer")
-
-   "c" '(:wk "Code")
-   "cw" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
-   "cf" '(format-all-buffer :wk "Format buffer")
-   "cF" '(eglot-find-implementation :wk "Find implementation")
-   "cD" '(eglot-find-typeDefinition :wk "Find References")
-   "cd" '(eglot-find-declaration :wk "Jump to definition")
-   "cI" '(+eglot-organize-imports :wk "Organize import")
-   "ci" '(consult-eglot-symbols :wk "Symbols in current file")
-   "cr" '(eglot-rename :wk "LSP rename")
-   "co" '(imenu :wk "Outline")
-   "ca" '(eglot-code-actions :wk "Code Actions")
-   "cc" '(separedit-dwim :wk "Write comment")
-   "ch" '(+eglot-help-at-point :wk "Toggle lsp-ui-doc")
-
-   "d" '(:wk "Debug")
-   "dt" '(dap-breakpoint-toggle :wk "Add breakpoint")
-
-   "e" '(:wk "Error")
-   "eb" '(flymake-start :wk "Check current buffer")
-   "el" '(consult-flymake :wk "List errors")
-   "eP" '(flymake-show-project-diagnostics :wk "Show project errors")
-   "en" '(flymake-goto-next-error :wk "Next error")
-   "ep" '(flymake-goto-prev-error :wk "Previous error")
-
-   "f" '(:wk "Files")
-   "ff" '(find-file :wk "Find file")
-   "fF" '(find-file-other-window :wk "Find file in new Frame")
-   "fr" '(recentf-open-files :wk "Recent file")
-   "fR" '(embark-rename-buffer :wk "Rename file")
-   "fp" '(+open-configuration-folder :wk ".emacs.d")
-   "fD" '(+my-delete-file :wk "Delete file")
-   "f<SPC>" '(delete-trailing-whitespace :wk "Delete trailing whitespace")
-   "fo" '((lambda() (interactive)(find-file +org-capture-file-gtd)) :which-key "Org files")
-   "fj" '(consult-dir :wk "Consult directory")
-   "fh" '((lambda() (interactive)(consult-fd default-directory)) :wk "Find file here")
-
-   "g" '(:wk "Git")
-   "gs" '(magit-status :wk "Git status")
-   "gb" '(magit-branch-checkout :wk "Git checkout")
-   "gB" '(magit-blame :wk "Git blame")
-   "gm" '(gitmoji-picker :wk "Gitmoji")
-   "gM" '((lambda() (interactive)(progn (call-interactively 'magit-stage-file) (call-interactively 'magit-commit))) :wk "Git stage and commit")
-   "gf" '(magit-fetch :wk "Git fetch")
-   "gF" '(magit-pull :wk "Git pull")
-   "go" '(magit-open-repo :wk "Open repo")
-   "gu" '(aborn/simple-git-commit-push :wk "Commit and push")
-   "gy" '(magit-add-current-buffer-to-kill-ring :wk "Copy current branch name")
-   "gt" '(git-timemachine :wk "Git timemachine")
-
-   "j" '(:wk "Jump")
-   "jj" '(avy-goto-char :wk "Jump to character")
-   "jl" '(avy-goto-line :wk "Jump to line")
-   "jJ" '(avy-goto-char-2 :wk "Jump to character 2")
-
-   "m" '(:wk "Local leader")
-
-   "o" '(:wk "Open")
-   "ot" '(org-todo-list :wk "Org todos")
-   "ox" '(org-agenda :wk "Org agenda")
-   "oi" '(consult-clock-in :wk "Clock in")
-   "oo" '((lambda () (interactive)(org-clock-out)(org-save-all-org-buffers)) :wk "Clock out")
-   "od" '(consult-mark-done :wk "Mark done")
-
-   "p" '(:wk "Project")
-   "pk" '(project-kill-buffers :wk "Kill project buffers" )
-   "pp" '(project-switch-project :wk "Switch project")
-   "pf" '(project-find-file :wk "Find file in project")
-   "pt" '(magit-todos-list :wk "List project tasks")
-   "pS" '(save-some-buffers :wk "Save project buffers")
-   "pd" '(project-find-dir :wk "Find dir in project")
-
-   "q" '(:wk "Quit")
-   "qq" '(kill-emacs :wk "Quit")
-   "qr" '(restart-emacs :wk "Restart")
-
-   "s" '(:wk "Search")
-   "sa" '(consult-org-agenda :wk "Search agenda")
-   "sd" '(devdocs-dwim :wk "Devdocs lookup")
-   "sD" '(+devdocs-search-at-point :wk "Devdocs search")
-   "sf" '(locate :wk "Locate file")
-   "sh" '((lambda() (interactive) (consult-ripgrep default-directory)) :wk "Search here")
-   "si" '(+my-imenu :wk "Jump to symbol")
-   "sI" '(consult-imenu-multi :wk "Jump to symbol all buffer")
-   "sp" '(consult-ripgrep :wk "Search project")
-   "sP" '(color-rg-search-project :wk "Color-rg Search project")
-   "sy" '(color-rg-search-symbol-in-project :wk "Color-rg Search symbol")
-   "sT" '(load-theme :wk "Load theme")
-   "sc" '(:wk "In current file")
-   "scs" '(color-rg-search-input-in-current-file :wk "Search input")
-   "sci" '(color-rg-search-symbol-in-current-file :wk "Search symbol at point")
-   "sg" '(+my/google-it :wk "Google")
-
-   "t" '(:wk "Toggle")
-   "te" '(+my/smart-switch-to-vterm-tab :wk "Shell")
-   "tt" '(dirvish-side :wk "Tree view")
-   "tl" '(toggle-truncate-lines :wk "Toggle line wrap")
-   "td" '(toggle-debug-on-error :wk "Toggle debug on error")
-   "ti" '(imenu-list-smart-toggle :wk "imenu-list")
-   "ty" '(multi-translate-at-point :wk "youdao")
-
-   "w" '(:wk "Window")
-   "wv" '(split-window-vertically :wk "Split window vertically")
-   "wH" '(split-window-horizontally :wk "Split window horizontally")
-   "wu" '(winner-undo :wk "Undo window")
-   "wo" '(winner-redo :wk "Redo window")
-   "wK" '(delete-other-windows :wk "Kill other windows")
-
-   "x" '(org-capture :wk "Org capture")
-
-   "=" '(er/expand-region :wk "Expand Region")
-   )
-
-  ;; Python
-  (leader-def
-   :states 'normal
-   :keymaps 'python-mode-map
-   "md" '(sphinx-doc :wk "Docstring")
-
-   "mv" '(:wk "Virtualenv")
-   "mvw" '(pyvenv-workon :wk "Pyvenv workon")
-   "mva" '(pyvenv-activate :wk "Pyvenv activate")
-   "mvd" '(pyvenv-deactivate :wk "Pyvenv deactivate")
-
-   "mi" '(:wk "Imports")
-   "mis" '(+python/python-sort-imports :wk "Sort imports")
-   "mii" '(importmagic-fix-imports :wk "Fix imports")
-
-   "mt" '(:wk "Tests")
-   "mtp" '(python-pytest-popup :wk "Pytest popup")
-   "mtf" '(python-pytest-file :wk "Pytest file")
-   "mtF" '(python-pytest-file-dwim :wk "Pytest file dwim")
-   "mtt" '(python-pytest-function :wk "Pytest function")
-   "mtT" '(python-pytest-function-dwim :wk "Pytest function dwin")
-   "mtr" '(python-pytest-repeat :wk "Pytest repeat")
-   "mtl" '(python-pytest-last-failed :wk "Pytest last failed")
-
-   "mp" '(:wk "Poetry")
-   "mpv" '(poetry-venv-workon :wk "Poetry workon")
-   "mpV" '(poetry-venv-deactivate :wk "Poetry deactivate workon")
-   "mpp" '(poetry :wk "Poetry popup")
-   "mpa" '(poetry-add :wk "Poetry add dep")
-   "mpr" '(poetry-run :wk "Run poetry command")
-   "mpR" '(poetry-remove :wk "Poetry remove dep")
-   )
-
-  ;; JS
-  (leader-def
-   :states 'normal
-   :keymaps '(js-mode-map js2-mode-map rjsx-mode-map)
-   "mi" '(:wk "Imports")
-   "mif" '(import-js-fix :wk "Fix imports")
-   "mir" '(run-import-js :wk "Run import js")
-   "mii" '(import-js-import :wk "Import module")
-
-   "md" '(:wk "Docs")
-   "mdf" '(js-doc-insert-function-doc :wk "Insert function doc")
-   "mdF" '(js-doc-insert-file-doc :wk "Insert file doc")
-   "mdt" '(js-doc-insert-tag :wk "Insert tag")
-   ))
 
 (use-package which-key
   :diminish
@@ -1173,12 +954,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :config
   (use-package embark-consult
     :after consult)
-  ;;  HACK: bind will be override by evil
-  ;; (with-eval-after-load 'general
-  ;;   (general-define-key :states '(normal insert visual emacs)
-  ;;                       "C-." 'embark-act
-  ;;                       "M-." 'embark-dwim
-  ;;                       "C-h B" 'embark-bindings))
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -2188,10 +1963,6 @@ function to the relevant margin-formatters list."
   "Instead of `save-buffer', save all opened buffers by calling `save-some-buffers' with ARG t."
   (interactive)
   (save-some-buffers t))
-;; (with-eval-after-load 'general
-;;   (general-def "C-x C-s" nil)
-;;   (general-def "C-x C-s" 'save-all-buffers)
-;;   )
 ;; -SaveAllBuffers
 
 (use-package project
@@ -3257,13 +3028,39 @@ Install the doc if it's not installed."
                (y (+ (* 100 cycle) yy)))
           (diary-chinese-anniversary lunar-month lunar-day y mark))
       (diary-chinese-anniversary lunar-month lunar-day year mark)))
-
+  
   ;; binding
-  ;; (general-define-key :states '(normal insert)
-  ;;                     :keymaps 'org-mode-map
-  ;;                     "C-<return>" #'+org/insert-item-below
-  ;;                     "C-S-<return>" #'org-insert-subheading
-  ;;                     )
+  ;; TODO: bind more keys
+  (define-key org-mode-map (kbd "C-<return>") '+org/insert-item-below)
+  (define-key org-mode-map (kbd "C-S-<return>") 'org-insert-subheading)
+
+  (bind-keys
+   :map org-mode-map
+   :prefix "C-x ,"
+   :prefix-map meow-normal-state-keymap
+   ("'" . org-edit-special)
+   ("*" . org-ctrl-c-star)
+   ("+" . org-ctrl-c-minus)
+   ("," . org-switchb)
+   ("." . consult-org-heading)
+   ("A" . org-archive-subtree)
+   ("e" . org-export-dispatch)
+   ("f" . org-footnote-new)
+   ("h" . org-toggle-heading)
+   ("I" . org-toggle-inline-images)
+   ("n" . org-store-link)
+   ("o" . org-set-property)
+   ("q" . org-set-tag-commend)
+   ("t" . org-todo)
+   ("T" . org-todo-list)
+   ("x" . org-toggle-checkbox))
+
+  (bind-keys
+   :map org-agenda-mode-map
+   :prefix "C-x ,"
+   :prefix-map meow-motion-state-keymap
+   ("t" . org-todo))
+
   ;; (general-define-key :states '(normal)
   ;;                     :keymaps 'org-mode-map
   ;;                     "<return>" #'+org/dwim-at-point)
