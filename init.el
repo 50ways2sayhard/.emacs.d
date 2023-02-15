@@ -528,7 +528,7 @@ window that already exists in that direction. It will split otherwise."
   :after magit
   :diminish
   :bind (:map smerge-mode-map
-              ("C-c m" . smerge-mode-hydra/body))
+              ("C-c m" . hydra-smerge/body))
   :hook ((find-file . (lambda ()
                         (save-excursion
                           (goto-char (point-min))
@@ -536,43 +536,43 @@ window that already exists in that direction. It will split otherwise."
                             (smerge-mode 1)))))
          (magit-diff-visit-file . (lambda ()
                                     (when smerge-mode
-                                      (smerge-mode-hydra/body))))
+                                      (hydra-smerge/body))))
          )
   :config
   (when (>= emacs-major-version 27)
     (set-face-attribute 'smerge-refined-removed nil :extend t)
     (set-face-attribute 'smerge-refined-added   nil :extend t))
-  (require 'transient)
-  (transient-define-prefix smerge-dispatch ()
-    "Invoke an SMerge command from a list of available commands."
-    [["Keep"
-      ("b" "Base" smerge-keep-base)
-      ("u" "Upper" smerge-keep-upper)
-      ("l" "Lower" smerge-keep-lower)
-      ("a" "All" smerge-keep-all) ("RET" "Current" smerge-keep-current)]
-     ["Diff"
-      ("<" "Base/upper" smerge-diff-base-upper)
-      ("=" "Upper/lower" smerge-diff-upper-lower)
-      (">" "Base/lower" smerge-diff-base-lower)
-      ("R" "Refine" smerge-refine :transient t)]
-     ["Other"
-      ("C" "Combine" smerge-combine-with-next)
-      ("r" "Resolve" smerge-resolve) ("x" "Kill current" smerge-kill-current)]])
-  ;; (define-key (plist-get smerge-text-properties 'keymap)
-  ;;             (kbd "RET") '(menu-item "" smerge-dispatch :enable (evil-normal-state-p)))
-  ;; (evil-define-motion evil-forward-conflict (count)
-  ;;   "Move the cursor to the beginning of the COUNT-th next conflict."
-  ;;   :jump t
-  ;;   (require 'smerge-mode)
-  ;;   (smerge-next count)
-  ;;   (unless smerge-mode (smerge-mode)))
-  ;; (evil-define-motion evil-backward-conflict (count)
-  ;;   "Move the cursor to the beginning of the COUNT-th previous conflict."
-  ;;   :jump t :type inclusive
-  ;;   (require 'smerge-mode)
-  ;;   (smerge-prev count)
-  ;;   (unless smerge-mode (smerge-mode)))
-  )
+  (defhydra hydra-smerge (:hint nil
+                          :pre (smerge-mode 1)
+                          ;; Disable `smerge-mode' when quitting hydra if
+                          ;; no merge conflicts remain.
+                          :post (smerge-auto-leave))
+    "
+^Move^       ^Keep^               ^Diff^                 ^Other^
+^^-----------^^-------------------^^---------------------^^-------
+_n_ext       _b_ase               _<_: upper/base        _C_ombine
+_p_rev       _u_pper              _=_: upper/lower       _r_esolve
+^^           _l_ower              _>_: base/lower        _k_ill current
+^^           _a_ll                _R_efine
+^^           _RET_: current       _E_diff
+"
+    ("n" smerge-next)
+    ("p" smerge-prev)
+    ("b" smerge-keep-base)
+    ("u" smerge-keep-upper)
+    ("l" smerge-keep-lower)
+    ("a" smerge-keep-all)
+    ("RET" smerge-keep-current)
+    ("\C-m" smerge-keep-current)
+    ("<" smerge-diff-base-upper)
+    ("=" smerge-diff-upper-lower)
+    (">" smerge-diff-base-lower)
+    ("R" smerge-refine)
+    ("E" smerge-ediff)
+    ("C" smerge-combine-with-next)
+    ("r" smerge-resolve)
+    ("k" smerge-kill-current)
+    ("q" nil "cancel" :color blue)))
 
 (use-package git-timemachine
   :commands (git-timemachine git-timemachine-toggle)
@@ -723,9 +723,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -914,8 +914,8 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (meow-setup)
   (meow-setup-indicator)
   (meow-global-mode)
- (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
- (add-to-list 'meow-mode-state-list '(comint-mode . insert))
+  (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
+  (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   )
 
 (use-package which-key
@@ -1384,8 +1384,8 @@ When the number of characters in a buffer exceeds this threshold,
                  :face      consult-project-extra-projects
                  :history   consult-project-extra--project-history
                  :annotate  ,(lambda (dir) (if consult-project-extra-display-info (progn
-                                                                                    (format "Project: %s"
-                                                                                            (file-name-nondirectory (directory-file-name dir))))))
+                                                                               (format "Project: %s"
+                                                                                       (file-name-nondirectory (directory-file-name dir))))))
                  :action    ,#'consult-project-extra--file
                  :items     ,#'project-known-project-roots))
 
@@ -1845,8 +1845,7 @@ function to the relevant margin-formatters list."
   :hook ((prog-mode . my/set-basic-capf)
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
-         (org-mode . my/set-basic-capf)
-         )
+         (org-mode . my/set-basic-capf))
   :config
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
@@ -2133,7 +2132,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Iosevka SS17" . 16) ("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2859,10 +2858,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                  +org-capture-file-done
-                                                  +org-capture-file-someday
-                                                  +org-capture-file-note
-                                                  +org-capture-file-routine)))
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
