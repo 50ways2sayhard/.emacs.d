@@ -911,11 +911,12 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :defer nil
   :config
   (require 'meow-config)
-  (add-to-list 'meow-mode-state-list (cons vterm-mode insert))
-  (add-to-list 'meow-mode-state-list (cons comint-mode insert))
   (meow-setup)
   (meow-setup-indicator)
-  (meow-global-mode))
+  (meow-global-mode)
+ (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
+ (add-to-list 'meow-mode-state-list '(comint-mode . insert))
+  )
 
 (use-package which-key
   :diminish
@@ -2108,6 +2109,16 @@ function to the relevant margin-formatters list."
   :init
   (ef-themes-select 'ef-trio-light)
   :config
+  (setq ef-themes-headings
+        '((0 . (bold 1))
+          (1 . (bold 1))
+          (2 . (rainbow bold 1))
+          (3 . (rainbow bold 1))
+          (4 . (rainbow bold 1))
+          (t . (rainbow bold 1))))
+  (setq ef-themes-region '(intense no-extend neutral))
+  ;; Disable all other themes to avoid awkward blending:
+  ;; (mapc #'disable-theme custom-enabled-themes)
   (defun +my-custom-org-todo-faces()
     (ef-themes-with-colors
       (setq org-todo-keyword-faces
@@ -2555,9 +2566,14 @@ function to the relevant margin-formatters list."
 
 ;;;; Builtin tree sitter
 (use-package treesit
-  :if (and (fboundp 'treesit-available-p) (treesit-available-p))
+  :when (and (fboundp 'treesit-available-p) (treesit-available-p))
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :init
+  (add-to-list 'auto-mode-alist '("\\(?:CMakeLists\\.txt\\|\\.cmake\\)\\'" . cmake-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
   (setq treesit-language-source-alist
         '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
           (css . ("https://github.com/tree-sitter/tree-sitter-css"))
@@ -2747,7 +2763,7 @@ Install the doc if it's not installed."
    ("v" . flutter-utils-open-devtools)
    ("Q" . flutter-utils-quit)
    ("s" . flutter-utils-run-or-attach)
-   ("p" . flutter-utils.pub-get)))
+   ("p" . flutter-utils-pub-get)))
 
 
 ;;; Terminal integration
@@ -3028,7 +3044,7 @@ Install the doc if it's not installed."
                (y (+ (* 100 cycle) yy)))
           (diary-chinese-anniversary lunar-month lunar-day y mark))
       (diary-chinese-anniversary lunar-month lunar-day year mark)))
-  
+
   ;; binding
   ;; TODO: bind more keys
   (define-key org-mode-map (kbd "C-<return>") '+org/insert-item-below)
@@ -3054,12 +3070,6 @@ Install the doc if it's not installed."
    ("t" . org-todo)
    ("T" . org-todo-list)
    ("x" . org-toggle-checkbox))
-
-  (bind-keys
-   :map org-agenda-mode-map
-   :prefix "C-x ,"
-   :prefix-map meow-motion-state-keymap
-   ("t" . org-todo))
 
   ;; (general-define-key :states '(normal)
   ;;                     :keymaps 'org-mode-map

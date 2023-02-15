@@ -196,7 +196,8 @@ S is string of the two-key sequence."
    '("k" . meow-prev)
    '("-" . previous-buffer)
    '("+" . next-buffer)
-   '("<escape>" . ignore))
+   '("<escape>" . ignore)
+   '("," . "C-x ,"))
   (meow-leader-define-key
    ;; Use SPC (0-9) for digit arguments.
    '("1" . meow-digit-argument)
