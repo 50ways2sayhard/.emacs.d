@@ -192,6 +192,9 @@ REST and STATE."
   :hook ((find-file . diff-hl-mode)
          (vc-dir-mode . diff-hl-dir-mode)
          (dired-mode . diff-hl-dired-mode))
+  :bind
+  (:map diff-hl-mode-map
+              ("<left-fringe> <mouse-1>" . diff-hl-diff-goto-hunk))
   :config
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
@@ -2775,6 +2778,7 @@ Install the doc if it's not installed."
   :bind
   (("C-0" . #'vterm-posframe-toggle)
    :map vterm-mode-map
+   ("M-v" . #'yank)
    ("C-x" . #'vterm--self-insert)
    ("C-s" . #'tab-bar-switch-to-recent-tab))
   :init
