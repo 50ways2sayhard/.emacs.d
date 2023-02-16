@@ -19,22 +19,24 @@
 
 S is string of the two-key sequence."
   (when (meow-insert-mode-p)
-    (let ((modified (buffer-modified-p))
-          (undo-list buffer-undo-list))
-      (insert (elt s 0))
-      (let* ((second-char (elt s 1))
-             (event
-              (if defining-kbd-macro
-                  (read-event nil nil)
-                (read-event nil nil meow-two-char-escape-delay))))
-        (cond
-         ((null event) (ignore))
-         ((and (integerp event) (char-equal event second-char))
-          (backward-delete-char 1)
-          (set-buffer-modified-p modified)
-          (setq buffer-undo-list undo-list)
-          (push 'escape unread-command-events))
-         (t (push event unread-command-events)))))))
+    (cond ((derived-mode-p 'vterm-mode 'term-mode) (call-interactively 'term-send-raw))
+          (t (let ((modified (buffer-modified-p))
+                   (undo-list buffer-undo-list))
+               (insert (elt s 0))
+               (let* ((second-char (elt s 1))
+                      (event
+                       (if defining-kbd-macro
+                           (read-event nil nil)
+                         (read-event nil nil meow-two-char-escape-delay))))
+                 (cond
+                  ((null event) (ignore))
+                  ((and (integerp event) (char-equal event second-char))
+                   (backward-delete-char 1)
+                   (set-buffer-modified-p modified)
+                   (setq buffer-undo-list undo-list)
+                   (push 'escape unread-command-events))
+                  (t (push event unread-command-events)))))))
+    ))
 
 (defun meow-two-char-exit-insert-state ()
   "Exit meow insert state when pressing consecutive two keys."
