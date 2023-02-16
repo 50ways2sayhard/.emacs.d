@@ -2343,6 +2343,10 @@ function to the relevant margin-formatters list."
    ("M-<backspace>" . delete-block-backward)
    ("M-DEL" . delete-block-backward)))
 
+(use-package ws-bulter
+  :diminish
+  :hook (window-setup . ws-butler-global-mode))
+
 (use-package wgrep
   :commands wgrep-change-to-wgrep-mode
   :custom
