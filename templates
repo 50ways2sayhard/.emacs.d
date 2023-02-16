@@ -46,4 +46,10 @@ dart-mode
           n> "}"
           )
 
+(debugFillProperties n> "@override"
+                     n> "void debugFillProperties(DiagnosticPropertiesBuilder properties) {"
+                     n> "super.debugFillProperties(properties);"
+                     n> p
+                     n> "}")
+
 (nn "if ( " p " != null) {" n> p n> "}")

@@ -35,8 +35,7 @@ S is string of the two-key sequence."
                    (set-buffer-modified-p modified)
                    (setq buffer-undo-list undo-list)
                    (push 'escape unread-command-events))
-                  (t (push event unread-command-events)))))))
-    ))
+                  (t (push event unread-command-events)))))))))
 
 (defun meow-two-char-exit-insert-state ()
   "Exit meow insert state when pressing consecutive two keys."
@@ -78,7 +77,8 @@ S is string of the two-key sequence."
     :doc "Jump map"
     "j" #'avy-goto-char
     "l" #'avy-goto-line
-    "J" #'avy-goto-char-2)
+    "J" #'avy-goto-char-2
+    "e" #'consult-global-mark)
   (defvar-keymap +meow-vc-map
     :doc "VC map"
     "s" #'magit-status
@@ -95,7 +95,8 @@ S is string of the two-key sequence."
     "d" #'consult-mark-done)
   (defvar-keymap +meow-project-map
     "p" #'project-switch-project
-    "f" #'project-find-file)
+    "f" #'project-find-file
+    "k" #'project-kill-buffers)
   (defvar-keymap +meow-quit-map
     "q" #'kill-emacs
     "r" #'restart-emacs)

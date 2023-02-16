@@ -220,7 +220,9 @@ REST and STATE."
   (:map dired-mode-map
         ("'" . +my/quick-look)
         ("j" . dired-next-line)
-        ("k" . dired-previous-line))
+        ("k" . dired-previous-line)
+        ("l" . #'dired-find-alternate-file)
+        ("h" . #'dired-up-directory))
   :custom
   ;; Always delete and copy recursively
   (dired-recursive-deletes 'always)
@@ -243,13 +245,6 @@ REST and STATE."
   ;; Reuse same dired buffer, to prevent numerous buffers while navigating in dired
   (put 'dired-find-alternate-file 'disabled nil)
 
-  ;; (with-eval-after-load 'general
-  ;;   (general-define-key :states '(normal)
-  ;;                       :keymaps 'dired-mode-map
-  ;;                       "'" '+my/quick-look
-  ;;                       "l" 'dired-find-alternate-file
-  ;;                       "h"  'dired-up-directory)
-  ;;   )
   (setq insert-directory-program "gls" dired-use-ls-dired t)
   (setq dired-listing-switches "-al --group-directories-first")
   (setq dired-open-extensions
@@ -840,8 +835,8 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
     (beginning-of-line)
     (save-excursion (newline))
     (indent-according-to-mode)))
-(global-set-key (kbd "C-RET") '+default/newline-below)
-(global-set-key (kbd "C-S-RET") '+default/newline-above)
+(global-set-key (kbd "C-<return>") '+default/newline-below)
+(global-set-key (kbd "C-S-<return>") '+default/newline-above)
 
 (defun +default/newline-below ()
   "Insert an indented new line after the current one."
@@ -1024,51 +1019,6 @@ targets."
   (vertico-cycle nil)
   (vertico-preselect 'first)
   :config
-  (defun +vertico/jump-list (jump)
-    "Go to an entry in evil's (or better-jumper's) jumplist."
-    (interactive
-     (let (buffers)
-       (unwind-protect
-           (list
-            (consult--read
-             ;; REVIEW Refactor me
-             (nreverse
-              (delete-dups
-               (delq
-                nil (mapcar
-                     (lambda (mark)
-                       (when mark
-                         (cl-destructuring-bind (path pt _id) mark
-                           (let* ((visiting (find-buffer-visiting path))
-                                  (buf (or visiting (find-file-noselect path t)))
-                                  (dir default-directory))
-                             (unless visiting
-                               (push buf buffers))
-                             (with-current-buffer buf
-                               (goto-char pt)
-                               (font-lock-fontify-region
-                                (line-beginning-position) (line-end-position))
-                               (format "%s:%d: %s"
-                                       (car (cl-sort (list (abbreviate-file-name (buffer-file-name buf))
-                                                           (file-relative-name (buffer-file-name buf) dir))
-                                                     #'< :key #'length))
-                                       (line-number-at-pos)
-                                       (string-trim-right (or (thing-at-point 'line) ""))))))))
-                     (cddr (better-jumper-jump-list-struct-ring
-                            (better-jumper-get-jumps (better-jumper--get-current-context))))))))
-             :prompt "jumplist: "
-             :sort nil
-             :require-match t
-             :category 'jump-list))
-         (mapc #'kill-buffer buffers))))
-    (if (not (string-match "^\\([^:]+\\):\\([0-9]+\\): " jump))
-        (user-error "No match")
-      (let ((file (match-string-no-properties 1 jump))
-            (line (match-string-no-properties 2 jump)))
-        (find-file file)
-        (goto-char (point-min))
-        (forward-line (string-to-number line)))))
-
   ;; Configure directory extension.
   (use-package vertico-quick
     :after vertico
@@ -1120,8 +1070,11 @@ targets."
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
+         ([remap switch-to-buffer-other-frame] . consult-buffer-other-frame)
+         ([remap swich-to-buffer-other-window] . consult-buffer-other-window)
+         ([remap goto-line] . consult-goto-line)
          ([remap yank-pop] . consult-yank-from-kill-ring)
-         ("M-?" . +consult-ripgrep-at-point)
+         ("M-?" . consult-ripgrep-at-point)
          ("M-g o" . consult-outline)
          ("M-g h" . consult-org-heading)
          ("M-g a" . consult-org-agenda)
@@ -1845,7 +1798,9 @@ function to the relevant margin-formatters list."
 
 (use-package cape
   :after (corfu tempel)
-  :hook ((prog-mode . my/set-basic-capf)
+  :commands (my/convert-super-capf)
+  :hook ((text-mode . (lambda ()
+                        (my/convert-super-capf #'cape-dabbrev)))
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf))
@@ -1873,9 +1828,8 @@ function to the relevant margin-formatters list."
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-file t)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev t)
 
   (use-package tabnine-capf
     :after cape
@@ -2412,7 +2366,9 @@ function to the relevant margin-formatters list."
 
 ;;; Programing
 (use-package prog-mode
-  :config (global-prettify-symbols-mode)
+  :hook (prog-mode . hs-minor-mode)
+  :config
+  (global-prettify-symbols-mode)
   (defun indicate-buffer-boundaries-left ()
     (setq indicate-buffer-boundaries 'left))
   (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
@@ -2589,8 +2545,7 @@ function to the relevant margin-formatters list."
           (python . ("https://github.com/tree-sitter/tree-sitter-python"))
           (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
-          ))
+          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
   :config
   (setq major-mode-remap-alist
         '((javascript-mode . js-ts-mode)
@@ -3076,7 +3031,10 @@ Install the doc if it's not installed."
    ("q" . org-set-tag-commend)
    ("t" . org-todo)
    ("T" . org-todo-list)
-   ("x" . org-toggle-checkbox))
+   ("x" . org-toggle-checkbox)
+
+   ("ds" . #'org-schedule)
+   ("dd" . #'org-deadline))
 
   ;; (general-define-key :states '(normal)
   ;;                     :keymaps 'org-mode-map
