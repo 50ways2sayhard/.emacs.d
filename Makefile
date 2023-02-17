@@ -4,6 +4,13 @@ env:
 	@printenv > ~/.emacs.d/env
 	@echo MU_PATH=`brew --prefix mu` >> ~/.emacs.d/env
 
+update:
+	@git submodules update --remote
+	$(info make clean)
+	$(info make build)
+	@test -f ~/.emacs.d/etc/borg/autoload/autoload-*.el \
+    && rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
+
 ifndef BORG_DIR
 
 help helpall::
@@ -44,3 +51,5 @@ codespell-fix:
 	  etc/codespell/ignore-files | tr "\\n" ",")
 
 endif
+
+init: env bootstrap-borg bootstrap

@@ -47,6 +47,7 @@
 [submodule "consult"]
 	path = lib/consult
 	url = https://github.com/minad/consult
+  load-path = .
 [submodule "consult-dir"]
 	path = lib/consult-dir
 	url = https://github.com/karthink/consult-dir
@@ -98,7 +99,6 @@
 [submodule "ef-themes"]
 	path = lib/ef-themes
 	url = https://github.com/emacsmirror/ef-themes.git
-  no-byte-compile	= *.el
 [submodule "electric-spacing"]
 	path = lib/electric-spacing
 	url = https://github.com/xwl/electric-spacing
@@ -173,9 +173,6 @@
 [submodule "magit-todos"]
 	path = lib/magit-todos
 	url = https://github.com/alphapapa/magit-todos
-[submodule "major-mode-hydra"]
-	path = lib/major-mode-hydra
-	url = https://github.com/jerrypnz/major-mode-hydra.el
 [submodule "marginalia"]
 	path = lib/marginalia
 	url = https://github.com/minad/marginalia

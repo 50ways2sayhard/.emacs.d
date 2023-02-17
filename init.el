@@ -194,7 +194,7 @@ REST and STATE."
          (dired-mode . diff-hl-dired-mode))
   :bind
   (:map diff-hl-mode-map
-              ("<left-fringe> <mouse-1>" . diff-hl-diff-goto-hunk))
+        ("<left-fringe> <mouse-1>" . diff-hl-diff-goto-hunk))
   :config
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
@@ -540,11 +540,12 @@ window that already exists in that direction. It will split otherwise."
   (when (>= emacs-major-version 27)
     (set-face-attribute 'smerge-refined-removed nil :extend t)
     (set-face-attribute 'smerge-refined-added   nil :extend t))
+  (require 'hydra)
   (defhydra hydra-smerge (:hint nil
-                          :pre (smerge-mode 1)
-                          ;; Disable `smerge-mode' when quitting hydra if
-                          ;; no merge conflicts remain.
-                          :post (smerge-auto-leave))
+                                :pre (smerge-mode 1)
+                                ;; Disable `smerge-mode' when quitting hydra if
+                                ;; no merge conflicts remain.
+                                :post (smerge-auto-leave))
     "
 ^Move^       ^Keep^               ^Diff^                 ^Other^
 ^^-----------^^-------------------^^---------------------^^-------
@@ -721,9 +722,9 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -1074,7 +1075,7 @@ targets."
          ([remap swich-to-buffer-other-window] . consult-buffer-other-window)
          ([remap goto-line] . consult-goto-line)
          ([remap yank-pop] . consult-yank-from-kill-ring)
-         ("M-?" . consult-ripgrep-at-point)
+         ("M-?" . consult-ripgrep)
          ("M-g o" . consult-outline)
          ("M-g h" . consult-org-heading)
          ("M-g a" . consult-org-agenda)
@@ -1084,7 +1085,7 @@ targets."
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :config
-  (setq consult-preview-key (kbd "M-."))
+  (setq consult-preview-key "M-.")
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
@@ -1340,8 +1341,8 @@ When the number of characters in a buffer exceeds this threshold,
                  :face      consult-project-extra-projects
                  :history   consult-project-extra--project-history
                  :annotate  ,(lambda (dir) (if consult-project-extra-display-info (progn
-                                                                               (format "Project: %s"
-                                                                                       (file-name-nondirectory (directory-file-name dir))))))
+                                                                                    (format "Project: %s"
+                                                                                            (file-name-nondirectory (directory-file-name dir))))))
                  :action    ,#'consult-project-extra--file
                  :items     ,#'project-known-project-roots))
 
@@ -1569,6 +1570,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;;; Auto completion
 (use-package corfu
+  :after-call +my/first-input-hook-fun
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -1603,9 +1605,8 @@ When the number of characters in a buffer exceeds this threshold,
         ("M-k" . nil)
         ([?\r] . nil)
         ([backtab] . corfu-previous))
-  :init
-  (global-corfu-mode)
   :config
+  (global-corfu-mode)
   (use-package corfu-quick
     :after corfu
     :commands (corfu-quick-insert corfu-quick-complete)
@@ -1798,7 +1799,7 @@ function to the relevant margin-formatters list."
 
 (use-package cape
   :after (corfu tempel)
-  :commands (my/convert-super-capf)
+  :commands (my/convert-super-capf my/set-eglot-capf)
   :hook ((text-mode . (lambda ()
                         (my/convert-super-capf #'cape-dabbrev)))
          (emacs-lisp-mode . (lambda ()
@@ -2025,7 +2026,8 @@ function to the relevant margin-formatters list."
     (setq popper-group-function 'popper-group-by-project))
   (setq popper-echo-dispatch-actions t)
   :config
-  (popper-echo-mode 1)
+  (require 'popper-echo)
+  (popper-echo-mode)
   (with-no-warnings
     (defun my-popper-fit-window-height (win)
       "Determine the height of popup window WIN by fitting it to the buffer's content."
@@ -2300,7 +2302,7 @@ function to the relevant margin-formatters list."
    ("M-<backspace>" . delete-block-backward)
    ("M-DEL" . delete-block-backward)))
 
-(use-package ws-bulter
+(use-package ws-butler
   :diminish
   :hook (window-setup . ws-butler-global-mode))
 
@@ -2353,6 +2355,7 @@ function to the relevant margin-formatters list."
   (add-to-list 'super-save-triggers 'switch-window)
   (add-to-list 'super-save-triggers 'switch-to-buffer)
   (add-to-list 'super-save-triggers 'eglot-rename)
+  (add-to-list 'super-save-triggers 'consult-buffer)
   (setq super-save-exclude '(".gpg"))
   (setq super-save-idle-duration 1)
   (setq super-save-auto-save-when-idle t)
@@ -2735,7 +2738,8 @@ Install the doc if it's not installed."
    :map vterm-mode-map
    ("M-v" . #'yank)
    ("C-x" . #'vterm--self-insert)
-   ("C-s" . #'tab-bar-switch-to-recent-tab))
+   ("C-s" . #'tab-bar-switch-to-recent-tab)
+   ("s-<escape>" . #'vterm-send-escape))
   :init
   (setq vterm-always-compile-module t)
   (setq vterm-shell "fish")
@@ -2821,10 +2825,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
