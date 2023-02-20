@@ -31,11 +31,7 @@ You can update this config with `git pull`. For Updating third-party packages, r
 
 ```bash
 cd ~/.emacs.d
-git submodule update --init ./lib/<package-name> # Update specific package
-git submodule foreach git pull # Update each submodule to latest commit
-
-make clean # remove all byte-code and native files
-make build # byte-compile all drones and init files
+make update
 
 make help # show brief help
 ```

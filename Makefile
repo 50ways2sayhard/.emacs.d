@@ -5,9 +5,9 @@ env:
 	@echo MU_PATH=`brew --prefix mu` >> ~/.emacs.d/env
 
 update:
-	@git submodules update --remote
-	$(info make clean)
-	$(info make build)
+	@git submodule update --remote
+	@$(MAKE) -C	clean
+	@$(MAKE) -C build
 	@test -f ~/.emacs.d/etc/borg/autoload/autoload-*.el \
     && rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
 
