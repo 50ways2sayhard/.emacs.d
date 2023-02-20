@@ -198,7 +198,7 @@ S is string of the two-key sequence."
    '("j" . meow-next)
    '("k" . meow-prev)
    '("-" . previous-buffer)
-   '("+" . next-buffer)
+   '("=" . next-buffer)
    '("<escape>" . ignore)
    '("," . "C-x ,"))
   (meow-leader-define-key
