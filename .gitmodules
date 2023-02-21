@@ -133,9 +133,6 @@
 [submodule "gcmh"]
 	path = lib/gcmh
 	url = https://gitlab.com/koral/gcmh
-[submodule "general"]
-	path = lib/general
-	url = https://github.com/noctuid/general.el
 [submodule "git-modes"]
 	path = lib/git-modes
 	url = https://github.com/magit/git-modes.git
