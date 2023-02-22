@@ -10,6 +10,9 @@ update:
 	@test -f ~/.emacs.d/etc/borg/autoload/autoload-*.el \
     && rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
 
+pull:
+	@git pull && git submodule update
+
 ifndef BORG_DIR
 
 help helpall::
