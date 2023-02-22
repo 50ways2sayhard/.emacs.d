@@ -1439,8 +1439,8 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (vertico-mode . vertico-posframe-mode)
   :config
   (setq vertico-posframe-parameters
-        '((max-width . 80)
-          (min-width . 60)
+        '((max-width . 0.8)
+          (min-width . 0.8)
           (left-fringe . 8)
           (right-fringe . 8)))
   ;; (evil-set-initial-state 'minibuffer-mode 'emacs)
@@ -1776,7 +1776,6 @@ function to the relevant margin-formatters list."
       arg-capf
       #'tabnine-completion-at-point
       #'tempel-complete)
-     ;; #'cape-dabbrev
      ))
 
   (defun my/set-basic-capf ()
@@ -1896,7 +1895,8 @@ function to the relevant margin-formatters list."
   (cl-defmethod project-files ((project (head local)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
     (mapcan #'my/project-files-in-directory
-            (or dirs (list (project-root project))))))
+            (or dirs (list (project-root project)))))
+  )
 
 (use-package winner
   :commands (winner-undo winner-redo)
@@ -2246,6 +2246,7 @@ function to the relevant margin-formatters list."
 
 ;;; Better edit
 (use-package format-all
+  :commands (format-all-buffer)
   :hook (((emacs-lisp-mode) . format-all-mode)
          ((prog-mode) . format-all-ensure-formatter))
   :config
@@ -2525,7 +2526,7 @@ function to the relevant margin-formatters list."
 
 ;;;; Online document
 (use-package devdocs
-  :commands (devdocs-lookup-at-point devdocs-search-at-point +devdocs-lookup-at-point +devdocs-search-at-point +devdocs-dwim)
+  :commands (devdocs-lookup-at-point devdocs-search-at-point +devdocs-lookup-at-point +devdocs-search-at-point devdocs-dwim)
   :init
   (defvar devdocs-major-mode-docs-alist
     '((web-mode . ("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))
@@ -2674,7 +2675,14 @@ Install the doc if it's not installed."
                                                     (?m "Method"  font-lock-function-name-face)
                                                     (?p "Property" font-lock-variable-name-face)
                                                     (?F "Field"  font-lock-variable-name-face)))))
+  (defun my-dart-project-finder (dir)
+    "Integrate .git project roots."
+    (let ((dotgit (and (setq dir (locate-dominating-file dir "pubspec.yaml"))
+                       (expand-file-name dir))))
+      (and dotgit
+           (cons 'transient (file-name-directory dotgit)))))
 
+  (add-hook 'project-find-functions 'my-dart-project-finder)
   (require 'flutter-utils)
   (bind-keys
    :map dart-mode-map
@@ -2836,7 +2844,7 @@ Install the doc if it's not installed."
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
-  :commands (+my/open-org-agenda)
+  :commands (+my/open-org-agenda +org/archive-done-tasks)
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
          (org-mode . (lambda ()

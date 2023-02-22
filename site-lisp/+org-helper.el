@@ -235,7 +235,15 @@ If on a:
 
       (_ (+org--refresh-inline-images-in-subtree)))))
 
-
+;;;###autoload
+(defun +org/archive-done-tasks ()
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward
+            (concat "\\* " (regexp-opt org-done-keywords) " ") nil t)
+      (goto-char (line-beginning-position))
+      (org-archive-subtree))))
 
 (provide '+org-helper)
 ;;; org-helper.el ends here

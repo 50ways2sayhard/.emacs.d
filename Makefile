@@ -6,8 +6,7 @@ env:
 
 update:
 	@git submodule update --remote
-	@$(MAKE) -C	clean
-	@$(MAKE) -C build
+	@make	clean && make build
 	@test -f ~/.emacs.d/etc/borg/autoload/autoload-*.el \
     && rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
 
