@@ -8,7 +8,7 @@ update:
 	@git submodule update --remote
 	@make	clean && make build
 	@test -f ~/.emacs.d/etc/borg/autoload/autoload-*.el \
-    && rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
+    || rm -r ~/.emacs.d/etc/borg/autoload/autoload-*.el
 
 pull:
 	@git pull && git submodule update
