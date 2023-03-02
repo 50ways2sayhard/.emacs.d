@@ -1182,23 +1182,6 @@ When the number of characters in a buffer exceeds this threshold,
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
-  (defvar consult--fd-command nil)
-  (defun consult--fd-builder (input)
-    (unless consult--fd-command
-      (setq consult--fd-command
-            (if (eq 0 (call-process-shell-command "fdfind"))
-                "fdfind"
-              "fd")))
-    (pcase-let* ((`(,arg . ,opts) (consult--command-split input))
-                 (`(,re . ,hl) (funcall consult--regexp-compiler
-                                        arg 'extended t)))
-      (when re
-        (list :command (append
-                        (list consult--fd-command
-                              "--color=never" "--full-path"
-                              (consult--join-regexps re 'extended))
-                        opts)
-              :highlight hl))))
 
   (defun +my/retrieval-todo-items ()
     (require 'consult-org)
@@ -1262,6 +1245,24 @@ When the number of characters in a buffer exceeds this threshold,
       (org-todo 'done)
       (save-buffer)))
   (consult-customize consult-mark-done :prompt "Mark done: ")
+
+  (defvar consult--fd-command nil)
+  (defun consult--fd-builder (input)
+    (unless consult--fd-command
+      (setq consult--fd-command
+            (if (eq 0 (call-process-shell-command "fdfind"))
+                "fdfind"
+              "fd")))
+    (pcase-let* ((`(,arg . ,opts) (consult--command-split input))
+                 (`(,re . ,hl) (funcall consult--regexp-compiler
+                                        arg 'extended t)))
+      (when re
+        (list :command (append
+                        (list consult--fd-command
+                              "--color=never" "--full-path"
+                              (consult--join-regexps re 'extended))
+                        opts)
+              :highlight hl))))
 
   (defun consult-fd (&optional dir initial)
     (interactive "P")
@@ -1337,22 +1338,19 @@ When the number of characters in a buffer exceeds this threshold,
   (defun consult-project-extra--find-with-concat-root (candidate)
     "Find-file concatenating root with CANDIDATE."
     (find-file candidate))
-  (defvar consult-project-extra--source-project
-    `(:name      "Known Project"
-                 :narrow    (?p . "Project")
-                 :category  'consult-project-extra-project
-                 :face      consult-project-extra-projects
-                 :history   consult-project-extra--project-history
-                 :annotate  ,(lambda (dir) (if consult-project-extra-display-info (progn
-                                                                                    (format "Project: %s"
-                                                                                            (file-name-nondirectory (directory-file-name dir))))))
-                 :action    ,#'consult-project-extra--file
-                 :items     ,#'project-known-project-roots))
 
   ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
   (defun consult-project-extra--file (selected-root)
     "Create a view for selecting project files for the project at SELECTED-ROOT."
-    (consult-fd selected-root))
+    (let ((candidate (consult--read
+                      (consult-project-extra--project-files selected-root t)
+                      :prompt "Project File: "
+                      :sort t
+                      :require-match t
+                      :category 'file
+                      :state (consult--file-preview)
+                      :history 'file-name-history)))
+      (find-file (concat selected-root candidate))))
 
   (defun consult-project-extra--project-files (root &optional include-root)
     "Compute the project files given the ROOT."
@@ -1442,9 +1440,7 @@ When the number of characters in a buffer exceeds this threshold,
         '((max-width . 0.8)
           (min-width . 0.8)
           (left-fringe . 8)
-          (right-fringe . 8)))
-  ;; (evil-set-initial-state 'minibuffer-mode 'emacs)
-  )
+          (right-fringe . 8))))
 
 ;;; Icons
 (use-package all-the-icons
@@ -2049,7 +2045,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Iosevka SS08" . 16) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2131,7 +2127,6 @@ function to the relevant margin-formatters list."
     (cl-pushnew `(,keyword . ,(face-foreground 'error)) hl-todo-keyword-faces))
   (dolist (keyword '("WORKAROUND" "HACK" "TRICK" "FIXME"))
     (cl-pushnew `(,keyword . ,(face-foreground 'warning)) hl-todo-keyword-faces))
-
   (dolist (keyword '("MARK"))
     (cl-pushnew `(,keyword . ,(face-foreground 'success)) hl-todo-keyword-faces))
   )
@@ -2148,12 +2143,11 @@ function to the relevant margin-formatters list."
 
 ;; Pulse current line
 (use-package pulse
-  :disabled
+  :commands (my-recenter-and-pulse my-recenter-and-pulse-line)
   :custom-face
   (pulse-highlight-start-face ((t (:inherit region))))
   (pulse-highlight-face ((t (:inherit region))))
-  :hook (((dumb-jump-after-jump
-           imenu-after-jump) . my-recenter-and-pulse)
+  :hook (((better-jumper-post-jump consult-after-jump xref-after-jump) . #'my-recenter-and-pulse)
          ((bookmark-after-jump
            magit-diff-visit-file
            next-error) . my-recenter-and-pulse-line))
@@ -2241,8 +2235,7 @@ function to the relevant margin-formatters list."
 
   (setq eldoc-documentation-function 'eldoc-documentation-compose)
   (setq flymake-no-changes-timeout nil
-        flymake-fringe-indicator-position 'right-fringe)
-  )
+        flymake-fringe-indicator-position 'right-fringe))
 
 ;;; Better edit
 (use-package format-all

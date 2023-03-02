@@ -8,9 +8,10 @@
 (meow-thing-register 'angle
                      '(pair ("<") (">"))
                      '(pair ("<") (">")))
+(meow-thing-register 'url 'url 'url)
 
-(add-to-list 'meow-char-thing-table
-             '(?a . angle))
+(add-to-list 'meow-char-thing-table '(?a . angle))
+(add-to-list 'meow-char-thing-table '(?u . url))
 
 (defvar meow-two-char-escape-sequence "jk")
 (defvar meow-two-char-escape-delay 0.5)
