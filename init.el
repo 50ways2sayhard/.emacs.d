@@ -2314,10 +2314,7 @@ function to the relevant margin-formatters list."
   :elpaca nil
   :hook (prog-mode . hs-minor-mode)
   :config
-  (global-prettify-symbols-mode)
-  (defun indicate-buffer-boundaries-left ()
-    (setq indicate-buffer-boundaries 'left))
-  (add-hook 'prog-mode-hook 'indicate-buffer-boundaries-left))
+  (global-prettify-symbols-mode))
 
 (use-package better-jumper
   :after-call +my/first-input-hook-fun
@@ -2441,21 +2438,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2588,15 +2585,16 @@ Install the doc if it's not installed."
   (setq python-shell-interpreter "python3")
   (setq py-tab-indent nil)
   (add-hook 'python-mode-hook (lambda ()
-                                (setq-local tab-width 4)))
+                                (setq-local tab-width 4))))
 
-  (use-package pyvenv
-    :after python)
+(use-package pyvenv
+  :after python)
 
-  (use-package py-isort
-    :after python
-    :hook (python-mode . (lambda ()
-                           (add-hook 'before-save-hook #'py-isort-before-save)))))
+(use-package py-isort
+  :after python
+  :hook (python-mode . (lambda ()
+                         (add-hook 'before-save-hook #'py-isort-before-save))))
+
 
 (use-package web-mode
   :mode
