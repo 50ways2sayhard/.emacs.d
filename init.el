@@ -1,4 +1,4 @@
-;;; init.el --- user-init-file               -*- lexical-binding: t -*-
+;; init.el --- user-init-file               -*- lexical-binding: t -*-
 
 ;;; Early init
 (progn
@@ -15,99 +15,50 @@
     ;; (package-initialize)
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
-;;; Package manager
-(eval-and-compile ; `borg'
-  (add-to-list 'load-path (expand-file-name "lib/borg" user-emacs-directory))
-  (setq borg-compile-function #'borg-byte+native-compile-async)
-  (add-to-list 'load-path (expand-file-name "lib/names" user-emacs-directory))
-  (require 'names)
+;;; Package Manager
+(defvar elpaca-installer-version 0.2)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil
+                              :files (:defaults (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(when-let ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+           (build (expand-file-name "elpaca/" elpaca-builds-directory))
+           (order (cdr elpaca-order))
+           ((add-to-list 'load-path (if (file-exists-p build) build repo)))
+           ((not (file-exists-p repo))))
+  (condition-case-unless-debug err
+      (if-let ((buffer (pop-to-buffer-same-window "*elpaca-installer*"))
+               ((zerop (call-process "git" nil buffer t "clone"
+                                     (plist-get order :repo) repo)))
+               (default-directory repo)
+               ((zerop (call-process "git" nil buffer t "checkout"
+                                     (or (plist-get order :ref) "--"))))
+               (emacs (concat invocation-directory invocation-name))
+               ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                     "--eval" "(byte-recompile-directory \".\" 0 'force)"))))
+          (progn (require 'elpaca)
+                 (elpaca-generate-autoloads "elpaca" repo)
+                 (kill-buffer buffer))
+        (error "%s" (with-current-buffer buffer (buffer-string))))
+    ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+(require 'elpaca-autoloads)
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-  (defun lld-collect-autoloads (file)
-    "insert all enabled drone's autoloads file to a single file."
-    (make-directory (file-name-directory file) 'parents)
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode)
+  (setq elpaca-use-package-by-default t))
 
-    ;; cleanup obsolete autoloads file
-    (dolist (f (directory-files single-autoload-path t "autoload-[0-9]+-[0-9]+\\.elc?\\'"))
-      (unless (string= file f)
-        (delete-file f)))
+(mapcar
+ (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
+ '(xref tramp tramp-sh flymake simple diff-mode smerge-mode python css-mode custom
+        server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
+        lisp-mode treesit imenu eldoc))
 
-    (message "Generating single big autoload file.")
-    (condition-case-unless-debug e
-        (with-temp-file file
-          (setq-local coding-system-for-write 'utf-8)
-          (let ((standard-output (current-buffer))
-                (print-quoted t)
-                (print-level nil)
-                (print-length nil)
-                (home (expand-file-name "~"))
-                path-list
-                theme-path-list
-                drones-path
-                auto)
-            (insert ";; -*- lexical-binding: t; coding: utf-8; no-native-compile: t -*-\n"
-                    ";; This file is generated from enabled drones.\n")
-
-            ;; replace absolute path to ~
-            (dolist (p load-path)
-              ;; collect all drone's load-path
-              (when (string-prefix-p (expand-file-name user-emacs-directory) (expand-file-name p))
-                (push p drones-path))
-
-              (if (string-prefix-p home p)
-                  (push (concat "~" (string-remove-prefix home p)) path-list)
-                (push p path-list)))
-
-            (dolist (p custom-theme-load-path)
-              (if (and (stringp p)
-                       (string-prefix-p home p))
-                  (push (concat "~" (string-remove-prefix home p)) theme-path-list)
-                (push p theme-path-list)))
-
-            (prin1 `(set `load-path ',(nreverse path-list)))
-            (insert "\n")
-            (print `(set `custom-theme-load-path ',(nreverse theme-path-list)))
-            (insert "\n")
-
-            ;; insert all drone's autoloads.el to this file
-            (dolist (p drones-path)
-              (when (file-exists-p p)
-                (setq auto (car (directory-files p t ".*-autoloads.el\\'")))
-                (when (and auto
-                           (file-exists-p auto))
-                  (insert-file-contents auto))))
-            ;; remove all #$ load code
-            (goto-char (point-min))
-            (while (re-search-forward "\(add-to-list 'load-path.*#$.*\n" nil t)
-              (replace-match ""))
-
-            ;; write local variables region
-            (goto-char (point-max))
-            (insert  "\n"
-                     "\n;; Local Variables:"
-                     "\n;; version-control: never"
-                     "\n;; no-update-autoloads: t"
-                     "\n;; End:"
-                     ))
-          t)
-      (error (delete-file file)
-             (signal 'collect-autoload-error (list file e)))))
-
-  (defvar single-autoload-path (concat user-emacs-directory "etc/borg/autoload/") "single autoload file.")
-  (let ((file (concat single-autoload-path
-                      "autoload-"
-                      (format-time-string
-                       "%+4Y%m%d-%H%M%S"
-                       (file-attribute-modification-time
-                        (file-attributes (concat user-emacs-directory ".gitmodules"))))
-                      ".el")))
-    (if (file-exists-p file)
-        (load file nil t)
-      (require 'borg)
-      (borg-initialize)
-      (lld-collect-autoloads file))))
-
-(use-package borg
-  :commands (borg-assimilate borg-insert-update-message borg-remove))
+(elpaca-wait)
 
 (push (expand-file-name "site-lisp" user-emacs-directory) load-path)
 
@@ -151,24 +102,16 @@ REST and STATE."
 (setq use-package-keywords (use-package-list-insert :after-call use-package-keywords :after))
 (defalias 'use-package-normalize/:after-call #'use-package-normalize-symlist)
 
-(use-package epkg
-  :commands (epkg-describe-package epkg-update)
-  :init
-  (setq epkg-repository
-        (expand-file-name "var/epkgs/" user-emacs-directory))
-  (setq epkg-database-connector
-        (if (>= emacs-major-version 29) 'sqlite-builtin 'sqlite-module)))
-
 (eval-and-compile ; `use-package'
   (require  'use-package)
   (setq use-package-verbose t))
 
 (use-package dash
   :config (global-dash-fontify-mode))
-(use-package eieio)
 
 ;;; Custom settings
 (use-package custom
+  :elpaca nil
   :no-require t
   :config
   (setq custom-file (expand-file-name "init-custom.el" user-emacs-directory))
@@ -177,6 +120,7 @@ REST and STATE."
 
 ;;; Server mode
 (use-package server
+  :elpaca nil
   :commands (server-running-p)
   :config (or (server-running-p) (server-mode)))
 
@@ -208,6 +152,7 @@ REST and STATE."
   (setq diff-hl-draw-borders nil))
 
 (use-package diff-mode
+  :elpaca nil
   :config
   (when (>= emacs-major-version 27)
     (set-face-attribute 'diff-refine-changed nil :extend t)
@@ -216,6 +161,7 @@ REST and STATE."
 
 ;;; Dired and Dirvish file browser
 (use-package dired
+  :elpaca nil
   :bind
   (:map dired-mode-map
         ("'" . +my/quick-look)
@@ -252,6 +198,7 @@ REST and STATE."
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package dirvish
+  :elpaca (dirvish :files (:defaults ("extensions/dirvish-*.el")))
   :after dired
   :hook ((+my/first-input . dirvish-override-dired-mode))
   :bind
@@ -292,6 +239,7 @@ REST and STATE."
         "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
 
   (use-package dirvish-extras
+    :elpaca nil
     :after dirvish))
 
 
@@ -302,6 +250,7 @@ REST and STATE."
   :config (global-eldoc-mode))
 
 (use-package help
+  :elpaca nil
   :config (temp-buffer-resize-mode))
 
 ;;; Isearch
@@ -522,7 +471,10 @@ window that already exists in that direction. It will split otherwise."
 (use-package magit-todos
   :after magit)
 
+(use-package hydra)
+
 (use-package smerge-mode
+  :elpaca nil
   :after magit
   :diminish
   :bind (:map smerge-mode-map
@@ -547,14 +499,14 @@ window that already exists in that direction. It will split otherwise."
                                 ;; no merge conflicts remain.
                                 :post (smerge-auto-leave))
     "
-^Move^       ^Keep^               ^Diff^                 ^Other^
-^^-----------^^-------------------^^---------------------^^-------
-_n_ext       _b_ase               _<_: upper/base        _C_ombine
-_p_rev       _u_pper              _=_: upper/lower       _r_esolve
-^^           _l_ower              _>_: base/lower        _k_ill current
-^^           _a_ll                _R_efine
-^^           _RET_: current       _E_diff
-"
+  ^Move^       ^Keep^               ^Diff^                 ^Other^
+  ^^-----------^^-------------------^^---------------------^^-------
+  _n_ext       _b_ase               _<_: upper/base        _C_ombine
+  _p_rev       _u_pper              _=_: upper/lower       _r_esolve
+  ^^           _l_ower              _>_: base/lower        _k_ill current
+  ^^           _a_ll                _R_efine
+  ^^           _RET_: current       _E_diff
+  "
     ("n" smerge-next)
     ("p" smerge-prev)
     ("b" smerge-keep-base)
@@ -600,6 +552,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
 
 ;;; Parenthesis
 (use-package elec-pair
+  :elpaca nil
   :hook (+my/first-input . electric-pair-mode)
   :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
   :config
@@ -628,7 +581,8 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
 (use-package paren
-  :hook (after-init . show-paren-mode)
+  :elpaca nil
+  :hook (elpaca-after-init . show-paren-mode)
   :config
   (setq show-paren-style 'parenthesis
         show-paren-context-when-offscreen 'overlay
@@ -640,7 +594,7 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
   (message "Loading %s...done (%.3fs)" user-init-file
            (float-time (time-subtract (current-time)
                                       before-user-init-time)))
-  (add-hook 'after-init-hook
+  (add-hook 'elpaca-after-init-hook
             #'(lambda ()
 
                 (message
@@ -914,8 +868,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (meow-setup-indicator)
   (meow-global-mode)
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
-  (add-to-list 'meow-mode-state-list '(comint-mode . insert))
-  )
+  (add-to-list 'meow-mode-state-list '(comint-mode . insert)))
 
 (use-package which-key
   :diminish
@@ -926,6 +879,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 ;;; Minibuffer completion
 (use-package embark
+  :elpaca (embark :files (:defaults "*.el"))
   :after-call +my/first-input-hook-fun
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -953,6 +907,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
   (use-package embark-consult
+    :elpaca nil
     :after consult)
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
@@ -1015,6 +970,7 @@ targets."
 
 ;;;; Minibuffer completion UI
 (use-package vertico
+  :elpaca (vertico :files (:defaults "extensions/vertico-*.el"))
   :hook (+my/first-input . vertico-mode)
   :custom
   (vertico-cycle t)
@@ -1022,16 +978,19 @@ targets."
   :config
   ;; Configure directory extension.
   (use-package vertico-quick
+    :elpaca nil
     :after vertico
     :bind (:map vertico-map
                 ("M-q" . vertico-quick-insert)
                 ("C-q" . vertico-quick-exit)))
 
   (use-package vertico-repeat
+    :elpaca nil
     :after vertico
     :bind ("C-c r" . vertico-repeat)
     :hook (minibuffer-setup . vertico-repeat-save))
   (use-package vertico-directory
+    :elpaca nil
     :after vertico
     ;; More convenient directory navigation commands
     :bind (:map vertico-map
@@ -1042,6 +1001,7 @@ targets."
     :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)))
 
 (use-package emacs
+  :elpaca nil
   :init
   (setq completion-cycle-threshold 3)
   (setq tab-always-indent 'completion)
@@ -1362,13 +1322,6 @@ When the number of characters in a buffer exceeds this threshold,
                        (result (if include-root (abbreviate-file-name abs-filename) filename)))
                   (propertize result 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
 
-(use-package consult-xref
-  :after consult
-  :commands consult-xref
-  :init
-  (setq xref-show-xrefs-function #'consult-xref)
-  (setq xref-show-definitions-function #'consult-xref))
-
 ;;;; Better xxx-thing-at-point,
 ;; from: https://github.com/Elilif/.elemacs/blob/master/lisp/init-completion.el
 (progn
@@ -1524,6 +1477,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;;; Auto completion
 (use-package corfu
+  :elpaca (corfu :files (:defaults "extensions/corfu-*.el"))
   :after-call +my/first-input-hook-fun
   ;; Optional customizations
   :custom
@@ -1562,7 +1516,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (global-corfu-mode)
   (use-package corfu-quick
-    :after corfu
+    :elpaca nil
     :commands (corfu-quick-insert corfu-quick-complete)
     :bind
     (:map corfu-map
@@ -1570,12 +1524,12 @@ When the number of characters in a buffer exceeds this threshold,
           ("M-q" . corfu-quick-complete)))
 
   (use-package corfu-history
-    :after corfu
+    :elpaca nil
     :hook (corfu-mode . corfu-history-mode))
 
   (use-package corfu-popupinfo
-    :after corfu
-    :hook (corfu-mode . corfu-popupinfo-mode)
+    :elpaca nil
+    ;; :hook (corfu-mode . corfu-popupinfo-mode)
     :config
     (set-face-attribute 'corfu-popupinfo nil :height 140)
     (setq corfu-popupinfo-delay '(0.5 . 0.3)))
@@ -1783,12 +1737,13 @@ function to the relevant margin-formatters list."
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
   (add-to-list 'completion-at-point-functions #'cape-file t)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev t)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev t))
 
-  (use-package tabnine-capf
-    :after cape
-    :commands (tabnine-completion-at-point tabnine-capf-start-process)
-    :hook ((kill-emacs . tabnine-capf-kill-process))))
+(use-package tabnine-capf
+  :after cape
+  :elpaca (:host github :repo "50ways2sayhard/tabnine-capf")
+  :commands (tabnine-completion-at-point tabnine-capf-start-process)
+  :hook ((kill-emacs . tabnine-capf-kill-process)))
 
 ;;; Utils
 (use-package gcmh
@@ -1800,6 +1755,7 @@ function to the relevant margin-formatters list."
         gcmh-high-cons-threshold (* 64 1024 1024)))
 
 (use-package recentf
+  :elpaca nil
   :demand t
   :config
   (recentf-mode)
@@ -1820,12 +1776,11 @@ function to the relevant margin-formatters list."
                           "COMMIT_EDITMSG\\'")))
 
 (use-package simple
+  :elpaca nil
   :config (column-number-mode))
 
-(progn ;    `text-mode'
-  (add-hook 'text-mode-hook 'indicate-buffer-boundaries-left))
-
 (use-package tramp
+  :elpaca nil
   :config
   (add-to-list 'tramp-default-proxies-alist '(nil "\\`root\\'" "/ssh:%h:"))
   (add-to-list 'tramp-default-proxies-alist '("localhost" nil nil))
@@ -1837,6 +1792,7 @@ function to the relevant margin-formatters list."
                 tramp-file-name-regexp)))
 
 (use-package tramp-sh
+  :elpaca nil
   :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
 
 (use-package pinyinlib
@@ -1847,26 +1803,52 @@ function to the relevant margin-formatters list."
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   (add-to-list 'orderless-matching-styles 'completion--regex-pinyin))
 
-(use-package multi-translate
-  :commands (multi-translate multi-translate-at-point multi-translate-yank-at-point)
-  :custom
-  (multi-translate-sentence-backends '(google))
-  (multi-translate-word-backends '(bing youdao))
-  :config
-  (defun multi-translate-yank-at-point (arg)
-    "Used temporarily for thesis"
-    (interactive "P")
-    (let* ((bounds (if (region-active-p)
-                       (cons (region-beginning) (region-end))
-                     (bounds-of-thing-at-point 'word)))
-           (text (string-trim (buffer-substring-no-properties (car bounds) (cdr bounds)))))
-      (kill-new (multi-translate--google-translation "en" "zh-CN" text))
-      (message "Translate Done"))))
-
 (use-package vundo
   :commands vundo
   :config
   (setq vundo-glyph-alist vundo-unicode-symbols))
+
+(use-package go-translate
+  :commands (go-translate-at-point)
+  :bind
+  ("C-c t y" . go-translate-at-point)
+  :config
+  (setq gts-translate-list '(("en" "zh") ("zh" "en")))
+  (cl-defmethod gts-pre ((render gts-posframe-pop-render) translator)
+    (with-slots (width height forecolor backcolor padding) render
+      (let* ((inhibit-read-only t)
+             (buf gts-posframe-pop-render-buffer)
+             (frame (posframe-show buf
+                                   :string "Loading..."
+                                   :timeout gts-posframe-pop-render-timeout
+                                   :max-width width
+                                   :max-height height
+                                   :foreground-color (or forecolor gts-pop-posframe-forecolor)
+                                   :background-color (or backcolor gts-pop-posframe-backcolor)
+                                   :internal-border-width padding
+                                   :internal-border-color (or backcolor gts-pop-posframe-backcolor)
+                                   :accept-focus nil
+                                   :position (point)
+                                   :poshandler gts-posframe-pop-render-poshandler)))
+
+        ;; render
+        (gts-render-buffer-prepare buf translator)
+        (posframe-refresh buf)
+        ;; setup
+        (with-current-buffer buf
+          (gts-buffer-set-key ("q" "Close") (progn
+                                              (posframe-delete buf)))))))
+
+  (ef-themes-with-colors
+    (defvar my-translator-n
+      (gts-translator
+       :picker (gts-noprompt-picker)
+       :engines (gts-google-rpc-engine)
+       :render (gts-posframe-pop-render :backcolor bg-dim :forecolor fg-dim :width 200 :height 100)
+       :splitter (gts-paragraph-splitter)))
+    (defun go-translate-at-point ()
+      (interactive)
+      (gts-translate my-translator-n))))
 
 
 ;; SaveAllBuffers
@@ -1877,6 +1859,7 @@ function to the relevant margin-formatters list."
 ;; -SaveAllBuffers
 
 (use-package project
+  :elpaca nil
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
@@ -1892,9 +1875,11 @@ function to the relevant margin-formatters list."
     "Override `project-files' to use `fd' in local projects."
     (mapcan #'my/project-files-in-directory
             (or dirs (list (project-root project)))))
-  )
+
+  (setq project-vc-ignores '("\\.*pub-cache/\.*" "/usr/local/*")))
 
 (use-package winner
+  :elpaca nil
   :commands (winner-undo winner-redo)
   :hook (window-setup . winner-mode)
   :init (setq winner-boring-buffers '("*Completions*"
@@ -1909,6 +1894,7 @@ function to the relevant margin-formatters list."
                                       "*esh command on file*")))
 
 (use-package tab-bar
+  :elpaca nil
   :commands (tab-new tab-bar-rename-tab tab-bar-close-tab tab-bar-select-tab-by-name tab-bar-switch-to-recent-tab)
   :config
   (setq tab-bar-show nil))
@@ -2045,7 +2031,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Iosevka Comfy" . 17) ("Monego Nerd Font Fix" . 15) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2089,8 +2075,9 @@ function to the relevant margin-formatters list."
 
 ;;; Highlight
 (use-package hl-line
+  :elpaca nil
   :custom-face (hl-line ((t (:extend t))))
-  :hook ((after-init . global-hl-line-mode)
+  :hook ((elpaca-after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
 
 ;; Colorize color names in buffers
@@ -2121,7 +2108,7 @@ function to the relevant margin-formatters list."
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
-  :hook (after-init . global-hl-todo-mode)
+  :hook (elpaca-after-init . global-hl-todo-mode)
   :config
   (dolist (keyword '("BUG" "DEFECT" "ISSUE" "DONT" "GOTCHA" "DEBUG"))
     (cl-pushnew `(,keyword . ,(face-foreground 'error)) hl-todo-keyword-faces))
@@ -2143,6 +2130,7 @@ function to the relevant margin-formatters list."
 
 ;; Pulse current line
 (use-package pulse
+  :elpaca nil
   :commands (my-recenter-and-pulse my-recenter-and-pulse-line)
   :custom-face
   (pulse-highlight-start-face ((t (:inherit region))))
@@ -2217,6 +2205,7 @@ function to the relevant margin-formatters list."
   (advice-add #'deactivate-mark :after #'turn-on-symbol-overlay))
 ;;; Syntax checker
 (use-package flymake
+  :elpaca nil
   :after-call +my/first-input-hook-fun
   :hook (emacs-lisp-mode . flymake-mode)
   :config
@@ -2247,6 +2236,7 @@ function to the relevant margin-formatters list."
   (setq format-all-show-errors 'never))
 
 (use-package delete-block
+  :elpaca (:repo "manateelazycat/delete-block" :host github)
   :commands (delete-block-backward)
   :bind
   (("M-d" . delete-block-forward)
@@ -2321,6 +2311,7 @@ function to the relevant margin-formatters list."
 
 ;;; Programing
 (use-package prog-mode
+  :elpaca nil
   :hook (prog-mode . hs-minor-mode)
   :config
   (global-prettify-symbols-mode)
@@ -2359,6 +2350,7 @@ function to the relevant margin-formatters list."
   (add-hook 'xref-after-return-hook #'better-jumper-set-jump))
 
 (use-package lisp-mode
+  :elpaca nil
   :mode ("\\.el\\'" . emacs-lisp-mode)
   :config
   (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
@@ -2369,6 +2361,7 @@ function to the relevant margin-formatters list."
 
 ;;;; Lsp integration
 (use-package eglot
+  :elpaca nil
   :commands (+eglot-organize-imports +eglot-help-at-point)
   :hook (
          (eglot-managed-mode . (lambda ()
@@ -2421,8 +2414,6 @@ function to the relevant margin-formatters list."
         (setq +lsp--optimization-init-p t))))
 
   :config
-  (use-package consult-eglot
-    :commands (consult-eglot-symbols))
   (setq
    ;; eglot-send-changes-idle-time 0.2
    eglot-send-changes-idle-time 0
@@ -2450,21 +2441,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2481,8 +2472,13 @@ function to the relevant margin-formatters list."
     (list :enable t
           :lint t)))
 
+(use-package consult-eglot
+  :after (consult eglot)
+  :commands (consult-eglot-symbols))
+
 ;;;; Builtin tree sitter
 (use-package treesit
+  :elpaca nil
   :when (and (fboundp 'treesit-available-p) (treesit-available-p))
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :init
@@ -2560,6 +2556,7 @@ Install the doc if it's not installed."
 
 ;;;; recenter after imenu jump
 (use-package imenu
+  :elpaca nil
   :commands (imenu)
   :hook (imenu-after-jump . recenter))
 
@@ -2578,6 +2575,7 @@ Install the doc if it's not installed."
   :mode ("\\.md\\'" . markdown-mode))
 
 (use-package python
+  :elpaca nil
   :mode ("\\.py\\'" . python-mode)
   :hook (python-mode . (lambda ()
                          (process-query-on-exit-flag
@@ -2637,6 +2635,7 @@ Install the doc if it's not installed."
                      (my/web-vue-setup))))))
 
 (use-package css-mode
+  :elpaca nil
   :mode ("\\.css\\'" "\\.wxss\\'")
   :init
   (add-hook 'css-mode-hook #'rainbow-mode))
@@ -2836,6 +2835,7 @@ Install the doc if it's not installed."
       (org-update-parent-todo-statistics))))
 
 (use-package org
+  :elpaca nil
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda +org/archive-done-tasks)
   :hook ((org-mode . org-indent-mode)
@@ -3207,6 +3207,7 @@ Install the doc if it's not installed."
   :after org)
 
 (use-package separate-inline
+  :elpaca nil
   :after org
   :hook ((org-mode-hook . separate-inline-mode)
          (org-mode-hook

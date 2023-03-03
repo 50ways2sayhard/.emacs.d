@@ -115,7 +115,7 @@ S is string of the two-key sequence."
     "t" #'dirvish-side
     "d" #'toggle-debug-on-error
     "l" #'toggle-truncate-lines
-    "y" #'multi-translate-at-point)
+    "y" #'go-translate-at-point)
   (defvar-keymap +meow-window-map
     "u" #'winner-undo
     "o" #'winner-redo

@@ -24,3 +24,7 @@
 /etc/borg/autoload
 /tree-sitter
 /url
+/elpaca
+/tutorial
+/devdocs
+.DS_Store
