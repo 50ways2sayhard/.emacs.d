@@ -245,5 +245,73 @@ If on a:
       (goto-char (line-beginning-position))
       (org-archive-subtree))))
 
+;;;###autoload
+(defun +my-org/mark-done ()
+  (interactive)
+  (when (derived-mode-p 'org-mode)
+    (org-back-to-heading)
+    (when-let* ((close-time (org-entry-get (point) "CLOSED"))
+                (close-time (org-time-string-to-time close-time))
+                (close-time (decode-time close-time))
+                (close-time (list (decoded-time-month close-time) (decoded-time-day close-time) (decoded-time-year close-time))))
+      (org-cut-subtree)
+      (with-current-buffer (find-file-noselect +org-capture-file-diary)
+        (+my/org-datetree-find-week-create close-time)
+        (org-paste-subtree)
+        (org-move-subtree-down)
+        (org-shiftmetaright)
+        (save-buffer)
+        (kill-buffer)))))
+
+(defun +my/org-datetree-find-week-create (d &optional keep-restriction)
+  (setq-local org-datetree-base-level 1)
+  (save-restriction
+    (if (eq keep-restriction 'subtree-at-point)
+	      (progn
+	        (unless (org-at-heading-p) (error "Not at heading"))
+	        (widen)
+	        (org-narrow-to-subtree)
+	        (setq-local org-datetree-base-level
+		                  (org-get-valid-level (org-current-level) 1)))
+      (unless keep-restriction (widen))
+      ;; Support the old way of tree placement, using a property
+      (let ((prop (org-find-property "WEEK_TREE")))
+	      (when prop
+	        (goto-char prop)
+	        (setq-local org-datetree-base-level
+		                  (org-get-valid-level (org-current-level) 1))
+	        (org-narrow-to-subtree))))
+    (goto-char (point-min))
+    (require 'cal-iso)
+    (require 'org-datetree)
+    ;; WORKAROUND: this part is ugly
+    (let* ((year (calendar-extract-year d))
+	         (month (calendar-extract-month d))
+	         (day (calendar-extract-day d))
+	         (time (encode-time 0 0 0 day month year))
+           (weekday (string-to-number (format-time-string "%w" time)))
+           (sunday (encode-time 0 0 0 (- day weekday) month year))
+           (saturday (encode-time 0 0 0 (+ day (- 6 weekday)) month year))
+           (week (ceiling (/ (time-to-day-in-year sunday) 7.0)))
+           (sunday_dec (decode-time sunday))
+           (year (nth 5 sunday_dec))
+           (month (nth 4 sunday_dec))
+           (sunday_day (nth 3 sunday_dec))
+           )
+      (org-datetree--find-create
+       "^\\*+[ \t]+\\([12][0-9]\\{3\\}\\)\\(\\s-*?\
+\\([ \t]:[[:alnum:]:_@#%%]+:\\)?\\s-*$\\)"
+       year nil nil
+       (format-time-string "%Y" time))
+      (org-datetree--find-create
+       "^\\*+[ \t]+%d-\\([01][0-9]\\) \\w+$"
+       year month nil)
+      (org-datetree--find-create
+       "^\\*+[ \t]+W[0-5][0-9] (%d-%02d-\\([0-3][0-9]\\) - [0-2][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9])$"
+       year month sunday_day
+       (format "W%02d (%s - %s)" week
+               (format-time-string "%Y-%m-%d" sunday)
+               (format-time-string "%Y-%m-%d" saturday))))))
+
 (provide '+org-helper)
 ;;; org-helper.el ends here

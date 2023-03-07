@@ -198,7 +198,7 @@ REST and STATE."
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package dirvish
-  :elpaca (dirvish :files (:defaults ("extensions/dirvish-*.el")))
+  :elpaca (dirvish :files (:defaults "extensions/dirvish-*.el"))
   :after dired
   :hook ((+my/first-input . dirvish-override-dired-mode))
   :bind
@@ -239,6 +239,10 @@ REST and STATE."
         "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
 
   (use-package dirvish-extras
+    :elpaca nil
+    :after dirvish)
+
+  (use-package dirvish-vc
     :elpaca nil
     :after dirvish))
 
@@ -601,9 +605,13 @@ window that already exists in that direction. It will split otherwise."
                  "Loading %s...done (%.3fs) [after-init]" user-init-file
                  (float-time (time-subtract (current-time)
                                             before-user-init-time)))) t)
+
   (add-hook 'window-setup-hook
             #'(lambda ()
-                (+my/open-org-agenda)) t)
+                (+my/open-org-agenda)
+                (message
+                 "Initialization done in (%.3fs)"
+                 (float-time (time-subtract (current-time) before-user-init-time)))) t)
   )
 
 (defvar +my/first-input-hook nil)
@@ -676,9 +684,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -1299,6 +1307,7 @@ When the number of characters in a buffer exceeds this threshold,
     "Find-file concatenating root with CANDIDATE."
     (find-file candidate))
 
+  ;; WORKAROUND Embark action on project source, eg. find-file-other-window
   ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
   (defun consult-project-extra--file (selected-root)
     "Create a view for selecting project files for the project at SELECTED-ROOT."
@@ -1310,7 +1319,7 @@ When the number of characters in a buffer exceeds this threshold,
                       :category 'file
                       :state (consult--file-preview)
                       :history 'file-name-history)))
-      (find-file (concat selected-root candidate))))
+      (find-file candidate)))
 
   (defun consult-project-extra--project-files (root &optional include-root)
     "Compute the project files given the ROOT."
@@ -1512,7 +1521,9 @@ When the number of characters in a buffer exceeds this threshold,
         ("M-j" . nil)
         ("M-k" . nil)
         ([?\r] . nil)
-        ([backtab] . corfu-previous))
+        ([backtab] . corfu-previous)
+        ([remap move-beginning-of-line] . nil)
+        ([remap move-end-of-line] . nil))
   :config
   (global-corfu-mode)
   (use-package corfu-quick
@@ -1529,7 +1540,7 @@ When the number of characters in a buffer exceeds this threshold,
 
   (use-package corfu-popupinfo
     :elpaca nil
-    ;; :hook (corfu-mode . corfu-popupinfo-mode)
+    :hook (corfu-mode . corfu-popupinfo-mode)
     :config
     (set-face-attribute 'corfu-popupinfo nil :height 140)
     (setq corfu-popupinfo-delay '(0.5 . 0.3)))
@@ -2226,6 +2237,9 @@ function to the relevant margin-formatters list."
   (setq flymake-no-changes-timeout nil
         flymake-fringe-indicator-position 'right-fringe))
 
+(use-package flymake-popon
+  :hook (flymake-mode . flymake-popon-mode))
+
 ;;; Better edit
 (use-package format-all
   :commands (format-all-buffer)
@@ -2262,6 +2276,13 @@ function to the relevant margin-formatters list."
   :commands (embrace-commander)
   :bind ("C-;" . embrace-commander))
 
+(use-package separedit
+  :custom
+  (separedit-remove-trailing-spaces-in-comment t)
+  (separedit-default-mode 'markdown-mode)
+  :config
+  (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode))))
+
 ;;;; Input method
 (use-package rime
   :after-call +my/first-input-hook-fun
@@ -2287,7 +2308,8 @@ function to the relevant margin-formatters list."
   (defun activate-default-input-method ()
     (interactive)
     (activate-input-method default-input-method))
-  (add-hook 'text-mode-hook 'activate-default-input-method))
+  ;; (add-hook 'text-mode-hook 'activate-default-input-method)
+  )
 
 (use-package super-save
   :hook (window-setup . super-save-mode)
@@ -2672,7 +2694,7 @@ Install the doc if it's not installed."
       (and dotgit
            (cons 'transient (file-name-directory dotgit)))))
 
-  (add-hook 'project-find-functions 'my-dart-project-finder)
+  ;; (add-hook 'project-find-functions 'my-dart-project-finder)
   (require 'flutter-utils)
   (bind-keys
    :map dart-mode-map
@@ -2781,10 +2803,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                  +org-capture-file-done
-                                                  +org-capture-file-someday
-                                                  +org-capture-file-note
-                                                  +org-capture-file-routine)))
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
@@ -2840,7 +2862,10 @@ Install the doc if it's not installed."
          (org-mode . +org-update-cookies-h)
          (org-mode . (lambda ()
                        (unless (cl-member (buffer-file-name) +org-files :test 'equal)
-                         (org-num-mode)))))
+                         (org-num-mode))))
+         (org-mode . (lambda ()
+                       (show-paren-local-mode -1)
+                       (eldoc-mode -1))))
   :bind
   (:map org-mode-map
         ([tab] . org-cycle))
@@ -2853,6 +2878,7 @@ Install the doc if it's not installed."
   (org-bullets-bullet-list '("#"))
   (org-tags-column -77)
   (org-src-preserve-indentation nil)
+  (org-pretty-entities t)
   (org-edit-src-content-indentation 0)
   (org-capture-bookmark nil) ;; TODO: no bookmark for refile
   (org-log-done 'time)
@@ -2867,6 +2893,7 @@ Install the doc if it's not installed."
 
   :config
   (require '+org-helper)
+  (setq org-modules '(org-habit))
   (defun +my/open-org-agenda ()
     "open org agenda in left window"
     (interactive)
@@ -2994,8 +3021,14 @@ Install the doc if it's not installed."
    ("T" . org-todo-list)
    ("x" . org-toggle-checkbox)
 
+   ("D" . +my-org/mark-done)
+
    ("ds" . #'org-schedule)
    ("dd" . #'org-deadline))
+
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-k") #'+my-org/mark-done))
+
 
   ;; (general-define-key :states '(normal)
   ;;                     :keymaps 'org-mode-map
@@ -3192,14 +3225,9 @@ Install the doc if it's not installed."
          (setq org-download-screenshot-method "screencapture -i %s"))))
 ;; -OrgDownload
 
-(use-package org-contrib
-  :after org)
-
 (use-package valign
   :after org
-  :bind (([remap org-table-align] . valign-table))
-  :hook (org-mode . valign-mode)
-  )
+  :bind (([remap org-table-align] . valign-table)))
 
 (use-package electric-spacing
   :after org)

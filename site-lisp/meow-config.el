@@ -63,6 +63,7 @@ S is string of the two-key sequence."
     :doc "Code operations"
     "r" #'eglot-rename
     "a" #'eglot-code-actions
+    "c" #'separedit
     "h" #'+eglot-help-at-point
     "f" #'format-all-buffer
     "I" #'+eglot-organize-imports
@@ -71,6 +72,7 @@ S is string of the two-key sequence."
     :doc "Diagnostic operations"
     "b" #'flymake-start
     "l" #'consult-flymake
+    "L" #'(lambda () (interactive) (consult-flymake t))
     "P" #'flymake-show-project-diagnostics
     "n" #'flymake-goto-next-error
     "p" #'flymake-goto-prev-error)
