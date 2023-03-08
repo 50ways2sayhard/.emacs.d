@@ -684,9 +684,9 @@ window that already exists in that direction. It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
+                             (when (derived-mode-p 'text-mode)
+                               (electric-indent-mode -1))
+                           (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -2324,6 +2324,7 @@ function to the relevant margin-formatters list."
   (setq super-save-idle-duration 1)
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
+  (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
 
   (defun +super-save-without-format ()
     (let ((before-save-hook (remove 'format-all--buffer-from-hook before-save-hook)))
@@ -2803,10 +2804,10 @@ Install the doc if it's not installed."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
