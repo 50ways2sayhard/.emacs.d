@@ -3,8 +3,8 @@
 Personal Emacs configuration, only tested on macOS with Emacs 29 or higher.
 
 Main features:
-- Package managed by `elpaca` and `use-package`
-- Lsp feature provided by built-in `eglot`.
+- Package managed by =elpaca= and =use-package=
+- Lsp feature provided by built-in =eglot=.
 - Optimized for dart and flutter programing.
 
 ** Installation
