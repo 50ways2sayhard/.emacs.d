@@ -1,0 +1,27 @@
+* Emacs config for self use
+
+Personal Emacs configuration, only tested on macOS with Emacs 29 or higher.
+
+Main features:
+- Package managed by `elpaca` and `use-package`
+- Lsp feature provided by built-in `eglot`.
+- Optimized for dart and flutter programing.
+
+** Installation
+
+Run the following script to install Emacs and this configuration:
+
+#+BEGIN_SRC bash
+cd ~
+mv .emacs.d .emacs.d.bak
+git clone https://github.com/50ways2sayhard/.emacs.d.git
+cd .emacs.d
+cp init-custom-example.el init-custom.el
+make env
+#+END_SRC
+
+** Reference
+- [[https://github.com/seagle0128/.emacs.d][seagle0128/.emacs.d]]
+- [[https://github.com/MatthewZMD/.emacs.d][MatthewZMD/.emacs.d]]
+- [[https://github.com/theFool32/.emacs.d][theFool32/.emacs.d]]
+- [[https://github.com/hlissner/doom-emacs][hlissner/doom-emacs]]
