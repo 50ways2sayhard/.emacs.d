@@ -1701,11 +1701,11 @@ function to the relevant margin-formatters list."
   :hook (prog-mode . yas-minor-mode)
   :bind
   (:map yas-keymap
-        (("M-}" . smarter-yas-expand-next-field)
-         ("TAB" . nil)
-         ([tab] . nil)
-         ))
+        (("M-}" . smarter-yas-expand-next-field)))
   :config
+  (defun my-corfu-frame-visible-h ()
+    (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))
+  (add-hook 'yas-keymap-disable-hook #'my-corfu-frame-visible-h)
   (defun smarter-yas-expand-next-field ()
     "Try to `yas-expand' then `yas-next-field' at current cursor position."
     (interactive)
