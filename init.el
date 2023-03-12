@@ -2461,21 +2461,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2681,7 +2681,8 @@ Install the doc if it's not installed."
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-mode :types
                                                    ((?c "Class"    font-lock-type-face)
-                                                    (?e "Enum" font-locl-type-face)
+                                                    (?e "Enum" font-lock-type-face)
+                                                    (?E "EnumMember" font-lock-variable-name-face)
                                                     (?V "Constructor" font-lock-type-face)
                                                     (?C "Constant"    font-lock-constant-face)
                                                     (?f "Function"  font-lock-function-name-face)
@@ -2845,8 +2846,8 @@ Install the doc if it's not installed."
    ;; Move the agenda to show the previous 3 days and the next 7 days for a bit
    ;; better context instead of just the current week which is a bit confusing
    ;; on, for example, a sunday
-   org-agenda-span 10
-   org-agenda-start-on-weekday nil
+   org-agenda-span 7
+   org-agenda-start-on-weekday 1
    org-agenda-start-day "-3d"))
 
 (defun +org-update-cookies-h ()
@@ -2862,9 +2863,7 @@ Install the doc if it's not installed."
   :hook ((org-mode . org-indent-mode)
          (org-mode . +org-update-cookies-h)
          (org-mode . (lambda ()
-                       (unless (cl-member (buffer-file-name) +org-files :test 'equal)
-                         (org-num-mode))))
-         (org-mode . (lambda ()
+                       (visual-line-mode)
                        (show-paren-local-mode -1)
                        (eldoc-mode -1))))
   :bind
@@ -2875,10 +2874,12 @@ Install the doc if it's not installed."
   (org-export-backends (quote (ascii html icalendar latex md odt)))
   (org-use-speed-commands t)
   (org-confirm-babel-evaluate 'nil)
-  (org-ellipsis " ▼ ")
+  (org-ellipsis " ▾ ")
   (org-bullets-bullet-list '("#"))
   (org-tags-column -77)
   (org-src-preserve-indentation nil)
+  (org-hide-block-startup t)
+  (org-cycle-hide-block-startup t)
   (org-pretty-entities t)
   (org-edit-src-content-indentation 0)
   (org-capture-bookmark nil) ;; TODO: no bookmark for refile
@@ -2891,6 +2892,11 @@ Install the doc if it's not installed."
   (org-agenda-start-on-weekday 1)
   (org-directory (expand-file-name +self/org-base-dir))
   (org-babel-python-command "python3")
+  :custom-face
+  (org-level-1 ((t (:height 1.10))))
+  (org-level-2 ((t (:height 1.08))))
+  (org-level-3 ((t (:height 1.06))))
+  (org-level-4 ((t (:height 1.04))))
 
   :config
   (require '+org-helper)
@@ -3031,186 +3037,24 @@ Install the doc if it's not installed."
     (define-key org-agenda-mode-map (kbd "C-k") #'+my-org/mark-done))
 
 
-  ;; (general-define-key :states '(normal)
-  ;;                     :keymaps 'org-mode-map
-  ;;                     "<return>" #'+org/dwim-at-point)
-
-  ;; (with-eval-after-load 'general
-  ;;   (local-leader-def
-  ;;    :keymaps 'org-mode-map
-  ;;    "'" 'org-edit-special
-  ;;    "*" 'org-ctrl-c-star
-  ;;    "+" 'org-ctrl-c-minus
-  ;;    "," 'org-switchb
-  ;;    ;; "." 'org-goto
-
-  ;;    "." 'consult-org-heading
-
-  ;;    "A" 'org-archive-subtree
-  ;;    "e" 'org-export-dispatch
-  ;;    "f" 'org-footnote-new
-  ;;    "h" 'org-toggle-heading
-  ;;    "i" 'org-toggle-item
-  ;;    "I" 'org-toggle-inline-images
-  ;;    "n" 'org-store-link
-  ;;    "o" 'org-set-property
-  ;;    "q" 'org-set-tags-command
-  ;;    "t" 'org-todo
-  ;;    "T" 'org-todo-list
-  ;;    "x" 'org-toggle-checkbox
-
-  ;;    "a" '(:wk "attackments")
-  ;;    "aa" 'org-attach
-  ;;    "ad" 'org-attach-delete-one
-  ;;    "aD" 'org-attach-delete-all
-  ;;    "af" '+org/find-file-in-attachments
-  ;;    "al" '+org/attach-file-and-insert-link
-  ;;    "an" 'org-attach-new
-  ;;    "ao" 'org-attach-open
-  ;;    "aO" 'org-attach-open-in-emacs
-  ;;    "ar" 'org-attach-reveal
-  ;;    "aR" 'org-attach-reveal-in-emacs
-  ;;    "au" 'org-attach-url
-  ;;    "as" 'org-attach-set-directory
-  ;;    "aS" 'org-attach-sync
-
-  ;;    "b"  '(:wk "tables")
-  ;;    "b-" 'org-table-insert-hline
-  ;;    "ba" 'org-table-align
-  ;;    "bb" 'org-table-blank-field
-  ;;    "bc" 'org-table-create-or-convert-from-region
-  ;;    "be" 'org-table-edit-field
-  ;;    "bf" 'org-table-edit-formulas
-  ;;    "bh" 'org-table-field-info
-  ;;    "bs" 'org-table-sort-lines
-  ;;    "br" 'org-table-recalculate
-  ;;    "bR" 'org-table-recalculate-buffer-tables
-  ;;    "bd" '(:wk "delete")
-  ;;    "bdc" 'org-table-delete-column
-  ;;    "bdr" 'org-table-kill-row
-  ;;    "bi" '(:wk "insert")
-  ;;    "bic" 'org-table-insert-column
-  ;;    "bih" 'org-table-insert-hline
-  ;;    "bir" 'org-table-insert-row
-  ;;    "biH" 'org-table-hline-and-move
-  ;;    "bt" '("toggle")
-  ;;    "btf" 'org-table-toggle-formula-debugger
-  ;;    "bto" 'org-table-toggle-coordinate-overlays
-
-  ;;    "c" '(:wk "clock")
-  ;;    "cc" 'org-clock-cancel
-  ;;    "cd" 'org-clock-mark-default-task
-  ;;    "ce" 'org-clock-modify-effort-estimate
-  ;;    "cE" 'org-set-effort
-  ;;    "cg" 'org-clock-goto
-  ;;    "cl" '+org/toggle-last-clock
-  ;;    "ci" 'org-clock-in
-  ;;    "cI" 'org-clock-in-last
-  ;;    "co" 'org-clock-out
-  ;;    "cr" 'org-resolve-clocks
-  ;;    "cR" 'org-clock-report
-  ;;    "ct" 'org-evaluate-time-range
-  ;;    "c=" 'org-clock-timestamps-up
-  ;;    "c-" 'org-clock-timestamps-down
-
-  ;;    "d" '(:wk "date/deadline")
-  ;;    "dd" 'org-deadline
-  ;;    "ds" 'org-schedule
-  ;;    "dt" 'org-time-stamp
-  ;;    "dT" 'org-time-stamp-inactive
-
-  ;;    "D" 'archive-done-tasks
-
-  ;;    "g" '(:wk "goto")
-  ;;    "gg" 'consult-org-heading
-  ;;    "gc" 'org-clock-goto
-  ;;    "gi" 'org-id-goto
-  ;;    "gr" 'org-refile-goto-last-stored
-  ;;    "gv" '+org/goto-visible
-  ;;    "gx" 'org-capture-goto-last-stored
-
-  ;;    "l" '(:wk "links")
-  ;;    "lc" 'org-cliplink
-  ;;    "ld" '+org/remove-link
-  ;;    "li" 'org-id-store-link
-  ;;    "ll" 'org-insert-link
-  ;;    "lL" 'org-insert-all-links
-  ;;    "ls" 'org-store-link
-  ;;    "lS" 'org-insert-last-stored-link
-  ;;    "lt" 'org-toggle-link-display
-
-  ;;    "P" '(:wk "publish")
-  ;;    "Pa" 'org-publish-all
-  ;;    "Pf" 'org-publish-current-file
-  ;;    "Pp" 'org-publish
-  ;;    "PP" 'org-publish-current-project
-  ;;    "Ps" 'org-publish-sitemap
-
-  ;;    "r" '(:wk "refile")
-  ;;    "r." '+org/refile-to-current-file
-  ;;    "rc" '+org/refile-to-running-clock
-  ;;    "rl" '+org/refile-to-last-location
-  ;;    "rf" '+org/refile-to-file
-  ;;    "ro" '+org/refile-to-other-window
-  ;;    "rO" '+org/refile-to-other-buffer
-  ;;    "rv" '+org/refile-to-visible
-  ;;    "rr" 'org-refile
-
-  ;;    "s" '(:wk "tree/subtree")
-  ;;    "sa" 'org-toggle-archive-tag
-  ;;    "sb" 'org-tree-to-indirect-buffer
-  ;;    "sd" 'org-cut-subtree
-  ;;    "sh" 'org-promote-subtree
-  ;;    "sj" 'org-move-subtree-down
-  ;;    "sk" 'org-move-subtree-up
-  ;;    "sl" 'org-demote-subtree
-  ;;    "sn" 'org-narrow-to-subtree
-  ;;    "sr" 'org-refile
-  ;;    "ss" 'org-sparse-tree
-  ;;    "sA" 'org-archive-subtree
-  ;;    "sN" 'widen
-  ;;    "sS" 'org-sort
-
-  ;;    "p" '(:wk "priority")
-  ;;    "pd" 'org-priority-down
-  ;;    "pp" 'org-priority
-  ;;    "pu" 'org-priority-up
-
-
-  ;;    "x" '(:wk "Download")
-  ;;    "xc" 'org-download-clipboard
-  ;;    "xd" 'org-download-delete
-  ;;    "xi" 'org-download-image
-  ;;    "xy" 'org-download-yank
-  ;;    "xe" 'org-download-edit
-  ;;    "xr" 'org-download-rename-at-point
-  ;;    "xR" 'org-download-rename-last-file
-  ;;    "xs" 'org-download-screenshot
-  ;;    )
-  ;;   (local-leader-def
-  ;;    :keymaps 'org-agenda-mode-map
-  ;;    "d" '(:wk "date/deadline")
-  ;;    "dd" 'org-agenda-deadline
-  ;;    "ds" 'org-agenda-schedule
-
-  ;;    "c" '(:wk "clock")
-  ;;    "cc" 'org-agenda-clock-cancel
-  ;;    "cg" 'org-agenda-clock-goto
-  ;;    "ci" 'org-agenda-clock-in
-  ;;    "co" 'org-agenda-clock-out
-  ;;    "cr" 'org-agenda-clockreport-mode
-  ;;    "cs" 'org-agenda-show-clocking-issues
-
-  ;;    "p" '(:wk "priority")
-  ;;    "pd" 'org-agenda-priority-down
-  ;;    "pp" 'org-agenda-priority
-  ;;    "pu" 'org-agenda-priority-up
-
-  ;;    "q" 'org-agenda-set-tags
-  ;;    "r" 'org-agenda-refile
-  ;;    "t" 'org-agenda-todo))
-
-
+  (add-hook 'org-mode-hook  (lambda ()
+                              (setq prettify-symbols-alist
+                                    '(("lambda" . ?λ)
+                                      (":PROPERTIES:" . ?)
+                                      (":ID:" . ?)
+                                      (":END:" . ?)
+                                      ("#+TITLE:" . ?)
+                                      ("#+AUTHOR:" . ?)
+                                      ("#+BEGIN_QUOTE" . ?)
+                                      ("#+END_QUOTE" . ?)
+                                      ("#+RESULTS:" . ?)
+                                      ("[ ]" . ?)
+                                      ("[-]" . ?)
+                                      ("[X]" . ?)
+                                      ("[#A]" . ?🅐)
+                                      ("[#B]" . ?🅑)
+                                      ("[#C]" . ?🅒)))
+                              (prettify-symbols-mode)))
   )
 ;; -OrgPac
 
@@ -3230,32 +3074,19 @@ Install the doc if it's not installed."
   :after org
   :bind (([remap org-table-align] . valign-table)))
 
-(use-package electric-spacing
-  :after org)
-
-(use-package separate-inline
-  :elpaca nil
-  :after org
-  :hook ((org-mode-hook . separate-inline-mode)
-         (org-mode-hook
-          .
-          (lambda ()
-            (add-hook 'separate-inline-mode-hook
-                      'separate-inline-use-default-rules-for-org-local
-                      nil 'make-it-local)))))
-
 (use-package org-modern
   :after org
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda))
   :config
   (setq
-   org-modern-table t
-   org-modern-block t
-   org-modern-keyword t
-   org-modern-todo nil ;;  TODO: no better way to define fine faces
-   org-modern-timestamp t
+   org-modern-checkbox nil
+   org-modern-priority nil
+   org-modern-todo nil
+   org-modern-list nil
+   org-modern-keyword nil
    org-agenda-block-separator ?─
+   org-agenda-time-leading-zero 0
    org-agenda-time-grid
    '((daily today require-timed)
      (800 1000 1200 1400 1600 1800 2000)
@@ -3265,11 +3096,15 @@ Install the doc if it's not installed."
 
 
   (setq org-tags-column 0
-        org-auto-align-tags nil)
+        org-auto-align-tags nil
+        org-special-ctrl-a/e t
+        org-special-ctrl-k t
+        org-insert-heading-respect-content t
+        org-fold-catch-invisible-edits 'show-and-error
+        org-agenda-tags-column 0)
 
   ;; avoid unneccesary calculations, I never need it.
   (defalias 'org-align-tags #'ignore))
-
 
 ;;;; Notification for org todos
 ;; -Notification only for mac os
