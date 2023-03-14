@@ -53,3 +53,5 @@ dart-mode
                      n> "}")
 
 (nn "if ( " p " != null) {" n> p n> "}")
+
+(trycatch "try {" n> p n> "} catch (error, stackTrace) {" n> p n> "}")
