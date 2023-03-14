@@ -1196,7 +1196,6 @@ When the number of characters in a buffer exceeds this threshold,
 
   (consult-customize consult-clock-in
                      :prompt "Clock in: "
-                     :preview-key (kbd "M-.")
                      :group
                      (lambda (cand transform)
                        (let* ((marker (get-text-property 0 'consult--candidate cand))
@@ -1698,23 +1697,9 @@ function to the relevant margin-formatters list."
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands (yas-expand-snippet)
-  :hook (prog-mode . yas-minor-mode)
-  :bind
-  (:map yas-keymap
-        (("M-}" . smarter-yas-expand-next-field)))
-  :config
-  (defun my-corfu-frame-visible-h ()
-    (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))
-  (add-hook 'yas-keymap-disable-hook #'my-corfu-frame-visible-h)
-  (defun smarter-yas-expand-next-field ()
-    "Try to `yas-expand' then `yas-next-field' at current cursor position."
-    (interactive)
-    (let ((old-point (point))
-          (old-tick (buffer-chars-modified-tick)))
-      (yas-expand)
-      (when (and (eq old-point (point))
-                 (eq old-tick (buffer-chars-modified-tick)))
-        (ignore-errors (yas-next-field))))))
+  :hook ((prog-mode . yas-minor-mode)
+         (yas-keymap-disable . (lambda ()
+                                 (and (frame-live-p corf--frame) (frame-visible-p corfu--frame))))))
 
 (use-package cape
   :after (corfu tempel)
@@ -2042,7 +2027,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Iosevka Comfy" . 17) ("Monego Nerd Font Fix" . 15) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Iosevka Comfy" . 16) ("Monego Nerd Font Fix" . 15) ("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2461,21 +2446,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
