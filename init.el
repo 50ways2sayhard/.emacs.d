@@ -16,7 +16,7 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.2)
+(defvar elpaca-installer-version 0.3)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -259,7 +259,8 @@ REST and STATE."
 
 ;;; Isearch
 (progn ;    `isearch'
-  (setq isearch-allow-scroll t))
+  (setq isearch-allow-scroll t
+        isearch-lazy-count 1))
 
 ;;; Version controll
 (use-package magit

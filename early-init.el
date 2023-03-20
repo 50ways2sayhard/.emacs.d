@@ -10,7 +10,6 @@
 
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.5
-      package-enable-at-startup nil
       file-name-handler-alist nil
       site-run-file nil
       default-frame-alist
@@ -37,6 +36,7 @@
 
       load-prefer-newer nil
       auto-mode-case-fold nil
+      ring-bell-function 'ignore
 
       bidi-display-reordering 'left-to-right
       bidi-paragraph-direction 'left-to-right
