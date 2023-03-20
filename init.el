@@ -1699,7 +1699,7 @@ function to the relevant margin-formatters list."
   :commands (yas-expand-snippet)
   :hook ((prog-mode . yas-minor-mode)
          (yas-keymap-disable . (lambda ()
-                                 (and (frame-live-p corf--frame) (frame-visible-p corfu--frame))))))
+                                 (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame))))))
 
 (use-package cape
   :after (corfu tempel)
