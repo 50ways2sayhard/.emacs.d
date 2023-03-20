@@ -1805,6 +1805,10 @@ function to the relevant margin-formatters list."
   :config
   (setq vundo-glyph-alist vundo-unicode-symbols))
 
+(use-package visual-regexp)
+
+(use-package visual-regexp-steroids)
+
 (use-package go-translate
   :commands (go-translate-at-point)
   :bind
