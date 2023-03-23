@@ -1810,9 +1810,10 @@ function to the relevant margin-formatters list."
 (use-package visual-regexp-steroids)
 
 (use-package go-translate
-  :commands (go-translate-at-point)
+  :commands (go-translate-at-point go-translate-translate)
   :bind
   ("C-c t y" . go-translate-at-point)
+  ("C-c t Y" . go-translate-translate)
   :config
   (setq gts-translate-list '(("en" "zh") ("zh" "en")))
   (cl-defmethod gts-pre ((render gts-posframe-pop-render) translator)
@@ -1841,15 +1842,33 @@ function to the relevant margin-formatters list."
                                               (posframe-delete buf)))))))
 
   (ef-themes-with-colors
-    (defvar my-translator-n
-      (gts-translator
-       :picker (gts-noprompt-picker)
-       :engines (gts-google-rpc-engine)
-       :render (gts-posframe-pop-render :backcolor bg-dim :forecolor fg-dim :width 200 :height 100)
-       :splitter (gts-paragraph-splitter)))
-    (defun go-translate-at-point ()
-      (interactive)
-      (gts-translate my-translator-n))))
+    (let ((render (gts-posframe-pop-render :backcolor bg-dim :forecolor fg-dim :width 200 :height 100))
+          (engines (list
+                    (gts-google-rpc-engine)
+                    (gts-bing-engine)
+                    (gts-youdao-dict-engine)))
+          (splitter (gts-paragraph-splitter)))
+      (defvar my-translator-at-point
+        (gts-translator
+         :picker (gts-noprompt-picker)
+         :engines engines
+         :render render
+         :splitter splitter))
+
+      (defvar my-translator-input
+        (gts-translator
+         :picker (gts-prompt-picker)
+         :engines engines
+         :render render
+         :splitter splitter))
+
+
+      (defun go-translate-at-point ()
+        (interactive)
+        (gts-translate my-translator-at-point))
+      (defun go-translate-translate ()
+        (interactive)
+        (gts-translate my-translator-input)))))
 
 
 ;; SaveAllBuffers
