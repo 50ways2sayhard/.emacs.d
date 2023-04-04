@@ -198,9 +198,10 @@ REST and STATE."
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package dirvish
-  :elpaca (dirvish :files (:defaults "extensions/dirvish-*.el"))
+  :after-call +my/first-input-hook-fun
   :after dired
-  :hook ((+my/first-input . dirvish-override-dired-mode))
+  :elpaca (dirvish :files (:defaults "extensions/dirvish-*.el"))
+  :hook (+my/first-input . dirvish-override-dired-mode)
   :bind
   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
         ("?"   . dirvish-menu-all-cmds)
@@ -1698,8 +1699,7 @@ function to the relevant margin-formatters list."
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands (yas-expand-snippet)
-  :hook ((prog-mode . yas-minor-mode)
-         (yas-keymap-disable . (lambda ()
+  :hook ((yas-keymap-disable . (lambda ()
                                  (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame))))))
 
 (use-package cape
@@ -2051,7 +2051,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Cascadia Code" . 15) ("Hack Nerd Font" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -2293,14 +2293,21 @@ function to the relevant margin-formatters list."
 (use-package flymake-popon
   :hook (flymake-mode . flymake-popon-mode))
 
-;;; Better edit
-(use-package format-all
-  :commands (format-all-buffer)
-  :hook (((emacs-lisp-mode) . format-all-mode)
-         ((prog-mode) . format-all-ensure-formatter))
+(use-package jinx
+  :elpaca (:repo "minad/jinx")
+  :bind (([remap ispell-word] . #'jinx-correct))
+  :hook ((text-mode) . jinx-mode)
   :config
-  ;; (setq format-all-formatters '(("Vue" (prettier "--parser vue"))))
-  (setq format-all-show-errors 'never))
+  (add-to-list 'jinx-exclude-regexps '(t "\\cc")))
+
+;;; Better edit
+(use-package apheleia
+  :commands (apheleia-format-buffer)
+  :bind ("C-c c f" . apheleia-format-buffer)
+  :init
+  (require 'apheleia-formatters)
+  (add-to-list 'apheleia-mode-alist '(dart-ts-mode . dart-format))
+  (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent)))
 
 (use-package delete-block
   :elpaca (:repo "manateelazycat/delete-block" :host github)
@@ -2380,9 +2387,8 @@ function to the relevant margin-formatters list."
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
 
   (defun +super-save-without-format ()
-    (let ((before-save-hook (remove 'format-all--buffer-from-hook before-save-hook)))
-      (when (super-save-p)
-        (save-all-buffers))))
+    (when (super-save-p)
+      (save-all-buffers)))
   (advice-add 'super-save-command :override '+super-save-without-format))
 
 ;;; Programing
@@ -2495,6 +2501,7 @@ function to the relevant margin-formatters list."
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
    eglot-events-buffer-size 0
+   eglot-report-progress nil
    ;; eglot-max-candidates 100
    )
   (setq eldoc-echo-area-use-multiline-p 5)
@@ -2514,21 +2521,21 @@ function to the relevant margin-formatters list."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()

@@ -52,13 +52,17 @@ S is string of the two-key sequence."
     "r" #'recentf-open-files
     "p" #'+open-configuration-folder
     "j" #'+consult-dir
-    "h" #'(lambda () (interactive) (consult-fd default-directory))
-    )
+    "h" #'(lambda () (interactive) (consult-fd default-directory)))
   (defvar-keymap +meow-buffer-map
     :doc "Buffer operations"
     "b" #'consult-buffer
     "d" #'kill-current-buffer
-    "s" #'save-buffer)
+    "s" #'(lambda ()
+            (interactive)
+            (when (and (boundp 'eglot-managed-p) (eglot-managed-p))
+              (+eglot-organize-imports))
+            (call-interactively #'apheleia-format-buffer)
+            (save-buffer)))
   (defvar-keymap +meow-code-map
     :doc "Code operations"
     "r" #'eglot-rename
