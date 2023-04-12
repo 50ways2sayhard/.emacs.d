@@ -1483,7 +1483,8 @@ When the number of characters in a buffer exceeds this threshold,
       (ein:notebook-mode             all-the-icons-fileicon "jupyter"       :height 1.2 :face all-the-icons-orange)
       (ein:notebook-multilang-mode   all-the-icons-fileicon "jupyter"       :height 1.2 :face all-the-icons-dorange)
       (nov-mode                      all-the-icons-faicon "book"            :height 1.0 :v-adjust -0.1 :face all-the-icons-green)
-      (gfm-mode                      all-the-icons-octicon "markdown"       :face all-the-icons-lblue)))
+      (gfm-mode                      all-the-icons-octicon "markdown"       :face all-the-icons-lblue)
+      (dart-ts-mode                  all-the-icons-fileicon "dart"          :height 1.0  :face all-the-icons-blue)))
 
   (dolist (i my-extension-icon-alist)
     (add-to-list 'all-the-icons-extension-icon-alist i))
@@ -2352,7 +2353,7 @@ function to the relevant margin-formatters list."
   (separedit-remove-trailing-spaces-in-comment t)
   (separedit-default-mode 'markdown-mode)
   :config
-  (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode))))
+  (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode dart-ts-mode))))
 
 ;;;; Input method
 (use-package rime
@@ -2581,6 +2582,7 @@ function to the relevant margin-formatters list."
   (setq treesit-language-source-alist
         '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
           (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+          (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
           (html . ("https://github.com/tree-sitter/tree-sitter-html"))
           (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
           (json . ("https://github.com/tree-sitter/tree-sitter-json"))
@@ -2741,36 +2743,31 @@ Install the doc if it's not installed."
   (add-hook 'emmet-mode-hook (lambda()
                                (setq emmet-indent-after-insert t))))
 ;; -EmmetPac
-(use-package dart-mode
-  :mode ("\\.dart\\'")
-  :hook ((dart-mode . (lambda ()
-                        (format-all-mode t)))
-         (eglot-managed-mode . (lambda ()
-                                 (add-hook 'before-save-hook #'+eglot-organize-imports nil t)))
-         )
+
+(use-package dart-ts-mode
+  :mode ("\\.dart\\'" . dart-ts-mode)
+  :elpaca (:repo "50ways2sayhard/dart-ts-mode" :host github)
+  :hook (dart-ts-mode . (lambda ()
+                          (setq-local format-all-formatters '("Dart" . dart-format))))
+  :init
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+                 '(dart-ts-mode . ("dart" "language-server" "--client-id" "emacs.eglot-dart"))))
   :config
   (with-eval-after-load 'consult-imenu
-    (add-to-list 'consult-imenu-config '(dart-mode :types
-                                                   ((?c "Class"    font-lock-type-face)
-                                                    (?e "Enum" font-lock-type-face)
-                                                    (?E "EnumMember" font-lock-variable-name-face)
-                                                    (?V "Constructor" font-lock-type-face)
-                                                    (?C "Constant"    font-lock-constant-face)
-                                                    (?f "Function"  font-lock-function-name-face)
-                                                    (?m "Method"  font-lock-function-name-face)
-                                                    (?p "Property" font-lock-variable-name-face)
-                                                    (?F "Field"  font-lock-variable-name-face)))))
-  (defun my-dart-project-finder (dir)
-    "Integrate .git project roots."
-    (let ((dotgit (and (setq dir (locate-dominating-file dir "pubspec.yaml"))
-                       (expand-file-name dir))))
-      (and dotgit
-           (cons 'transient (file-name-directory dotgit)))))
-
-  ;; (add-hook 'project-find-functions 'my-dart-project-finder)
+    (add-to-list 'consult-imenu-config '(dart-ts-mode :types
+                                                      ((?c "Class"    font-lock-type-face)
+                                                       (?e "Enum" font-lock-type-face)
+                                                       (?E "EnumMember" font-lock-variable-name-face)
+                                                       (?V "Constructor" font-lock-type-face)
+                                                       (?C "Constant"    font-lock-constant-face)
+                                                       (?f "Function"  font-lock-function-name-face)
+                                                       (?m "Method"  font-lock-function-name-face)
+                                                       (?p "Property" font-lock-variable-name-face)
+                                                       (?F "Field"  font-lock-variable-name-face)))))
   (require 'flutter-utils)
   (bind-keys
-   :map dart-mode-map
+   :map dart-ts-mode-map
    :prefix "C-x ,"
    :prefix-map meow-normal-state-keymap
    ("r" . flutter-utils-run-or-hot-reload)
@@ -2779,7 +2776,6 @@ Install the doc if it's not installed."
    ("Q" . flutter-utils-quit)
    ("s" . flutter-utils-run-or-attach)
    ("p" . flutter-utils-pub-get)))
-
 
 ;;; Terminal integration
 (use-package vterm

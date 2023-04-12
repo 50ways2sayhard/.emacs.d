@@ -29,7 +29,7 @@ org-mode
 (link "[[" (s link) "][" (s description) "]]")
 (table "|" p "|" p "|" n> "|-+-|" n> "|||")
 
-dart-mode
+dart-ts-mode
 
 (header "/// " p n> "/// " n> "/// Created by johngong at " (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)) n>)
 
