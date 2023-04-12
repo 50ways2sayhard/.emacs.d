@@ -758,7 +758,7 @@ window that already exists in that direction. It will split otherwise."
 (defun +my-rename-file()
   "Rename file while using current file as default."
   (interactive)
-  (let ((file-from (read-file-name "Move from: " default-directory buffer-file-name))
+  (let ((file-from (read-file-name "Move from: " default-directory (file-name-nondirectory buffer-file-name)))
         (file-to (read-file-name "Move to:" default-directory)))
     (rename-file file-from file-to)
     (when (string= (file-truename file-from) (file-truename (buffer-file-name)))
@@ -781,7 +781,7 @@ window that already exists in that direction. It will split otherwise."
   "Put current buffer file to top."
   (interactive)
   (delete-file
-   (read-file-name "Delete: " default-directory buffer-file-name))
+   (read-file-name "Delete: " default-directory (file-name-nondirectory buffer-file-name)))
   (unless (file-exists-p (buffer-file-name))
     (kill-current-buffer)))
 
