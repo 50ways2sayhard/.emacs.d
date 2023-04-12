@@ -37,6 +37,7 @@
       load-prefer-newer nil
       auto-mode-case-fold nil
       ring-bell-function 'ignore
+      visible-bell t
 
       bidi-display-reordering 'left-to-right
       bidi-paragraph-direction 'left-to-right
