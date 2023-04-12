@@ -1716,8 +1716,8 @@ function to the relevant margin-formatters list."
 (use-package cape
   :after (corfu tempel)
   :commands (my/convert-super-capf my/set-eglot-capf)
-  :hook ((text-mode . (lambda ()
-                        (my/convert-super-capf #'cape-dabbrev)))
+  :hook (((text-mode yaml-ts-mode) . (lambda ()
+                                       (my/convert-super-capf #'cape-dabbrev)))
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf))
