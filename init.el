@@ -855,6 +855,16 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 	                "end tell\n")))
     (start-process "osascript-getinfo" nil "osascript" "-e" script)))
 
+(defun +my/comment-and-paste (beg end)
+  "Comment selected lines and paste then after.BEG and END is the bound of region."
+  (interactive "r")
+  (let ((line-number (line-number-at-pos end)))
+    (call-interactively 'evilnc-comment-and-kill-ring-save)
+    (goto-line line-number)
+    (end-of-line)
+    (newline)
+    (yank)))
+
 (defun +my/quick-look (&optional file)
   "Open FILE with quick look."
   (interactive
@@ -907,6 +917,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("/" . evilnc-comment-or-uncomment-lines)
    ("=" . er/expand-region)
    (";" . embrace-commander)
+   ("Y". #'+my/comment-and-paste)
    :map embark-identifier-map
    (";" . embrace-commander)
    ("D" . xref-find-definitions-other-window))
