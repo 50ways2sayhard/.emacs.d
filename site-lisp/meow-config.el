@@ -60,7 +60,7 @@ S is string of the two-key sequence."
     "s" #'(lambda ()
             (interactive)
             (when (and (boundp 'eglot-managed-p) (eglot-managed-p))
-              (+eglot-organize-imports))
+              (call-interactively #'eglot-code-action-organize-imports))
             (call-interactively #'apheleia-format-buffer)
             (save-buffer)))
   (defvar-keymap +meow-code-map
@@ -69,7 +69,7 @@ S is string of the two-key sequence."
     "a" #'eglot-code-actions
     "c" #'separedit
     "h" #'+eglot-help-at-point
-    "f" #'format-all-buffer
+    "f" #'apheleia-format-buffer
     "I" #'+eglot-organize-imports
     "i" #'consult-eglot-symbols)
   (defvar-keymap +meow-diagnostics-map

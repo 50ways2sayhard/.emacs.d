@@ -886,7 +886,8 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (meow-setup-indicator)
   (meow-global-mode)
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
-  (add-to-list 'meow-mode-state-list '(comint-mode . insert)))
+  (add-to-list 'meow-mode-state-list '(comint-mode . insert))
+  (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
 (use-package which-key
   :diminish
@@ -2336,6 +2337,9 @@ function to the relevant margin-formatters list."
   :custom
   (wgrep-auto-save-buffer t))
 
+(use-package expand-region
+  :commands (er/expand-region))
+
 (use-package avy
   :diminish
   :demand t
@@ -2744,8 +2748,6 @@ Install the doc if it's not installed."
 (use-package dart-ts-mode
   :mode ("\\.dart\\'" . dart-ts-mode)
   :elpaca (:repo "50ways2sayhard/dart-ts-mode" :host github)
-  :hook (dart-ts-mode . (lambda ()
-                          (setq-local format-all-formatters '("Dart" . dart-format))))
   :init
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
