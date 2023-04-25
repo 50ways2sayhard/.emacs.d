@@ -889,6 +889,10 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
+(use-package bind
+  :elpaca (:host github :repo "repelliuss/bind")
+  :functions (bind))
+
 (use-package which-key
   :diminish
   :custom
@@ -1716,8 +1720,10 @@ function to the relevant margin-formatters list."
 (use-package cape
   :after (corfu tempel)
   :commands (my/convert-super-capf my/set-eglot-capf)
-  :hook (((text-mode yaml-ts-mode) . (lambda ()
-                                       (my/convert-super-capf #'cape-dabbrev)))
+  :hook ((text-mode . (lambda ()
+                        (my/convert-super-capf #'cape-dabbrev)))
+         (yaml-ts-mode . (lambda ()
+                           (my/convert-super-capf #'cape-dabbrev)))
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
          (org-mode . my/set-basic-capf))
@@ -2455,8 +2461,7 @@ function to the relevant margin-formatters list."
 (use-package eglot
   :elpaca nil
   :commands (+eglot-organize-imports +eglot-help-at-point)
-  :hook (
-         (eglot-managed-mode . (lambda ()
+  :hook ((eglot-managed-mode . (lambda ()
                                  (+lsp-optimization-mode)
                                  (setq eldoc-documentation-functions
                                        (cons #'flymake-eldoc-function
@@ -2765,16 +2770,14 @@ Install the doc if it's not installed."
                                                        (?p "Property" font-lock-variable-name-face)
                                                        (?F "Field"  font-lock-variable-name-face)))))
   (require 'flutter-utils)
-  (bind-keys
-   :map dart-ts-mode-map
-   :prefix "C-x ,"
-   :prefix-map meow-normal-state-keymap
-   ("r" . flutter-utils-run-or-hot-reload)
-   ("R" . flutter-utils-run-or-hot-restart)
-   ("v" . flutter-utils-open-devtools)
-   ("Q" . flutter-utils-quit)
-   ("s" . flutter-utils-run-or-attach)
-   ("p" . flutter-utils-pub-get)))
+  (bind
+   dart-ts-mode-map
+   (bind-prefix "C-x ,"
+     "r" #'flutter-utils-run-or-hot-reload
+     "R" #'flutter-utils-run-or-hot-restart
+     "v" #'flutter-utils-open-devtools
+     "Q" #'flutter-utils-quit
+     "p" #'flutter-utils-pub-get)))
 
 ;;; Terminal integration
 (use-package vterm
@@ -3073,31 +3076,25 @@ Install the doc if it's not installed."
   (define-key org-mode-map (kbd "C-<return>") '+org/insert-item-below)
   (define-key org-mode-map (kbd "C-S-<return>") 'org-insert-subheading)
 
-  (bind-keys
-   :map org-mode-map
-   :prefix "C-x ,"
-   :prefix-map meow-normal-state-keymap
-   ("'" . org-edit-special)
-   ("*" . org-ctrl-c-star)
-   ("+" . org-ctrl-c-minus)
-   ("," . org-switchb)
-   ("." . consult-org-heading)
-   ("A" . org-archive-subtree)
-   ("e" . org-export-dispatch)
-   ("f" . org-footnote-new)
-   ("h" . org-toggle-heading)
-   ("I" . org-toggle-inline-images)
-   ("n" . org-store-link)
-   ("o" . org-set-property)
-   ("q" . org-set-tag-commend)
-   ("t" . org-todo)
-   ("T" . org-todo-list)
-   ("x" . org-toggle-checkbox)
+  (defvar-keymap +org-insert-map
+    "l" #'org-insert-link)
 
-   ("D" . +my-org/mark-done)
+  (defvar-keymap +org-schedule-map
+    "d" #'org-deadline
+    "s" #'org-schedule)
 
-   ("ds" . #'org-schedule)
-   ("dd" . #'org-deadline))
+  (bind
+   org-mode-map
+   (bind-prefix "C-x ,"
+     "t" #'org-todo
+     "q" #'org-set-tag-commend
+     "T" #'org-todo-list
+     "x" #'org-toggle-checkbox
+     "D" #'+my-org/mark-done
+     "h" #'org-toggle-heading
+     "I" #'org-toggle-inline-images
+     "d" +org-schedule-map
+     "i" +org-insert-map))
 
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "C-k") #'+my-org/mark-done))
