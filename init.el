@@ -2290,8 +2290,7 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package apheleia
   :commands (apheleia-format-buffer)
   :bind ("C-c c f" . apheleia-format-buffer)
-  :init
-  (require 'apheleia-formatters)
+  :config
   (add-to-list 'apheleia-mode-alist '(dart-ts-mode . dart-format))
   (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent)))
 
