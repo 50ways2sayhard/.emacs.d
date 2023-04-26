@@ -227,7 +227,7 @@ REST and STATE."
   (dirvish-mode-line-format ; it's ok to place string inside
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (dirvish-side-follow-buffer-file t)
-  (dirvish-attributes '(all-the-icons file-size vc-state git-msg))
+  (dirvish-attributes '(file-size vc-state git-msg))
   :config
   (when (boundp 'dirvish-side-follow-mode)
     (dirvish-side-follow-mode t))
@@ -1420,6 +1420,7 @@ When the number of characters in a buffer exceeds this threshold,
           (right-fringe . 8))))
 
 ;;; Icons
+;; TODO deprecate after doom-modeline released
 (use-package all-the-icons
   :when (display-graphic-p)
   :demand t
@@ -1495,10 +1496,69 @@ When the number of characters in a buffer exceeds this threshold,
     (add-to-list 'all-the-icons-regexp-icon-alist i))
   (dolist (i my-mode-icon-alist)
     (add-to-list 'all-the-icons-mode-icon-alist i)))
+(use-package nerd-icons
+  :config
+  (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
+(use-package nerd-icons-dired
+  :diminish
+  :commands nerd-icons-dired-mode
+  :custom-face
+  (nerd-icons-dired-dir-face ((t (:inherit nerd-icons-dsilver :foreground unspecified))))
+  :hook (dired-mode . nerd-icons-dired-mode))
+(use-package nerd-icons-completion
+  :elpaca (nerd-icons-completion :type git :host github :repo "rainstormstudio/nerd-icons-completion")
+  :commands (nerd-icons-completion-marginalia-setup)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
+(use-package kind-icon
+  :after (corfu nerd-icons)
+  :after-call +my/first-input-hook-fun
+  :elpaca (:host github :repo "jdtsmith/kind-icon")
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  :config
+  (setq kind-icon-use-icons nil
+        kind-icon-blend-background nil)
 
-(use-package all-the-icons-completion
-  :commands (all-the-icons-completion-marginalia-setup)
-  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup))
+  (setq kind-icon-mapping
+        `((array ,(nerd-icons-codicon "nf-cod-symbol_array") :face font-lock-type-face)
+          (boolean ,(nerd-icons-codicon "nf-cod-symbol_boolean") :face font-lock-builtin-face)
+          (class ,(nerd-icons-codicon "nf-cod-symbol_class") :face font-lock-type-face)
+          (color ,(nerd-icons-codicon "nf-cod-symbol_color") :face success)
+          (command ,(nerd-icons-codicon "nf-cod-terminal") :face default)
+          (constant ,(nerd-icons-codicon "nf-cod-symbol_constant") :face font-lock-constant-face)
+          (constructor ,(nerd-icons-codicon "nf-cod-triangle_right") :face font-lock-function-name-face)
+          (enummember ,(nerd-icons-codicon "nf-cod-symbol_enum_member") :face font-lock-builtin-face)
+          (enum-member ,(nerd-icons-codicon "nf-cod-symbol_enum_member") :face font-lock-builtin-face)
+          (enum ,(nerd-icons-codicon "nf-cod-symbol_enum") :face font-lock-builtin-face)
+          (event ,(nerd-icons-codicon "nf-cod-symbol_event") :face font-lock-warning-face)
+          (field ,(nerd-icons-codicon "nf-cod-symbol_field") :face font-lock-variable-name-face)
+          (file ,(nerd-icons-codicon "nf-cod-symbol_file") :face font-lock-string-face)
+          (folder ,(nerd-icons-codicon "nf-cod-folder") :face font-lock-doc-face)
+          (interface ,(nerd-icons-codicon "nf-cod-symbol_interface") :face font-lock-type-face)
+          (keyword ,(nerd-icons-codicon "nf-cod-symbol_keyword") :face font-lock-keyword-face)
+          (macro ,(nerd-icons-codicon "nf-cod-symbol_misc") :face font-lock-keyword-face)
+          (magic ,(nerd-icons-codicon "nf-cod-wand") :face font-lock-builtin-face)
+          (method ,(nerd-icons-codicon "nf-cod-symbol_method") :face font-lock-function-name-face)
+          (function ,(nerd-icons-codicon "nf-cod-symbol_method") :face font-lock-function-name-face)
+          (module ,(nerd-icons-codicon "nf-cod-file_submodule") :face font-lock-preprocessor-face)
+          (numeric ,(nerd-icons-codicon "nf-cod-symbol_numeric") :face font-lock-builtin-face)
+          (operator ,(nerd-icons-codicon "nf-cod-symbol_operator") :face font-lock-comment-delimiter-face)
+          (param ,(nerd-icons-codicon "nf-cod-symbol_parameter") :face default)
+          (property ,(nerd-icons-codicon "nf-cod-symbol_property") :face font-lock-variable-name-face)
+          (reference ,(nerd-icons-codicon "nf-cod-references") :face font-lock-variable-name-face)
+          (snippet ,(nerd-icons-codicon "nf-cod-symbol_snippet") :face font-lock-string-face)
+          (string ,(nerd-icons-codicon "nf-cod-symbol_string") :face font-lock-string-face)
+          (struct ,(nerd-icons-codicon "nf-cod-symbol_structure") :face font-lock-variable-name-face)
+          (text ,(nerd-icons-codicon "nf-cod-text_size") :face font-lock-doc-face)
+          (typeparameter ,(nerd-icons-codicon "nf-cod-list_unordered") :face font-lock-type-face)
+          (type-parameter ,(nerd-icons-codicon "nf-cod-list_unordered") :face font-lock-type-face)
+          (unit ,(nerd-icons-codicon "nf-cod-symbol_ruler") :face font-lock-constant-face)
+          (value ,(nerd-icons-codicon "nf-cod-symbol_field") :face font-lock-builtin-face)
+          (variable ,(nerd-icons-codicon "nf-cod-symbol_variable") :face font-lock-variable-name-face)
+          (tabnine ,(nerd-icons-codicon "nf-cod-hubot") :face font-lock-warning-face)
+          (unknown ,(nerd-icons-codicon "nf-cod-code") :face font-lock-warning-face)
+          (t ,(nerd-icons-codicon "nf-cod-code") :face font-lock-warning-face)))
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 ;;; Auto completion
 (use-package corfu
@@ -1575,96 +1635,6 @@ When the number of characters in a buffer exceeds this threshold,
       ;; (setq-local corfu-auto nil) Enable/disable auto completion
       (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
-
-  (with-eval-after-load 'all-the-icons
-    (defvar kind-all-the-icons--cache nil
-      "The cache of styled and padded label (text or icon).
-An alist.")
-
-    (defun kind-all-the-icons-reset-cache ()
-      "Remove all cached icons from `kind-all-the-icons-mapping'."
-      (interactive)
-      (setq kind-all-the-icons--cache nil))
-
-    (defun kind-all-the-icons--set-default-clear-cache (&rest args)
-      (kind-all-the-icons-reset-cache)
-      (apply #'set-default args))
-
-    (defvar kind-all-the-icons--icons
-      `((unknown . ,(all-the-icons-material "find_in_page" :height 0.8 :v-adjust -0.15))
-        (text . ,(all-the-icons-faicon "text-width" :height 0.8 :v-adjust -0.02))
-        (method . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
-        (function . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
-        (fun . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
-        (constructor . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
-        (ctor . ,(all-the-icons-faicon "cube" :height 0.8 :v-adjust -0.02 :face 'all-the-icons-purple))
-        (field . ,(all-the-icons-octicon "tag" :height 0.85 :v-adjust 0 :face 'all-the-icons-lblue))
-        (variable . ,(all-the-icons-octicon "tag" :height 0.85 :v-adjust 0 :face 'all-the-icons-lblue))
-        (var . ,(all-the-icons-octicon "tag" :height 0.85 :v-adjust 0 :face 'all-the-icons-lblue))
-        (class . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
-        (interface . ,(all-the-icons-material "share" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
-        (i/f . ,(all-the-icons-material "share" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
-        (module . ,(all-the-icons-material "view_module" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
-        (mod . ,(all-the-icons-material "view_module" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
-        (property . ,(all-the-icons-faicon "wrench" :height 0.8 :v-adjust -0.02))
-        (prop . ,(all-the-icons-faicon "wrench" :height 0.8 :v-adjust -0.02))
-        (unit . ,(all-the-icons-material "settings_system_daydream" :height 0.8 :v-adjust -0.15))
-        (value . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-lblue))
-        (enum . ,(all-the-icons-material "storage" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
-        (keyword . ,(all-the-icons-material "filter_center_focus" :height 0.8 :v-adjust -0.15))
-        (k/w . ,(all-the-icons-material "filter_center_focus" :height 0.8 :v-adjust -0.15))
-        (snippet . ,(all-the-icons-material "format_align_center" :height 0.8 :v-adjust -0.15))
-        (sn . ,(all-the-icons-material "format_align_center" :height 0.8 :v-adjust -0.15))
-        (color . ,(all-the-icons-material "palette" :height 0.8 :v-adjust -0.15))
-        (file . ,(all-the-icons-faicon "file-o" :height 0.8 :v-adjust -0.02))
-        (reference . ,(all-the-icons-material "collections_bookmark" :height 0.8 :v-adjust -0.15))
-        (ref . ,(all-the-icons-material "collections_bookmark" :height 0.8 :v-adjust -0.15))
-        (folder . ,(all-the-icons-faicon "folder-open" :height 0.8 :v-adjust -0.02))
-        (dir . ,(all-the-icons-faicon "folder-open" :height 0.8 :v-adjust -0.02))
-        (enum-member . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15))
-        (enummember . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15))
-        (member . ,(all-the-icons-material "format_align_right" :height 0.8 :v-adjust -0.15))
-        (constant . ,(all-the-icons-faicon "square-o" :height 0.8 :v-adjust -0.1))
-        (const . ,(all-the-icons-faicon "square-o" :height 0.8 :v-adjust -0.1))
-        (struct . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.15 :face 'all-the-icons-orange))
-        (event . ,(all-the-icons-octicon "zap" :height 0.8 :v-adjust 0 :face 'all-the-icons-orange))
-        (operator . ,(all-the-icons-material "control_point" :height 0.8 :v-adjust -0.15))
-        (op . ,(all-the-icons-material "control_point" :height 0.8 :v-adjust -0.15))
-        (type-parameter . ,(all-the-icons-faicon "arrows" :height 0.8 :v-adjust -0.02))
-        (param . ,(all-the-icons-faicon "arrows" :height 0.8 :v-adjust -0.02))
-        (template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15))
-        (t . ,(all-the-icons-material "find_in_page" :height 0.8 :v-adjust -0.15))))
-
-
-    (defsubst kind-all-the-icons--metadata-get (metadata type-name)
-      (or
-       (plist-get completion-extra-properties (intern (format ":%s" type-name)))
-       (cdr (assq (intern type-name) metadata))))
-
-    (defun kind-all-the-icons-formatted (kind)
-      "Format icon kind with all-the-icons"
-      (or (alist-get kind kind-all-the-icons--cache)
-          (let ((map (assq kind kind-all-the-icons--icons)))
-            (let*  ((icon (if map
-                              (cdr map)
-                            (cdr (assq t kind-all-the-icons--icons))))
-                    (half (/ (default-font-width) 2))
-                    (pad (propertize " " 'display `(space :width (,half))))
-                    (disp (concat pad icon pad)))
-              (setf (alist-get kind kind-all-the-icons--cache) disp)
-              disp))))
-
-    (defun kind-all-the-icons-margin-formatter (metadata)
-      "Return a margin-formatter function which produces kind icons.
-METADATA is the completion metadata supplied by the caller (see
-info node `(elisp)Programmed Completion').  To use, add this
-function to the relevant margin-formatters list."
-      (if-let ((kind-func (kind-all-the-icons--metadata-get metadata "company-kind")))
-          (lambda (cand)
-	          (if-let ((kind (funcall kind-func cand)))
-	              (kind-all-the-icons-formatted kind)
-	            (kind-all-the-icons-formatted t))))) ;; as a backup
-    (add-to-list 'corfu-margin-formatters #'kind-all-the-icons-margin-formatter))
 
   ;; allow evil-repeat
   ;; https://github.com/minad/corfu/pull/225
@@ -2067,7 +2037,7 @@ function to the relevant margin-formatters list."
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Hack Nerd Font" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("CaskaydiaCove Nerd Font" . 15) ("Hack Nerd Font" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
