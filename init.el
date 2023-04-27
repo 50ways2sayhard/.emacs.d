@@ -24,27 +24,31 @@
                               :ref nil
                               :files (:defaults (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
-(when-let ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-           (build (expand-file-name "elpaca/" elpaca-builds-directory))
-           (order (cdr elpaca-order))
-           ((add-to-list 'load-path (if (file-exists-p build) build repo)))
-           ((not (file-exists-p repo))))
-  (condition-case-unless-debug err
-      (if-let ((buffer (pop-to-buffer-same-window "*elpaca-installer*"))
-               ((zerop (call-process "git" nil buffer t "clone"
-                                     (plist-get order :repo) repo)))
-               (default-directory repo)
-               ((zerop (call-process "git" nil buffer t "checkout"
-                                     (or (plist-get order :ref) "--"))))
-               (emacs (concat invocation-directory invocation-name))
-               ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                     "--eval" "(byte-recompile-directory \".\" 0 'force)"))))
-          (progn (require 'elpaca)
-                 (elpaca-generate-autoloads "elpaca" repo)
-                 (kill-buffer buffer))
-        (error "%s" (with-current-buffer buffer (buffer-string))))
-    ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-(require 'elpaca-autoloads)
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (call-process "git" nil buffer t "clone"
+                                       (plist-get order :repo) repo)))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (kill-buffer buffer)
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
@@ -1621,10 +1625,6 @@ When the number of characters in a buffer exceeds this threshold,
     (set-face-attribute 'corfu-popupinfo nil :height 140)
     (setq corfu-popupinfo-delay '(0.5 . 0.3)))
 
-  (add-to-list 'corfu-auto-commands 'awesome-pair-open-round)
-  (add-to-list 'corfu-auto-commands 'awesome-pair-open-bracket)
-  (add-to-list 'corfu-auto-commands 'awesome-pair-open-curly)
-
   (advice-add #'keyboard-quit :before #'corfu-quit)
   (add-to-list 'corfu-auto-commands 'end-of-visual-line)
 
@@ -1634,41 +1634,7 @@ When the number of characters in a buffer exceeds this threshold,
                 (bound-and-true-p vertico--input))
       ;; (setq-local corfu-auto nil) Enable/disable auto completion
       (corfu-mode 1)))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
-
-  ;; allow evil-repeat
-  ;; https://github.com/minad/corfu/pull/225
-  (defun corfu--unread-this-command-keys ()
-    (when (> (length (this-command-keys)) 0)
-      (setq unread-command-events (nconc
-                                   (listify-key-sequence (this-command-keys))
-                                   unread-command-events))
-      (clear-this-command-keys t)))
-
-  (defun corfu--pre-command ()
-    "Insert selected candidate unless command is marked to continue completion."
-    (when corfu--preview-ov
-      (delete-overlay corfu--preview-ov)
-      (setq corfu--preview-ov nil))
-    ;; (corfu--echo-cancel corfu--echo-message)
-    ;; Ensure that state is initialized before next Corfu command
-    (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
-      (corfu--update))
-    (when (and (eq corfu-preview-current 'insert)
-               (/= corfu--index corfu--preselect)
-               ;; See the comment about `overriding-local-map' in `corfu--post-command'.
-               (not (or overriding-terminal-local-map
-                        (corfu--match-symbol-p corfu-continue-commands this-command))))
-      (corfu--unread-this-command-keys)
-      (setq this-command 'corfu-insert-exact)))
-
-  (defun corfu-insert-exact ()
-    "Insert current candidate with the `exact' status.
-  Quit if no candidate is selected."
-    (interactive)
-    (if (>= corfu--index 0)
-        (corfu--insert 'exact)
-      (corfu-quit))))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
 (use-package tempel
   :after-call +my/first-input-hook-fun
@@ -1709,8 +1675,7 @@ When the number of characters in a buffer exceeds this threshold,
      (cape-super-capf
       arg-capf
       #'tabnine-completion-at-point
-      #'tempel-complete)
-     ))
+      #'tempel-complete)))
 
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)

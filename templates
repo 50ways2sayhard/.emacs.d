@@ -37,6 +37,7 @@ dart-ts-mode
            n> p n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
 
 (stateful "class " (s Name) " extends StatefulWidget {"
+          n> p n> "const " (s Name) "({super.key});"
           n> p n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
           n> "}" n
           n
