@@ -1530,7 +1530,7 @@ When the number of characters in a buffer exceeds this threshold,
           (color ,(nerd-icons-codicon "nf-cod-symbol_color") :face success)
           (command ,(nerd-icons-codicon "nf-cod-terminal") :face default)
           (constant ,(nerd-icons-codicon "nf-cod-symbol_constant") :face font-lock-constant-face)
-          (constructor ,(nerd-icons-codicon "nf-cod-triangle_right") :face font-lock-function-name-face)
+          (constructor ,(nerd-icons-codicon "nf-cod-symbol_method") :face font-lock-function-name-face)
           (enummember ,(nerd-icons-codicon "nf-cod-symbol_enum_member") :face font-lock-builtin-face)
           (enum-member ,(nerd-icons-codicon "nf-cod-symbol_enum_member") :face font-lock-builtin-face)
           (enum ,(nerd-icons-codicon "nf-cod-symbol_enum") :face font-lock-builtin-face)
