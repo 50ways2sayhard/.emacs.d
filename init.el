@@ -1424,83 +1424,9 @@ When the number of characters in a buffer exceeds this threshold,
           (right-fringe . 8))))
 
 ;;; Icons
-;; TODO deprecate after doom-modeline released
-(use-package all-the-icons
-  :when (display-graphic-p)
-  :demand t
-  :config
-  (declare-function memoize 'memoize)
-  (declare-function memoize-restore 'memoize)
-  (defun all-the-icons-reset ()
-    "Reset (unmemoize/memoize) the icons."
-    (interactive)
-    (ignore-errors
-      (dolist (f '(all-the-icons-icon-for-file
-                   all-the-icons-icon-for-mode
-                   all-the-icons-icon-for-url
-                   all-the-icons-icon-family-for-file
-                   all-the-icons-icon-family-for-mode
-                   all-the-icons-icon-family))
-        (memoize-restore f)
-        (memoize f)))
-    (message "Reset all-the-icons"))
-
-  ;; Support more icons
-  (defvar my-extension-icon-alist
-    '(("conf" all-the-icons-octicon "settings"    :v-adjust 0.0 :face all-the-icons-yellow)
-      ("epub" all-the-icons-faicon "book"         :height 1.0 :v-adjust -0.1 :face all-the-icons-green)
-      ("make" all-the-icons-fileicon "gnu"        :face all-the-icons-dorange)
-      ("rss"  all-the-icons-octicon "rss"         :height 1.1 :v-adjust 0.0 :face all-the-icons-lorange)
-      ("toml" all-the-icons-octicon "settings"    :v-adjust 0.0 :face all-the-icons-yellow)
-      ("tsx"  all-the-icons-fileicon "tsx"        :height 1.0 :v-adjust -0.1 :face all-the-icons-cyan-alt)
-      ("xpm"  all-the-icons-octicon "file-media"  :v-adjust 0.0 :face all-the-icons-dgreen)))
-
-  (defvar my-regexp-icon-alist
-    '(("Cask\\'"             all-the-icons-fileicon "elisp"         :height 1.0 :v-adjust -0.2 :face all-the-icons-blue)
-      ("^Rakefile$"          all-the-icons-alltheicon "ruby-alt"    :face all-the-icons-red)
-      ("\\.\\(bat\\|cmd\\)$" all-the-icons-alltheicon "terminal"    :face all-the-icons-lsilver)
-      ("\\go.mod$"           all-the-icons-fileicon "go"            :face all-the-icons-dblue)
-      ("\\go.sum$"           all-the-icons-fileicon "go"            :face all-the-icons-dpurple)
-      ("\\.[bB][iI][nN]$"    all-the-icons-octicon "file-binary"    :v-adjust 0.0 :face all-the-icons-yellow)
-      ("NEWS$"               all-the-icons-faicon "newspaper-o"     :height 0.9 :v-adjust -0.2)))
-
-  (defvar my-mode-icon-alist
-    '((xwidget-webkit-mode           all-the-icons-faicon "chrome"          :v-adjust -0.1 :face all-the-icons-blue)
-      (bongo-playlist-mode           all-the-icons-material "queue_music"   :height 1.2 :face all-the-icons-green)
-      (bongo-library-mode            all-the-icons-material "library_music" :height 1.1 :face all-the-icons-green)
-      (gnus-group-mode               all-the-icons-fileicon "gnu"           :face all-the-icons-silver)
-      (gnus-summary-mode             all-the-icons-octicon "inbox"          :height 1.0 :v-adjust 0.0 :face all-the-icons-orange)
-      (gnus-article-mode             all-the-icons-octicon "mail"           :height 1.1 :v-adjust 0.0 :face all-the-icons-lblue)
-      (message-mode                  all-the-icons-octicon "mail"           :height 1.1 :v-adjust 0.0 :face all-the-icons-lblue)
-      (diff-mode                     all-the-icons-octicon "git-compare"    :v-adjust 0.0 :face all-the-icons-lred)
-      (flycheck-error-list-mode      all-the-icons-octicon "checklist"      :height 1.1 :v-adjust 0.0 :face all-the-icons-lred)
-      (elfeed-search-mode            all-the-icons-faicon "rss-square"      :v-adjust -0.1 :face all-the-icons-orange)
-      (elfeed-show-mode              all-the-icons-octicon "rss"            :height 1.1 :v-adjust 0.0 :face all-the-icons-lorange)
-      (newsticker-mode               all-the-icons-faicon "rss-square"      :v-adjust -0.1 :face all-the-icons-orange)
-      (newsticker-treeview-mode      all-the-icons-faicon "rss-square"      :v-adjust -0.1 :face all-the-icons-orange)
-      (newsticker-treeview-list-mode all-the-icons-octicon "rss"            :height 1.1 :v-adjust 0.0 :face all-the-icons-orange)
-      (newsticker-treeview-item-mode all-the-icons-octicon "rss"            :height 1.1 :v-adjust 0.0 :face all-the-icons-lorange)
-      (conf-mode                     all-the-icons-octicon "settings"       :v-adjust 0.0 :face all-the-icons-yellow)
-      (conf-space-mode               all-the-icons-octicon "settings"       :v-adjust 0.0 :face all-the-icons-yellow)
-      (forge-topic-mode              all-the-icons-alltheicon "git"         :face all-the-icons-blue)
-      (help-mode                     all-the-icons-faicon "info-circle"     :height 1.1 :v-adjust -0.1 :face all-the-icons-purple)
-      (helpful-mode                  all-the-icons-faicon "info-circle"     :height 1.1 :v-adjust -0.1 :face all-the-icons-purple)
-      (Info-mode                     all-the-icons-faicon "info-circle"     :height 1.1 :v-adjust -0.1)
-      (cask-mode                     all-the-icons-fileicon "elisp"         :height 1.0 :v-adjust -0.2 :face all-the-icons-blue)
-      (ein:notebooklist-mode         all-the-icons-faicon "book"            :face all-the-icons-lorange)
-      (ein:notebook-mode             all-the-icons-fileicon "jupyter"       :height 1.2 :face all-the-icons-orange)
-      (ein:notebook-multilang-mode   all-the-icons-fileicon "jupyter"       :height 1.2 :face all-the-icons-dorange)
-      (nov-mode                      all-the-icons-faicon "book"            :height 1.0 :v-adjust -0.1 :face all-the-icons-green)
-      (gfm-mode                      all-the-icons-octicon "markdown"       :face all-the-icons-lblue)
-      (dart-ts-mode                  all-the-icons-fileicon "dart"          :height 1.0  :face all-the-icons-blue)))
-
-  (dolist (i my-extension-icon-alist)
-    (add-to-list 'all-the-icons-extension-icon-alist i))
-  (dolist (i my-regexp-icon-alist)
-    (add-to-list 'all-the-icons-regexp-icon-alist i))
-  (dolist (i my-mode-icon-alist)
-    (add-to-list 'all-the-icons-mode-icon-alist i)))
 (use-package nerd-icons
+  :custom
+  (nerd-icons-scale-factor 1.1)
   :config
   (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
 (use-package nerd-icons-dired
@@ -1967,11 +1893,9 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
   (doom-modeline-buffer-file-name-style 'file-name)
-  (doom-modeline-unicode-fallback t)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-env-version t)
-  (doom-modeline-height 15)
   (doom-modeline-buffer-modification-icon t))
 
 (use-package ef-themes
@@ -2189,21 +2113,20 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package symbol-overlay
   :functions (turn-off-symbol-overlay turn-on-symbol-overlay)
-  :custom-face (symbol-overlay-default-face ((t (:inherit (region bold)))))
+  :custom-face
+  (symbol-overlay-default-face ((t (:inherit (region bold)))))
+  (symbol-overlay-face-1 ((t (:inherit nerd-icons-blue :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-2 ((t (:inherit nerd-icons-pink :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-3 ((t (:inherit nerd-icons-yellow :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-4 ((t (:inherit nerd-icons-orange :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-5 ((t (:inherit nerd-icons-red :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-6 ((t (:inherit nerd-icons-purple :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-7 ((t (:inherit nerd-icons-green :background unspecified :foreground unspecified :inverse-video t))))
+  (symbol-overlay-face-8 ((t (:inherit nerd-icons-cyan :background unspecified :foreground unspecified :inverse-video t))))
   :hook ((prog-mode . symbol-overlay-mode)
          (iedit-mode . turn-off-symbol-overlay)
          (iedit-mode-end . turn-on-symbol-overlay))
   :init (setq symbol-overlay-idle-time 0.1)
-  (with-eval-after-load 'all-the-icons
-    (setq symbol-overlay-faces
-          '((:inherit (all-the-icons-blue bold) :inverse-video t)
-            (:inherit (all-the-icons-pink bold) :inverse-video t)
-            (:inherit (all-the-icons-yellow bold) :inverse-video t)
-            (:inherit (all-the-icons-purple bold) :inverse-video t)
-            (:inherit (all-the-icons-red bold) :inverse-video t)
-            (:inherit (all-the-icons-orange bold) :inverse-video t)
-            (:inherit (all-the-icons-green bold) :inverse-video t)
-            (:inherit (all-the-icons-cyan bold) :inverse-video t))))
   :config
   ;; Disable symbol highlighting while selecting
   (defun turn-off-symbol-overlay (&rest _)
