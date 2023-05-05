@@ -1056,7 +1056,6 @@ targets."
         read-buffer-completion-ignore-case t
         read-file-name-completion-ignore-case t))
 
-
 (use-package consult
   :after orderless
   :commands (noct-consult-ripgrep-or-line consult-clock-in +consult-ripgrep-current-directory)
@@ -1612,8 +1611,7 @@ When the number of characters in a buffer exceeds this threshold,
     (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
-  (add-to-list 'completion-at-point-functions #'cape-file t)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev t))
+  (setq-default completion-at-point-functions '(cape-file cape-dabbrev)))
 
 (use-package tabnine-capf
   :after cape
@@ -2258,10 +2256,11 @@ When the number of characters in a buffer exceeds this threshold,
   (add-to-list 'super-save-triggers 'eglot-rename)
   (add-to-list 'super-save-triggers 'consult-buffer)
   (setq super-save-exclude '(".gpg"))
-  (setq super-save-idle-duration 1)
+  (setq super-save-idle-duration 0.4)
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
+  (add-to-list 'super-save-predicates (lambda () (not (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))))
 
   (defun +super-save-without-format ()
     (when (super-save-p)
@@ -2370,7 +2369,6 @@ When the number of characters in a buffer exceeds this threshold,
 
   :config
   (setq
-   ;; eglot-send-changes-idle-time 0.2
    eglot-send-changes-idle-time 0
    eglot-autoshutdown t
    eglot-extend-to-xref t
