@@ -1,4 +1,8 @@
+;;; package --- Summary
+;;; Commentary:
 ;; init.el --- user-init-file               -*- lexical-binding: t -*-
+
+;;; Code:
 
 ;;; Early init
 (progn
@@ -325,9 +329,9 @@ REST and STATE."
 
 (defvar +magit-open-windows-in-direction 'right
   "What direction to open new windows from the status buffer.
-  For example, diffs and log buffers. Accepts `left', `right', `up', and `down'.")
+For example, diffs and log buffers.  Accepts `left', `right', `up', and `down'.")
 (defun +magit-display-buffer-fn (buffer)
-  "Same as `magit-display-buffer-traditional', except...
+  "Same as `magit-display-buffer-traditional' displays BUFFER way, except...
 - If opened from a commit window, it will open below it.
 - Magit process windows are always opened in small windows below the current.
 - Everything else will reuse the same window."
@@ -361,8 +365,9 @@ REST and STATE."
 
 (defun +magit--display-buffer-in-direction (buffer alist)
   "`display-buffer-alist' handler that opens BUFFER in a direction.
-This differs from `display-buffer-in-direction' in one way: it will try to use a
-window that already exists in that direction. It will split otherwise."
+This differs from `display-buffer-in-direction' in one way:
+it will try to use a window that already exists in that direction.
+It will split otherwise."
   (let ((direction (or (alist-get 'direction alist)
                        +magit-open-windows-in-direction))
         (origin-window (selected-window)))
@@ -1330,15 +1335,17 @@ When the number of characters in a buffer exceeds this threshold,
   ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
   (defun consult-project-extra--file (selected-root)
     "Create a view for selecting project files for the project at SELECTED-ROOT."
-    (let ((candidate (consult--read
-                      (consult-project-extra--project-files selected-root t)
-                      :prompt "Project File: "
-                      :sort t
-                      :require-match t
-                      :category 'file
-                      :state (consult--file-preview)
-                      :history 'file-name-history)))
-      (find-file candidate)))
+    ;; (let ((candidate (consult--read
+    ;;                   (consult-project-extra--project-files selected-root t)
+    ;;                   :prompt "Project File: "
+    ;;                   :sort t
+    ;;                   :require-match t
+    ;;                   :category 'file
+    ;;                   :state (consult--file-preview)
+    ;;                   :history 'file-name-history)))
+    ;;   (find-file candidate))
+    (consult-fd selected-root)
+    )
 
   (defun consult-project-extra--project-files (root &optional include-root)
     "Compute the project files given the ROOT."
@@ -2260,7 +2267,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
-  (add-to-list 'super-save-predicates (lambda () (not (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))))
+  (add-to-list 'super-save-predicates (lambda () (not (and (boundp 'corfu--frame) (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))))
 
   (defun +super-save-without-format ()
     (when (super-save-p)
@@ -2761,6 +2768,7 @@ Install the doc if it's not installed."
         ))
 
 (defun +org-init-agenda-h ()
+  "Init `org-agenda'."
   (unless org-agenda-files
     (setq org-agenda-files (list org-directory)))
   (setq-default
