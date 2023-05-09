@@ -209,7 +209,8 @@ REST and STATE."
 (use-package dirvish
   :after-call +my/first-input-hook-fun
   :after dired
-  :elpaca (dirvish :files (:defaults "extensions/dirvish-*.el"))
+  ;; TODO Waiting for https://github.com/alexluigit/dirvish/pull/201 to be merged.
+  :elpaca (dirvish :repo "rainstormstudio/dirvish" :branch "feature/nerd-icons" :files (:defaults "extensions/dirvish-*.el"))
   :hook (+my/first-input . dirvish-override-dired-mode)
   :bind
   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
@@ -236,7 +237,8 @@ REST and STATE."
   (dirvish-mode-line-format ; it's ok to place string inside
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (dirvish-side-follow-buffer-file t)
-  (dirvish-attributes '(file-size vc-state git-msg))
+  (dirvish-attributes '(nerd-icons file-size vc-state git-msg))
+  (dirvish-subtree-state-style 'nerd)
   :config
   (when (boundp 'dirvish-side-follow-mode)
     (dirvish-side-follow-mode t))
@@ -1437,6 +1439,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
 (use-package nerd-icons-dired
+  :disabled
   :diminish
   :commands nerd-icons-dired-mode
   :custom-face
