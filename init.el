@@ -2276,6 +2276,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq save-silently t)
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
   (add-to-list 'super-save-predicates (lambda () (not (and (boundp 'corfu--frame) (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))))
+  (add-to-list 'super-save-predicates (lambda () (not (and (boundp 'rime--preedit-overlay) rime--preedit-overlay))))
 
   (defun +super-save-without-format ()
     (when (super-save-p)
