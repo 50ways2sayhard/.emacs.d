@@ -1325,7 +1325,7 @@ When the number of characters in a buffer exceeds this threshold,
                 :category file
                 :face     consult-file
                 :history  file-name-history
-                :enabled  ,(lambda () t)  ;;  FIXME: check whether z.lua is installed
+                :enabled  ,(lambda () (getenv "ZLUA_SCRIPT"))
                 :items    ,#'consult-dir--zlua-dirs)
     "Fasd directory source for `consult-dir'.")
   (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zlua consult-dir--source-project)))
@@ -2824,7 +2824,7 @@ Install the doc if it's not installed."
   (org-cycle-hide-block-startup t)
   (org-pretty-entities t)
   (org-edit-src-content-indentation 0)
-  (org-capture-bookmark nil) ;; TODO: no bookmark for refile
+  (org-capture-bookmark nil)
   (org-log-done 'time)
   (org-hide-emphasis-markers t)
   (org-deadline-warning-days 90)
