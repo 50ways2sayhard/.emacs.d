@@ -1824,7 +1824,7 @@ When the number of characters in a buffer exceeds this threshold,
           "\\*Agenda Commands\\*"
           "\\*eldoc\\*"
           "\\*eldoc .*\\*"
-          ;; "\\*Calendar\\*"              ; FIXME: https://github.com/karthink/popper/issues/29
+          "\\*Calendar\\*"
           "\\*lspce-hover\\*"
           "\\*Embark Actions\\*"
           "\\*Embark Export: .*\\*"
@@ -2903,14 +2903,6 @@ Install the doc if it's not installed."
            "CANCELED(c@)") ; Task was cancelled, aborted or is no longer applicable
           )
         )
-
-  ;; HACK: fix folded org headings
-  ;; https://github.com/minad/consult/issues/563#issuecomment-1186612641
-  (defun org-show-entry-consult-a (fn &rest args)
-    (when-let ((pos (apply fn args)))
-      (when (derived-mode-p 'org-mode)
-        (org-fold-show-entry))))
-  (advice-add 'consult-outline :around #'org-show-entry-consult-a)
 
   (add-hook 'org-mode-hook #'(lambda ()
                                (show-paren-local-mode -1))
