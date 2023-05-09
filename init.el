@@ -69,6 +69,11 @@
 
 (elpaca-wait)
 
+(use-package benchmark-init
+  :demand t
+  :config
+  (add-hook '+my/first-input-hook 'benchmark-init/deactivate))
+
 (push (expand-file-name "site-lisp" user-emacs-directory) load-path)
 
 ;;;; :after-call for use-package
