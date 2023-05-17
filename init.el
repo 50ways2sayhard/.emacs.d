@@ -2442,6 +2442,10 @@ When the number of characters in a buffer exceeds this threshold,
     (list :enable t
           :lint t)))
 
+(use-package breadcrumb
+  :elpaca (:host github :repo "joaotavora/breadcrumb")
+  :hook (elpaca-after-init . breadcrumb-mode))
+
 (use-package consult-eglot
   :after (consult eglot)
   :commands (consult-eglot-symbols))
