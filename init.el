@@ -1439,8 +1439,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;;; Icons
 (use-package nerd-icons
-  :custom
-  (nerd-icons-scale-factor 1.1)
   :config
   (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
 (use-package nerd-icons-dired
@@ -2211,6 +2209,9 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package wgrep
   :commands wgrep-change-to-wgrep-mode
+  :bind
+  (:map grep-mode-map
+        ("i" . #'wgrep-change-to-wgrep-mode))
   :custom
   (wgrep-auto-save-buffer t))
 
@@ -2391,9 +2392,7 @@ When the number of characters in a buffer exceeds this threshold,
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
    eglot-events-buffer-size 0
-   eglot-report-progress nil
-   ;; eglot-max-candidates 100
-   )
+   eglot-report-progress nil)
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
