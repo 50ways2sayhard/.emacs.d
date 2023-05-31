@@ -279,7 +279,7 @@ REST and STATE."
 
 ;;; Version controll
 (use-package magit
-  :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push)
+  :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push magit-add-current-buffer-to-kill-ring)
   :bind
   (:map magit-mode-map
         ("x" . magit-discard)
@@ -1092,6 +1092,8 @@ targets."
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
+  (setq consult-ripgrep-args
+        "rga --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip")
 
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
@@ -1414,10 +1416,13 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Define orderless style with initialism by default
   (orderless-define-completion-style +orderless-with-initialism
     (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
+  (with-eval-after-load 'eglot
+    (setq completion-category-defaults nil))
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         orderless-component-separator #'orderless-escapable-split-on-space
-        completion-category-overrides '((file (flex styles basic partial-completion)))))
+        completion-category-overrides '((file (flex styles basic partial-completion))
+                                        (eglot (styles orderless)))))
 
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
@@ -1545,6 +1550,18 @@ When the number of characters in a buffer exceeds this threshold,
         ([remap move-end-of-line] . nil))
   :config
   (global-corfu-mode)
+  (defun my-corfu-combined-sort (candidates)
+    "Sort CANDIDATES using both display-sort-function and corfu-sort-function."
+    (let ((candidates
+           (let ((display-sort-func (corfu--metadata-get 'display-sort-function)))
+             (if display-sort-func
+                 (funcall display-sort-func candidates)
+               candidates))))
+      (if corfu-sort-function
+          (funcall corfu-sort-function candidates)
+        candidates)))
+
+  (setq corfu-sort-override-function #'my-corfu-combined-sort)
   (use-package corfu-quick
     :elpaca nil
     :commands (corfu-quick-insert corfu-quick-complete)
@@ -2272,7 +2289,7 @@ When the number of characters in a buffer exceeds this threshold,
   (add-to-list 'super-save-triggers 'eglot-rename)
   (add-to-list 'super-save-triggers 'consult-buffer)
   (setq super-save-exclude '(".gpg"))
-  (setq super-save-idle-duration 0.4)
+  (setq super-save-idle-duration 0.6)
   (setq super-save-auto-save-when-idle t)
   (setq save-silently t)
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
@@ -2341,7 +2358,7 @@ When the number of characters in a buffer exceeds this threshold,
                                        (cons #'flymake-eldoc-function
                                              (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; Show all eldoc feedback.
-                                 (setq eldoc-documentation-strategy #'eldoc-documentation-compose)
+                                 (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
                                  (if (or (boundp 'lsp-bridge-mode) (boundp 'lspce-mode))
                                      (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
                                    (my/set-eglot-capf))
@@ -2463,6 +2480,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq treesit-language-source-alist
         '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
           (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+          (elisp . ("https://github.com/Wilfred/tree-sitter-elisp"))
           (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
           (html . ("https://github.com/tree-sitter/tree-sitter-html"))
           (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
@@ -2472,6 +2490,7 @@ When the number of characters in a buffer exceeds this threshold,
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
           (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
   :config
+  (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
         '((javascript-mode . js-ts-mode)
           (js-mode . js-ts-mode)
