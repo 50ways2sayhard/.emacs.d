@@ -947,9 +947,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
-  (use-package embark-consult
-    :elpaca nil
-    :after consult)
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -1008,6 +1005,18 @@ targets."
   (add-to-list 'embark-target-finders 'embark-target-smerge-at-point)
   (add-to-list 'embark-repeat-actions 'smerge-next)
   (add-to-list 'embark-repeat-actions 'smerge-prev))
+
+(use-package embark-consult
+  :after consult
+  :config
+  (define-key minibuffer-local-map (kbd "M-.") #'my-embark-preview)
+  (defun my-embark-preview ()
+    "Previews candidate in vertico buffer, unless it's a consult command"
+    (interactive)
+    (unless (bound-and-true-p consult--preview-function)
+      (save-selected-window
+        (let ((embark-quit-after-action nil))
+          (embark-dwim))))))
 
 ;;;; Minibuffer completion UI
 (use-package vertico
@@ -1088,6 +1097,7 @@ targets."
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :config
+  (require 'embark-consult)
   (setq consult-preview-key "M-.")
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
@@ -1100,8 +1110,7 @@ targets."
   (advice-add #'register-preview :override #'consult-register-window)
 
   ;; Optionally replace `completing-read-multiple' with an enhanced version.
-  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-
+  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
   (autoload 'org-buffer-list "org")
   (defvar org-buffer-source
@@ -2427,21 +2436,21 @@ When the number of characters in a buffer exceeds this threshold,
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol)))
+                    (if blurb
+                        (with-current-buffer
+                            (or (and (buffer-live-p +eglot--help-buffer)
+                                     +eglot--help-buffer)
+                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+                          (with-help-window (current-buffer)
+                            (rename-buffer (format "*eglot-help for %s*" hint))
+                            (with-current-buffer standard-output (insert blurb))
+                            (setq-local nobreak-char-display nil)))
+                      (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
