@@ -214,8 +214,6 @@ REST and STATE."
 (use-package dirvish
   :after-call +my/first-input-hook-fun
   :after dired
-  ;; TODO Waiting for https://github.com/alexluigit/dirvish/pull/201 to be merged.
-  :elpaca (dirvish :repo "rainstormstudio/dirvish" :branch "feature/nerd-icons" :files (:defaults "extensions/dirvish-*.el"))
   :hook (+my/first-input . dirvish-override-dired-mode)
   :bind
   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
