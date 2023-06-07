@@ -125,6 +125,7 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-window-map
     "u" #'winner-undo
     "o" #'winner-redo
+    "d" #'kill-buffer-and-window
     "k" #'delete-other-windows)
   (defvar-keymap +meow-tab-map
     "c" #'tab-new
@@ -233,6 +234,7 @@ S is string of the two-key sequence."
    '("2" . meow-expand-2)
    '("1" . meow-expand-1)
    '("," . "C-x ,")
+   '("'" . meow-repeat)
    '(";" . meow-reverse)
    '("{" . meow-inner-of-thing)
    '("}" . meow-bounds-of-thing)
@@ -267,7 +269,7 @@ S is string of the two-key sequence."
    '("O" . meow-to-block)
    '("p" . meow-yank)
    '("q" . meow-quit)
-   '("Q" . meow-goto-line)
+   '("Q" . delete-window)
    '("r" . meow-replace)
    '("R" . meow-swap-grab)
    '("s" . meow-kill)

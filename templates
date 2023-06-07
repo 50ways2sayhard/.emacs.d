@@ -33,11 +33,11 @@ dart-ts-mode
 
 (header "/// " p n> "/// " n> "/// Created by johngong at " (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)) n>)
 
-(stateless "class " (s Name) " extends StatelessWidget {"
+(slw "class " (s Name) " extends StatelessWidget {"
            n> p n> "const " (s Name) "({super.key});"
            n> p n> "@override" n> "Widget build(BuildContext context) {" n> p n> "}" n> "}")
 
-(stateful "class " (s Name) " extends StatefulWidget {"
+(sfw "class " (s Name) " extends StatefulWidget {"
           n> p n> "const " (s Name) "({super.key});"
           n> p n> "@override" n> "State<" (s Name) "> createState() => _" (s Name) "State();"
           n> "}" n
