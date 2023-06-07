@@ -1108,9 +1108,6 @@ targets."
   ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
 
-  ;; Optionally replace `completing-read-multiple' with an enhanced version.
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-
   (autoload 'org-buffer-list "org")
   (defvar org-buffer-source
     `(:name     "Org"
@@ -1558,18 +1555,6 @@ When the number of characters in a buffer exceeds this threshold,
         ([remap move-end-of-line] . nil))
   :config
   (global-corfu-mode)
-  (defun my-corfu-combined-sort (candidates)
-    "Sort CANDIDATES using both display-sort-function and corfu-sort-function."
-    (let ((candidates
-           (let ((display-sort-func (corfu--metadata-get 'display-sort-function)))
-             (if display-sort-func
-                 (funcall display-sort-func candidates)
-               candidates))))
-      (if corfu-sort-function
-          (funcall corfu-sort-function candidates)
-        candidates)))
-
-  (setq corfu-sort-override-function #'my-corfu-combined-sort)
   (use-package corfu-quick
     :elpaca nil
     :commands (corfu-quick-insert corfu-quick-complete)
@@ -2359,7 +2344,6 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;;;; Lsp integration
 (use-package eglot
-  :elpaca nil
   :commands (+eglot-organize-imports +eglot-help-at-point)
   :hook ((eglot-managed-mode . (lambda ()
                                  (+lsp-optimization-mode)
@@ -3040,6 +3024,7 @@ Install the doc if it's not installed."
   :config
   (setq
    org-modern-checkbox nil
+   org-modern-timestamp nil
    org-modern-priority nil
    org-modern-todo nil
    org-modern-list nil
