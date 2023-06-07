@@ -902,6 +902,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (meow-global-mode)
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
+  (add-to-list 'meow-mode-state-list '(occur-mode . motion))
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
 (use-package bind
@@ -2237,7 +2238,8 @@ When the number of characters in a buffer exceeds this threshold,
   (:map grep-mode-map
         ("i" . #'wgrep-change-to-wgrep-mode))
   :custom
-  (wgrep-auto-save-buffer t))
+  (wgrep-auto-save-buffer t)
+  (define-key occur-mode-map (kbd "i") #'occur-edit-mode))
 
 (use-package expand-region
   :commands (er/expand-region))
