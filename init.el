@@ -2641,9 +2641,12 @@ Install the doc if it's not installed."
   :mode ("\\.dart\\'" . dart-ts-mode)
   :elpaca (:repo "50ways2sayhard/dart-ts-mode" :host github)
   :init
+  (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart"))
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-                 '(dart-ts-mode . ("dart" "language-server" "--client-id" "emacs.eglot-dart"))))
+                 (cons 'dart-ts-mode (if (executable-find "fvm")
+                                       (add-to-list 'dart-lsp-command "fvm")
+                                     dart-lsp-command))))
   :config
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-ts-mode :types
