@@ -2658,16 +2658,23 @@ Install the doc if it's not installed."
                                                        (?f "Function"  font-lock-function-name-face)
                                                        (?m "Method"  font-lock-function-name-face)
                                                        (?p "Property" font-lock-variable-name-face)
-                                                       (?F "Field"  font-lock-variable-name-face)))))
-  (require 'flutter-utils)
+                                                       (?F "Field"  font-lock-variable-name-face))))))
+
+(use-package flutter
+  :elpaca (:repo "50ways2sayhard/flutter.el" :host github)
+  :after dart-ts-mode
+  :config
   (bind
    dart-ts-mode-map
    (bind-prefix "C-x ,"
-     "r" #'flutter-utils-run-or-hot-reload
-     "R" #'flutter-utils-run-or-hot-restart
-     "v" #'flutter-utils-open-devtools
-     "Q" #'flutter-utils-quit
-     "p" #'flutter-utils-pub-get)))
+     "r" #'flutter-run-or-hot-reload
+     "R" #'flutter-run-or-hot-restart
+     "v" #'flutter-open-devtools
+     "Q" #'flutter-quit
+     "p" #'flutter-pub-get
+     "tt" #'flutter-test-at-point
+     "tf" #'flutter-test-current-file
+     "tF" #'flutter-test-all)))
 
 ;;; Terminal integration
 (use-package vterm
