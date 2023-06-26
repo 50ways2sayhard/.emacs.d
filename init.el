@@ -262,7 +262,6 @@ REST and STATE."
 
 ;;; Documentation in echo area
 (use-package eldoc
-
   :commands (eldoc)
   :config (global-eldoc-mode))
 
@@ -573,7 +572,6 @@ It will split otherwise."
 (use-package elec-pair
   :elpaca nil
   :hook (+my/first-input . electric-pair-mode)
-  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
   :config
   ;; disable <> auto pairing in electric-pair-mode for org-mode
   (add-hook 'org-mode-hook
@@ -723,7 +721,7 @@ It will split otherwise."
   (setq mac-control-modifier 'control) ; make Control key do Control
   (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
 
-  (setq display-line-numbers-type t)
+  (setq display-line-numbers-type 'relative)
   (add-hook 'text-mode-hook #'display-line-numbers-mode)
   (add-hook 'prog-mode-hook #'display-line-numbers-mode)
   (setq blink-cursor-mode nil)
@@ -738,9 +736,12 @@ It will split otherwise."
 
   ;; Vertical Scroll
   (setq scroll-step 1
+        scroll-margin 1
         ;; scroll-margin 0
-        ;; scroll-conservatively 100000
+        scroll-conservatively 100000
         auto-window-vscroll t
+        scroll-up-aggressively 0.01
+        scroll-down-aggressively 0.01
         scroll-preserve-screen-position 'always)
   (when (display-graphic-p)
     (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
@@ -748,7 +749,6 @@ It will split otherwise."
           mouse-wheel-progressive-speed nil))
   ;; (setq scroll-up-aggressively 0.01)
   ;; (setq scroll-down-aggressively 0.01)
-  (setq fast-but-imprecise-scrolling nil)
   (setq mouse-wheel-progressive-speed t)
   (mouse-wheel-mode -1)
   (pixel-scroll-precision-mode)
@@ -903,6 +903,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   (add-to-list 'meow-mode-state-list '(occur-mode . motion))
+  (add-hook 'org-capture-mode-hook #'meow-insert)
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
 (use-package bind
@@ -1451,13 +1452,6 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package nerd-icons
   :config
   (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
-(use-package nerd-icons-dired
-  :disabled
-  :diminish
-  :commands nerd-icons-dired-mode
-  :custom-face
-  (nerd-icons-dired-dir-face ((t (:inherit nerd-icons-dsilver :foreground unspecified))))
-  :hook (dired-mode . nerd-icons-dired-mode))
 (use-package nerd-icons-completion
   :elpaca (nerd-icons-completion :type git :host github :repo "rainstormstudio/nerd-icons-completion")
   :commands (nerd-icons-completion-marginalia-setup)
@@ -1841,6 +1835,7 @@ When the number of characters in a buffer exceeds this threshold,
           "\\*lspce-hover\\*"
           "\\*Embark Actions\\*"
           "\\*Embark Export: .*\\*"
+          "\\*compilation\\*"
 
           bookmark-bmenu-mode
           compilation-mode
@@ -1948,7 +1943,7 @@ When the number of characters in a buffer exceeds this threshold,
     (+my-custom-org-todo-faces)))
 
 ;; FontsList
-(defvar font-list '(("CaskaydiaCove Nerd Font" . 15) ("Hack Nerd Font" . 15) ("Fira Code" . 15) ("SF Mono" . 15) ("monosapce" . 16))
+(defvar font-list '(("Cascadia Code" . 15) ("Hack Nerd Font" . 15) ("Sarasa Term SC Nerd" . 16) ("Fira Code" . 15) ("SF Mono" . 15) ("Menlo" . 15))
   "List of fonts and sizes.  The first one available will be used.")
 ;; -FontsList
 
@@ -1982,7 +1977,7 @@ When the number of characters in a buffer exceeds this threshold,
            return(set-fontset-font t 'unicode font nil 'prepend))
 
   ;; Specify font for Chinese characters
-  (cl-loop for font in '("Sarasa Mono SC Nerd" "Microsoft Yahei")
+  (cl-loop for font in '("Sarasa Term SC Nerd" "Microsoft Yahei")
            when (font-installed-p font)
            return (set-fontset-font t '(#x4e00 . #x9fff) font))
 
