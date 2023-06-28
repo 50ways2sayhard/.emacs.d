@@ -20,7 +20,7 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.4)
+(defvar elpaca-installer-version 0.5)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -2165,6 +2165,10 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (emacs-lisp-mode . flymake-mode)
   :config
   (remove-hook 'flymake-diagnostic-functions #'flymake-proc-legacy-flymake)
+  (add-hook 'flymake-project-diagnostics-mode-hook #'my/flymake-sort-by-type-desc)
+  (add-hook 'flymake-diagnostics-buffer-mode-hook #'my/flymake-sort-by-type-desc)
+  (defun my/flymake-sort-by-type-desc ()
+    (setq-local tabulated-list-sort-key (cons "Type" t)))
   (defun sanityinc/eldoc-flymake-first ()
     "Gives flymake's eldoc function priority in the minibuffer."
     (when flymake-mode
