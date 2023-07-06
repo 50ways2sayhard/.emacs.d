@@ -49,6 +49,9 @@
 (defvar +self/org-base-dir "~/org")
 (unless (featurep 'native-compile)
   (setq straight-disable-native-compile t))
+
+(setq starhugger-api-token "")
+(setq enable-copilot nil)
 (provide 'init-custom)
 
 
