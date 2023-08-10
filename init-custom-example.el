@@ -51,7 +51,8 @@
   (setq straight-disable-native-compile t))
 
 (setq starhugger-api-token "")
-(setq enable-copilot nil)
+(setq +self/enable-copilot nil)
+(setq +self/enable-tabnine nil)
 (provide 'init-custom)
 
 

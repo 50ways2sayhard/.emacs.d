@@ -1657,10 +1657,14 @@ When the number of characters in a buffer exceeds this threshold,
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
-     (cape-super-capf
-      arg-capf
-      #'tabnine-completion-at-point
-      #'tempel-complete)))
+     (if +self/enable-tabnine
+         (cape-super-capf
+          arg-capf
+          #'tabnine-completion-at-point
+          #'tempel-complete)
+       (cape-super-capf
+        arg-capf
+        #'tempel-complete))))
 
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
@@ -1673,23 +1677,26 @@ When the number of characters in a buffer exceeds this threshold,
   (setq-default completion-at-point-functions '(cape-file cape-dabbrev)))
 
 (use-package tabnine-capf
+  :when +self/enable-tabnine
   :after cape
   :elpaca (:host github :repo "50ways2sayhard/tabnine-capf")
   :commands (tabnine-completion-at-point tabnine-capf-start-process)
   :hook ((kill-emacs . tabnine-capf-kill-process)))
 
 (use-package copilot
+  :when +self/enable-copilot
   :after corfu
   :hook (prog-mode . copilot-mode)
   :elpaca (:host github :repo "zerolfx/copilot.el"
-                 :files ("dist" "copilot.el"))
-  :ensure t
+                 :files ("dist" "*.el"))
   :bind
   ((:map copilot-mode-map
          ("C-c n" . copilot-next-completion)
          ("C-c p" . copilot-previous-completion)
          ("C-i" . my/copilot-or-tempel-expand-or-next)
          ("M-i" . copilot-accept-completion-by-word)))
+  :init
+  (require 'copilot-balancer)
   :config
   (defun +my/corfu-candidates-p ()
     (or (not (eq corfu--candidates nil))
@@ -1716,7 +1723,7 @@ When the number of characters in a buffer exceeds this threshold,
     (copilot-clear-overlay)))
 
 (use-package starhugger
-  :when (and (not enable-copilot) (length> starhugger-api-key 0))
+  :when (and (not +self/enable-copilot) (length> starhugger-api-key 0))
   :elpaca (:repo "https://gitlab.com/daanturo/starhugger.el" :files (:defaults "*.py"))
   :hook (prog-mode . starhugger-auto-mode)
   :after corfu
