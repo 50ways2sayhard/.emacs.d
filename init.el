@@ -752,11 +752,53 @@ It will split otherwise."
   (setq mouse-wheel-progressive-speed t)
   (mouse-wheel-mode -1)
   (pixel-scroll-precision-mode)
+
+  (setq pixel-scroll-precision-interpolate-page t)
+  (defun +pixel-scroll-interpolate-down (&optional lines)
+    (interactive)
+    (if lines
+        (pixel-scroll-precision-interpolate (* -1 lines (pixel-line-height)))
+      (pixel-scroll-interpolate-down)))
+
+  (defun +pixel-scroll-interpolate-up (&optional lines)
+    (interactive)
+    (if lines
+        (pixel-scroll-precision-interpolate (* lines (pixel-line-height))))
+    (pixel-scroll-interpolate-up))
+
+  (defalias 'scroll-up-command '+pixel-scroll-interpolate-down)
+  (defalias 'scroll-down-command '+pixel-scroll-interpolate-up)
   ;; Horizontal Scroll
   (setq hscroll-step 1)
   (setq hscroll-margin 1)
   ;; -SmoothScroll
 
+  (defun smarter-move-beginning-of-line (arg)
+    "Move point back to indentation of beginning of line.
+
+Move point to the first non-whitespace character on this line.
+If point is already there, move to the beginning of the line.
+Effectively toggle between the first non-whitespace character and
+the beginning of the line.
+
+If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+point reaches the beginning or end of the buffer, stop there."
+    (interactive "^p")
+    (setq arg (or arg 1))
+
+    ;; Move lines first
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg))))
+
+    (let ((orig-point (point)))
+      (back-to-indentation)
+      (when (= orig-point (point))
+        (move-beginning-of-line 1))))
+
+  ;; remap C-a to `smarter-move-beginning-of-line'
+  (global-set-key [remap move-beginning-of-line]
+                  'smarter-move-beginning-of-line)
   )
 ;;; Helper functions
 (defun font-installed-p (font-name)
