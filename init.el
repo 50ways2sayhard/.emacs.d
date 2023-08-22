@@ -47,7 +47,7 @@
                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
                  ((require 'elpaca))
                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (kill-buffer buffer)
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
   (unless (require 'elpaca-autoloads nil t)
@@ -1889,6 +1889,12 @@ When the number of characters in a buffer exceeds this threshold,
             (or dirs (list (project-root project)))))
 
   (setq project-vc-ignores '("\\.*pub-cache/\.*" "/usr/local/*")))
+
+(use-package project-rootfile
+  :defer nil
+  :after project
+  :config
+  (add-to-list 'project-find-functions #'project-rootfile-try-detect t))
 
 (use-package winner
   :elpaca nil
