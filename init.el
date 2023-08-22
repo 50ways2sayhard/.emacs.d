@@ -1485,8 +1485,8 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (vertico-mode . vertico-posframe-mode)
   :config
   (setq vertico-posframe-parameters
-        '((max-width . 0.8)
-          (min-width . 0.8)
+        '((max-width . 0.6)
+          (min-width . 0.6)
           (left-fringe . 8)
           (right-fringe . 8))))
 
@@ -2365,6 +2365,9 @@ When the number of characters in a buffer exceeds this threshold,
   (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
                          rime-librime-root "~/.local/share/librime/dist/"))
         (*sys/linux* (setq rime-user-data-dir "~/.rime")))
+  (when *sys/mac*
+    (unless rime-emacs-module-header-root
+      (setq rime-emacs-module-header-root "/Applications/Emacs.app/Contents/Resources/include/")))
   (defun activate-default-input-method ()
     (interactive)
     (activate-input-method default-input-method))
@@ -2575,6 +2578,7 @@ When the number of characters in a buffer exceeds this threshold,
           (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
           (html . ("https://github.com/tree-sitter/tree-sitter-html"))
           (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+          (protobuf . ("https://github.com/mitchellh/tree-sitter-proto"))
           (json . ("https://github.com/tree-sitter/tree-sitter-json"))
           (python . ("https://github.com/tree-sitter/tree-sitter-python"))
           (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
@@ -2653,6 +2657,7 @@ Install the doc if it's not installed."
     (setq xref-search-program 'ripgrep)
     (setq xref-show-xrefs-function #'xref-show-definitions-completing-read)
     (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
+  (setq xref-history-storage 'xref-window-local-history)
   :hook ((xref-after-return xref-after-jump) . recenter))
 
 (use-package markdown-mode
@@ -2812,12 +2817,13 @@ Install the doc if it's not installed."
             (setq vterm-posframe--frame
                   (posframe-show
                    buffer
-                   :poshandler #'posframe-poshandler-frame-center
+                   ;; :poshandler #'posframe-poshandler-frame-center
+                   :poshandler #'posframe-poshandler-frame-top-center
                    :hidehandler #'vterm-posframe-hidehandler
                    :left-fringe 8
                    :right-fringe 8
-                   :width width
-                   :height height
+                   :width (frame-width)
+                   :height (/ (frame-height) 4)
                    :min-width width
                    :min-height height
                    :internal-border-width 3
@@ -2997,7 +3003,7 @@ Install the doc if it's not installed."
                              (+org-capture-file-someday :level . 1)
                              (+org-capture-file-tickler :level . 1)))
   (setq org-log-into-drawer t)
-  (setq org-tag-alist '(("demand" . ?d) ("code" . ?a) ("life" . ?l) ("document" . ?p) ("emacs" . ?e) ("bug" . ?b) ("okr" . ?o)))
+  (setq org-tag-alist '(("company" . ?c) ("code" . ?a) ("life" . ?l) ("document" . ?p) ("emacs" . ?e) ("bug" . ?b)))
   (setq org-use-fast-todo-selection t)
   (setq org-capture-templates
         '(("t" "Todo" entry
