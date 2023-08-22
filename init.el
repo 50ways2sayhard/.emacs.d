@@ -1911,11 +1911,44 @@ When the number of characters in a buffer exceeds this threshold,
                                       "*Ibuffer*"
                                       "*esh command on file*")))
 
-(use-package tab-bar
-  :elpaca nil
-  :commands (tab-new tab-bar-rename-tab tab-bar-close-tab tab-bar-select-tab-by-name tab-bar-switch-to-recent-tab)
+(use-package tabspaces
+  :hook (elpaca-after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup.
+  :commands (tabspaces-switch-or-create-workspace
+             tabspaces-open-or-create-project-and-workspace)
+  :custom
+  ;; (tab-bar-show nil)
+  (tabspaces-use-filtered-buffers-as-default t)
+  (tabspaces-default-tab "Default")
+  (tabspaces-remove-to-default t)
+  ;; sessions
+  (tabspaces-session t)
+  ;; (tabspaces-session-auto-restore t)
   :config
-  (setq tab-bar-show nil))
+  (with-eval-after-load 'consult
+    ;; hide full buffer list (still available with "b" prefix)
+    (consult-customize consult--source-buffer :hidden t :default nil)
+    ;; set consult-workspace buffer list
+    (defvar consult--source-workspace
+      (list :name     "Workspace Buffers"
+            :narrow   ?w
+            :history  'buffer-name-history
+            :category 'buffer
+            :state    #'consult--buffer-state
+            :default  t
+            :items    (lambda () (consult--buffer-query
+                                  :predicate #'tabspaces--local-buffer-p
+                                  :sort 'visibility
+                                  :as #'buffer-name))))
+    (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
+
+(use-package helpful
+  :bind
+  ("C-h k" . helpful-key)
+  ("C-h f" . helpful-callable)
+  ("C-h v" . helpful-variable)
+  ("C-h F" . helpful-function)
+  ("C-h C" . helpful-command)
+  ("C-h ." . helpful-at-point))
 
 (use-package popper
   :defines popper-echo-dispatch-actions
