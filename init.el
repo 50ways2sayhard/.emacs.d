@@ -970,7 +970,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    :map minibuffer-mode-map
    ("C-/" . embark-export)      ;; alternative for `describe-bindings'
    :map embark-file-map
-   ("r" . +my-rename-file)
+   ("r" . rename-visited-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
    ("SPC" . +my/quick-look)
@@ -1081,6 +1081,7 @@ targets."
     :after vertico
     :bind ("C-c r" . vertico-repeat)
     :hook (minibuffer-setup . vertico-repeat-save))
+
   (use-package vertico-directory
     :elpaca nil
     :after vertico
@@ -1662,7 +1663,7 @@ When the number of characters in a buffer exceeds this threshold,
           arg-capf
           #'tabnine-completion-at-point
           #'tempel-complete)
-       (cape-super-capf
+       (cape-capf-super
         arg-capf
         #'tempel-complete))))
 
@@ -2202,7 +2203,10 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
-  :hook (elpaca-after-init . global-hl-todo-mode)
+  :hook ((elpaca-after-init . global-hl-todo-mode)
+         (hl-todo-mode . (lambda ()
+                           (add-hook 'flymake-diagnostic-functions
+                                     #'hl-todo-flymake nil t))))
   :config
   (dolist (keyword '("BUG" "DEFECT" "ISSUE" "DONT" "GOTCHA" "DEBUG"))
     (cl-pushnew `(,keyword . ,(face-foreground 'error)) hl-todo-keyword-faces))
