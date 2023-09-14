@@ -2445,6 +2445,8 @@ When the number of characters in a buffer exceeds this threshold,
   (add-to-list 'super-save-predicates (lambda () (not (and (featurep 'tempel) tempel--active))))
   (add-to-list 'super-save-predicates (lambda () (not (and (boundp 'corfu--frame) (frame-live-p corfu--frame) (frame-visible-p corfu--frame)))))
   (add-to-list 'super-save-predicates (lambda () (not (and (boundp 'rime--preedit-overlay) rime--preedit-overlay))))
+  (if (featurep 'copilot-mode)
+      (add-to-list 'super-save-predicates (lambda () (not (and copilot-mode (copilot--overlay-visible))))))
 
   (defun +super-save-without-format ()
     (when (super-save-p)
