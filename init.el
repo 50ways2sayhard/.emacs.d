@@ -57,9 +57,13 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
+;; Install use-package support
 (elpaca elpaca-use-package
+  ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
+  ;; Assume :elpaca t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
+
 
 (mapcar
  (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
@@ -67,7 +71,9 @@
         server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
         lisp-mode treesit imenu eldoc))
 
+;; Block until current queue processed.
 (elpaca-wait)
+
 
 (use-package benchmark-init
   :demand t
