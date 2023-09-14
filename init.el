@@ -2705,6 +2705,14 @@ Install the doc if it's not installed."
   :commands (imenu)
   :hook (imenu-after-jump . recenter))
 
+(use-package symbols-outline
+  :commands (symbols-outline-show)
+  :elpaca (:files (:defaults "*.el" "icons"))
+  :config
+  (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)
+  (setq symbols-outline-window-position 'left)
+  (symbols-outline-follow-mode))
+
 (use-package xref
   :defer nil
   :init
