@@ -1631,6 +1631,7 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package tempel
   :after-call +my/first-input-hook-fun
   :after corfu
+  :bind (("C-i" . my/tempel-expand-or-next))
   :config
   (defun my/tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
@@ -1697,11 +1698,11 @@ When the number of characters in a buffer exceeds this threshold,
   :elpaca (:host github :repo "zerolfx/copilot.el"
                  :files ("dist" "*.el"))
   :bind
-  ((:map copilot-mode-map
-         ("C-c n" . copilot-next-completion)
-         ("C-c p" . copilot-previous-completion)
-         ("C-i" . my/copilot-or-tempel-expand-or-next)
-         ("M-i" . copilot-accept-completion-by-word)))
+  ((:map copilot-completion-map
+         ("C-i" . copilot-accept-completion)
+         ("M-i" . copilot-accept-completion-by-word)
+         ("M-n" . 'copilot-next-completion)
+         ("M-p" . 'copilot-previous-completion)))
   :init
   (require 'copilot-balancer)
   :config
@@ -1712,22 +1713,12 @@ When the number of characters in a buffer exceeds this threshold,
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
+  (setq copilot-max-char 1000000)
 
   ;;  HACK: workaround for node@16
   (cl-loop for node_path in '("/usr/local/opt/node@16/bin/node" "/opt/homebrew/opt/node@16/bin/node")
            when (file-exists-p node_path)
-           return (setq copilot-node-executable node_path))
-
-  (defun my/copilot-or-tempel-expand-or-next ()
-    "Try tempel expand, if failed, try copilot expand."
-    (interactive)
-    (if tempel--active
-        (tempel-next 1)
-      (if (tempel-expand) ;; HACK: call `tempel-expand' twice
-          (call-interactively #'tempel-expand)
-        (copilot-accept-completion)
-        ))
-    (copilot-clear-overlay)))
+           return (setq copilot-node-executable node_path)))
 
 (use-package starhugger
   :when (and (not +self/enable-copilot) (length> starhugger-api-key 0))
