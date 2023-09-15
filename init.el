@@ -1631,7 +1631,9 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package tempel
   :after-call +my/first-input-hook-fun
   :after corfu
-  :bind (("C-i" . my/tempel-expand-or-next))
+  :bind (("C-u" . my/tempel-expand-or-next)
+         (:map tempel-map
+               ("C-i" . tempel-next)))
   :config
   (defun my/tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
@@ -1671,8 +1673,7 @@ When the number of characters in a buffer exceeds this threshold,
           #'tabnine-completion-at-point
           #'tempel-complete)
        (cape-capf-super
-        arg-capf
-        #'tempel-complete))))
+        arg-capf))))
 
   (defun my/set-basic-capf ()
     (setq completion-category-defaults nil)
