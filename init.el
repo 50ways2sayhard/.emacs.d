@@ -2114,7 +2114,7 @@ When the number of characters in a buffer exceeds this threshold,
            return(set-fontset-font t 'unicode font nil 'prepend))
 
   ;; Specify font for Chinese characters
-  (cl-loop for font in '("Sarasa Term SC Nerd" "Microsoft Yahei")
+  (cl-loop for font in '("LXGW WenKai Screen" "Sarasa Term SC Nerd" "Microsoft Yahei")
            when (font-installed-p font)
            return (set-fontset-font t '(#x4e00 . #x9fff) font))
 
@@ -2201,10 +2201,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
-  :hook ((elpaca-after-init . global-hl-todo-mode)
-         (hl-todo-mode . (lambda ()
-                           (add-hook 'flymake-diagnostic-functions
-                                     #'hl-todo-flymake nil t))))
+  :hook ((elpaca-after-init . global-hl-todo-mode))
   :config
   (dolist (keyword '("BUG" "DEFECT" "ISSUE" "DONT" "GOTCHA" "DEBUG"))
     (cl-pushnew `(,keyword . ,(face-foreground 'error)) hl-todo-keyword-faces))
@@ -2212,7 +2209,24 @@ When the number of characters in a buffer exceeds this threshold,
     (cl-pushnew `(,keyword . ,(face-foreground 'warning)) hl-todo-keyword-faces))
   (dolist (keyword '("MARK"))
     (cl-pushnew `(,keyword . ,(face-foreground 'success)) hl-todo-keyword-faces))
-  )
+  (defun hl-todo-rg (regexp &optional dir)
+    "Use `rg' to find all TODO or similar keywords."
+    (interactive
+     (progn
+       (unless (require 'deadgrep nil t)
+         (error "`deadgrep' is not installed"))
+       (let ((regexp (replace-regexp-in-string "\\\\[<>]*" "" (hl-todo--regexp)))
+             (dir (read-directory-name "Base Directory: " (deadgrep--project-root))))
+         (list regexp dir))))
+    (deadgrep regexp dir)
+    (with-current-buffer (car-safe (deadgrep--buffers))
+      (setq-local deadgrep--search-type 'regexp)
+      (deadgrep-restart))
+    ))
+
+(use-package consult-todo
+  :elpaca (:host github :repo "liuyinz/consult-todo")
+  :demand t)
 
 (use-package volatile-highlights
   :diminish
@@ -2357,6 +2371,7 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (window-setup . ws-butler-global-mode))
 
 (use-package wgrep
+  :elpaca (:files (:defaults "*.el"))
   :commands wgrep-change-to-wgrep-mode
   :bind
   (:map grep-mode-map
@@ -2364,6 +2379,15 @@ When the number of characters in a buffer exceeds this threshold,
   :custom
   (wgrep-auto-save-buffer t)
   (define-key occur-mode-map (kbd "i") #'occur-edit-mode))
+
+(use-package deadgrep
+  :init
+  (require 'wgrep-deadgrep)
+  ;; (wgrep-deadgrep-setup)
+  :bind
+  ("<f5>" . #'deadgrep)
+  (:map deadgrep-mode-map
+        ("i" . #'wgrep-change-to-wgrep-mode)))
 
 (use-package expand-region
   :commands (er/expand-region)
@@ -2460,6 +2484,12 @@ When the number of characters in a buffer exceeds this threshold,
   :hook (prog-mode . hs-minor-mode)
   :config
   (global-prettify-symbols-mode))
+
+(use-package vs-comment-return
+  :elpaca (:host github :repo "emacs-vs/vs-comment-return")
+  :hook (prog-mode . vs-comment-return-mode)
+  :custom
+  (vs-comment-return-cancel-after t))
 
 (use-package better-jumper
   :after-call +my/first-input-hook-fun
