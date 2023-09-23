@@ -1722,7 +1722,7 @@ When the number of characters in a buffer exceeds this threshold,
            return (setq copilot-node-executable node_path)))
 
 (use-package starhugger
-  :when (and (not +self/enable-copilot) (length> starhugger-api-key 0))
+  :when (and (not +self/enable-copilot) (length> starhugger-api-token 0))
   :elpaca (:repo "https://gitlab.com/daanturo/starhugger.el" :files (:defaults "*.py"))
   :hook (prog-mode . starhugger-auto-mode)
   :after corfu
