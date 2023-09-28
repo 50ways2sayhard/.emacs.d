@@ -492,9 +492,6 @@ It will split otherwise."
                              choices)))
     (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))))
 
-(use-package magit-todos
-  :after magit)
-
 (use-package hydra)
 
 (use-package smerge-mode
