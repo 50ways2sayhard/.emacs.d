@@ -829,6 +829,17 @@ point reaches the beginning or end of the buffer, stop there."
       (kill-buffer)
       (find-file file-to))))
 
+(defun jump-out-of-pair ()
+	(interactive)
+	(let ((found (search-forward-regexp "[])}\"'`*=]" nil t)))
+		(when found
+			(cond ((or (looking-back "\\*\\*" 2)
+		 (looking-back "``" 2)
+		 (looking-back "''" 2)
+		 (looking-back "==" 2))
+			 (forward-char))
+			(t (forward-char 0))))))
+
 (defun +my/replace (&optional word)
   "Make it eary to use `:%s' to replace WORD."
   (interactive)

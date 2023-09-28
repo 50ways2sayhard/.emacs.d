@@ -301,6 +301,7 @@ S is string of the two-key sequence."
    '("?" . consult-ripgrep)
    '("/" . noct-consult-ripgrep-or-line)
    `("C-s" . ,+meow-tab-map)
+   '("%" . jump-out-of-pair)
    ))
 
 (provide 'meow-config)
