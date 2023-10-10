@@ -858,7 +858,7 @@ point reaches the beginning or end of the buffer, stop there."
   "In 'org-mode', call 'consult-outline'.Otherwise call 'consult-imenu'."
   (interactive)
   (if (derived-mode-p 'org-mode)
-      (consult-outline)
+      (consult-org-heading)
     (consult-imenu)))
 
 (defun +default/newline-above ()
@@ -1268,9 +1268,9 @@ When the number of characters in a buffer exceeds this threshold,
      (lambda (cand transform)
        (let ((name (buffer-name
                     (marker-buffer
-                     (get-text-property 0 'consult--candidate cand)))))
+                     (get-text-property 0 'org-marker cand)))))
          (if transform cand name)))
-     :lookup #'consult--lookup-candidate))
+     :lookup (apply-partially #'consult--lookup-prop 'org-marker)))
 
   (defun consult-clock-in (&optional match scope resolve)
     "Clock into an Org heading."
@@ -1295,7 +1295,7 @@ When the number of characters in a buffer exceeds this threshold,
                      :prompt "Clock in: "
                      :group
                      (lambda (cand transform)
-                       (let* ((marker (get-text-property 0 'consult--candidate cand))
+                       (let* ((marker (get-text-property 0 'org-marker cand))
                               (name (if (member marker org-clock-history)
                                         "*Recent*"
                                       (buffer-name (marker-buffer marker)))))
@@ -1476,11 +1476,9 @@ When the number of characters in a buffer exceeds this threshold,
   :after-call +my/first-input-hook-fun
   :demand t
   :config
-  ;; Define orderless style with initialism by default
-  (orderless-define-completion-style +orderless-with-initialism
-    (orderless-matching-styles '(orderless-initialism orderless-literal orderless-regexp)))
   (with-eval-after-load 'eglot
     (setq completion-category-defaults nil))
+
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         orderless-component-separator #'orderless-escapable-split-on-space
@@ -2018,8 +2016,7 @@ When the number of characters in a buffer exceeds this threshold,
           "\\*Gofmt Errors\\*$" "\\*Go Test\\*$" godoc-mode
           "\\*docker-containers\\*" "\\*docker-images\\*" "\\*docker-networks\\*" "\\*docker-volumes\\*"
           "\\*prolog\\*" inferior-python-mode inf-ruby-mode swift-repl-mode
-          "\\*rustfmt\\*$" rustic-compilation-mode rustic-cargo-clippy-mode
-          rustic-cargo-outdated-mode rustic-cargo-test-moed))
+          "\\*rustfmt\\*$" rustic-compilation-mode rustic-cargo-clippy-mode))
 
   (with-eval-after-load 'project
     (setq popper-group-function 'popper-group-by-project))
@@ -2085,7 +2082,9 @@ When the number of characters in a buffer exceeds this threshold,
               ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
             )))
   (with-eval-after-load 'org
-    (+my-custom-org-todo-faces)))
+    (+my-custom-org-todo-faces))
+  (with-eval-after-load 'kind-icon
+    (add-hook 'ef-themes-post-load-hook #'kind-icon-reset-cache)))
 
 ;; FontsList
 (defvar font-list '(("Cascadia Code" . 15) ("Hack Nerd Font" . 15) ("Sarasa Term SC Nerd" . 16) ("Fira Code" . 15) ("SF Mono" . 15) ("Menlo" . 15))
@@ -2391,7 +2390,6 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package deadgrep
   :init
   (require 'wgrep-deadgrep)
-  ;; (wgrep-deadgrep-setup)
   :bind
   ("<f5>" . #'deadgrep)
   (:map deadgrep-mode-map
@@ -2927,6 +2925,8 @@ Install the doc if it's not installed."
   :init
   (setq vterm-always-compile-module t)
   (setq vterm-shell "fish")
+  (setq vterm-kill-buffer-on-exit t)
+  (setq vterm-max-scrollback 5000)
   (setq vterm-timer-delay 0.001
         process-adaptive-read-buffering nil)
   (with-no-warnings
