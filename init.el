@@ -2489,7 +2489,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (add-hook 'post-command-hook 'im-change-cursor-color)
       (remove-hook 'post-command-hook 'im-change-cursor-color)))
 
-  (cursor-chg-mode))
+  (cursor-chg-mode)
+
+  (with-eval-after-load 'ef-themes
+    (ef-themes-with-colors
+      (setq im-cursor-color (face-foreground 'warning)))))
 
 (use-package super-save
   :hook (window-setup . super-save-mode)
