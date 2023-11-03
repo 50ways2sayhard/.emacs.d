@@ -167,7 +167,7 @@ S is string of the two-key sequence."
     "d" #'xref-find-definitions
     "r" #'xref-find-references
     "c c" #'evilnc-comment-or-uncomment-lines
-    "c Y" #'+my/comment-and-paste))
+    "c Y" #'evilnc-copy-and-comment-lines))
 
 (defun +meow-window-vsplit (&optional count file)
   "Split window right and move to the created window."

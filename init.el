@@ -268,6 +268,7 @@ REST and STATE."
 
 ;;; Documentation in echo area
 (use-package eldoc
+  :elpaca nil
   :commands (eldoc)
   :config (global-eldoc-mode))
 
@@ -708,6 +709,13 @@ It will split otherwise."
   ;; When buffer is closed, saves the cursor location
   (save-place-mode 1)
 
+  ;; for long line
+  (setq-default bidi-display-reordering nil)
+  (setq bidi-inhibit-bpa t
+        long-line-threshold 1000
+        large-hscroll-threshold 1000
+        syntax-wholeline-max 1000)
+
   (setq-default create-lockfiles nil
                 make-backup-files nil)
   (setq create-lockfiles nil
@@ -924,16 +932,6 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 	                "end tell\n")))
     (start-process "osascript-getinfo" nil "osascript" "-e" script)))
 
-(defun +my/comment-and-paste (beg end)
-  "Comment selected lines and paste then after.BEG and END is the bound of region."
-  (interactive "r")
-  (let ((line-number (line-number-at-pos end)))
-    (call-interactively 'evilnc-comment-and-kill-ring-save)
-    (goto-line line-number)
-    (end-of-line)
-    (newline)
-    (yank)))
-
 (defun +my/quick-look (&optional file)
   "Open FILE with quick look."
   (interactive
@@ -993,7 +991,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("/" . evilnc-comment-or-uncomment-lines)
    ("=" . er/expand-region)
    (";" . embrace-commander)
-   ("Y". #'+my/comment-and-paste)
+   ("Y". #'evilnc-copy-and-comment-lines)
    :map embark-identifier-map
    (";" . embrace-commander)
    ("D" . xref-find-definitions-other-window))
@@ -1356,9 +1354,12 @@ When the number of characters in a buffer exceeds this threshold,
 /a/b/c/d-> c/d"
     (let* ((file (directory-file-name file))
            (filename (file-name-nondirectory file))
-
+           (dir (file-name-directory file))
            short-name)
-      (setq short-name filename)
+      (setq short-name
+            (if dir
+                (format "%s/%s" (file-name-nondirectory (directory-file-name dir)) filename)
+              filename))
       (propertize short-name 'multi-category `(file . ,file))))
 
   (plist-put consult--source-recent-file
@@ -1888,18 +1889,43 @@ When the number of characters in a buffer exceeds this threshold,
        (sort (split-string (shell-command-to-string command) "\0" t)
              #'string<))))
 
+  (setq project-vc-ignores '(".dart-tools" ".idea" ".DS_Store"))
+
   (cl-defmethod project-files ((project (head local)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
     (mapcan #'my/project-files-in-directory
             (or dirs (list (project-root project)))))
 
-  (setq project-vc-ignores '("\\.*pub-cache/\.*" "/usr/local/*")))
+  (defcustom project-root-markers
+    '("Cargo.toml" "compile_commands.json" "compile_flags.txt"
+      "project.clj" "pubspec.yaml" "deps.edn" "shadow-cljs.edn")
+    "Files or directories that indicate the root of a project."
+    :type '(repeat string)
+    :group 'project)
+
+  (defun project-root-p (path)
+    "Check if the current PATH has any of the project root markers."
+    (catch 'found
+      (dolist (marker project-root-markers)
+        (when (file-exists-p (concat path marker))
+          (throw 'found marker)))))
+
+  (defun project-find-root (path)
+    "Search up the PATH for `project-root-markers'."
+    (let ((path (expand-file-name path)))
+      (catch 'found
+        (while (not (equal "/" path))
+          (if (not (project-root-p path))
+              (setq path (file-name-directory (directory-file-name path)))
+            (throw 'found (cons 'transient path)))))))
+  (require 'project)
+  (add-to-list 'project-find-functions #'project-find-root)
+  )
 
 (use-package project-rootfile
-  :defer nil
-  :after project
+  :elpaca (:repo "https://github.com/buzztaiki/project-rootfile.el")
   :config
-  (add-to-list 'project-find-functions #'project-rootfile-try-detect t))
+  (add-to-list 'project-rootfile-list "melos.yaml"))
 
 (use-package winner
   :elpaca nil
@@ -1978,6 +2004,7 @@ When the number of characters in a buffer exceeds this threshold,
           "\\*lspce-hover\\*"
           "\\*Embark Actions\\*"
           "\\*Embark Export: .*\\*"
+          "\\*Embark Collect: .*\\*"
           "\\*compilation\\*"
 
           bookmark-bmenu-mode
@@ -2469,7 +2496,7 @@ When the number of characters in a buffer exceeds this threshold,
     "Check if the current input state is Chinese."
     (if (featurep 'rime)
         (and (rime--should-enable-p)
-             (not (rime--should-inline-ascii-p))
+             (not (rime--ascii-mode-p))
              current-input-method)
       current-input-method))
 
@@ -2489,11 +2516,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (add-hook 'post-command-hook 'im-change-cursor-color)
       (remove-hook 'post-command-hook 'im-change-cursor-color)))
 
-  (cursor-chg-mode)
+  (add-hook 'rime-mode-hook 'cursor-chg-mode)
 
   (with-eval-after-load 'ef-themes
     (ef-themes-with-colors
-      (setq im-cursor-color (face-foreground 'warning)))))
+     (setq im-cursor-color (face-foreground 'warning)))))
 
 (use-package super-save
   :hook (window-setup . super-save-mode)
