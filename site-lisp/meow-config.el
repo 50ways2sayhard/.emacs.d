@@ -97,7 +97,7 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-open-map
     "t" #'org-todo-list
     "x" #'org-agenda
-    "i" #'consult-clock-in
+    "g" #'consult-org-agenda
     "o" #'(lambda () (interactive)(org-clock-out)(org-save-all-org-buffers))
     "d" #'consult-mark-done)
   (defvar-keymap +meow-project-map

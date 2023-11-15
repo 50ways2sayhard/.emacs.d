@@ -293,6 +293,7 @@ REST and STATE."
         ("'" . magit-process-buffer))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
+  (setq magit-show-long-lines-warning nil)
   (magit-auto-revert-mode -1)
   (setq magit-diff-refine-hunk (quote all))
 
@@ -879,6 +880,7 @@ point reaches the beginning or end of the buffer, stop there."
     (indent-according-to-mode)))
 (global-set-key (kbd "C-<return>") '+default/newline-below)
 (global-set-key (kbd "C-S-<return>") '+default/newline-above)
+(global-set-key (kbd "M-<return>") 'indent-new-comment-line)
 
 (defun +default/newline-below ()
   "Insert an indented new line after the current one."
@@ -985,6 +987,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("r" . rename-visited-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
+   ("J" . dired)
    ("SPC" . +my/quick-look)
    :map embark-region-map
    ("V" . diff-hl-show-hunk)
@@ -1174,17 +1177,6 @@ targets."
                 :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
   (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
 
-  ;; (defun my-consult-set-evil-search-pattern (&optional condition)
-  ;;   (let ((re
-  ;;          (cond
-  ;;           ((eq condition 'rg) (substring (car consult--grep-history) 1)) ;; HACK: assume the history begins with `#'
-  ;;           ((or t (eq condition 'line)) (car consult--line-history))
-  ;;           )))
-  ;;     (add-to-history 'evil-ex-search-history re)
-  ;;     (setq evil-ex-search-pattern (list re t t))
-  ;;     (setq evil-ex-search-direction 'forward)
-  ;;     (anzu-mode t)))
-
   (defcustom noct-consult-ripgrep-or-line-limit 300000
     "Buffer size threshold for `noct-consult-ripgrep-or-line'.
 When the number of characters in a buffer exceeds this threshold,
@@ -1231,9 +1223,9 @@ When the number of characters in a buffer exceeds this threshold,
         )))
 
   ;; Configure initial narrowing per command
-  (dolist (src consult-buffer-sources)
-    (unless (eq src 'consult--source-buffer)
-      (set src (plist-put (symbol-value src) :hidden t))))
+  ;; (dolist (src consult-buffer-sources)
+  ;;   (unless (eq src 'consult--source-buffer)
+  ;;     (set src (plist-put (symbol-value src) :hidden t))))
 
   (defun +consult-ripgrep-current-directory (&optional initial)
     (interactive)
@@ -1245,68 +1237,6 @@ When the number of characters in a buffer exceeds this threshold,
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
-
-  (defun +my/retrieval-todo-items ()
-    (require 'consult-org)
-    (consult--read
-     (consult--with-increased-gc
-      (-filter (lambda (item)
-                 (not (member
-                       (car (cdr (get-text-property 0 'consult-org--heading item)))
-                       '("DONE" "CANCELED"))))
-               (consult-org--headings nil nil 'agenda)))
-     :prompt "Go to heading: "
-     :category 'consult-org-heading
-     :sort nil
-     :require-match t
-     :history '(:input consult-org--history)
-     :narrow (consult-org--narrow)
-     :state (consult--jump-state)
-     :group
-     (lambda (cand transform)
-       (let ((name (buffer-name
-                    (marker-buffer
-                     (get-text-property 0 'org-marker cand)))))
-         (if transform cand name)))
-     :lookup (apply-partially #'consult--lookup-prop 'org-marker)))
-
-  (defun consult-clock-in (&optional match scope resolve)
-    "Clock into an Org heading."
-    (interactive (list nil nil current-prefix-arg))
-    (require 'org-clock)
-    (org-clock-load)
-    (save-window-excursion
-      (consult-org-heading
-       match
-       (or scope
-           (thread-last org-clock-history
-                        (mapcar 'marker-buffer)
-                        (mapcar 'buffer-file-name)
-                        (delete-dups)
-                        (delq nil))
-           (user-error "No recent clocked tasks")))
-      (org-clock-in nil (when resolve
-                          (org-resolve-clocks)
-                          (org-read-date t t)))))
-
-  (consult-customize consult-clock-in
-                     :prompt "Clock in: "
-                     :group
-                     (lambda (cand transform)
-                       (let* ((marker (get-text-property 0 'org-marker cand))
-                              (name (if (member marker org-clock-history)
-                                        "*Recent*"
-                                      (buffer-name (marker-buffer marker)))))
-                         (if transform (substring cand (1+ (length name))) name))))
-
-  (defun consult-mark-done ()
-    "Clock into an Org agenda heading."
-    (interactive)
-    (save-window-excursion
-      (+my/retrieval-todo-items)
-      (org-todo 'done)
-      (save-buffer)))
-  (consult-customize consult-mark-done :prompt "Mark done: ")
 
   (defvar consult--fd-command nil)
   (defun consult--fd-builder (input)
@@ -1483,7 +1413,7 @@ When the number of characters in a buffer exceeds this threshold,
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         orderless-component-separator #'orderless-escapable-split-on-space
-        completion-category-overrides '((file (flex styles basic partial-completion))
+        completion-category-overrides '((file (styles basic partial-completion))
                                         (eglot (styles orderless)))))
 
 (use-package marginalia
@@ -1872,6 +1802,7 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package project
   :elpaca nil
+  :defer nil
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
@@ -2466,6 +2397,9 @@ When the number of characters in a buffer exceeds this threshold,
      meow-normal-mode-p))
   (rime-posframe-properties
    (list :internal-border-width 5))
+  :bind
+  (:map rime-mode-map
+        ("C-~" . 'rime-send-keybinding))
   :config
   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
@@ -2657,6 +2591,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
