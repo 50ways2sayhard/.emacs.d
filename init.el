@@ -20,7 +20,7 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.5)
+(defvar elpaca-installer-version 0.6)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -607,7 +607,7 @@ It will split otherwise."
   :hook (elpaca-after-init . show-paren-mode)
   :config
   (setq show-paren-style 'parenthesis
-        show-paren-context-when-offscreen 'overlay
+        show-paren-context-when-offscreen 'child-frame
         show-paren-when-point-in-periphery t
         show-paren-when-point-inside-paren t))
 
@@ -840,11 +840,11 @@ point reaches the beginning or end of the buffer, stop there."
 	(let ((found (search-forward-regexp "[])}\"'`*=]" nil t)))
 		(when found
 			(cond ((or (looking-back "\\*\\*" 2)
-		 (looking-back "``" 2)
-		 (looking-back "''" 2)
-		 (looking-back "==" 2))
-			 (forward-char))
-			(t (forward-char 0))))))
+		             (looking-back "``" 2)
+		             (looking-back "''" 2)
+		             (looking-back "==" 2))
+			       (forward-char))
+			      (t (forward-char 0))))))
 
 (defun +my/replace (&optional word)
   "Make it eary to use `:%s' to replace WORD."
@@ -958,6 +958,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (meow-global-mode)
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
+  (add-to-list 'meow-mode-state-list '(magit-blame-mode . insert))
   (add-to-list 'meow-mode-state-list '(occur-mode . motion))
   (add-hook 'org-capture-mode-hook #'meow-insert)
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
@@ -1237,30 +1238,6 @@ When the number of characters in a buffer exceeds this threshold,
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
      (lambda (str) (orderless--highlight input str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
-
-  (defvar consult--fd-command nil)
-  (defun consult--fd-builder (input)
-    (unless consult--fd-command
-      (setq consult--fd-command
-            (if (eq 0 (call-process-shell-command "fdfind"))
-                "fdfind"
-              "fd")))
-    (pcase-let* ((`(,arg . ,opts) (consult--command-split input))
-                 (`(,re . ,hl) (funcall consult--regexp-compiler
-                                        arg 'extended t)))
-      (when re
-        (cons (append
-               (list consult--fd-command
-                     "--color=never" "--full-path"
-                     (consult--join-regexps re 'extended))
-               opts)
-              hl))))
-
-  (defun consult-fd (&optional dir initial)
-    (interactive "P")
-    (pcase-let* ((`(,prompt ,paths ,dir) (consult--directory-prompt "Fd" dir))
-                 (default-directory dir))
-      (find-file (consult--find prompt #'consult--fd-builder initial))))
 
   ;; Shorten candidates in consult-buffer:
   ;; See: https://emacs-china.org/t/21-emacs-vertico-orderless-marginalia-embark-consult/19683/50
@@ -1645,12 +1622,7 @@ When the number of characters in a buffer exceeds this threshold,
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
-  (setq copilot-max-char 1000000)
-
-  ;;  HACK: workaround for node@16
-  (cl-loop for node_path in '("/usr/local/opt/node@16/bin/node" "/opt/homebrew/opt/node@16/bin/node")
-           when (file-exists-p node_path)
-           return (setq copilot-node-executable node_path)))
+  (setq copilot-max-char 1000000))
 
 (use-package starhugger
   :when (and (not +self/enable-copilot) (length> starhugger-api-token 0))
@@ -1866,6 +1838,67 @@ When the number of characters in a buffer exceeds this threshold,
                                       "*Buffer List*"
                                       "*Ibuffer*"
                                       "*esh command on file*")))
+
+(defun transpose-windows ()
+  "Transpose two windows.  If more or less than two windows are visible, error."
+  (interactive)
+  (unless (= 2 (count-windows))
+    (error "There are not 2 windows."))
+  (let* ((windows (window-list))
+         (w1 (car windows))
+         (w2 (nth 1 windows))
+         (w1b (window-buffer w1))
+         (w2b (window-buffer w2)))
+    (set-window-buffer w1 w2b)
+    (set-window-buffer w2 w1b)
+    (other-window 1)))
+
+(use-package tab-bar
+  :elpaca nil
+  :hook (window-setup . tab-bar-mode)
+  :config
+  (setq tab-bar-separator ""
+        tab-bar-new-tab-choice "*scratch*"
+        tab-bar-tab-name-truncated-max 20
+        tab-bar-auto-width nil
+        tab-bar-close-button-show nil
+        tab-bar-tab-hints t)
+
+  ;; 使用 super-1 super-2 ... 来切换 tab
+  (customize-set-variable 'tab-bar-select-tab-modifiers '(super))
+
+  ;; 自动截取 tab name，并且添加在每个 tab 上添加数字，方便用快捷键切换
+  (setq tab-bar-tab-name-function
+        (lambda () (let* ((raw-tab-name (buffer-name (window-buffer (minibuffer-selected-window))))
+                          (count (length (window-list-1 nil 'nomini)))
+                          (truncated-tab-name (if (< (length raw-tab-name)
+                                                     tab-bar-tab-name-truncated-max)
+                                                  raw-tab-name
+                                                (truncate-string-to-width raw-tab-name
+                                                                          tab-bar-tab-name-truncated-max
+                                                                          nil nil tab-bar-tab-name-ellipsis))))
+                     (if (> count 1)
+                         (concat truncated-tab-name "(" (number-to-string count) ")")
+                       truncated-tab-name))))
+
+  ;; 给 tab 两边加上空格，更好看
+  (setq tab-bar-tab-name-format-function
+        (lambda (tab i)
+          (let ((face (funcall tab-bar-tab-face-function tab)))
+            (concat
+             (propertize " " 'face face)
+             (propertize (number-to-string i) 'face `(:inherit ,face :weight ultra-bold :underline t))
+             (propertize (concat " " (alist-get 'name tab) " ") 'face face)))))
+
+  ;; 我把 meow 的 indicator 也放在 tab-bar 上
+  (setq tab-bar-format '(meow-indicator  tab-bar-format-tabs))
+  (tab-bar--update-tab-bar-lines)
+
+  ;; WORKAROUND: update tab-bar for daemon
+  (when (daemonp)
+    (add-hook 'after-make-frame-functions
+              #'(lambda (&rest _) (force-mode-line-update))))
+  )
 
 (use-package tabspaces
   :hook (elpaca-after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup.
@@ -2337,7 +2370,8 @@ When the number of characters in a buffer exceeds this threshold,
         ("i" . #'wgrep-change-to-wgrep-mode))
   :custom
   (wgrep-auto-save-buffer t)
-  (define-key occur-mode-map (kbd "i") #'occur-edit-mode))
+  :init
+  (define-key occur-mode-map (kbd "i") 'occur-edit-mode))
 
 (use-package deadgrep
   :init
@@ -2448,7 +2482,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (with-eval-after-load 'ef-themes
     (ef-themes-with-colors
-     (setq im-cursor-color (face-foreground 'warning)))))
+      (setq im-cursor-color (face-foreground 'warning)))))
 
 (use-package super-save
   :hook (window-setup . super-save-mode)
@@ -2739,6 +2773,7 @@ Install the doc if it's not installed."
   :config
   (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)
   (setq symbols-outline-window-position 'left)
+  (setq symbols-outline-use-nerd-icon-in-gui t)
   (symbols-outline-follow-mode))
 
 (use-package xref

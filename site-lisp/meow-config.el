@@ -119,6 +119,7 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-toggle-map
     "e" #'+my/smart-switch-to-vterm-tab
     "t" #'dirvish-side
+    "T" #'dirvish-dwim
     "d" #'toggle-debug-on-error
     "l" #'toggle-truncate-lines
     "y" #'go-translate-at-point)
