@@ -1245,7 +1245,7 @@ When the number of characters in a buffer exceeds this threshold,
     (setq input (orderless-pattern-compiler input))
     (cons
      (mapcar (lambda (r) (consult--convert-regexp r type)) input)
-     (lambda (str) (orderless--highlight input str))))
+     (lambda (str) (orderless--highlight input t str))))
   (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
 
   ;; Shorten candidates in consult-buffer:
