@@ -846,14 +846,23 @@ point reaches the beginning or end of the buffer, stop there."
 			       (forward-char))
 			      (t (forward-char 0))))))
 
-(defun +my/replace (&optional word)
-  "Make it eary to use `:%s' to replace WORD."
+(defun +my/replace (&optional word )
+  "Make it easy to replace WORD.If WORD is not given, automatically extract it by major-mode."
   (interactive)
-  (let* ((from (replace-regexp-in-string "/" "\\\\/" (or word (read-string "Replace: " (thing-at-point 'symbol 'no-properties)))))
-         ;; (to (replace-regexp-in-string "/" "\\\\/" (read-string (format "Replace '%s' with: " from))))
-         )
-    ;; (evil-ex (concat "%s/" from "/"))
-    ))
+  (cond
+   ((derived-mode-p 'occur-mode) (occur-edit-mode))
+   ((derived-mode-p 'grep-mode) (wgrep-change-to-wgrep-mode))
+   ((and (featurep 'deadgrep) (derived-mode-p 'deadgrep-mode))
+    (wgrep-change-to-wgrep-mode)))
+  (let* ((buffer-name (buffer-name))
+         (raw-keyword (cond ((string-match "*Embark .* - \\(?1:.*\\)\\*" buffer-name)
+                             (match-string 1 buffer-name))
+                            ((buffer-match-p "\\*deadgrep.*" buffer-name)
+                             (car deadgrep-history))
+                            (t (read-string "Keyword: " word))))
+         (keyword (replace-regexp-in-string "^#" "" raw-keyword))
+         (replacement (read-string (format "Replace \"%s\" with: " keyword))))
+    (vr/query-replace keyword replacement (point-min) (point-max))))
 
 (defun +my-delete-file ()
   "Put current buffer file to top."
