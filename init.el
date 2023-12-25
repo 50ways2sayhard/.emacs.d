@@ -1713,65 +1713,50 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package visual-regexp-steroids)
 
-(use-package go-translate
-  :commands (go-translate-at-point go-translate-translate)
+(use-package maple-translate
+  :elpaca (:host github :repo "honmaple/emacs-maple-translate")
+  :commands (maple-translate maple-translate+ maple-translate-posframe)
   :bind
-  ("C-c t y" . go-translate-at-point)
-  ("C-c t Y" . go-translate-translate)
+  ("C-c t y" . maple-translate-posframe)
+  ("C-c t Y" . (lambda () (interactive) (maple-translate+ (read-from-minibuffer "Translate word: "))))
+  :custom
+  (maple-translate-buffer " *maple-translate* ")
   :config
-  (setq gts-translate-list '(("en" "zh") ("zh" "en")))
-  (cl-defmethod gts-pre ((render gts-posframe-pop-render) translator)
-    (with-slots (width height forecolor backcolor padding) render
-      (let* ((inhibit-read-only t)
-             (buf gts-posframe-pop-render-buffer)
-             (frame (posframe-show buf
-                                   :string "Loading..."
-                                   :timeout gts-posframe-pop-render-timeout
-                                   :max-width width
-                                   :max-height height
-                                   :foreground-color (or forecolor gts-pop-posframe-forecolor)
-                                   :background-color (or backcolor gts-pop-posframe-backcolor)
-                                   :internal-border-width padding
-                                   :internal-border-color (or backcolor gts-pop-posframe-backcolor)
-                                   :accept-focus nil
-                                   :position (point)
-                                   :poshandler gts-posframe-pop-render-poshandler)))
+  ;; (setq maple-translate-engine '(google dictcn youdao))
+  (setq maple-translate-engine '(google))
 
-        ;; render
-        (gts-render-buffer-prepare buf translator)
-        (posframe-refresh buf)
-        ;; setup
-        (with-current-buffer buf
-          (gts-buffer-set-key ("q" "Close") (progn
-                                              (posframe-delete buf)))))))
+  ;; with google translate
+  (setq maple-translate-google-url "https://translate.googleapis.com/translate_a/single")
 
-  (ef-themes-with-colors
-    (let ((render (gts-posframe-pop-render :backcolor bg-dim :forecolor fg-dim :width 200 :height 100))
-          (engines (list
-                    (gts-google-rpc-engine)
-                    (gts-bing-engine)
-                    (gts-youdao-dict-engine)))
-          (splitter (gts-paragraph-splitter)))
-      (defvar my-translator-at-point
-        (gts-translator
-         :picker (gts-noprompt-picker)
-         :engines engines
-         :render render
-         :splitter splitter))
 
-      (defvar my-translator-input
-        (gts-translator
-         :picker (gts-prompt-picker)
-         :engines engines
-         :render render
-         :splitter splitter))
+  (defun maple-translate-posframe-tip (result)
+    "Show STRING using posframe-show."
+    (unless (and (require 'posframe nil t) (posframe-workable-p))
+      (error "Posframe not workable"))
 
-      (defun go-translate-at-point ()
-        (interactive)
-        (gts-translate my-translator-at-point))
-      (defun go-translate-translate ()
-        (interactive)
-        (gts-translate my-translator-input)))))
+    (if result
+        (progn
+          (with-current-buffer (get-buffer-create maple-translate-buffer)
+            (let ((inhibit-read-only t))
+              (erase-buffer)
+              (insert result)
+              (maple-translate-mode)
+              (goto-char (point-min))))
+          (posframe-show maple-translate-buffer
+                         :left-fringe 8
+                         :right-fringe 8
+                         :internal-border-color (face-foreground 'default)
+                         :internal-border-width 1)
+          (unwind-protect
+              (push (read-event) unread-command-events)
+            (progn
+              (posframe-hide maple-translate-buffer))))
+      (message "Nothing to look up")))
+
+  (defun maple-translate-posframe(word)
+    "Translate WORD and display result in posframe."
+    (interactive (list (maple-translate-word)))
+    (maple-translate-show word 'maple-translate-posframe-tip)))
 
 
 ;; SaveAllBuffers
@@ -1984,12 +1969,13 @@ When the number of characters in a buffer exceeds this threshold,
           grep-mode occur-mode rg-mode deadgrep-mode ag-mode pt-mode
           ivy-occur-mode ivy-occur-grep-mode
           process-menu-mode list-environment-mode cargo-process-mode
-          youdao-dictionary-mode osx-dictionary-mode fanyi-mode
+          youdao-dictionary-mode osx-dictionary-mode fanyi-mode maple-translate-mode
 
           "^\\*eshell.*\\*$" eshell-mode
           "^\\*shell.*\\*$"  shell-mode
           "^\\*term.*\\*$"   term-mode
           "^\\*vterm.*\\*$"  vterm-mode
+          "^\\*eat.*\\*$"    eat-mode
 
           "\\*DAP Templates\\*$" dap-server-log-mode
           "\\*ELP Profiling Restuls\\*" profiler-report-mode
