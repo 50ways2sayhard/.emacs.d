@@ -2037,120 +2037,100 @@ When the number of characters in a buffer exceeds this threshold,
   (doom-modeline-env-version t)
   (doom-modeline-buffer-modification-icon t))
 
+(use-package catppuccin-theme
+  :defer nil
+  :config
+  (setq catppuccin-flavor 'macchiato)
+  (setq catppuccin-highlight-matches t)
+  ;; (load-theme 'catppuccin :no-confirm)
+  )
+
 (use-package ef-themes
   :init
   (ef-themes-select 'ef-trio-light)
   :config
   (setq ef-themes-headings
-        '((0 . (bold 1))
-          (1 . (bold 1))
-          (2 . (rainbow bold 1))
-          (3 . (rainbow bold 1))
-          (4 . (rainbow bold 1))
-          (t . (rainbow bold 1))))
+    '((0 . (bold 1))
+       (1 . (bold 1))
+       (2 . (rainbow bold 1))
+       (3 . (rainbow bold 1))
+       (4 . (rainbow bold 1))
+       (t . (rainbow bold 1))))
   (setq ef-themes-region '(intense no-extend neutral))
   ;; Disable all other themes to avoid awkward blending:
   ;; (mapc #'disable-theme custom-enabled-themes)
   (defun +my-custom-org-todo-faces()
     (ef-themes-with-colors
       (setq org-todo-keyword-faces
-            `(("TODO" . (:foreground ,red-cooler :weight bold))
-              ("INPROCESS"  . ,yellow-cooler)
-              ("PROJ"  . ,cyan-cooler)
-              ("WAITING" . ,green-faint)
-              ("DONE" . (:foreground ,fg-alt :strike-through t))
-              ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
-            )))
+        `(("TODO" . (:foreground ,red-cooler :weight bold))
+           ("INPROCESS"  . ,yellow-cooler)
+           ("PROJ"  . ,cyan-cooler)
+           ("WAITING" . ,green-faint)
+           ("DONE" . (:foreground ,fg-alt :strike-through t))
+           ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
+        )))
   (with-eval-after-load 'org
     (+my-custom-org-todo-faces))
   (with-eval-after-load 'kind-icon
     (add-hook 'ef-themes-post-load-hook #'kind-icon-reset-cache)))
 
-;; FontsList
-(defvar font-list '(("Cascadia Code" . 15) ("Hack Nerd Font" . 15) ("Sarasa Term SC Nerd" . 16) ("Fira Code" . 15) ("SF Mono" . 15) ("Menlo" . 15))
-  "List of fonts and sizes.  The first one available will be used.")
-;; -FontsList
+(use-package spacious-padding
+  :hook (window-setup . spacious-padding-mode))
 
-;; FontFun
-(defun change-font ()
-  "Interactively change a font from a list a available fonts."
-  (interactive)
-  (let* (available-fonts font-name font-size font-setting)
-    (dolist (font font-list (setq available-fonts (nreverse available-fonts)))
-      (when (member (car font) (font-family-list))
-        (push font available-fonts)))
-    (if (not available-fonts)
-        (message "No fonts from the chosen set are available")
-      (if (called-interactively-p 'interactive)
-          (let* ((chosen (assoc-string (completing-read "What font to use? " available-fonts nil t) available-fonts)))
-            (setq font-name (car chosen) font-size (read-number "Font size: " (cdr chosen))))
-        (setq font-name (caar available-fonts) font-size (cdar available-fonts)))
-      (setq font-setting (format "%s-%d" font-name font-size))
-      (set-frame-font font-setting nil t)
-      (add-to-list 'default-frame-alist (cons 'font font-setting)))))
+(when (display-graphic-p)
+  (custom-set-faces
+    ;; custom-set-faces was added by Custom.
+    ;; If you edit it by hand, you could mess it up, so be careful.
+    ;; Your init file should contain only one such instance.
+    ;; If there is more than one, they won't work right.
+    '(org-table ((t (:family "Maple Mono SC NF")))))
+  (advice-add #'org-string-width :override #'org--string-width-1)
 
-(defun my-apply-font ()
-  "Set default font."
-  (cl-loop for font in font-list
-           when (font-installed-p (car font))
-           return (set-face-attribute 'default nil :font (car font) :height (* 10 (cdr font))))
-
-  ;; Specify font for all unicode characters
-  (cl-loop for font in '("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Symbol")
-           when (font-installed-p font)
-           return(set-fontset-font t 'unicode font nil 'prepend))
-
-  ;; Specify font for Chinese characters
-  (cl-loop for font in '("LXGW WenKai Screen" "Sarasa Term SC Nerd" "Microsoft Yahei")
-           when (font-installed-p font)
-           return (set-fontset-font t '(#x4e00 . #x9fff) font))
-
-  (set-fontset-font "fontset-default" 'unicode "Apple Color Emoji" nil 'prepend))
-
-(add-hook 'window-setup-hook #'my-apply-font)
+  (set-face-attribute 'default nil :font "Cascadia Code" :height 150)
+  (set-fontset-font t 'han (font-spec :family "Maple Mono SC NF")))
 
 (use-package composite
   :elpaca nil
   :init (defvar composition-ligature-table (make-char-table nil))
   :hook (((prog-mode
-           conf-mode nxml-mode markdown-mode help-mode
-           shell-mode eshell-mode term-mode vterm-mode)
-          . (lambda () (setq-local composition-function-table composition-ligature-table))))
+            conf-mode nxml-mode markdown-mode help-mode
+            shell-mode eshell-mode term-mode vterm-mode)
+           . (lambda () (setq-local composition-function-table composition-ligature-table))))
   :config
   ;; support ligatures, some toned down to prevent hang
   (let ((alist
-         '((33  . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
-           (35  . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
-           (36  . ".\\(?:\\(>\\)>?\\)")
-           (37  . ".\\(?:\\(%\\)%?\\)")
-           (38  . ".\\(?:\\(&\\)&?\\)")
-           (42  . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
-           ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
-           (43  . ".\\(?:\\([>]\\)>?\\)")
-           ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
-           (45  . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
-           ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
-           (46  . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
-           (47  . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
-           ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
-           (48  . ".\\(?:x[a-zA-Z]\\)")
-           (58  . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
-           (59  . ".\\(?:\\(;\\);?\\)")
-           (60  . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
-           (61  . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
-           (62  . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
-           (63  . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
-           (91  . ".\\(?:\\(|\\)[]|]?\\)")
-           ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
-           (94  . ".\\(?:\\(=\\)=?\\)")
-           (95  . ".\\(?:\\(|_\\|[_]\\)_?\\)")
-           (119 . ".\\(?:\\(ww\\)w?\\)")
-           (123 . ".\\(?:\\(|\\)[|}]?\\)")
-           (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
-           (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
+          '((33  . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
+             (35  . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
+             (36  . ".\\(?:\\(>\\)>?\\)")
+             (37  . ".\\(?:\\(%\\)%?\\)")
+             (38  . ".\\(?:\\(&\\)&?\\)")
+             (42  . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
+             ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
+             (43  . ".\\(?:\\([>]\\)>?\\)")
+             ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
+             (45  . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
+             ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
+             (46  . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
+             (47  . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
+             ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
+             (48  . ".\\(?:x[a-zA-Z]\\)")
+             (58  . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
+             (59  . ".\\(?:\\(;\\);?\\)")
+             (60  . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
+             (61  . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
+             (62  . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
+             (63  . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
+             (91  . ".\\(?:\\(|\\)[]|]?\\)")
+             ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
+             (94  . ".\\(?:\\(=\\)=?\\)")
+             (95  . ".\\(?:\\(|_\\|[_]\\)_?\\)")
+             (119 . ".\\(?:\\(ww\\)w?\\)")
+             (123 . ".\\(?:\\(|\\)[|}]?\\)")
+             (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
+             (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
     (dolist (char-regexp alist)
       (set-char-table-range composition-ligature-table (car char-regexp)
-                            `([,(cdr char-regexp) 0 font-shape-gstring]))))
+        `([,(cdr char-regexp) 0 font-shape-gstring]))))
   (set-char-table-parent composition-ligature-table composition-function-table))
 
 ;;; Highlight
@@ -2767,15 +2747,12 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
        modes (dart-ts-mode)
        command "flutter"
        command-args ("debug_adapter")
-       command-cwd dape--flutter-cwd
+       command-cwd dape--flutter-cwd-fn
        :type "dart"
        :request "attach"
-       :cwd dape--flutter-cwd
-       :program dape--flutter-entrypoint
-       :vmServicePort 9104
-       :toolArgs ,(lambda () (vector "-d" (read-string "Device id: ")))
-       )
-    )
+       :cwd dape--flutter-cwd-fn
+       ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
+       :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))))
 
 
   (defun dape-flutter-hotRestart ()
@@ -2816,26 +2793,26 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
   (setq treesit-language-source-alist
-        '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
-          (css . ("https://github.com/tree-sitter/tree-sitter-css"))
-          (elisp . ("https://github.com/Wilfred/tree-sitter-elisp"))
-          (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
-          (html . ("https://github.com/tree-sitter/tree-sitter-html"))
-          (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
-          (protobuf . ("https://github.com/mitchellh/tree-sitter-proto"))
-          (json . ("https://github.com/tree-sitter/tree-sitter-json"))
-          (python . ("https://github.com/tree-sitter/tree-sitter-python"))
-          (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-          (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
+    '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
+       (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+       (elisp . ("https://github.com/Wilfred/tree-sitter-elisp"))
+       (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
+       (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+       (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+       (protobuf . ("https://github.com/mitchellh/tree-sitter-proto"))
+       (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+       (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+       (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+       (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+       (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
-        '((javascript-mode . js-ts-mode)
-          (js-mode . js-ts-mode)
-          (python-mode . python-ts-mode)
-          (js-json-mode . json-ts-mode)
-          (sh-mode . bash-ts-mode)))
+    '((javascript-mode . js-ts-mode)
+       (js-mode . js-ts-mode)
+       (python-mode . python-ts-mode)
+       (js-json-mode . json-ts-mode)
+       (sh-mode . bash-ts-mode)))
   (defun nf/treesit-install-all-languages ()
     "Install all languages specified by `treesit-language-source-alist'."
     (interactive)
