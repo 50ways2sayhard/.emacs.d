@@ -1532,7 +1532,7 @@ When the number of characters in a buffer exceeds this threshold,
     :hook (corfu-mode . corfu-popupinfo-mode)
     :config
     (set-face-attribute 'corfu-popupinfo nil :height 140)
-    (setq corfu-popupinfo-delay '(0.5 . 0.3)))
+    (setq corfu-popupinfo-delay '(0.4 . 0.2)))
 
   (advice-add #'keyboard-quit :before #'corfu-quit)
   (add-to-list 'corfu-auto-commands 'end-of-visual-line)
@@ -2410,6 +2410,11 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode dart-ts-mode))))
 
+(use-package speedrect
+  :elpaca (:repo "jdtsmith/speedrect" :host github)
+  :init
+  (require 'speedrect))
+
 ;;;; Input method
 (use-package rime
   :after-call +my/first-input-hook-fun
@@ -2664,7 +2669,132 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (cl-defmethod eglot-initialization-options ((server eglot-deno))
     "Passes through required deno initialization options"
     (list :enable t
-          :lint t)))
+      :lint t)))
+
+
+(use-package dape
+  :elpaca (:host github :repo "svaante/dape")
+  :config
+  (defun dape--flutter-cwd ()
+    (let ((root (dape--default-cwd)))
+      (cond
+        ((string-match-p "ftf_melos_workspace" root)
+          (concat root "../../app/ft_nn_app/ft_nn_module"))
+        ((file-exists-p (concat root "lib/main.dart"))
+          root)
+        ((file-exists-p (concat root "example/lib/main.dart"))
+          (concat root "example/")))))
+
+  (defun dape--flutter-entrypoint ()
+    (concat (dape--flutter-cwd) "/lib/main.dart"))
+
+  (transient-define-prefix dape-transient ()
+    "Transient for dape."
+    [["Stepping"
+       ("n" "Next" dape-next :transient t)
+       ("i" "Step in" dape-step-in :transient t)
+       ("o" "Step out" dape-step-out :transient t)
+       ("c" "Continue" dape-continue :transient t)
+       ("r" "restart" dape-restart :transient t)]
+      ["Breakpoints"
+        ("bb" "Toggle" dape-breakpoint-toggle :transient t)
+        ("bd" "Remove all" dape-breakpoint-remove-all :transient t)
+        ]
+      ["Quit"
+        ("qq" "Quit" dape-quit :transient nil)
+        ("qk" "Kill" dape-kill :transient nil)]])
+
+  (defhydra dape-hydra/body ()
+    ((:title (pretty-hydra-title "Debug" 'codicon "nf-cod-debug")
+       :color pink :quit-key ("q" "C-g"))
+      ("Stepping"
+        (("n" dape-next "next")
+          ("s" dape-step-in "step in")
+          ("o" dape-step-out "step out")
+          ("c" dape-continue "continue")
+          ("p" dape-pause "pause")
+          ("k" dape-kill "kill")
+          ("r" dape-restart "restart")
+          ("D" dape-disconnect-quit "disconnect"))
+        "Switch"
+        (("m" dape-read-memory "memory")
+          ("t" dape-select-thread "thread")
+          ("w" dape-watch-dwim "watch")
+          ("S" dape-select-stack "stack")
+          ("i" dape-info "info")
+          ("R" dape-repl "repl"))
+        "Breakpoints"
+        (("b" dape-breakpoint-toggle "toggle")
+          ("l" dape-breakpoint-log "log")
+          ("e" dape-breakpoint-expression "expression")
+          ("B" dape-breakpoint-remove-all "clear"))
+        "Debug"
+        (("d" dape "dape")
+          ("Q" dape-quit "quit" :exit t)))))
+
+  (require 'flutter)
+
+  (defun dape--flutter-devices ()
+    (let* ((collection (flutter--devices))
+            (choice (completing-read "Device: " collection)))
+      (cdr (assoc choice collection))))
+
+  (defun dape--flutter-cwd-fn ()
+    (interactive)
+    (let* ((root (dape--default-cwd)))
+      (cond
+        ((file-exists-p (concat root "lib/main.dart"))
+          root)
+        ((file-exists-p (concat root "example/lib/main.dart"))
+          (concat root "example/")))))
+
+
+  (add-to-list 'dape-configs
+    `(flutter-run
+       modes (dart-ts-mode)
+       command "flutter"
+       command-args ("debug_adapter")
+       command-cwd dape--flutter-cwd-fn
+       :type "dart"
+       :request "launch"
+       :cwd dape--flutter-cwd-fn
+       ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
+       :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))
+       ))
+
+  (add-to-list 'dape-configs
+    `(flutter-attach
+       modes (dart-ts-mode)
+       command "flutter"
+       command-args ("debug_adapter")
+       command-cwd dape--flutter-cwd
+       :type "dart"
+       :request "attach"
+       :cwd dape--flutter-cwd
+       :program dape--flutter-entrypoint
+       :vmServicePort 9104
+       :toolArgs ,(lambda () (vector "-d" (read-string "Device id: ")))
+       )
+    )
+
+
+  (defun dape-flutter-hotRestart ()
+    (interactive)
+    (dape-request (dape--live-process) "hotRestart" nil))
+
+  (defun dape-flutter-hotReload ()
+    (interactive)
+    (dape-request (dape--live-process) "hotReload" nil))
+
+
+  (defun dape-flutter-devtools ()
+    (interactive)
+    (with-current-buffer "*dape-repl*"
+      (save-match-data
+        (point-min)
+        (string-match "ws://\\(.*\\)/ws" (buffer-string))
+        (browse-url (url-encode-url (format "http://127.0.0.1:9104?uri=ws://%s/ws" (match-string 1 (buffer-string))))))))
+  )
 
 (use-package breadcrumb
   :elpaca (:host github :repo "joaotavora/breadcrumb")
@@ -2870,55 +3000,79 @@ Install the doc if it's not installed."
   (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart"))
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-                 (cons 'dart-ts-mode (if (executable-find "fvm")
-                                       (add-to-list 'dart-lsp-command "fvm")
-                                     dart-lsp-command))))
+      (cons 'dart-ts-mode (if (executable-find "fvm")
+                            (add-to-list 'dart-lsp-command "fvm")
+                            dart-lsp-command))))
   :config
+  (add-to-list 'project-vc-extra-root-markers "pubspec.yaml")
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-ts-mode :types
-                                                      ((?c "Class"    font-lock-type-face)
-                                                       (?e "Enum" font-lock-type-face)
-                                                       (?E "EnumMember" font-lock-variable-name-face)
-                                                       (?V "Constructor" font-lock-type-face)
-                                                       (?C "Constant"    font-lock-constant-face)
-                                                       (?f "Function"  font-lock-function-name-face)
-                                                       (?m "Method"  font-lock-function-name-face)
-                                                       (?p "Property" font-lock-variable-name-face)
-                                                       (?F "Field"  font-lock-variable-name-face))))))
+                                          ((?c "Class"    font-lock-type-face)
+                                            (?e "Enum" font-lock-type-face)
+                                            (?E "EnumMember" font-lock-variable-name-face)
+                                            (?V "Constructor" font-lock-type-face)
+                                            (?C "Constant"    font-lock-constant-face)
+                                            (?f "Function"  font-lock-function-name-face)
+                                            (?m "Method"  font-lock-function-name-face)
+                                            (?p "Property" font-lock-variable-name-face)
+                                            (?F "Field"  font-lock-variable-name-face))))))
 
 (use-package flutter
   :elpaca (:repo "50ways2sayhard/flutter.el" :host github)
   :after dart-ts-mode
+  :init
   :config
-  (bind
-   dart-ts-mode-map
-   (bind-prefix "C-x ,"
-     "r" #'flutter-run-or-hot-reload
-     "R" #'flutter-run-or-hot-restart
-     "v" #'flutter-open-devtools
-     "Q" #'flutter-quit
-     "p" #'flutter-pub-get
-     "tt" #'flutter-test-at-point
-     "tf" #'flutter-test-current-file
-     "tF" #'flutter-test-all)))
+  (with-eval-after-load 'bind
+    (bind
+      dart-ts-mode-map
+      (bind-prefix "C-x ,"
+        "r" #'flutter-run-or-hot-reload
+        "R" #'flutter-run-or-hot-restart
+        "v" #'flutter-open-devtools
+        "Q" #'flutter-quit
+        "p" #'flutter-pub-get
+        "tt" #'flutter-test-at-point
+        "tf" #'flutter-test-current-file
+        "tF" #'flutter-test-all)))
+
+  (defvar flutter--modeline-device nil)
+
+  (defun flutter--modeline-device-update ()
+    (let* ((devices (flutter--devices))
+            (choice (completing-read "Device: " devices))
+            (device (assoc choice devices)))
+      (when (not (equal device flutter--modeline-device))
+        (setq flutter--modeline-device device))))
+
+  (defun flutter--modeline-format ()
+    (when flutter--modeline-device
+      (propertize (format " [%s] " (car flutter--modeline-device)) 'face 'font-lock-constant-face)))
+
+  (defun flutter-modeline-device-update ()
+    (interactive)
+    (flutter--modeline-device-update)
+    (make-local-variable 'mode-line-misc-info)
+    (add-to-list 'mode-line-misc-info (flutter--modeline-format) t))
+  )
 
 ;;; Terminal integration
 (use-package vterm
+  :disabled
   :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab)
   :bind
   (("C-0" . #'vterm-posframe-toggle)
-   :map vterm-mode-map
-   ("M-v" . #'yank)
-   ("C-x" . #'vterm--self-insert)
-   ("C-s" . #'tab-bar-switch-to-recent-tab)
-   ("s-<escape>" . #'vterm-send-escape))
+    :map vterm-mode-map
+    ("M-v" . #'yank)
+    ("C-x" . #'vterm--self-insert)
+    ("C-s" . #'tab-bar-switch-to-recent-tab)
+    ("s-<escape>" . #'vterm-send-escape))
   :init
   (setq vterm-always-compile-module t)
   (setq vterm-shell "fish")
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-max-scrollback 5000)
   (setq vterm-timer-delay 0.001
-        process-adaptive-read-buffering nil)
+    process-adaptive-read-buffering nil)
   (with-no-warnings
     (defvar vterm-posframe--frame nil)
 
