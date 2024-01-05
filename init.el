@@ -1612,7 +1612,9 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package copilot
   :when +self/enable-copilot
   :after corfu
-  :hook (prog-mode . copilot-mode)
+  :hook ((prog-mode . copilot-mode)
+         (copilot-mode . (lambda ()
+                           (setq-local copilot--indent-warning-printed-p t))))
   :elpaca (:host github :repo "zerolfx/copilot.el"
                  :files ("dist" "*.el"))
   :bind
@@ -1628,6 +1630,9 @@ When the number of characters in a buffer exceeds this threshold,
     (or (not (eq corfu--candidates nil))
         tempel--active ;; diable copilot in tempel
         (not (looking-back "[\x00-\xff]"))))
+
+  (add-to-list 'copilot--indentation-alist
+               '(dart-ts-mode dart-ts-mode-indent-offset))
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
@@ -2050,25 +2055,25 @@ When the number of characters in a buffer exceeds this threshold,
   (ef-themes-select 'ef-trio-light)
   :config
   (setq ef-themes-headings
-    '((0 . (bold 1))
-       (1 . (bold 1))
-       (2 . (rainbow bold 1))
-       (3 . (rainbow bold 1))
-       (4 . (rainbow bold 1))
-       (t . (rainbow bold 1))))
+        '((0 . (bold 1))
+          (1 . (bold 1))
+          (2 . (rainbow bold 1))
+          (3 . (rainbow bold 1))
+          (4 . (rainbow bold 1))
+          (t . (rainbow bold 1))))
   (setq ef-themes-region '(intense no-extend neutral))
   ;; Disable all other themes to avoid awkward blending:
   ;; (mapc #'disable-theme custom-enabled-themes)
   (defun +my-custom-org-todo-faces()
     (ef-themes-with-colors
       (setq org-todo-keyword-faces
-        `(("TODO" . (:foreground ,red-cooler :weight bold))
-           ("INPROCESS"  . ,yellow-cooler)
-           ("PROJ"  . ,cyan-cooler)
-           ("WAITING" . ,green-faint)
-           ("DONE" . (:foreground ,fg-alt :strike-through t))
-           ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
-        )))
+            `(("TODO" . (:foreground ,red-cooler :weight bold))
+              ("INPROCESS"  . ,yellow-cooler)
+              ("PROJ"  . ,cyan-cooler)
+              ("WAITING" . ,green-faint)
+              ("DONE" . (:foreground ,fg-alt :strike-through t))
+              ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
+            )))
   (with-eval-after-load 'org
     (+my-custom-org-todo-faces))
   (with-eval-after-load 'kind-icon
@@ -2079,11 +2084,11 @@ When the number of characters in a buffer exceeds this threshold,
 
 (when (display-graphic-p)
   (custom-set-faces
-    ;; custom-set-faces was added by Custom.
-    ;; If you edit it by hand, you could mess it up, so be careful.
-    ;; Your init file should contain only one such instance.
-    ;; If there is more than one, they won't work right.
-    '(org-table ((t (:family "Maple Mono SC NF")))))
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(org-table ((t (:family "Maple Mono SC NF")))))
   (advice-add #'org-string-width :override #'org--string-width-1)
 
   (set-face-attribute 'default nil :font "Cascadia Code" :height 150)
@@ -2093,44 +2098,44 @@ When the number of characters in a buffer exceeds this threshold,
   :elpaca nil
   :init (defvar composition-ligature-table (make-char-table nil))
   :hook (((prog-mode
-            conf-mode nxml-mode markdown-mode help-mode
-            shell-mode eshell-mode term-mode vterm-mode)
-           . (lambda () (setq-local composition-function-table composition-ligature-table))))
+           conf-mode nxml-mode markdown-mode help-mode
+           shell-mode eshell-mode term-mode vterm-mode)
+          . (lambda () (setq-local composition-function-table composition-ligature-table))))
   :config
   ;; support ligatures, some toned down to prevent hang
   (let ((alist
-          '((33  . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
-             (35  . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
-             (36  . ".\\(?:\\(>\\)>?\\)")
-             (37  . ".\\(?:\\(%\\)%?\\)")
-             (38  . ".\\(?:\\(&\\)&?\\)")
-             (42  . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
-             ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
-             (43  . ".\\(?:\\([>]\\)>?\\)")
-             ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
-             (45  . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
-             ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
-             (46  . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
-             (47  . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
-             ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
-             (48  . ".\\(?:x[a-zA-Z]\\)")
-             (58  . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
-             (59  . ".\\(?:\\(;\\);?\\)")
-             (60  . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
-             (61  . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
-             (62  . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
-             (63  . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
-             (91  . ".\\(?:\\(|\\)[]|]?\\)")
-             ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
-             (94  . ".\\(?:\\(=\\)=?\\)")
-             (95  . ".\\(?:\\(|_\\|[_]\\)_?\\)")
-             (119 . ".\\(?:\\(ww\\)w?\\)")
-             (123 . ".\\(?:\\(|\\)[|}]?\\)")
-             (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
-             (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
+         '((33  . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
+           (35  . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
+           (36  . ".\\(?:\\(>\\)>?\\)")
+           (37  . ".\\(?:\\(%\\)%?\\)")
+           (38  . ".\\(?:\\(&\\)&?\\)")
+           (42  . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
+           ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
+           (43  . ".\\(?:\\([>]\\)>?\\)")
+           ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
+           (45  . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
+           ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
+           (46  . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
+           (47  . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
+           ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
+           (48  . ".\\(?:x[a-zA-Z]\\)")
+           (58  . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
+           (59  . ".\\(?:\\(;\\);?\\)")
+           (60  . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
+           (61  . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
+           (62  . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
+           (63  . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
+           (91  . ".\\(?:\\(|\\)[]|]?\\)")
+           ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
+           (94  . ".\\(?:\\(=\\)=?\\)")
+           (95  . ".\\(?:\\(|_\\|[_]\\)_?\\)")
+           (119 . ".\\(?:\\(ww\\)w?\\)")
+           (123 . ".\\(?:\\(|\\)[|}]?\\)")
+           (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
+           (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
     (dolist (char-regexp alist)
       (set-char-table-range composition-ligature-table (car char-regexp)
-        `([,(cdr char-regexp) 0 font-shape-gstring]))))
+                            `([,(cdr char-regexp) 0 font-shape-gstring]))))
   (set-char-table-parent composition-ligature-table composition-function-table))
 
 ;;; Highlight
@@ -2593,6 +2598,47 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (gcmh-set-high-threshold)
         (setq +lsp--optimization-init-p t))))
 
+  (defun eglot-booster-plain-command (com)
+    "Test if command COM is a plain eglot server command."
+    (and (consp com)
+         (not (integerp (cadr com)))
+         (not (seq-intersection '(:initializationOptions :autoport) com))))
+
+  (defun eglot-booster ()
+    "Boost plain eglot server programs with emacs-lsp-booster.
+The emacs-lsp-booster program must be compiled and available on
+variable `exec-path'.  Only local stdin/out based lsp servers can
+be boosted."
+    (interactive)
+    (unless (executable-find "emacs-lsp-booster")
+      (user-error "The emacs-lsp-booster program is not installed"))
+    (if (get 'eglot-server-programs 'lsp-booster-p)
+        (message "eglot-server-programs already boosted.")
+      (let ((cnt 0)
+	          (orig-read (symbol-function 'jsonrpc--json-read)))
+        (dolist (entry eglot-server-programs)
+	        (cond
+	         ((functionp (cdr entry))
+	          (cl-incf cnt)
+	          (let ((fun (cdr entry)))
+	            (setcdr entry (lambda (&rest r) ; wrap function
+			                        (let ((res (apply fun r)))
+			                          (if (eglot-booster-plain-command res)
+				                            (cons "emacs-lsp-booster" res)
+				                          res))))))
+	         ((eglot-booster-plain-command (cdr entry))
+	          (cl-incf cnt)
+	          (setcdr entry (cons "emacs-lsp-booster" (cdr entry))))))
+        (defalias 'jsonrpc--json-read
+	        (lambda ()
+	          (or (and (= (following-char) ?#)
+		                 (let ((bytecode (read (current-buffer))))
+		                   (when (byte-code-function-p bytecode)
+		                     (funcall bytecode))))
+	              (funcall orig-read))))
+        (message "Boosted %d eglot-server-programs" cnt))
+      (put 'eglot-server-programs 'lsp-booster-p t)))
+
   :config
   (setq
    eglot-send-changes-idle-time 0
@@ -2606,6 +2652,9 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+
+  (when (executable-find "emacs-lsp-booster")
+    (add-hook 'eglot-managed-mode-hook #'eglot-booster))
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
@@ -2649,7 +2698,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (cl-defmethod eglot-initialization-options ((server eglot-deno))
     "Passes through required deno initialization options"
     (list :enable t
-      :lint t)))
+          :lint t)))
 
 
 (use-package dape
@@ -2658,12 +2707,12 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
       (cond
-        ((string-match-p "ftf_melos_workspace" root)
-          (concat root "../../app/ft_nn_app/ft_nn_module"))
-        ((file-exists-p (concat root "lib/main.dart"))
-          root)
-        ((file-exists-p (concat root "example/lib/main.dart"))
-          (concat root "example/")))))
+       ((string-match-p "ftf_melos_workspace" root)
+        (concat root "../../app/ft_nn_app/ft_nn_module"))
+       ((file-exists-p (concat root "lib/main.dart"))
+        root)
+       ((file-exists-p (concat root "example/lib/main.dart"))
+        (concat root "example/")))))
 
   (defun dape--flutter-entrypoint ()
     (concat (dape--flutter-cwd) "/lib/main.dart"))
@@ -2671,88 +2720,88 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (transient-define-prefix dape-transient ()
     "Transient for dape."
     [["Stepping"
-       ("n" "Next" dape-next :transient t)
-       ("i" "Step in" dape-step-in :transient t)
-       ("o" "Step out" dape-step-out :transient t)
-       ("c" "Continue" dape-continue :transient t)
-       ("r" "restart" dape-restart :transient t)]
-      ["Breakpoints"
-        ("bb" "Toggle" dape-breakpoint-toggle :transient t)
-        ("bd" "Remove all" dape-breakpoint-remove-all :transient t)
-        ]
-      ["Quit"
-        ("qq" "Quit" dape-quit :transient nil)
-        ("qk" "Kill" dape-kill :transient nil)]])
+      ("n" "Next" dape-next :transient t)
+      ("i" "Step in" dape-step-in :transient t)
+      ("o" "Step out" dape-step-out :transient t)
+      ("c" "Continue" dape-continue :transient t)
+      ("r" "restart" dape-restart :transient t)]
+     ["Breakpoints"
+      ("bb" "Toggle" dape-breakpoint-toggle :transient t)
+      ("bd" "Remove all" dape-breakpoint-remove-all :transient t)
+      ]
+     ["Quit"
+      ("qq" "Quit" dape-quit :transient nil)
+      ("qk" "Kill" dape-kill :transient nil)]])
 
   (defhydra dape-hydra/body ()
     ((:title (pretty-hydra-title "Debug" 'codicon "nf-cod-debug")
-       :color pink :quit-key ("q" "C-g"))
-      ("Stepping"
-        (("n" dape-next "next")
-          ("s" dape-step-in "step in")
-          ("o" dape-step-out "step out")
-          ("c" dape-continue "continue")
-          ("p" dape-pause "pause")
-          ("k" dape-kill "kill")
-          ("r" dape-restart "restart")
-          ("D" dape-disconnect-quit "disconnect"))
-        "Switch"
-        (("m" dape-read-memory "memory")
-          ("t" dape-select-thread "thread")
-          ("w" dape-watch-dwim "watch")
-          ("S" dape-select-stack "stack")
-          ("i" dape-info "info")
-          ("R" dape-repl "repl"))
-        "Breakpoints"
-        (("b" dape-breakpoint-toggle "toggle")
-          ("l" dape-breakpoint-log "log")
-          ("e" dape-breakpoint-expression "expression")
-          ("B" dape-breakpoint-remove-all "clear"))
-        "Debug"
-        (("d" dape "dape")
-          ("Q" dape-quit "quit" :exit t)))))
+             :color pink :quit-key ("q" "C-g"))
+     ("Stepping"
+      (("n" dape-next "next")
+       ("s" dape-step-in "step in")
+       ("o" dape-step-out "step out")
+       ("c" dape-continue "continue")
+       ("p" dape-pause "pause")
+       ("k" dape-kill "kill")
+       ("r" dape-restart "restart")
+       ("D" dape-disconnect-quit "disconnect"))
+      "Switch"
+      (("m" dape-read-memory "memory")
+       ("t" dape-select-thread "thread")
+       ("w" dape-watch-dwim "watch")
+       ("S" dape-select-stack "stack")
+       ("i" dape-info "info")
+       ("R" dape-repl "repl"))
+      "Breakpoints"
+      (("b" dape-breakpoint-toggle "toggle")
+       ("l" dape-breakpoint-log "log")
+       ("e" dape-breakpoint-expression "expression")
+       ("B" dape-breakpoint-remove-all "clear"))
+      "Debug"
+      (("d" dape "dape")
+       ("Q" dape-quit "quit" :exit t)))))
 
   (require 'flutter)
 
   (defun dape--flutter-devices ()
     (let* ((collection (flutter--devices))
-            (choice (completing-read "Device: " collection)))
+           (choice (completing-read "Device: " collection)))
       (cdr (assoc choice collection))))
 
   (defun dape--flutter-cwd-fn ()
     (interactive)
     (let* ((root (dape--default-cwd)))
       (cond
-        ((file-exists-p (concat root "lib/main.dart"))
-          root)
-        ((file-exists-p (concat root "example/lib/main.dart"))
-          (concat root "example/")))))
+       ((file-exists-p (concat root "lib/main.dart"))
+        root)
+       ((file-exists-p (concat root "example/lib/main.dart"))
+        (concat root "example/")))))
 
 
   (add-to-list 'dape-configs
-    `(flutter-run
-       modes (dart-ts-mode)
-       command "flutter"
-       command-args ("debug_adapter")
-       command-cwd dape--flutter-cwd-fn
-       :type "dart"
-       :request "launch"
-       :cwd dape--flutter-cwd-fn
-       ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
-       :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))
-       ))
+               `(flutter-run
+                 modes (dart-ts-mode)
+                 command "flutter"
+                 command-args ("debug_adapter")
+                 command-cwd dape--flutter-cwd-fn
+                 :type "dart"
+                 :request "launch"
+                 :cwd dape--flutter-cwd-fn
+                 ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
+                 :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))
+                 ))
 
   (add-to-list 'dape-configs
-    `(flutter-attach
-       modes (dart-ts-mode)
-       command "flutter"
-       command-args ("debug_adapter")
-       command-cwd dape--flutter-cwd-fn
-       :type "dart"
-       :request "attach"
-       :cwd dape--flutter-cwd-fn
-       ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
-       :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))))
+               `(flutter-attach
+                 modes (dart-ts-mode)
+                 command "flutter"
+                 command-args ("debug_adapter")
+                 command-cwd dape--flutter-cwd-fn
+                 :type "dart"
+                 :request "attach"
+                 :cwd dape--flutter-cwd-fn
+                 ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
+                 :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))))
 
 
   (defun dape-flutter-hotRestart ()
@@ -2793,26 +2842,26 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
   (setq treesit-language-source-alist
-    '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
-       (css . ("https://github.com/tree-sitter/tree-sitter-css"))
-       (elisp . ("https://github.com/Wilfred/tree-sitter-elisp"))
-       (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
-       (html . ("https://github.com/tree-sitter/tree-sitter-html"))
-       (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
-       (protobuf . ("https://github.com/mitchellh/tree-sitter-proto"))
-       (json . ("https://github.com/tree-sitter/tree-sitter-json"))
-       (python . ("https://github.com/tree-sitter/tree-sitter-python"))
-       (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-       (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-       (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
+        '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
+          (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+          (elisp . ("https://github.com/Wilfred/tree-sitter-elisp"))
+          (dart . ("https://github.com/UserNobody14/tree-sitter-dart"))
+          (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+          (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+          (protobuf . ("https://github.com/mitchellh/tree-sitter-proto"))
+          (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+          (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+          (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+          (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
-    '((javascript-mode . js-ts-mode)
-       (js-mode . js-ts-mode)
-       (python-mode . python-ts-mode)
-       (js-json-mode . json-ts-mode)
-       (sh-mode . bash-ts-mode)))
+        '((javascript-mode . js-ts-mode)
+          (js-mode . js-ts-mode)
+          (python-mode . python-ts-mode)
+          (js-json-mode . json-ts-mode)
+          (sh-mode . bash-ts-mode)))
   (defun nf/treesit-install-all-languages ()
     "Install all languages specified by `treesit-language-source-alist'."
     (interactive)
@@ -2977,22 +3026,22 @@ Install the doc if it's not installed."
   (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart"))
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-      (cons 'dart-ts-mode (if (executable-find "fvm")
-                            (add-to-list 'dart-lsp-command "fvm")
-                            dart-lsp-command))))
+                 (cons 'dart-ts-mode (if (executable-find "fvm")
+                                         (add-to-list 'dart-lsp-command "fvm")
+                                       dart-lsp-command))))
   :config
   (add-to-list 'project-vc-extra-root-markers "pubspec.yaml")
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-ts-mode :types
-                                          ((?c "Class"    font-lock-type-face)
-                                            (?e "Enum" font-lock-type-face)
-                                            (?E "EnumMember" font-lock-variable-name-face)
-                                            (?V "Constructor" font-lock-type-face)
-                                            (?C "Constant"    font-lock-constant-face)
-                                            (?f "Function"  font-lock-function-name-face)
-                                            (?m "Method"  font-lock-function-name-face)
-                                            (?p "Property" font-lock-variable-name-face)
-                                            (?F "Field"  font-lock-variable-name-face))))))
+                                                      ((?c "Class"    font-lock-type-face)
+                                                       (?e "Enum" font-lock-type-face)
+                                                       (?E "EnumMember" font-lock-variable-name-face)
+                                                       (?V "Constructor" font-lock-type-face)
+                                                       (?C "Constant"    font-lock-constant-face)
+                                                       (?f "Function"  font-lock-function-name-face)
+                                                       (?m "Method"  font-lock-function-name-face)
+                                                       (?p "Property" font-lock-variable-name-face)
+                                                       (?F "Field"  font-lock-variable-name-face))))))
 
 (use-package flutter
   :elpaca (:repo "50ways2sayhard/flutter.el" :host github)
@@ -3001,23 +3050,23 @@ Install the doc if it's not installed."
   :config
   (with-eval-after-load 'bind
     (bind
-      dart-ts-mode-map
-      (bind-prefix "C-x ,"
-        "r" #'flutter-run-or-hot-reload
-        "R" #'flutter-run-or-hot-restart
-        "v" #'flutter-open-devtools
-        "Q" #'flutter-quit
-        "p" #'flutter-pub-get
-        "tt" #'flutter-test-at-point
-        "tf" #'flutter-test-current-file
-        "tF" #'flutter-test-all)))
+     dart-ts-mode-map
+     (bind-prefix "C-x ,"
+       "r" #'flutter-run-or-hot-reload
+       "R" #'flutter-run-or-hot-restart
+       "v" #'flutter-open-devtools
+       "Q" #'flutter-quit
+       "p" #'flutter-pub-get
+       "tt" #'flutter-test-at-point
+       "tf" #'flutter-test-current-file
+       "tF" #'flutter-test-all)))
 
   (defvar flutter--modeline-device nil)
 
   (defun flutter--modeline-device-update ()
     (let* ((devices (flutter--devices))
-            (choice (completing-read "Device: " devices))
-            (device (assoc choice devices)))
+           (choice (completing-read "Device: " devices))
+           (device (assoc choice devices)))
       (when (not (equal device flutter--modeline-device))
         (setq flutter--modeline-device device))))
 
@@ -3038,18 +3087,18 @@ Install the doc if it's not installed."
   :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab)
   :bind
   (("C-0" . #'vterm-posframe-toggle)
-    :map vterm-mode-map
-    ("M-v" . #'yank)
-    ("C-x" . #'vterm--self-insert)
-    ("C-s" . #'tab-bar-switch-to-recent-tab)
-    ("s-<escape>" . #'vterm-send-escape))
+   :map vterm-mode-map
+   ("M-v" . #'yank)
+   ("C-x" . #'vterm--self-insert)
+   ("C-s" . #'tab-bar-switch-to-recent-tab)
+   ("s-<escape>" . #'vterm-send-escape))
   :init
   (setq vterm-always-compile-module t)
   (setq vterm-shell "fish")
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-max-scrollback 5000)
   (setq vterm-timer-delay 0.001
-    process-adaptive-read-buffering nil)
+        process-adaptive-read-buffering nil)
   (with-no-warnings
     (defvar vterm-posframe--frame nil)
 
