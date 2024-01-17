@@ -1842,14 +1842,15 @@ Just put this function in `hippie-expand-try-functions-list'."
            (localdir (file-local-name (expand-file-name dir)))
            (ignores  (string-join
                       (mapcar (lambda (ignore)
-                                (concat "-E " ignore)) project-vc-ignores)
+                                (concat "-E " ignore))
+                              project-vc-ignores)
                       " "))
            (command (format "fd -H -t f -0 . %s %s" ignores localdir)))
       (project--remote-file-names
        (sort (split-string (shell-command-to-string command) "\0" t)
              #'string<))))
 
-  (setq project-vc-ignores '(".dart-tools" ".idea" ".DS_Store" ".git"))
+  (setq project-vc-ignores '(".dart-tool" ".idea" ".DS_Store" ".git" "build"))
 
   (defvar project--ignore-list
     '("~/fvm"))
@@ -1860,7 +1861,7 @@ Just put this function in `hippie-expand-try-functions-list'."
         (when (string-prefix-p (file-truename ignore) (file-truename path))
           (throw 'found t)))))
 
-  (cl-defmethod project-files ((project (head local)) &optional dirs)
+  (cl-defmethod project-files ((project (head transient)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
     (mapcan #'my/project-files-in-directory
             (or dirs (list (project-root project)))))
