@@ -69,11 +69,10 @@
  (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
  '(xref tramp tramp-sh flymake simple diff-mode smerge-mode python css-mode custom
         server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
-        lisp-mode treesit imenu eldoc))
+        lisp-mode treesit imenu eldoc transient hippie-exp))
 
 ;; Block until current queue processed.
 (elpaca-wait)
-
 
 (use-package benchmark-init
   :demand t
@@ -223,10 +222,10 @@ REST and STATE."
   :hook (+my/first-input . dirvish-override-dired-mode)
   :bind
   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-        ("?"   . dirvish-menu-all-cmds)
+        ("?"   . dirvish-dispatch)
         ("a"   . dirvish-quick-access)
         ("f"   . dirvish-file-info-menu)
-        ("y"   . dirvish-yank-menu)
+        ("c"   . dirvish-yank-menu)
         ("N"   . dirvish-narrow)
         ("^"   . dirvish-history-last)
         ("H"   . dirvish-history-jump) ; remapped `describe-mode'
@@ -587,7 +586,7 @@ It will split otherwise."
                                  (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
-  :hook ((prog-mode markdown-mode org-mode) . puni-mode)
+  :hook ((emacs-lisp-mode markdown-mode org-mode) . puni-mode)
   :bind
   (:map puni-mode-map
         ("DEL" . puni-backward-delete-char)
@@ -601,6 +600,49 @@ It will split otherwise."
   :init
   :config
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
+
+(use-package fingertip
+  :elpaca (:repo "manateelazycat/fingertip" :host github)
+  :hook ((dart-ts-mode) . fingertip-mode)
+  :config
+  ;; (define-key fingertip-mode-map (kbd "(") 'fingertip-open-round)
+  ;; (define-key fingertip-mode-map (kbd "[") 'fingertip-open-bracket)
+  ;; (define-key fingertip-mode-map (kbd "{") 'fingertip-open-curly)
+  ;; (define-key fingertip-mode-map (kbd ")") 'fingertip-close-round)
+  ;; (define-key fingertip-mode-map (kbd "]") 'fingertip-close-bracket)
+  ;; (define-key fingertip-mode-map (kbd "}") 'fingertip-close-curly)
+  ;; (define-key fingertip-mode-map (kbd "=") 'fingertip-equal)
+
+  ;; (define-key fingertip-mode-map (kbd "（") 'fingertip-open-chinese-round)
+  ;; (define-key fingertip-mode-map (kbd "「") 'fingertip-open-chinese-bracket)
+  ;; (define-key fingertip-mode-map (kbd "【") 'fingertip-open-chinese-curly)
+  ;; (define-key fingertip-mode-map (kbd "）") 'fingertip-close-chinese-round)
+  ;; (define-key fingertip-mode-map (kbd "」") 'fingertip-close-chinese-bracket)
+  ;; (define-key fingertip-mode-map (kbd "】") 'fingertip-close-chinese-curly)
+
+  (define-key fingertip-mode-map (kbd "%") 'fingertip-match-paren)
+  (define-key fingertip-mode-map (kbd "\"") 'fingertip-double-quote)
+  (define-key fingertip-mode-map (kbd "'") 'fingertip-single-quote)
+
+  ;; (define-key fingertip-mode-map (kbd "SPC") 'fingertip-space)
+  ;; (define-key fingertip-mode-map (kbd "RET") 'fingertip-newline)
+
+  (define-key fingertip-mode-map (kbd "M-o") 'fingertip-backward-delete)
+  (define-key fingertip-mode-map (kbd "C-d") 'fingertip-forward-delete)
+  (define-key fingertip-mode-map (kbd "C-k") 'fingertip-kill)
+
+  (define-key fingertip-mode-map (kbd "M-\"") 'fingertip-wrap-double-quote)
+  (define-key fingertip-mode-map (kbd "M-'") 'fingertip-wrap-single-quote)
+  (define-key fingertip-mode-map (kbd "M-[") 'fingertip-wrap-bracket)
+  (define-key fingertip-mode-map (kbd "M-{") 'fingertip-wrap-curly)
+  (define-key fingertip-mode-map (kbd "M-(") 'fingertip-wrap-round)
+  (define-key fingertip-mode-map (kbd "M-)") 'fingertip-unwrap)
+
+  (define-key fingertip-mode-map (kbd "M-p") 'fingertip-jump-right)
+  (define-key fingertip-mode-map (kbd "M-n") 'fingertip-jump-left)
+  (define-key fingertip-mode-map (kbd "M-:") 'fingertip-jump-out-pair-and-newline)
+
+  (define-key fingertip-mode-map (kbd "C-j") 'fingertip-jump-up))
 
 (use-package paren
   :elpaca nil
@@ -1548,16 +1590,33 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package tempel
   :after-call +my/first-input-hook-fun
   :after corfu
-  :bind (("C-u" . my/tempel-expand-or-next)
-         (:map tempel-map
+  :bind ((:map tempel-map
                ("C-i" . tempel-next)))
   :config
+  (defun tempel-hippie-try-expand (old)
+    "Integrate with hippie expand.
+Just put this function in `hippie-expand-try-functions-list'."
+    (if (not old)
+        (tempel-expand t)
+      (undo 1)))
+  (add-to-list 'hippie-expand-try-functions-list #'tempel-hippie-try-expand t)
   (defun my/tempel-expand-or-next ()
     "Try tempel expand, if failed, try copilot expand."
     (interactive)
     (if tempel--active
         (tempel-next 1)
       (call-interactively #'tempel-expand))))
+
+(use-package hippie-exp
+  :elpaca nil
+  :bind
+  (("M-\\" . hippie-expand))
+  :custom (hippie-expand-try-functions-list
+           '(try-complete-file-name-partially
+             try-complete-file-name
+             try-expand-dabbrev
+             try-expand-dabbrev-all-buffers
+             try-expand-dabbrev-from-kill)))
 
 (use-package yasnippet
   :diminish yas-minor-mode
@@ -1615,7 +1674,7 @@ When the number of characters in a buffer exceeds this threshold,
   :hook ((prog-mode . copilot-mode)
          (copilot-mode . (lambda ()
                            (setq-local copilot--indent-warning-printed-p t))))
-  :elpaca (:host github :repo "zerolfx/copilot.el"
+  :elpaca (:host github :repo "copilot-emacs/copilot.el"
                  :files ("dist" "*.el"))
   :bind
   ((:map copilot-completion-map
@@ -1633,6 +1692,8 @@ When the number of characters in a buffer exceeds this threshold,
 
   (add-to-list 'copilot--indentation-alist
                '(dart-ts-mode dart-ts-mode-indent-offset))
+
+  (setq warning-minimum-level :error)
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
@@ -1837,20 +1898,6 @@ When the number of characters in a buffer exceeds this threshold,
                                       "*Buffer List*"
                                       "*Ibuffer*"
                                       "*esh command on file*")))
-
-(defun transpose-windows ()
-  "Transpose two windows.  If more or less than two windows are visible, error."
-  (interactive)
-  (unless (= 2 (count-windows))
-    (error "There are not 2 windows."))
-  (let* ((windows (window-list))
-         (w1 (car windows))
-         (w2 (nth 1 windows))
-         (w1b (window-buffer w1))
-         (w2b (window-buffer w2)))
-    (set-window-buffer w1 w2b)
-    (set-window-buffer w2 w1b)
-    (other-window 1)))
 
 (use-package tab-bar
   :elpaca nil
@@ -2597,48 +2644,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (setq-default gcmh-high-cons-threshold (* 2 +lsp--default-gcmh-high-cons-threshold))
         (gcmh-set-high-threshold)
         (setq +lsp--optimization-init-p t))))
-
-  (defun eglot-booster-plain-command (com)
-    "Test if command COM is a plain eglot server command."
-    (and (consp com)
-         (not (integerp (cadr com)))
-         (not (seq-intersection '(:initializationOptions :autoport) com))))
-
-  (defun eglot-booster ()
-    "Boost plain eglot server programs with emacs-lsp-booster.
-The emacs-lsp-booster program must be compiled and available on
-variable `exec-path'.  Only local stdin/out based lsp servers can
-be boosted."
-    (interactive)
-    (unless (executable-find "emacs-lsp-booster")
-      (user-error "The emacs-lsp-booster program is not installed"))
-    (if (get 'eglot-server-programs 'lsp-booster-p)
-        (message "eglot-server-programs already boosted.")
-      (let ((cnt 0)
-	          (orig-read (symbol-function 'jsonrpc--json-read)))
-        (dolist (entry eglot-server-programs)
-	        (cond
-	         ((functionp (cdr entry))
-	          (cl-incf cnt)
-	          (let ((fun (cdr entry)))
-	            (setcdr entry (lambda (&rest r) ; wrap function
-			                        (let ((res (apply fun r)))
-			                          (if (eglot-booster-plain-command res)
-				                            (cons "emacs-lsp-booster" res)
-				                          res))))))
-	         ((eglot-booster-plain-command (cdr entry))
-	          (cl-incf cnt)
-	          (setcdr entry (cons "emacs-lsp-booster" (cdr entry))))))
-        (defalias 'jsonrpc--json-read
-	        (lambda ()
-	          (or (and (= (following-char) ?#)
-		                 (let ((bytecode (read (current-buffer))))
-		                   (when (byte-code-function-p bytecode)
-		                     (funcall bytecode))))
-	              (funcall orig-read))))
-        (message "Boosted %d eglot-server-programs" cnt))
-      (put 'eglot-server-programs 'lsp-booster-p t)))
-
   :config
   (setq
    eglot-send-changes-idle-time 0
@@ -2646,15 +2651,11 @@ be boosted."
    eglot-extend-to-xref t
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
-   eglot-events-buffer-size 0
    eglot-report-progress nil)
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-
-  (when (executable-find "emacs-lsp-booster")
-    (add-hook 'eglot-managed-mode-hook #'eglot-booster))
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
@@ -2669,21 +2670,21 @@ be boosted."
   (defun +eglot-lookup-documentation (_identifier)
     "Request documentation for the thing at point."
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol)))
-                    (if blurb
-                        (with-current-buffer
-                            (or (and (buffer-live-p +eglot--help-buffer)
-                                     +eglot--help-buffer)
-                                (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-                          (with-help-window (current-buffer)
-                            (rename-buffer (format "*eglot-help for %s*" hint))
-                            (with-current-buffer standard-output (insert blurb))
-                            (setq-local nobreak-char-display nil)))
-                      (display-local-help))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol)))
+        (if blurb
+            (with-current-buffer
+                (or (and (buffer-live-p +eglot--help-buffer)
+                         +eglot--help-buffer)
+                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
+              (with-help-window (current-buffer)
+                (rename-buffer (format "*eglot-help for %s*" hint))
+                (with-current-buffer standard-output (insert blurb))
+                (setq-local nobreak-char-display nil)))
+          (display-local-help))))
     'deferred)
 
   (defun +eglot-help-at-point()
@@ -2698,11 +2699,217 @@ be boosted."
   (cl-defmethod eglot-initialization-options ((server eglot-deno))
     "Passes through required deno initialization options"
     (list :enable t
-          :lint t)))
+          :lint t))
 
+  (defun old-eglot-completion-at-point ()
+    "Eglot's `completion-at-point' function."
+    ;; Commit logs for this function help understand what's going on.
+    (when-let (completion-capability (eglot--server-capable :completionProvider))
+      (let* ((server (eglot--current-server-or-lose))
+             (sort-completions
+              (lambda (completions)
+                (cl-sort completions
+                         #'string-lessp
+                         :key (lambda (c)
+                                (plist-get
+                                 (get-text-property 0 'eglot--lsp-item c)
+                                 :sortText)))))
+             (metadata `(metadata (category . eglot)
+                                  (display-sort-function . ,sort-completions)))
+             resp items (cached-proxies :none)
+             (proxies
+              (lambda ()
+                (if (listp cached-proxies) cached-proxies
+                  (setq resp
+                        (jsonrpc-request server
+                                         :textDocument/completion
+                                         (eglot--CompletionParams)
+                                         :deferred :textDocument/completion
+                                         :cancel-on-input t))
+                  (setq items (append
+                               (if (vectorp resp) resp (plist-get resp :items))
+                               nil))
+                  (setq cached-proxies
+                        (mapcar
+                         (jsonrpc-lambda
+                             (&rest item &key label insertText insertTextFormat
+                                    textEdit &allow-other-keys)
+                           (let ((proxy
+                                  ;; Snippet or textEdit, it's safe to
+                                  ;; display/insert the label since
+                                  ;; it'll be adjusted.  If no usable
+                                  ;; insertText at all, label is best,
+                                  ;; too.
+                                  (cond ((or (eql insertTextFormat 2)
+                                             textEdit
+                                             (null insertText)
+                                             (string-empty-p insertText))
+                                         (string-trim-left label))
+                                        (t insertText))))
+                             (unless (zerop (length proxy))
+                               (put-text-property 0 1 'eglot--lsp-item item proxy))
+                             proxy))
+                         items)))))
+             (resolved (make-hash-table))
+             (resolve-maybe
+              ;; Maybe completion/resolve JSON object `lsp-comp' into
+              ;; another JSON object, if at all possible.  Otherwise,
+              ;; just return lsp-comp.
+              (lambda (lsp-comp)
+                (or (gethash lsp-comp resolved)
+                    (setf (gethash lsp-comp resolved)
+                          (if (and (eglot--server-capable :completionProvider
+                                                          :resolveProvider)
+                                   (plist-get lsp-comp :data))
+                              (jsonrpc-request server :completionItem/resolve
+                                               lsp-comp :cancel-on-input t)
+                            lsp-comp)))))
+             (bounds (bounds-of-thing-at-point 'symbol)))
+        (list
+         (or (car bounds) (point))
+         (or (cdr bounds) (point))
+         (lambda (probe pred action)
+           (cond
+            ((eq action 'metadata) metadata)               ; metadata
+            ((eq action 'lambda)                           ; test-completion
+             (test-completion probe (funcall proxies)))
+            ((eq (car-safe action) 'boundaries) nil)       ; boundaries
+            ((null action)                                 ; try-completion
+             (try-completion probe (funcall proxies)))
+            ((eq action t)                                 ; all-completions
+             (all-completions
+              ""
+              (funcall proxies)
+              (lambda (proxy)
+                (let* ((item (get-text-property 0 'eglot--lsp-item proxy))
+                       (filterText (plist-get item :filterText)))
+                  (and (or (null pred) (funcall pred proxy))
+                       (string-prefix-p
+                        probe (or filterText proxy) completion-ignore-case))))))))
+         :annotation-function
+         (lambda (proxy)
+           (eglot--dbind ((CompletionItem) detail kind)
+               (get-text-property 0 'eglot--lsp-item proxy)
+             (let* ((detail (and (stringp detail)
+                                 (not (string= detail ""))
+                                 detail))
+                    (annotation
+                     (or detail
+                         (cdr (assoc kind eglot--kind-names)))))
+               (when annotation
+                 (concat " "
+                         (propertize annotation
+                                     'face 'font-lock-function-name-face))))))
+         :company-kind
+         ;; Associate each lsp-item with a lsp-kind symbol.
+         (lambda (proxy)
+           (when-let* ((lsp-item (get-text-property 0 'eglot--lsp-item proxy))
+                       (kind (alist-get (plist-get lsp-item :kind)
+                                        eglot--kind-names)))
+             (pcase kind
+               ("EnumMember" 'enum-member)
+               ("TypeParameter" 'type-parameter)
+               (_ (intern (downcase kind))))))
+         :company-deprecated
+         (lambda (proxy)
+           (when-let ((lsp-item (get-text-property 0 'eglot--lsp-item proxy)))
+             (or (seq-contains-p (plist-get lsp-item :tags)
+                                 1)
+                 (eq t (plist-get lsp-item :deprecated)))))
+         :company-docsig
+         ;; FIXME: autoImportText is specific to the pyright language server
+         (lambda (proxy)
+           (when-let* ((lsp-comp (get-text-property 0 'eglot--lsp-item proxy))
+                       (data (plist-get (funcall resolve-maybe lsp-comp) :data))
+                       (import-text (plist-get data :autoImportText)))
+             import-text))
+         :company-doc-buffer
+         (lambda (proxy)
+           (let* ((documentation
+                   (let ((lsp-comp (get-text-property 0 'eglot--lsp-item proxy)))
+                     (plist-get (funcall resolve-maybe lsp-comp) :documentation)))
+                  (formatted (and documentation
+                                  (eglot--format-markup documentation))))
+             (when formatted
+               (with-current-buffer (get-buffer-create " *eglot doc*")
+                 (erase-buffer)
+                 (insert formatted)
+                 (current-buffer)))))
+         :company-require-match 'never
+         :company-prefix-length
+         (save-excursion
+           (when (car bounds) (goto-char (car bounds)))
+           (when (listp completion-capability)
+             (looking-back
+              (regexp-opt
+               (cl-coerce (cl-getf completion-capability :triggerCharacters) 'list))
+              (eglot--bol))))
+         :exit-function
+         (lambda (proxy status)
+           (when (memq status '(finished exact))
+             ;; To assist in using this whole `completion-at-point'
+             ;; function inside `completion-in-region', ensure the exit
+             ;; function runs in the buffer where the completion was
+             ;; triggered from.  This should probably be in Emacs itself.
+             ;; (github#505)
+             (with-current-buffer (if (minibufferp)
+                                      (window-buffer (minibuffer-selected-window))
+                                    (current-buffer))
+               (eglot--dbind ((CompletionItem) insertTextFormat
+                              insertText textEdit additionalTextEdits label)
+                   (funcall
+                    resolve-maybe
+                    (or (get-text-property 0 'eglot--lsp-item proxy)
+                        ;; When selecting from the *Completions*
+                        ;; buffer, `proxy' won't have any properties.
+                        ;; A lookup should fix that (github#148)
+                        (get-text-property
+                         0 'eglot--lsp-item
+                         (cl-find proxy (funcall proxies) :test #'string=))))
+                 (let ((snippet-fn (and (eql insertTextFormat 2)
+                                        (eglot--snippet-expansion-fn))))
+                   (cond (textEdit
+                          ;; Undo (yes, undo) the newly inserted completion.
+                          ;; If before completion the buffer was "foo.b" and
+                          ;; now is "foo.bar", `proxy' will be "bar".  We
+                          ;; want to delete only "ar" (`proxy' minus the
+                          ;; symbol whose bounds we've calculated before)
+                          ;; (github#160).
+                          (delete-region (+ (- (point) (length proxy))
+                                            (if bounds
+                                                (- (cdr bounds) (car bounds))
+                                              0))
+                                         (point))
+                          (eglot--dbind ((TextEdit) range newText) textEdit
+                            (pcase-let ((`(,beg . ,end)
+                                         (eglot--range-region range)))
+                              (delete-region beg end)
+                              (goto-char beg)
+                              (funcall (or snippet-fn #'insert) newText))))
+                         (snippet-fn
+                          ;; A snippet should be inserted, but using plain
+                          ;; `insertText'.  This requires us to delete the
+                          ;; whole completion, since `insertText' is the full
+                          ;; completion's text.
+                          (delete-region (- (point) (length proxy)) (point))
+                          (funcall snippet-fn (or insertText label))))
+                   (when (cl-plusp (length additionalTextEdits))
+                     (eglot--apply-text-edits additionalTextEdits)))
+                 (eglot--signal-textDocument/didChange)))))))))
+
+  (advice-add 'eglot-completion-at-point :override #'old-eglot-completion-at-point)
+  )
+
+(use-package eglot-booster
+  :elpaca (:repo "jdtsmith/eglot-booster" :host github)
+  :after eglot
+  :when (executable-find "emacs-lsp-booster")
+  :config
+  (eglot-booster-mode))
 
 (use-package dape
   :elpaca (:host github :repo "svaante/dape")
+  :hook (dape-active-mode . dape-breakpoint-global-mode)
   :config
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
@@ -2728,38 +2935,19 @@ be boosted."
      ["Breakpoints"
       ("bb" "Toggle" dape-breakpoint-toggle :transient t)
       ("bd" "Remove all" dape-breakpoint-remove-all :transient t)
+      ("bl" "Add log breakpoing" dape-breakpoint-log :transient t)
+      ("be" "Add expression breakpoint" dape-breakpoint-expression :transient t)
       ]
+     ["Switch"
+      ("i" "Info" dape-info)
+      ("R" "Repl" dape-repl)
+      ("m" "Memory" dape-read-memory)
+      ("t" "Thread" dape-select-thread)
+      ("w" "Watch" dape-watch-dwim)
+      ("S" "Stack" dape-select-stack)]
      ["Quit"
       ("qq" "Quit" dape-quit :transient nil)
       ("qk" "Kill" dape-kill :transient nil)]])
-
-  (defhydra dape-hydra/body ()
-    ((:title (pretty-hydra-title "Debug" 'codicon "nf-cod-debug")
-             :color pink :quit-key ("q" "C-g"))
-     ("Stepping"
-      (("n" dape-next "next")
-       ("s" dape-step-in "step in")
-       ("o" dape-step-out "step out")
-       ("c" dape-continue "continue")
-       ("p" dape-pause "pause")
-       ("k" dape-kill "kill")
-       ("r" dape-restart "restart")
-       ("D" dape-disconnect-quit "disconnect"))
-      "Switch"
-      (("m" dape-read-memory "memory")
-       ("t" dape-select-thread "thread")
-       ("w" dape-watch-dwim "watch")
-       ("S" dape-select-stack "stack")
-       ("i" dape-info "info")
-       ("R" dape-repl "repl"))
-      "Breakpoints"
-      (("b" dape-breakpoint-toggle "toggle")
-       ("l" dape-breakpoint-log "log")
-       ("e" dape-breakpoint-expression "expression")
-       ("B" dape-breakpoint-remove-all "clear"))
-      "Debug"
-      (("d" dape "dape")
-       ("Q" dape-quit "quit" :exit t)))))
 
   (require 'flutter)
 
@@ -2806,12 +2994,11 @@ be boosted."
 
   (defun dape-flutter-hotRestart ()
     (interactive)
-    (dape-request (dape--live-process) "hotRestart" nil))
+    (dape--with dape-request ((dape--live-connection t) "hotRestart" nil)))
 
   (defun dape-flutter-hotReload ()
     (interactive)
-    (dape-request (dape--live-process) "hotReload" nil))
-
+    (dape-request (dape--live-connection t) "hotReload" nil))
 
   (defun dape-flutter-devtools ()
     (interactive)
@@ -2928,6 +3115,7 @@ Install the doc if it's not installed."
   (symbols-outline-follow-mode))
 
 (use-package xref
+  :elpaca nil
   :defer nil
   :init
   ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
@@ -3048,12 +3236,21 @@ Install the doc if it's not installed."
   :after dart-ts-mode
   :init
   :config
+
   (with-eval-after-load 'bind
     (bind
      dart-ts-mode-map
      (bind-prefix "C-x ,"
-       "r" #'flutter-run-or-hot-reload
-       "R" #'flutter-run-or-hot-restart
+       ;; "r" #'flutter-run-or-hot-reload
+       "r" (lambda () (interactive)
+             (if (and (featurep 'dape) (dape--live-connection t))
+                 (dape-flutter-hotReload)
+               (flutter-run-or-hot-reload)))
+       ;; "R" #'flutter-run-or-hot-restart
+       "R" (lambda () (interactive)
+             (if (and (featurep 'dape) (dape--live-connection t))
+                 (dape-flutter-hotRestart)
+               (flutter-run-or-hot-restart)))
        "v" #'flutter-open-devtools
        "Q" #'flutter-quit
        "p" #'flutter-pub-get
