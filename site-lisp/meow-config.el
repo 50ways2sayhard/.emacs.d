@@ -71,7 +71,8 @@ S is string of the two-key sequence."
     "h" #'+eglot-help-at-point
     "f" #'apheleia-format-buffer
     "I" #'+eglot-organize-imports
-    "i" #'consult-eglot-symbols)
+    "i" #'consult-eglot-symbols
+    "D" #'dape-transient)
   (defvar-keymap +meow-diagnostics-map
     :doc "Diagnostic operations"
     "b" #'flymake-start
@@ -115,7 +116,8 @@ S is string of the two-key sequence."
     "i" #'+my-imenu
     "I" #'consult-imenu-multi
     "p" #'consult-ripgrep
-    "g" #'+my/google-it)
+    "g" #'+my/google-it
+    "m" #'consult-mark)
   (defvar-keymap +meow-toggle-map
     "e" #'+my/smart-switch-to-vterm-tab
     "t" #'dirvish-side
