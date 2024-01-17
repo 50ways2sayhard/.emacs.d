@@ -640,7 +640,7 @@ It will split otherwise."
 
   (define-key fingertip-mode-map (kbd "M-p") 'fingertip-jump-right)
   (define-key fingertip-mode-map (kbd "M-n") 'fingertip-jump-left)
-  (define-key fingertip-mode-map (kbd "M-:") 'fingertip-jump-out-pair-and-newline)
+  ;; (define-key fingertip-mode-map (kbd "M-:") 'fingertip-jump-out-pair-and-newline)
 
   (define-key fingertip-mode-map (kbd "C-j") 'fingertip-jump-up))
 
@@ -1834,19 +1834,31 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package project
   :elpaca nil
-  :defer nil
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
     "Use `fd' to list files in DIR."
     (let* ((default-directory dir)
            (localdir (file-local-name (expand-file-name dir)))
-           (command (format "fd -H -t f -0 . %s" localdir)))
+           (ignores  (string-join
+                      (mapcar (lambda (ignore)
+                                (concat "-E " ignore)) project-vc-ignores)
+                      " "))
+           (command (format "fd -H -t f -0 . %s %s" ignores localdir)))
       (project--remote-file-names
        (sort (split-string (shell-command-to-string command) "\0" t)
              #'string<))))
 
-  (setq project-vc-ignores '(".dart-tools" ".idea" ".DS_Store"))
+  (setq project-vc-ignores '(".dart-tools" ".idea" ".DS_Store" ".git"))
+
+  (defvar project--ignore-list
+    '("~/fvm"))
+
+  (defun my-project--ignored-p (path)
+    (catch 'found
+      (dolist (ignore project--ignore-list)
+        (when (string-prefix-p (file-truename ignore) (file-truename path))
+          (throw 'found t)))))
 
   (cl-defmethod project-files ((project (head local)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
@@ -1864,7 +1876,7 @@ Just put this function in `hippie-expand-try-functions-list'."
     "Check if the current PATH has any of the project root markers."
     (catch 'found
       (dolist (marker project-root-markers)
-        (when (file-exists-p (concat path marker))
+        (when (and (file-exists-p (concat path marker)) (not (my-project--ignored-p path)))
           (throw 'found marker)))))
 
   (defun project-find-root (path)
@@ -2610,7 +2622,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                    eglot-stay-out-of '(eldoc))
                                  ))
          (prog-mode . (lambda ()
-                        (unless (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
+                        (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
+                                     (my-project--ignored-p (buffer-file-name (current-buffer))))
                           (eglot-ensure)))))
   :init
   (defvar +lsp--default-read-process-output-max nil)
