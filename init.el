@@ -2925,6 +2925,14 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :elpaca (:host github :repo "svaante/dape")
   :hook (dape-active-mode . dape-breakpoint-global-mode)
   :config
+  (remove-hook 'dape-on-start-hooks 'dape-info)
+  (remove-hook 'dape-on-start-hooks 'dape-repl)
+
+  ;; To display info and/or repl buffers on stopped
+  (add-hook 'dape-on-stopped-hooks 'dape-info)
+  (add-hook 'dape-on-stopped-hooks 'dape-repl)
+  (add-hook 'dape-on-stopped-hooks 'dape-transient)
+
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
       (cond
@@ -2979,7 +2987,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
        ((file-exists-p (concat root "example/lib/main.dart"))
         (concat root "example/")))))
 
-
   (add-to-list 'dape-configs
                `(flutter-run
                  modes (dart-ts-mode)
@@ -2989,7 +2996,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                  :type "dart"
                  :request "launch"
                  :cwd dape--flutter-cwd-fn
-                 ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
                  :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))
                  ))
 
@@ -3002,7 +3008,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                  :type "dart"
                  :request "attach"
                  :cwd dape--flutter-cwd-fn
-                 ;; :toolArgs ["-d" "FYI745IFOFJBFQM7"]
                  :toolArgs ,(lambda () (vector "-d" (dape--flutter-devices)))))
 
 
@@ -3016,11 +3021,18 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (defun dape-flutter-devtools ()
     (interactive)
-    (with-current-buffer "*dape-repl*"
+    (with-current-buffer "*dape-connection events*"
       (save-match-data
         (point-min)
-        (string-match "ws://\\(.*\\)/ws" (buffer-string))
-        (browse-url (url-encode-url (format "http://127.0.0.1:9104?uri=ws://%s/ws" (match-string 1 (buffer-string))))))))
+        (let* (
+               (devtools-addr (progn
+                                (string-match "activeDevtoolsServerAddress.*\".*\"\\(https?://.*?\\)\"" (buffer-string))
+                                (match-string 1 (buffer-string))))
+               (vm-service-uri (progn
+                                 (string-match "connectedVmServiceUri.*\\(https?://.*?\\)\"" (buffer-string))
+                                 (match-string 1 (buffer-string)))))
+          (browse-url (format "%s?uri=%s" devtools-addr vm-service-uri))
+          ))))
   )
 
 (use-package breadcrumb
