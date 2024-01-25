@@ -1208,7 +1208,7 @@ targets."
          ("M-s e" . consult-isearch))
   :config
   (require 'embark-consult)
-  (setq consult-preview-key "M-.")
+  (setq consult-preview-key '(:debounce 1.0 any))
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
@@ -1853,7 +1853,8 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq project-vc-ignores '(".dart-tool" ".idea" ".DS_Store" ".git" "build"))
 
   (defvar project--ignore-list
-    '("~/fvm"))
+    '("~/fvm"
+      "~/.pub-cache"))
 
   (defun my-project--ignored-p (path)
     (catch 'found
@@ -3391,7 +3392,14 @@ Install the doc if it's not installed."
           (tab-bar-switch-to-recent-tab)
           (find-file filename))
       (find-file filename)))
-  (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file)))
+  (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file))
+
+  (defun vterm-project ()
+  (interactive)
+  (let* ((default-directory (or (project-root (project-current))
+                               default-directory))
+        (vterm-buffer-name (format "*vterm_%s*" default-directory)))
+    (vterm))))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
