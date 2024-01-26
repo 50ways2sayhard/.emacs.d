@@ -69,7 +69,7 @@
  (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
  '(xref tramp tramp-sh flymake simple diff-mode smerge-mode python css-mode custom
         server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
-        lisp-mode treesit imenu eldoc transient hippie-exp))
+        lisp-mode treesit imenu eldoc transient hippie-exp eglot))
 
 ;; Block until current queue processed.
 (elpaca-wait)
@@ -1652,11 +1652,9 @@ Just put this function in `hippie-expand-try-functions-list'."
         arg-capf))))
 
   (defun my/set-basic-capf ()
-    (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
 
   (defun my/set-eglot-capf ()
-    (setq completion-category-defaults nil)
     (setq-local completion-at-point-functions (my/convert-super-capf #'eglot-completion-at-point)))
 
   (setq-default completion-at-point-functions '(cape-file cape-dabbrev)))
@@ -2609,6 +2607,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
 ;;;; Lsp integration
 (use-package eglot
+  :elpaca nil
   :commands (+eglot-organize-imports +eglot-help-at-point)
   :hook ((eglot-managed-mode . (lambda ()
                                  (+lsp-optimization-mode)
@@ -2661,11 +2660,12 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (setq +lsp--optimization-init-p t))))
   :config
   (setq
-   eglot-send-changes-idle-time 0
+   eglot-send-changes-idle-time 0.5
    eglot-autoshutdown t
    eglot-extend-to-xref t
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
+   eglot-events-buffer-config '(:size 0 :format full)
    eglot-report-progress nil)
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
