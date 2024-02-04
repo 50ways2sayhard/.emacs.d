@@ -45,6 +45,18 @@ S is string of the two-key sequence."
 (define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
             #'meow-two-char-exit-insert-state)
 
+(defun my-meow-reverse-or-jump-matching-pair ()
+  (interactive)
+  (cond
+   ((region-active-p)
+    (call-interactively 'meow-reverse))
+   (t
+    (cond
+     ((looking-at "\\s\(")
+      (forward-sexp))
+     ((looking-back "\\s\)")
+      (backward-list))))))
+
 (with-no-warnings
   (defvar-keymap +meow-file-map
     :doc "File operations"
@@ -68,7 +80,7 @@ S is string of the two-key sequence."
     "r" #'eglot-rename
     "a" #'eglot-code-actions
     "c" #'separedit
-    "h" #'+eglot-help-at-point
+    "h" #'+eglot/show-hover-at-point
     "f" #'apheleia-format-buffer
     "I" #'+eglot-organize-imports
     "i" #'consult-eglot-symbols
@@ -304,7 +316,7 @@ S is string of the two-key sequence."
    '("?" . consult-ripgrep)
    '("/" . noct-consult-ripgrep-or-line)
    `("C-s" . ,+meow-tab-map)
-   '("%" . jump-out-of-pair)
+   '("%" . my-meow-reverse-or-jump-matching-pair)
    ))
 
 (provide 'meow-config)
