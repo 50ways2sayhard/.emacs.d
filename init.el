@@ -1877,10 +1877,11 @@ Just put this function in `hippie-expand-try-functions-list'."
       "~/.pub-cache"))
 
   (defun my-project--ignored-p (path)
-    (catch 'found
-      (dolist (ignore project--ignore-list)
-        (when (string-prefix-p (file-truename ignore) (file-truename path))
-          (throw 'found t)))))
+    (when path
+      (catch 'found
+        (dolist (ignore project--ignore-list)
+          (when (string-prefix-p (file-truename ignore) (file-truename path))
+            (throw 'found t))))))
 
   (cl-defmethod project-files ((project (head transient)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
