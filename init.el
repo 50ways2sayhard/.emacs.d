@@ -2693,41 +2693,9 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
-  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  ;; (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
-
-  ;; HACK Eglot removed `eglot-help-at-point' in joaotavora/eglot@a044dec for a
-  ;;      more problematic approach of deferred to eldoc. Here, I've restored it.
-  ;;      Doom's lookup handlers try to open documentation in a separate window
-  ;;      (so they can be copied or kept open), but doing so with an eldoc buffer
-  ;;      is difficult because a) its contents are generated asynchronously,
-  ;;      making them tough to scrape, and b) their contents change frequently
-  ;;      (every time you move your cursor).
-  (defvar +eglot--help-buffer nil)
-  (defun +eglot-lookup-documentation (_identifier)
-    "Request documentation for the thing at point."
-    (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol)))
-        (if blurb
-            (with-current-buffer
-                (or (and (buffer-live-p +eglot--help-buffer)
-                         +eglot--help-buffer)
-                    (setq +eglot--help-buffer (generate-new-buffer "*eglot-help*")))
-              (with-help-window (current-buffer)
-                (rename-buffer (format "*eglot-help for %s*" hint))
-                (with-current-buffer standard-output (insert blurb))
-                (setq-local nobreak-char-display nil)))
-          (display-local-help))))
-    'deferred)
-
-  (defun +eglot-help-at-point()
-    (interactive)
-    (+eglot-lookup-documentation nil))
 
   (add-to-list 'eglot-server-programs '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
 
@@ -2739,209 +2707,136 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
     (list :enable t
           :lint t))
 
-  (defun old-eglot-completion-at-point ()
-    "Eglot's `completion-at-point' function."
-    ;; Commit logs for this function help understand what's going on.
-    (when-let (completion-capability (eglot--server-capable :completionProvider))
-      (let* ((server (eglot--current-server-or-lose))
-             (sort-completions
-              (lambda (completions)
-                (cl-sort completions
-                         #'string-lessp
-                         :key (lambda (c)
-                                (plist-get
-                                 (get-text-property 0 'eglot--lsp-item c)
-                                 :sortText)))))
-             (metadata `(metadata (category . eglot)
-                                  (display-sort-function . ,sort-completions)))
-             resp items (cached-proxies :none)
-             (proxies
-              (lambda ()
-                (if (listp cached-proxies) cached-proxies
-                  (setq resp
-                        (jsonrpc-request server
-                                         :textDocument/completion
-                                         (eglot--CompletionParams)
-                                         :deferred :textDocument/completion
-                                         :cancel-on-input t))
-                  (setq items (append
-                               (if (vectorp resp) resp (plist-get resp :items))
-                               nil))
-                  (setq cached-proxies
-                        (mapcar
-                         (jsonrpc-lambda
-                             (&rest item &key label insertText insertTextFormat
-                                    textEdit &allow-other-keys)
-                           (let ((proxy
-                                  ;; Snippet or textEdit, it's safe to
-                                  ;; display/insert the label since
-                                  ;; it'll be adjusted.  If no usable
-                                  ;; insertText at all, label is best,
-                                  ;; too.
-                                  (cond ((or (eql insertTextFormat 2)
-                                             textEdit
-                                             (null insertText)
-                                             (string-empty-p insertText))
-                                         (string-trim-left label))
-                                        (t insertText))))
-                             (unless (zerop (length proxy))
-                               (put-text-property 0 1 'eglot--lsp-item item proxy))
-                             proxy))
-                         items)))))
-             (resolved (make-hash-table))
-             (resolve-maybe
-              ;; Maybe completion/resolve JSON object `lsp-comp' into
-              ;; another JSON object, if at all possible.  Otherwise,
-              ;; just return lsp-comp.
-              (lambda (lsp-comp)
-                (or (gethash lsp-comp resolved)
-                    (setf (gethash lsp-comp resolved)
-                          (if (and (eglot--server-capable :completionProvider
-                                                          :resolveProvider)
-                                   (plist-get lsp-comp :data))
-                              (jsonrpc-request server :completionItem/resolve
-                                               lsp-comp :cancel-on-input t)
-                            lsp-comp)))))
-             (bounds (bounds-of-thing-at-point 'symbol)))
-        (list
-         (or (car bounds) (point))
-         (or (cdr bounds) (point))
-         (lambda (probe pred action)
-           (cond
-            ((eq action 'metadata) metadata)               ; metadata
-            ((eq action 'lambda)                           ; test-completion
-             (test-completion probe (funcall proxies)))
-            ((eq (car-safe action) 'boundaries) nil)       ; boundaries
-            ((null action)                                 ; try-completion
-             (try-completion probe (funcall proxies)))
-            ((eq action t)                                 ; all-completions
-             (all-completions
-              ""
-              (funcall proxies)
-              (lambda (proxy)
-                (let* ((item (get-text-property 0 'eglot--lsp-item proxy))
-                       (filterText (plist-get item :filterText)))
-                  (and (or (null pred) (funcall pred proxy))
-                       (string-prefix-p
-                        probe (or filterText proxy) completion-ignore-case))))))))
-         :annotation-function
-         (lambda (proxy)
-           (eglot--dbind ((CompletionItem) detail kind)
-               (get-text-property 0 'eglot--lsp-item proxy)
-             (let* ((detail (and (stringp detail)
-                                 (not (string= detail ""))
-                                 detail))
-                    (annotation
-                     (or detail
-                         (cdr (assoc kind eglot--kind-names)))))
-               (when annotation
-                 (concat " "
-                         (propertize annotation
-                                     'face 'font-lock-function-name-face))))))
-         :company-kind
-         ;; Associate each lsp-item with a lsp-kind symbol.
-         (lambda (proxy)
-           (when-let* ((lsp-item (get-text-property 0 'eglot--lsp-item proxy))
-                       (kind (alist-get (plist-get lsp-item :kind)
-                                        eglot--kind-names)))
-             (pcase kind
-               ("EnumMember" 'enum-member)
-               ("TypeParameter" 'type-parameter)
-               (_ (intern (downcase kind))))))
-         :company-deprecated
-         (lambda (proxy)
-           (when-let ((lsp-item (get-text-property 0 'eglot--lsp-item proxy)))
-             (or (seq-contains-p (plist-get lsp-item :tags)
-                                 1)
-                 (eq t (plist-get lsp-item :deprecated)))))
-         :company-docsig
-         ;; FIXME: autoImportText is specific to the pyright language server
-         (lambda (proxy)
-           (when-let* ((lsp-comp (get-text-property 0 'eglot--lsp-item proxy))
-                       (data (plist-get (funcall resolve-maybe lsp-comp) :data))
-                       (import-text (plist-get data :autoImportText)))
-             import-text))
-         :company-doc-buffer
-         (lambda (proxy)
-           (let* ((documentation
-                   (let ((lsp-comp (get-text-property 0 'eglot--lsp-item proxy)))
-                     (plist-get (funcall resolve-maybe lsp-comp) :documentation)))
-                  (formatted (and documentation
-                                  (eglot--format-markup documentation))))
-             (when formatted
-               (with-current-buffer (get-buffer-create " *eglot doc*")
-                 (erase-buffer)
-                 (insert formatted)
-                 (current-buffer)))))
-         :company-require-match 'never
-         :company-prefix-length
-         (save-excursion
-           (when (car bounds) (goto-char (car bounds)))
-           (when (listp completion-capability)
-             (looking-back
-              (regexp-opt
-               (cl-coerce (cl-getf completion-capability :triggerCharacters) 'list))
-              (eglot--bol))))
-         :exit-function
-         (lambda (proxy status)
-           (when (memq status '(finished exact))
-             ;; To assist in using this whole `completion-at-point'
-             ;; function inside `completion-in-region', ensure the exit
-             ;; function runs in the buffer where the completion was
-             ;; triggered from.  This should probably be in Emacs itself.
-             ;; (github#505)
-             (with-current-buffer (if (minibufferp)
-                                      (window-buffer (minibuffer-selected-window))
-                                    (current-buffer))
-               (eglot--dbind ((CompletionItem) insertTextFormat
-                              insertText textEdit additionalTextEdits label)
-                   (funcall
-                    resolve-maybe
-                    (or (get-text-property 0 'eglot--lsp-item proxy)
-                        ;; When selecting from the *Completions*
-                        ;; buffer, `proxy' won't have any properties.
-                        ;; A lookup should fix that (github#148)
-                        (get-text-property
-                         0 'eglot--lsp-item
-                         (cl-find proxy (funcall proxies) :test #'string=))))
-                 (let ((snippet-fn (and (eql insertTextFormat 2)
-                                        (eglot--snippet-expansion-fn))))
-                   (cond (textEdit
-                          ;; Undo (yes, undo) the newly inserted completion.
-                          ;; If before completion the buffer was "foo.b" and
-                          ;; now is "foo.bar", `proxy' will be "bar".  We
-                          ;; want to delete only "ar" (`proxy' minus the
-                          ;; symbol whose bounds we've calculated before)
-                          ;; (github#160).
-                          (delete-region (+ (- (point) (length proxy))
-                                            (if bounds
-                                                (- (cdr bounds) (car bounds))
-                                              0))
-                                         (point))
-                          (eglot--dbind ((TextEdit) range newText) textEdit
-                            (pcase-let ((`(,beg . ,end)
-                                         (eglot--range-region range)))
-                              (delete-region beg end)
-                              (goto-char beg)
-                              (funcall (or snippet-fn #'insert) newText))))
-                         (snippet-fn
-                          ;; A snippet should be inserted, but using plain
-                          ;; `insertText'.  This requires us to delete the
-                          ;; whole completion, since `insertText' is the full
-                          ;; completion's text.
-                          (delete-region (- (point) (length proxy)) (point))
-                          (funcall snippet-fn (or insertText label))))
-                   (when (cl-plusp (length additionalTextEdits))
-                     (eglot--apply-text-edits additionalTextEdits)))
-                 (eglot--signal-textDocument/didChange)))))))))
+  (defvar +eglot/display-buf "*+eglot/display-buffer*")
+  (defvar +eglot/display-frame nil)
+  (defvar +eglot/hover-last-point nil)
+  (defvar +eglot/signature-last-point nil)
+  (defface +eglot/display-border '((((background dark)) . (:background "white"))
+                                   (((background light)) . (:background "black")))
+    "The border color used in childframe.")
 
-  (advice-add 'eglot-completion-at-point :override #'old-eglot-completion-at-point)
+  ;; Uri <-> File Path
+  (defvar eglot-path-uri-cache (make-hash-table :test #'equal)
+    "File path to uri cache.")
+
+  (cl-defgeneric +eglot/ext-uri-to-path (uri)
+    "Support extension uri."
+    nil)
+
+  (define-advice eglot-uri-to-path (:around (orig-fn uri) advice)
+    "Support non standard LSP uri scheme."
+    (when (keywordp uri) (setq uri (substring (symbol-name uri) 1)))
+    (or (+eglot/ext-uri-to-path uri)
+        (funcall orig-fn uri)))
+
+  (define-advice eglot-path-to-uri (:around (orig-fn path) advice)
+    "Support non standard LSP uri scheme."
+    (or (gethash path eglot-path-uri-cache)
+        (funcall orig-fn path)))
+
+  ;;   (cl-defgeneric +eglot/workspace-configuration (server)
+  ;;     "Set workspace configuration,
+  ;; - Handle server request `workspace/configuration'
+  ;; - Send a `workspace/didChangeConfiguration' signal to SERVER"
+  ;;     nil)
+  ;;   (setq-default eglot-workspace-configuration #'+eglot/workspace-configuration)
+
+  (defvar +eglot/last-buffer nil)
+
+  ;; Hover
+  (defun +eglot/show-hover-at-point ()
+    (interactive)
+    (when (eglot-server-capable :hoverProvider)
+      (let ((buf (current-buffer)))
+        (setq +eglot/last-buffer buf)
+        (jsonrpc-async-request
+         (eglot--current-server-or-lose)
+         :textDocument/hover (eglot--TextDocumentPositionParams)
+         :success-fn (eglot--lambda ((Hover) contents range)
+                       (eglot--when-buffer-window +eglot/last-buffer
+                         (if-let ((info (unless (seq-empty-p contents)
+                                          (eglot--hover-info contents range))))
+                             (progn
+                               (with-current-buffer (get-buffer-create +eglot/display-buf)
+                                 (erase-buffer)
+                                 (insert info))
+                               (setq +eglot/display-frame
+                                     (posframe-show
+                                      (get-buffer-create +eglot/display-buf)
+                                      :border-width 1
+                                      :border-color (face-background '+eglot/display-border nil t)
+                                      :max-height (/ (frame-height) 3)
+                                      :max-width (/ (frame-width) 3)
+                                      :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))
+                               (run-with-timer 0.1 nil #'+eglot/hide-hover))
+                           (message "LSP No Hover Document"))))
+         :deferred :textDocument/hover))
+      (setq +eglot/hover-last-point (point))))
+
+  (defun +eglot/hide-hover ()
+    (if (or (eq (point) +eglot/hover-last-point)
+            (eq (selected-frame) +eglot/display-frame))
+        (run-with-timer 0.1 nil #'+eglot/hide-hover)
+      (posframe-hide +eglot/display-buf)))
+
+  ;; Signature
+  (defun +eglot/show-signature-help ()
+    (when (and (eglot-managed-p)
+               (eglot-server-capable :signatureHelpProvider))
+      (unless +eglot/signature-last-point
+        (setq +eglot/signature-last-point (point)))
+      (let ((buf (current-buffer)))
+        (setq +eglot/last-buffer buf)
+        (if (eql (line-number-at-pos +eglot/signature-last-point)
+                 (line-number-at-pos (point)))
+            (jsonrpc-async-request
+             (eglot--current-server-or-lose)
+             :textDocument/signatureHelp (eglot--TextDocumentPositionParams)
+             :success-fn (eglot--lambda ((SignatureHelp)
+                                         signatures activeSignature (activeParameter 0))
+                           (eglot--when-buffer-window +eglot/last-buffer
+                             (let ((active-sig (and (cl-plusp (length signatures))
+                                                    (aref signatures (or activeSignature 0)))))
+                               (if (not active-sig)
+                                   (+eglot/hide-signature buf)
+                                 (with-current-buffer (get-buffer-create +eglot/display-buf)
+                                   (erase-buffer)
+                                   (insert (or (eglot--sig-info active-sig activeParameter t) "")))
+                                 (setq +eglot/display-frame
+                                       (posframe-show
+                                        (get-buffer-create +eglot/display-buf)
+                                        :position +eglot/signature-last-point
+                                        :border-width 1
+                                        :border-color (face-background '+eglot/display-border nil t)
+                                        :max-width (/ (frame-width) 3)
+                                        :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))))))
+             :timeout-fn (lambda () (+eglot/hide-signature buf))
+             :error-fn (lambda () (+eglot/hide-signature buf))
+             :deferred :textDocument/signatureHelp)
+          (+eglot/hide-signature buf)))))
+
+  (defun +eglot/hide-signature (buf)
+    (with-current-buffer buf
+      (remove-hook 'post-command-hook #'+eglot/show-signature-help t))
+    (setq +eglot/signature-last-point nil
+          +eglot/signature-retries 0)
+    (posframe-hide +eglot/display-buf))
+
+  (defun +eglot/signature-help-at-point ()
+    (interactive)
+    (when (and (eglot-managed-p)
+               (eglot-server-capable :signatureHelpProvider))
+      (+eglot/show-signature-help)
+      (add-hook 'post-command-hook #'+eglot/show-signature-help nil t)))
   )
 
 (use-package eglot-booster
   :elpaca (:repo "jdtsmith/eglot-booster" :host github)
-  :after eglot
   :when (executable-find "emacs-lsp-booster")
+  :commands (eglot-booster-mode)
+  :after eglot
+  :init
+  (require 'eglot-booster)
   :config
   (eglot-booster-mode))
 
