@@ -2846,10 +2846,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :config
   (remove-hook 'dape-on-start-hooks 'dape-info)
   (remove-hook 'dape-on-start-hooks 'dape-repl)
+  (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
 
   ;; To display info and/or repl buffers on stopped
   (add-hook 'dape-on-stopped-hooks 'dape-info)
-  (add-hook 'dape-on-stopped-hooks 'dape-repl)
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
   (add-hook 'dape-on-stopped-hooks 'dape-transient)
 
   (defun dape--flutter-cwd ()
@@ -2952,6 +2953,69 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                  (match-string 1 (buffer-string)))))
           (browse-url (format "%s?uri=%s" devtools-addr vm-service-uri))
           ))))
+
+  (with-eval-after-load 'bind
+    (bind
+     prog-mode-map
+     (bind-prefix "C-x ,"
+       "D" #'dape-breakpoint-global-mode-map)
+     ))
+
+  (defvar my/dape--log-buffer "*my-dape-log*")
+
+  (defun my/dape--create-log-buffer ()
+    (my/dape--delete-log-buffer)
+    (get-buffer-create my/dape--log-buffer))
+
+  (defun my/dape--delete-log-buffer()
+    (when-let ((buffer (get-buffer my/dape--log-buffer)))
+      (kill-buffer buffer)))
+
+  (defun my/dape--log-write (msg)
+    (when (bufferp my/dape--log-buffer)
+      (with-current-buffer my/dape--log-buffer
+        (goto-char (point-max))
+        (newline)
+        (insert msg)
+        (save-buffer))))
+
+  (defun my/dape--repl-message (msg &optional face)
+    "Insert MSG with FACE in *dape-repl* buffer.
+Handles newline."
+    (when (and (stringp msg) (not (string-empty-p msg)))
+      (when (eql (aref msg (1- (length msg))) ?\n)
+        (setq msg (substring msg 0 (1- (length msg)))))
+      (setq msg (concat "\n" msg))
+      (if (not (get-buffer-window "*dape-repl*"))
+          (when (stringp msg)
+            (my/dape--log-write msg))
+        (cond
+         (dape--repl-insert-text-guard
+          (run-with-timer 0.1 nil 'dape--repl-message msg))
+         (t
+          (let ((dape--repl-insert-text-guard t))
+            (when-let ((buffer (get-buffer "*dape-repl*")))
+              (with-current-buffer buffer
+                (let (start)
+                  (if comint-last-prompt
+                      (goto-char (1- (marker-position (car comint-last-prompt))))
+                    (goto-char (point-max)))
+                  (setq start (point-marker))
+                  (let ((inhibit-read-only t))
+                    (insert (propertize msg 'font-lock-face face)))
+                  (goto-char (point-max))
+                  ;; HACK Run hooks as if comint-output-filter was executed
+                  ;;      Could not get comint-output-filter to work by moving
+                  ;;      process marker. Comint removes forgets last prompt
+                  ;;      and everything goes to shit.
+                  (when-let ((process (get-buffer-process buffer)))
+                    (set-marker (process-mark process)
+                                (point-max)))
+                  (let ((comint-last-output-start start))
+                    (run-hook-with-args 'comint-output-filter-functions msg)))))))))))
+
+  (advice-add #'dape--repl-message :override #'my/dape--repl-message)
+
   )
 
 (use-package breadcrumb
@@ -3225,10 +3289,10 @@ Install the doc if it's not installed."
 
 ;;; Terminal integration
 (use-package vterm
-  :disabled
-  :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab)
+  :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab vterm-project)
   :bind
-  (("C-0" . #'vterm-posframe-toggle)
+  (("C-0" . #'vterm-project)
+   ("C-9" . #'vterm-posframe-toggle)
    :map vterm-mode-map
    ("M-v" . #'yank)
    ("C-x" . #'vterm--self-insert)
@@ -3313,11 +3377,11 @@ Install the doc if it's not installed."
   (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file))
 
   (defun vterm-project ()
-  (interactive)
-  (let* ((default-directory (or (project-root (project-current))
-                               default-directory))
-        (vterm-buffer-name (format "*vterm_%s*" default-directory)))
-    (vterm))))
+    (interactive)
+    (let* ((default-directory (or (project-root (project-current))
+                                  default-directory))
+           (vterm-buffer-name (format "*vterm_%s*" default-directory)))
+      (vterm))))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
