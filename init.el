@@ -1188,7 +1188,8 @@ targets."
         read-file-name-completion-ignore-case t))
 
 (use-package consult
-  :after orderless
+  ;; :after orderless
+  :after fussy
   :commands (noct-consult-ripgrep-or-line consult-clock-in +consult-ripgrep-current-directory)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
@@ -1283,12 +1284,12 @@ When the number of characters in a buffer exceeds this threshold,
     (interactive)
     (consult-ripgrep default-directory initial))
 
-  (defun consult--orderless-regexp-compiler (input type &rest _config)
-    (setq input (orderless-pattern-compiler input))
-    (cons
-     (mapcar (lambda (r) (consult--convert-regexp r type)) input)
-     (lambda (str) (orderless--highlight input t str))))
-  (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
+  ;; (defun consult--orderless-regexp-compiler (input type &rest _config)
+  ;;   (setq input (orderless-pattern-compiler input))
+  ;;   (cons
+  ;;    (mapcar (lambda (r) (consult--convert-regexp r type)) input)
+  ;;    (lambda (str) (orderless--highlight input t str))))
+  ;; (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
 
   ;; Shorten candidates in consult-buffer:
   ;; See: https://emacs-china.org/t/21-emacs-vertico-orderless-marginalia-embark-consult/19683/50
@@ -1431,18 +1432,38 @@ When the number of characters in a buffer exceeds this threshold,
   ;; setup code
   (add-hook 'minibuffer-setup-hook #'mcfly-time-travel))
 
-(use-package orderless
+;; (use-package orderless
+;;   :after-call +my/first-input-hook-fun
+;;   :demand t
+;;   :config
+;;   (setq completion-styles '(orderless basic)
+;;         completion-category-defaults nil
+;;         orderless-component-separator #'orderless-escapable-split-on-space
+;;         completion-category-overrides '((file (styles basic partial-completion))
+;;                                         (eglot-capf (styles orderless-literal basic))
+;;                                         (eglot (styles orderless-literal basic))
+;;                                         ))
+;;   )
+
+(use-package fussy
   :after-call +my/first-input-hook-fun
   :demand t
+  :custom
+  (completion-styles '(fussy basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion))
+                                   (eglot-capf (styles fussy basic))
+                                   (eglot (styles fussy basic))
+                                   ))
+  (fussy-filter-fn 'fussy-filter-default)
+  (fussy-use-cache t)
   :config
-  (with-eval-after-load 'eglot
-    (setq completion-category-defaults nil))
-
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        orderless-component-separator #'orderless-escapable-split-on-space
-        completion-category-overrides '((file (styles basic partial-completion))
-                                        (eglot (styles orderless)))))
+  (advice-add 'corfu--capf-wrapper :before 'fussy-wipe-cache)
+  (add-hook 'corfu-mode-hook
+            (lambda ()
+              (setq-local fussy-max-candidate-limit 5000
+                          fussy-default-regex-fn 'fussy-pattern-first-letter
+                          fussy-prefer-prefix nil))))
 
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
@@ -1761,6 +1782,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
 
 (use-package pinyinlib
+  :disabled
   :after-call +my/first-input-hook-fun
   :after orderless
   :config
