@@ -20,7 +20,7 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.6)
+(defvar elpaca-installer-version 0.7)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -2848,6 +2848,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (remove-hook 'dape-on-start-hooks 'dape-repl)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
 
+  (setq dape-debug t)
+
   ;; To display info and/or repl buffers on stopped
   (add-hook 'dape-on-stopped-hooks 'dape-info)
   ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
@@ -2933,11 +2935,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (defun dape-flutter-hotRestart ()
     (interactive)
-    (dape--with dape-request ((dape--live-connection t) "hotRestart" nil)))
+    (dape-request (dape--live-connection 'running) "hotRestart" nil))
 
   (defun dape-flutter-hotReload ()
     (interactive)
-    (dape-request (dape--live-connection t) "hotReload" nil))
+    (dape-request (dape--live-connection 'running) "hotReload" nil))
 
   (defun dape-flutter-devtools ()
     (interactive)
@@ -2972,12 +2974,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
       (kill-buffer buffer)))
 
   (defun my/dape--log-write (msg)
-    (when (bufferp my/dape--log-buffer)
+    (when (buffer-live-p (get-buffer my/dape--log-buffer))
       (with-current-buffer my/dape--log-buffer
         (goto-char (point-max))
-        (newline)
         (insert msg)
-        (save-buffer))))
+        )))
 
   (defun my/dape--repl-message (msg &optional face)
     "Insert MSG with FACE in *dape-repl* buffer.
@@ -3049,7 +3050,8 @@ Handles newline."
           (python . ("https://github.com/tree-sitter/tree-sitter-python"))
           (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))))
+          (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
+          (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
@@ -3252,12 +3254,12 @@ Install the doc if it's not installed."
      (bind-prefix "C-x ,"
        ;; "r" #'flutter-run-or-hot-reload
        "r" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection t))
+             (if (and (featurep 'dape) (dape--live-connection 'running))
                  (dape-flutter-hotReload)
                (flutter-run-or-hot-reload)))
        ;; "R" #'flutter-run-or-hot-restart
        "R" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection t))
+             (if (and (featurep 'dape) (dape--live-connection 'running))
                  (dape-flutter-hotRestart)
                (flutter-run-or-hot-restart)))
        "v" #'flutter-open-devtools
