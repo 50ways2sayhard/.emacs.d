@@ -1039,8 +1039,9 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("r" . rename-visited-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
-   ("J" . dired)
    ("SPC" . +my/quick-look)
+   :map embark-become-file+buffer-map
+   ("F" . consult-fd)
    :map embark-region-map
    ("V" . diff-hl-show-hunk)
    ("/" . evilnc-comment-or-uncomment-lines)
