@@ -63,7 +63,7 @@ S is string of the two-key sequence."
     "f" #'find-file
     "r" #'recentf-open-files
     "p" #'+open-configuration-folder
-    "j" #'+consult-dir
+    "j" #'consult-dir
     "h" #'(lambda () (interactive) (consult-fd default-directory)))
   (defvar-keymap +meow-buffer-map
     :doc "Buffer operations"

@@ -1528,8 +1528,8 @@ When the number of characters in a buffer exceeds this threshold,
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.01)
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.1)
   (corfu-max-width 120)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
@@ -1645,6 +1645,8 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq cape-dict-file "/usr/share/dict/words")
   (setq cape-dabbrev-check-other-buffers nil)
 
+  (advice-add #'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
+
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
@@ -1722,7 +1724,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :init
   (setq gcmh-idle-delay 'auto
         gcmh-auto-idle-delay-factor 10
-        gcmh-high-cons-threshold (* 64 1024 1024)))
+        gcmh-high-cons-threshold (* 128 1024 1024)))
 
 (use-package recentf
   :elpaca nil
@@ -1894,14 +1896,10 @@ Just put this function in `hippie-expand-try-functions-list'."
           (if (not (project-root-p path))
               (setq path (file-name-directory (directory-file-name path)))
             (throw 'found (cons 'transient path)))))))
+
   (require 'project)
   (add-to-list 'project-find-functions #'project-find-root)
   )
-
-(use-package project-rootfile
-  :elpaca (:repo "https://github.com/buzztaiki/project-rootfile.el")
-  :config
-  (add-to-list 'project-rootfile-list "melos.yaml"))
 
 (use-package winner
   :elpaca nil
@@ -2106,6 +2104,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-env-version t)
+  (doom-modeline-check-simple-format t)
   (doom-modeline-buffer-modification-icon t))
 
 (use-package catppuccin-theme
@@ -2374,11 +2373,9 @@ Just put this function in `hippie-expand-try-functions-list'."
                 load-path))
 
   (setq eldoc-documentation-function 'eldoc-documentation-compose)
-  (setq flymake-no-changes-timeout nil
+  (setq flymake-no-changes-timeout 3
+        flymake-show-diagnostics-at-end-of-line 'short
         flymake-fringe-indicator-position 'right-fringe))
-
-(use-package flymake-popon
-  :hook (flymake-mode . flymake-popon-mode))
 
 (use-package jinx
   :elpaca (:repo "minad/jinx")
@@ -2615,7 +2612,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 ;;;; Lsp integration
 (use-package eglot
   :elpaca nil
-  :commands (+eglot-organize-imports +eglot-help-at-point)
+  :commands (+eglot-organize-imports +eglot-help-at-point eglot-booster)
   :hook ((eglot-managed-mode . (lambda ()
                                  (+lsp-optimization-mode)
                                  (setq eldoc-documentation-functions
@@ -2631,7 +2628,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                  ))
          (prog-mode . (lambda ()
                         (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
-                                     (my-project--ignored-p (buffer-file-name (current-buffer))))
+                                    (my-project--ignored-p (buffer-file-name (current-buffer))))
                           (eglot-ensure)))))
   :init
   (defvar +lsp--default-read-process-output-max nil)
@@ -2812,6 +2809,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                (eglot-server-capable :signatureHelpProvider))
       (+eglot/show-signature-help)
       (add-hook 'post-command-hook #'+eglot/show-signature-help nil t)))
+
+  (eglot-booster-mode +1)
   )
 
 (use-package eglot-booster
@@ -3000,7 +2999,6 @@ Handles newline."
                     (run-hook-with-args 'comint-output-filter-functions msg)))))))))))
 
   (advice-add #'dape--repl-message :override #'my/dape--repl-message)
-
   )
 
 (use-package breadcrumb
@@ -3010,6 +3008,11 @@ Handles newline."
 (use-package consult-eglot
   :after (consult eglot)
   :commands (consult-eglot-symbols))
+
+(use-package consult-eglot-embark
+  :after (embark consult-eglot)
+  :config
+  (consult-eglot-embark-mode))
 
 ;;;; Builtin tree sitter
 (use-package treesit
@@ -3251,7 +3254,8 @@ Install the doc if it's not installed."
        "p" #'flutter-pub-get
        "tt" #'flutter-test-at-point
        "tf" #'flutter-test-current-file
-       "tF" #'flutter-test-all)))
+       "tF" #'flutter-test-all
+       "o" #'my/flutter-doc-search)))
 
   (defvar flutter--modeline-device nil)
 
@@ -3271,6 +3275,11 @@ Install the doc if it's not installed."
     (flutter--modeline-device-update)
     (make-local-variable 'mode-line-misc-info)
     (add-to-list 'mode-line-misc-info (flutter--modeline-format) t))
+
+  (defun my/flutter-doc-search (query)
+    (interactive "ssearch: ")
+    (browse-url
+     (concat "https://docs.flutter.dev/search?q=" (string-replace " " "%20" query)) t))
   )
 
 ;;; Terminal integration
@@ -3286,7 +3295,7 @@ Install the doc if it's not installed."
    ("s-<escape>" . #'vterm-send-escape))
   :init
   (setq vterm-always-compile-module t)
-  (setq vterm-shell "fish")
+  (setq vterm-shell "zsh")
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-max-scrollback 5000)
   (setq vterm-timer-delay 0.001
