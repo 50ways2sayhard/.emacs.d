@@ -1433,38 +1433,21 @@ When the number of characters in a buffer exceeds this threshold,
   ;; setup code
   (add-hook 'minibuffer-setup-hook #'mcfly-time-travel))
 
-;; (use-package orderless
-;;   :after-call +my/first-input-hook-fun
-;;   :demand t
-;;   :config
-;;   (setq completion-styles '(orderless basic)
-;;         completion-category-defaults nil
-;;         orderless-component-separator #'orderless-escapable-split-on-space
-;;         completion-category-overrides '((file (styles basic partial-completion))
-;;                                         (eglot-capf (styles orderless-literal basic))
-;;                                         (eglot (styles orderless-literal basic))
-;;                                         ))
-;;   )
-
-(use-package fussy
+(use-package orderless
   :after-call +my/first-input-hook-fun
   :demand t
-  :custom
-  (completion-styles '(fussy basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles basic partial-completion))
-                                   (eglot-capf (styles fussy basic))
-                                   (eglot (styles fussy basic))
-                                   ))
-  (fussy-filter-fn 'fussy-filter-default)
-  (fussy-use-cache t)
+  :init
+  (require 'orderless-kwd)
   :config
-  (advice-add 'corfu--capf-wrapper :before 'fussy-wipe-cache)
-  (add-hook 'corfu-mode-hook
-            (lambda ()
-              (setq-local fussy-max-candidate-limit 5000
-                          fussy-default-regex-fn 'fussy-pattern-first-letter
-                          fussy-prefer-prefix nil))))
+  (with-eval-after-load 'orderless
+    (add-to-list 'orderless-style-dispatchers 'orderless-kwd-dispatch t))
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        orderless-component-separator #'orderless-escapable-split-on-space
+        completion-category-overrides '((file (styles basic partial-completion))
+                                        (eglot-capf (styles orderless-literal basic))
+                                        (eglot (styles orderless-literal basic))))
+  )
 
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
