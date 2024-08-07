@@ -61,15 +61,15 @@
 (elpaca elpaca-use-package
   ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
+  ;; Assume :ensure t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
 
 
 (mapcar
  (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
- '(xref tramp tramp-sh flymake simple diff-mode smerge-mode python css-mode custom
+ '(xref tramp tramp-sh tramp-adb flymake simple diff-mode smerge-mode python css-mode custom
         server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
-        lisp-mode treesit imenu eldoc transient hippie-exp eglot))
+        lisp-mode treesit imenu eldoc transient hippie-exp eglot autorevert))
 
 ;; Block until current queue processed.
 (elpaca-wait)
@@ -128,9 +128,14 @@ REST and STATE."
 (use-package dash
   :config (global-dash-fontify-mode))
 
+(use-package autorevert
+  :ensure nil
+  :diminish
+  :hook (after-init . global-auto-revert-mode))
+
 ;;; Custom settings
 (use-package custom
-  :elpaca nil
+  :ensure nil
   :no-require t
   :config
   (setq custom-file (expand-file-name "init-custom.el" user-emacs-directory))
@@ -139,7 +144,7 @@ REST and STATE."
 
 ;;; Server mode
 (use-package server
-  :elpaca nil
+  :ensure nil
   :commands (server-running-p)
   :config (or (server-running-p) (server-mode)))
 
@@ -171,7 +176,7 @@ REST and STATE."
   (setq diff-hl-draw-borders nil))
 
 (use-package diff-mode
-  :elpaca nil
+  :ensure nil
   :config
   (when (>= emacs-major-version 27)
     (set-face-attribute 'diff-refine-changed nil :extend t)
@@ -180,7 +185,7 @@ REST and STATE."
 
 ;;; Dired and Dirvish file browser
 (use-package dired
-  :elpaca nil
+  :ensure nil
   :bind
   (:map dired-mode-map
         ("'" . +my/quick-look)
@@ -257,22 +262,23 @@ REST and STATE."
         "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
 
   (use-package dirvish-extras
-    :elpaca nil
+    :ensure nil
     :after dirvish)
 
   (use-package dirvish-vc
-    :elpaca nil
+    :ensure nil
     :after dirvish))
 
 
 ;;; Documentation in echo area
 (use-package eldoc
-  :elpaca nil
+  :ensure nil
   :commands (eldoc)
-  :config (global-eldoc-mode))
+  :config
+  (global-eldoc-mode))
 
 (use-package help
-  :elpaca nil
+  :ensure nil
   :config (temp-buffer-resize-mode))
 
 ;;; Isearch
@@ -292,9 +298,8 @@ REST and STATE."
         ("'" . magit-process-buffer))
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
-  (setq magit-show-long-lines-warning nil)
-  (magit-auto-revert-mode -1)
-  (setq magit-diff-refine-hunk (quote all))
+  (setq magit-diff-refine-hunk t)
+  (magit-auto-revert-mode)
 
   (defun magit-open-repo ()
     "open remote repo URL"
@@ -574,7 +579,7 @@ It will split otherwise."
 
 ;;; Parenthesis
 (use-package elec-pair
-  :elpaca nil
+  :ensure nil
   :hook (+my/first-input . electric-pair-mode)
   :config
   ;; disable <> auto pairing in electric-pair-mode for org-mode
@@ -602,7 +607,7 @@ It will split otherwise."
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
 (use-package fingertip
-  :elpaca (:repo "manateelazycat/fingertip" :host github)
+  :ensure (:repo "manateelazycat/fingertip" :host github)
   :hook ((dart-ts-mode) . fingertip-mode)
   :config
   ;; (define-key fingertip-mode-map (kbd "(") 'fingertip-open-round)
@@ -645,7 +650,7 @@ It will split otherwise."
   (define-key fingertip-mode-map (kbd "C-j") 'fingertip-jump-up))
 
 (use-package paren
-  :elpaca nil
+  :ensure nil
   :hook (elpaca-after-init . show-paren-mode)
   :config
   (setq show-paren-style 'parenthesis
@@ -1015,7 +1020,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
 (use-package bind
-  :elpaca (:host github :repo "repelliuss/bind")
+  :ensure (:host github :repo "repelliuss/bind")
   :functions (bind))
 
 (use-package which-key
@@ -1027,7 +1032,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 
 ;;; Minibuffer completion
 (use-package embark
-  :elpaca (embark :files (:defaults "*.el"))
+  :ensure (embark :files (:defaults "*.el"))
   :after-call +my/first-input-hook-fun
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -1130,7 +1135,7 @@ targets."
 
 ;;;; Minibuffer completion UI
 (use-package vertico
-  :elpaca (vertico :files (:defaults "extensions/vertico-*.el"))
+  :ensure (vertico :files (:defaults "extensions/vertico-*.el"))
   :hook (+my/first-input . vertico-mode)
   :custom
   (vertico-cycle t)
@@ -1138,20 +1143,20 @@ targets."
   :config
   ;; Configure directory extension.
   (use-package vertico-quick
-    :elpaca nil
+    :ensure nil
     :after vertico
     :bind (:map vertico-map
                 ("M-q" . vertico-quick-insert)
                 ("C-q" . vertico-quick-exit)))
 
   (use-package vertico-repeat
-    :elpaca nil
+    :ensure nil
     :after vertico
     :bind ("C-c r" . vertico-repeat)
     :hook (minibuffer-setup . vertico-repeat-save))
 
   (use-package vertico-directory
-    :elpaca nil
+    :ensure nil
     :after vertico
     ;; More convenient directory navigation commands
     :bind (:map vertico-map
@@ -1162,7 +1167,7 @@ targets."
     :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)))
 
 (use-package emacs
-  :elpaca nil
+  :ensure nil
   :init
   (setq completion-cycle-threshold 3)
   (setq tab-always-indent 'completion)
@@ -1189,8 +1194,7 @@ targets."
         read-file-name-completion-ignore-case t))
 
 (use-package consult
-  ;; :after orderless
-  :after fussy
+  :after orderless
   :commands (noct-consult-ripgrep-or-line consult-clock-in +consult-ripgrep-current-directory)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
@@ -1472,7 +1476,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
 (use-package nerd-icons-completion
-  :elpaca (nerd-icons-completion :type git :host github :repo "rainstormstudio/nerd-icons-completion")
+  :ensure (nerd-icons-completion :type git :host github :repo "rainstormstudio/nerd-icons-completion")
   :commands (nerd-icons-completion-marginalia-setup)
   :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
 (use-package nerd-icons-corfu
@@ -1522,14 +1526,14 @@ When the number of characters in a buffer exceeds this threshold,
 
 ;;; Auto completion
 (use-package corfu
-  :elpaca (corfu :files (:defaults "extensions/corfu-*.el"))
+  :ensure (corfu :files (:defaults "extensions/corfu-*.el"))
   :after-call +my/first-input-hook-fun
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.1)
+  (corfu-auto-delay 0.18)
   (corfu-max-width 120)
   ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
   ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
@@ -1563,7 +1567,7 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (global-corfu-mode)
   (use-package corfu-quick
-    :elpaca nil
+    :ensure nil
     :commands (corfu-quick-insert corfu-quick-complete)
     :bind
     (:map corfu-map
@@ -1571,15 +1575,15 @@ When the number of characters in a buffer exceeds this threshold,
           ("M-q" . corfu-quick-complete)))
 
   (use-package corfu-history
-    :elpaca nil
+    :ensure nil
     :hook (corfu-mode . corfu-history-mode))
 
   (use-package corfu-popupinfo
-    :elpaca nil
+    :ensure nil
     :hook (corfu-mode . corfu-popupinfo-mode)
     :config
     (set-face-attribute 'corfu-popupinfo nil :height 140)
-    (setq corfu-popupinfo-delay '(0.4 . 0.2)))
+    (setq corfu-popupinfo-delay '(0.5 . 1.0)))
 
   (advice-add #'keyboard-quit :before #'corfu-quit)
   (add-to-list 'corfu-auto-commands 'end-of-visual-line)
@@ -1613,7 +1617,7 @@ Just put this function in `hippie-expand-try-functions-list'."
       (call-interactively #'tempel-expand))))
 
 (use-package hippie-exp
-  :elpaca nil
+  :ensure nil
   :bind
   (("M-\\" . hippie-expand))
   :custom (hippie-expand-try-functions-list
@@ -1669,7 +1673,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 (use-package tabnine-capf
   :when +self/enable-tabnine
   :after cape
-  :elpaca (:host github :repo "50ways2sayhard/tabnine-capf")
+  :ensure (:host github :repo "50ways2sayhard/tabnine-capf")
   :commands (tabnine-completion-at-point tabnine-capf-start-process)
   :hook ((kill-emacs . tabnine-capf-kill-process)))
 
@@ -1679,7 +1683,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :hook ((prog-mode . copilot-mode)
          (copilot-mode . (lambda ()
                            (setq-local copilot--indent-warning-printed-p t))))
-  :elpaca (:host github :repo "copilot-emacs/copilot.el"
+  :ensure (:host github :repo "copilot-emacs/copilot.el"
                  :files ("dist" "*.el"))
   :bind
   ((:map copilot-completion-map
@@ -1695,7 +1699,7 @@ Just put this function in `hippie-expand-try-functions-list'."
         tempel--active ;; diable copilot in tempel
         (not (looking-back "[\x00-\xff]"))))
 
-  (add-to-list 'copilot--indentation-alist
+  (add-to-list 'copilot-indentation-alist
                '(dart-ts-mode dart-ts-mode-indent-offset))
 
   (setq warning-minimum-level :error)
@@ -1706,7 +1710,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package starhugger
   :when (and (not +self/enable-copilot) (length> starhugger-api-token 0))
-  :elpaca (:repo "https://gitlab.com/daanturo/starhugger.el" :files (:defaults "*.py"))
+  :ensure (:repo "https://gitlab.com/daanturo/starhugger.el" :files (:defaults "*.py"))
   :hook (prog-mode . starhugger-auto-mode)
   :after corfu
   :bind
@@ -1727,7 +1731,7 @@ Just put this function in `hippie-expand-try-functions-list'."
         gcmh-high-cons-threshold (* 128 1024 1024)))
 
 (use-package recentf
-  :elpaca nil
+  :ensure nil
   :demand t
   :config
   (recentf-mode)
@@ -1748,11 +1752,11 @@ Just put this function in `hippie-expand-try-functions-list'."
                           "COMMIT_EDITMSG\\'")))
 
 (use-package simple
-  :elpaca nil
+  :ensure nil
   :config (column-number-mode))
 
 (use-package tramp
-  :elpaca nil
+  :ensure nil
   :config
   (add-to-list 'tramp-default-proxies-alist '(nil "\\`root\\'" "/ssh:%h:"))
   (add-to-list 'tramp-default-proxies-alist '("localhost" nil nil))
@@ -1764,11 +1768,15 @@ Just put this function in `hippie-expand-try-functions-list'."
                 tramp-file-name-regexp)))
 
 (use-package tramp-sh
-  :elpaca nil
+  :ensure nil
   :config (cl-pushnew 'tramp-own-remote-path tramp-remote-path))
 
+(use-package tramp-adb
+  :ensure nil
+  :config
+  (setq tramp-adb-program "~/Library/Android/sdk/platform-tools/adb"))
+
 (use-package pinyinlib
-  :disabled
   :after-call +my/first-input-hook-fun
   :after orderless
   :config
@@ -1779,14 +1787,18 @@ Just put this function in `hippie-expand-try-functions-list'."
 (use-package vundo
   :commands vundo
   :config
-  (setq vundo-glyph-alist vundo-unicode-symbols))
+  (setq undo-limit 400000           ; 400kb (default is 160kb)
+        undo-strong-limit 3000000   ; 3mb   (default is 240kb)
+        undo-outer-limit 48000000)  ; 48mb  (default is 24mb)
+  (setq vundo-glyph-alist vundo-unicode-symbols
+        vundo-compact-display t))
 
 (use-package visual-regexp)
 
 (use-package visual-regexp-steroids)
 
 (use-package maple-translate
-  :elpaca (:host github :repo "honmaple/emacs-maple-translate")
+  :ensure (:host github :repo "honmaple/emacs-maple-translate")
   :commands (maple-translate maple-translate+ maple-translate-posframe)
   :bind
   ("C-c t y" . maple-translate-posframe)
@@ -1839,7 +1851,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 ;; -SaveAllBuffers
 
 (use-package project
-  :elpaca nil
+  :ensure nil
   :commands (project-find-file project-switch-project)
   :config
   (defun my/project-files-in-directory (dir)
@@ -1858,15 +1870,25 @@ Just put this function in `hippie-expand-try-functions-list'."
 
   (setq project-vc-ignores '(".dart-tool" ".idea" ".DS_Store" ".git" "build"))
 
-  (defvar project--ignore-list
+  (defvar project--ignore-under
     '("~/fvm"
-      "~/.pub-cache"))
+      "~/.pub-cache"
+      ))
+
+  (defvar project--ignore-project-names '("example"))
 
   (defun my-project--ignored-p (path)
     (when path
       (catch 'found
-        (dolist (ignore project--ignore-list)
+        (dolist (ignore project--ignore-under)
           (when (string-prefix-p (file-truename ignore) (file-truename path))
+            (throw 'found t))))))
+
+  (defun my-project--ignored-project-p (path)
+    (when path
+      (catch 'found
+        (dolist (ignore-name project--ignore-project-names)
+          (when (string-match-p ignore-name (file-name-nondirectory (directory-file-name path)))
             (throw 'found t))))))
 
   (cl-defmethod project-files ((project (head transient)) &optional dirs)
@@ -1885,7 +1907,9 @@ Just put this function in `hippie-expand-try-functions-list'."
     "Check if the current PATH has any of the project root markers."
     (catch 'found
       (dolist (marker project-root-markers)
-        (when (and (file-exists-p (concat path marker)) (not (my-project--ignored-p path)))
+        (when (and
+               (file-exists-p (concat path marker))
+               (not (or (my-project--ignored-p path) (my-project--ignored-project-p path))))
           (throw 'found marker)))))
 
   (defun project-find-root (path)
@@ -1902,7 +1926,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   )
 
 (use-package winner
-  :elpaca nil
+  :ensure nil
   :commands (winner-undo winner-redo)
   :hook (window-setup . winner-mode)
   :init (setq winner-boring-buffers '("*Completions*"
@@ -1917,7 +1941,7 @@ Just put this function in `hippie-expand-try-functions-list'."
                                       "*esh command on file*")))
 
 (use-package tab-bar
-  :elpaca nil
+  :ensure nil
   :hook (window-setup . tab-bar-mode)
   :config
   (setq tab-bar-separator ""
@@ -2144,23 +2168,24 @@ Just put this function in `hippie-expand-try-functions-list'."
   (with-eval-after-load 'kind-icon
     (add-hook 'ef-themes-post-load-hook #'kind-icon-reset-cache)))
 
-(use-package spacious-padding
-  :hook (window-setup . spacious-padding-mode))
-
 (when (display-graphic-p)
+  (defvar +my-cn-font "Sarasa Term SC Nerd"
+    "The font name of Chinese characters.")
+  (defvar +my-en-font "Cascadia Code"
+    "The font name of English characters.")
+
+  (set-face-attribute 'default nil :font +my-en-font :height 140)
+  (set-fontset-font t 'han (font-spec :family +my-cn-font))
   (custom-set-faces
    ;; custom-set-faces was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
-   '(org-table ((t (:family "Maple Mono SC NF")))))
-  (advice-add #'org-string-width :override #'org--string-width-1)
-
-  (set-face-attribute 'default nil :font "Cascadia Code" :height 150)
-  (set-fontset-font t 'han (font-spec :family "Maple Mono SC NF")))
+   '(org-table ((t (:family "Sarasa Term SC Nerd"))))
+   ))
 
 (use-package composite
-  :elpaca nil
+  :ensure nil
   :init (defvar composition-ligature-table (make-char-table nil))
   :hook (((prog-mode
            conf-mode nxml-mode markdown-mode help-mode
@@ -2205,7 +2230,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 ;;; Highlight
 (use-package hl-line
-  :elpaca nil
+  :ensure nil
   :custom-face (hl-line ((t (:extend t))))
   :hook ((elpaca-after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
@@ -2261,8 +2286,31 @@ Just put this function in `hippie-expand-try-functions-list'."
       (deadgrep-restart))
     ))
 
+(use-package indent-bars
+  :ensure (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+  :hook (prog-mode . indent-bars-mode)
+  :custom-face
+  (indent-bars-face ((t (:height 1.2))))
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-no-descend-string t)
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  (indent-bars-prefer-character t)
+  (indent-bars-treesit-wrap
+   '((python
+	    argument_list
+	    parameters ; for python, as an example
+	    list
+	    list_comprehension
+	    dictionary
+	    dictionary_comprehension
+	    parenthesized_expression
+	    subscript)))
+  (indent-bars-no-stipple-char ?\⎸)
+  )
+
 (use-package consult-todo
-  :elpaca (:host github :repo "liuyinz/consult-todo")
+  :ensure (:host github :repo "liuyinz/consult-todo")
   :demand t)
 
 (use-package volatile-highlights
@@ -2277,7 +2325,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 ;; Pulse current line
 (use-package pulse
-  :elpaca nil
+  :ensure nil
   :commands (my-recenter-and-pulse my-recenter-and-pulse-line)
   :custom-face
   (pulse-highlight-start-face ((t (:inherit region))))
@@ -2351,7 +2399,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (advice-add #'deactivate-mark :after #'turn-on-symbol-overlay))
 ;;; Syntax checker
 (use-package flymake
-  :elpaca nil
+  :ensure nil
   :after-call +my/first-input-hook-fun
   :hook (emacs-lisp-mode . flymake-mode)
   :config
@@ -2372,13 +2420,30 @@ Just put this function in `hippie-expand-try-functions-list'."
         (append elisp-flymake-byte-compile-load-path
                 load-path))
 
-  (setq eldoc-documentation-function 'eldoc-documentation-compose)
-  (setq flymake-no-changes-timeout 3
-        flymake-show-diagnostics-at-end-of-line 'short
-        flymake-fringe-indicator-position 'right-fringe))
+  (setq flymake-no-changes-timeout nil
+        flymake-show-diagnostics-at-end-of-line nil
+        flymake-fringe-indicator-position 'right-fringe)
+
+  )
+
+(use-package sideline-flymake
+  :diminish sideline-mode
+  :custom-face
+  (sideline-flymake-error ((t (:height 0.85 :italic t))))
+  (sideline-flymake-warning ((t (:height 0.85 :italic t))))
+  (sideline-flymake-success ((t (:height 0.85 :italic t))))
+  :hook (flymake-mode . sideline-mode)
+  :init (setq sideline-flymake-display-mode 'point
+              sideline-backends-right '(sideline-flymake)))
+
+;; (use-package flymake-popon
+;;   :hook (flymake-mode . flymake-popon-mode)
+;;   :config
+;;   (setq flymake-popon-delay 1)
+;;   )
 
 (use-package jinx
-  :elpaca (:repo "minad/jinx")
+  :ensure (:repo "minad/jinx")
   :bind (([remap ispell-word] . #'jinx-correct))
   :hook ((text-mode) . jinx-mode)
   :config
@@ -2393,7 +2458,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent)))
 
 (use-package delete-block
-  :elpaca (:repo "manateelazycat/delete-block" :host github)
+  :ensure (:repo "manateelazycat/delete-block" :host github)
   :commands (delete-block-backward)
   :bind
   (("M-d" . delete-block-forward)
@@ -2406,7 +2471,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :hook (window-setup . ws-butler-global-mode))
 
 (use-package wgrep
-  :elpaca (:files (:defaults "*.el"))
+  :ensure (:files (:defaults "*.el"))
   :commands wgrep-change-to-wgrep-mode
   :bind
   (:map grep-mode-map
@@ -2459,7 +2524,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode dart-ts-mode))))
 
 (use-package speedrect
-  :elpaca (:repo "jdtsmith/speedrect" :host github)
+  :ensure (:repo "jdtsmith/speedrect" :host github)
   :init
   (require 'speedrect))
 
@@ -2558,13 +2623,13 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
 ;;; Programing
 (use-package prog-mode
-  :elpaca nil
+  :ensure nil
   :hook (prog-mode . hs-minor-mode)
   :config
   (global-prettify-symbols-mode))
 
 (use-package vs-comment-return
-  :elpaca (:host github :repo "emacs-vs/vs-comment-return")
+  :ensure (:host github :repo "emacs-vs/vs-comment-return")
   :hook (prog-mode . vs-comment-return-mode)
   :custom
   (vs-comment-return-cancel-after t))
@@ -2600,7 +2665,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (add-hook 'xref-after-return-hook #'better-jumper-set-jump))
 
 (use-package lisp-mode
-  :elpaca nil
+  :ensure nil
   :mode ("\\.el\\'" . emacs-lisp-mode)
   :config
   (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
@@ -2611,15 +2676,15 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
 ;;;; Lsp integration
 (use-package eglot
-  :elpaca nil
+  :ensure nil
   :commands (+eglot-organize-imports +eglot-help-at-point eglot-booster)
   :hook ((eglot-managed-mode . (lambda ()
-                                 (+lsp-optimization-mode)
+                                 ;; (+lsp-optimization-mode)
                                  (setq eldoc-documentation-functions
                                        (cons #'flymake-eldoc-function
                                              (remove #'flymake-eldoc-function eldoc-documentation-functions)))
-                                 ;; Show all eldoc feedback.
-                                 (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+                                 ;; ;; Show all eldoc feedback.
+                                 (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)
                                  (if (or (boundp 'lsp-bridge-mode) (boundp 'lspce-mode))
                                      (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
                                    (my/set-eglot-capf))
@@ -2664,17 +2729,17 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (setq +lsp--optimization-init-p t))))
   :config
   (setq
-   eglot-send-changes-idle-time 0.5
+   eglot-send-changes-idle-time 0.4
    eglot-autoshutdown t
    eglot-extend-to-xref t
    eglot-confirm-server-initiated-edits nil
    eglot-sync-connect nil
    eglot-events-buffer-config '(:size 0 :format full)
-   eglot-report-progress nil)
+   eglot-report-progress nil
+   )
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
   (defun +eglot-organize-imports() (call-interactively 'eglot-code-action-organize-imports))
-  ;; (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
@@ -2695,34 +2760,17 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (defface +eglot/display-border '((((background dark)) . (:background "white"))
                                    (((background light)) . (:background "black")))
     "The border color used in childframe.")
-
-  ;; Uri <-> File Path
-  (defvar eglot-path-uri-cache (make-hash-table :test #'equal)
-    "File path to uri cache.")
-
-  (cl-defgeneric +eglot/ext-uri-to-path (uri)
-    "Support extension uri."
-    nil)
-
-  (define-advice eglot-uri-to-path (:around (orig-fn uri) advice)
-    "Support non standard LSP uri scheme."
-    (when (keywordp uri) (setq uri (substring (symbol-name uri) 1)))
-    (or (+eglot/ext-uri-to-path uri)
-        (funcall orig-fn uri)))
-
-  (define-advice eglot-path-to-uri (:around (orig-fn path) advice)
-    "Support non standard LSP uri scheme."
-    (or (gethash path eglot-path-uri-cache)
-        (funcall orig-fn path)))
-
-  ;;   (cl-defgeneric +eglot/workspace-configuration (server)
-  ;;     "Set workspace configuration,
-  ;; - Handle server request `workspace/configuration'
-  ;; - Send a `workspace/didChangeConfiguration' signal to SERVER"
-  ;;     nil)
-  ;;   (setq-default eglot-workspace-configuration #'+eglot/workspace-configuration)
-
   (defvar +eglot/last-buffer nil)
+
+  ;; WORKAROUND https://github.com/joaotavora/eglot/issues/1296
+  (cl-defmethod eglot-handle-notification :after
+    (_server (_method (eql textDocument/publishDiagnostics)) &key uri
+             &allow-other-keys)
+    (when-let ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
+      (with-current-buffer buffer
+        (if (and (eq nil flymake-no-changes-timeout)
+                 (not (buffer-modified-p)))
+            (flymake-start t)))))
 
   ;; Hover
   (defun +eglot/show-hover-at-point ()
@@ -2814,7 +2862,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   )
 
 (use-package eglot-booster
-  :elpaca (:repo "jdtsmith/eglot-booster" :host github)
+  :ensure (:repo "jdtsmith/eglot-booster" :host github)
   :when (executable-find "emacs-lsp-booster")
   :commands (eglot-booster-mode)
   :after eglot
@@ -2824,19 +2872,54 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (eglot-booster-mode))
 
 (use-package dape
-  :elpaca (:host github :repo "svaante/dape")
+  :ensure (:host github :repo "svaante/dape")
   :hook (dape-active-mode . dape-breakpoint-global-mode)
+  :commands (dape-hydra/body)
+  :bind
+  (("<f6>" . dape-hydra/body))
+  :init
+  (pretty-hydra-define dape-hydra (:title "Debug" :color pink :quit-key ("q" "C-g") :post (dape-hydra-auto-leave))
+    ("Stepping"
+     (("n" dape-next "next")
+      ("s" dape-step-in "step in")
+      ("o" dape-step-out "step out")
+      ("c" dape-continue "continue")
+      ("p" dape-pause "pause")
+      ("K" dape-kill "kill")
+      ("r" dape-restart "restart")
+      ("D" dape-disconnect-quit "disconnect"))
+     "Switch"
+     (("m" dape-read-memory "memory")
+      ("t" dape-select-thread "thread")
+      ("w" dape-watch-dwim "watch")
+      ("S" dape-select-stack "stack")
+      ("i" dape-info "info")
+      ("R" dape-repl "repl"))
+     "Breakpoints"
+     (("b" dape-breakpoint-toggle "toggle")
+      ("l" dape-breakpoint-log "log")
+      ("e" dape-breakpoint-expression "expression")
+      ("B" dape-breakpoint-remove-all "clear"))
+     "Debug"
+     (("d" dape "dape")
+      ("Q" dape-quit "quit" :exit t)))
+    )
   :config
   (remove-hook 'dape-on-start-hooks 'dape-info)
-  (remove-hook 'dape-on-start-hooks 'dape-repl)
+  ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
 
   (setq dape-debug t)
+  (setq dape-request-timeout 20)
 
   ;; To display info and/or repl buffers on stopped
   (add-hook 'dape-on-stopped-hooks 'dape-info)
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
-  (add-hook 'dape-on-stopped-hooks 'dape-transient)
+  (add-hook 'dape-on-stopped-hooks 'dape-hydra/body)
+
+  (defun dape-hydra-auto-leave ()
+    (when (dape--live-connection 'stopped t)
+      (dape-hydra/nil)))
+
 
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
@@ -2850,31 +2933,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (defun dape--flutter-entrypoint ()
     (concat (dape--flutter-cwd) "/lib/main.dart"))
-
-  (transient-define-prefix dape-transient ()
-    "Transient for dape."
-    [["Stepping"
-      ("n" "Next" dape-next :transient t)
-      ("i" "Step in" dape-step-in :transient t)
-      ("o" "Step out" dape-step-out :transient t)
-      ("c" "Continue" dape-continue :transient t)
-      ("r" "restart" dape-restart :transient t)]
-     ["Breakpoints"
-      ("bb" "Toggle" dape-breakpoint-toggle :transient t)
-      ("bd" "Remove all" dape-breakpoint-remove-all :transient t)
-      ("bl" "Add log breakpoing" dape-breakpoint-log :transient t)
-      ("be" "Add expression breakpoint" dape-breakpoint-expression :transient t)
-      ]
-     ["Switch"
-      ("i" "Info" dape-info)
-      ("R" "Repl" dape-repl)
-      ("m" "Memory" dape-read-memory)
-      ("t" "Thread" dape-select-thread)
-      ("w" "Watch" dape-watch-dwim)
-      ("S" "Stack" dape-select-stack)]
-     ["Quit"
-      ("qq" "Quit" dape-quit :transient nil)
-      ("qk" "Kill" dape-kill :transient nil)]])
 
   (require 'flutter)
 
@@ -2918,11 +2976,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (defun dape-flutter-hotRestart ()
     (interactive)
-    (dape-request (dape--live-connection 'running) "hotRestart" nil))
+    (dape-request (dape--live-connection 'last) "hotRestart" nil))
 
   (defun dape-flutter-hotReload ()
     (interactive)
-    (dape-request (dape--live-connection 'running) "hotReload" nil))
+    (dape-request (dape--live-connection 'last) "hotReload" nil))
 
   (defun dape-flutter-devtools ()
     (interactive)
@@ -2947,6 +3005,12 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
      ))
 
   (defvar my/dape--log-buffer "*my-dape-log*")
+
+  (defun my/open-dape-log-buffer ()
+    (interactive)
+    (if (get-buffer my/dape--log-buffer)
+        (pop-to-buffer my/dape--log-buffer)
+      (message "No dape log buffer")))
 
   (defun my/dape--create-log-buffer ()
     (my/dape--delete-log-buffer)
@@ -3002,7 +3066,7 @@ Handles newline."
   )
 
 (use-package breadcrumb
-  :elpaca (:host github :repo "joaotavora/breadcrumb")
+  :ensure (:host github :repo "joaotavora/breadcrumb")
   :hook (elpaca-after-init . breadcrumb-mode))
 
 (use-package consult-eglot
@@ -3016,7 +3080,7 @@ Handles newline."
 
 ;;;; Builtin tree sitter
 (use-package treesit
-  :elpaca nil
+  :ensure nil
   :when (and (fboundp 'treesit-available-p) (treesit-available-p))
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :init
@@ -3099,13 +3163,13 @@ Install the doc if it's not installed."
 
 ;;;; recenter after imenu jump
 (use-package imenu
-  :elpaca nil
+  :ensure nil
   :commands (imenu)
   :hook (imenu-after-jump . recenter))
 
 (use-package symbols-outline
   :commands (symbols-outline-show)
-  :elpaca (:files (:defaults "*.el" "icons"))
+  :ensure (:files (:defaults "*.el" "icons"))
   :config
   (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)
   (setq symbols-outline-window-position 'left)
@@ -3113,7 +3177,7 @@ Install the doc if it's not installed."
   (symbols-outline-follow-mode))
 
 (use-package xref
-  :elpaca nil
+  :ensure nil
   :defer nil
   :init
   ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
@@ -3129,7 +3193,7 @@ Install the doc if it's not installed."
   :mode ("\\.md\\'" . markdown-mode))
 
 (use-package python
-  :elpaca nil
+  :ensure nil
   :mode ("\\.py\\'" . python-mode)
   :hook (python-mode . (lambda ()
                          (process-query-on-exit-flag
@@ -3190,7 +3254,7 @@ Install the doc if it's not installed."
                      (my/web-vue-setup))))))
 
 (use-package css-mode
-  :elpaca nil
+  :ensure nil
   :mode ("\\.css\\'" "\\.wxss\\'")
   :init
   (add-hook 'css-mode-hook #'rainbow-mode))
@@ -3207,7 +3271,7 @@ Install the doc if it's not installed."
 
 (use-package dart-ts-mode
   :mode ("\\.dart\\'" . dart-ts-mode)
-  :elpaca (:repo "50ways2sayhard/dart-ts-mode" :host github)
+  :ensure (:repo "50ways2sayhard/dart-ts-mode" :host github)
   :init
   (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart"))
   (with-eval-after-load 'eglot
@@ -3230,7 +3294,7 @@ Install the doc if it's not installed."
                                                        (?F "Field"  font-lock-variable-name-face))))))
 
 (use-package flutter
-  :elpaca (:repo "50ways2sayhard/flutter.el" :host github)
+  :ensure (:repo "50ways2sayhard/flutter.el" :host github)
   :after dart-ts-mode
   :init
   :config
@@ -3241,15 +3305,18 @@ Install the doc if it's not installed."
      (bind-prefix "C-x ,"
        ;; "r" #'flutter-run-or-hot-reload
        "r" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection 'running))
+             (if (and (featurep 'dape) (dape--live-connection 'last))
                  (dape-flutter-hotReload)
                (flutter-run-or-hot-reload)))
        ;; "R" #'flutter-run-or-hot-restart
        "R" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection 'running))
+             (if (and (featurep 'dape) (dape--live-connection 'last))
                  (dape-flutter-hotRestart)
                (flutter-run-or-hot-restart)))
-       "v" #'flutter-open-devtools
+       "v" (lambda () (interactive)
+             (if (and (featurep 'dape) (dape--live-connection 'last))
+                 (dape-flutter-devtools)
+               (flutter-open-devtools)))
        "Q" #'flutter-quit
        "p" #'flutter-pub-get
        "tt" #'flutter-test-at-point
@@ -3441,7 +3508,7 @@ Install the doc if it's not installed."
       (org-update-parent-todo-statistics))))
 
 (use-package org
-  :elpaca nil
+  :ensure nil
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda +org/archive-done-tasks)
   :hook ((org-mode . org-indent-mode)
