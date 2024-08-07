@@ -3351,10 +3351,10 @@ Install the doc if it's not installed."
 
 ;;; Terminal integration
 (use-package vterm
-  :commands (vterm--internal vterm-posframe-toggle +my/smart-switch-to-vterm-tab vterm-project)
+  :commands (vterm--internal vterm-project my-vterm-dwim)
   :bind
   (("C-0" . #'vterm-project)
-   ("C-9" . #'vterm-posframe-toggle)
+   ("C-9" . #'my-vterm-dwim)
    :map vterm-mode-map
    ("M-v" . #'yank)
    ("C-x" . #'vterm--self-insert)
@@ -3362,72 +3362,22 @@ Install the doc if it's not installed."
    ("s-<escape>" . #'vterm-send-escape))
   :init
   (setq vterm-always-compile-module t)
-  (setq vterm-shell "zsh")
+  ;; (setq vterm-shell "zsh")
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-max-scrollback 5000)
   (setq vterm-timer-delay 0.001
         process-adaptive-read-buffering nil)
-  (with-no-warnings
-    (defvar vterm-posframe--frame nil)
-
-    (defun vterm-posframe-hidehandler (_)
-      "Hidehandler used by `vterm-posframe-toggle'."
-      (not (eq (selected-frame) posframe--frame)))
-
-    (defun vterm-posframe-toggle ()
-      "Toggle `vterm' child frame."
-      (interactive)
-      (let ((buffer (vterm--internal #'ignore 100)))
-        (if (and vterm-posframe--frame
-                 (frame-live-p vterm-posframe--frame)
-                 (frame-visible-p vterm-posframe--frame))
-            (progn
-              (posframe-hide buffer)
-              ;; Focus the parent frame
-              (select-frame-set-input-focus (frame-parent vterm-posframe--frame)))
-          (let ((width  (max 80 (/ (frame-width) 2)))
-                (height (/ (frame-height) 2)))
-            (setq vterm-posframe--frame
-                  (posframe-show
-                   buffer
-                   ;; :poshandler #'posframe-poshandler-frame-center
-                   :poshandler #'posframe-poshandler-frame-top-center
-                   :hidehandler #'vterm-posframe-hidehandler
-                   :left-fringe 8
-                   :right-fringe 8
-                   :width (frame-width)
-                   :height (/ (frame-height) 4)
-                   :min-width width
-                   :min-height height
-                   :internal-border-width 3
-                   :internal-border-color (face-foreground 'font-lock-comment-face nil t)
-                   :background-color (face-background 'tooltip nil t)
-                   :override-parameters '((cursor-type . t))
-                   :accept-focus t))
-            ;; Blink cursor
-            (with-current-buffer buffer
-              (save-excursion (vterm-clear t))
-              (setq-local cursor-type 'box))
-            ;; Focus the child frame
-            (select-frame-set-input-focus vterm-posframe--frame))))))
   :config
-  (defvar +my-vterm-tab-buffer-name "vterm-tab")
-  (defvar +my-vterm-tab-name "vterm")
-  (defun +my/smart-switch-to-vterm-tab ()
-    "Switch to vterm tab if exists, otherwise create a new vterm tab."
+  (add-hook 'vterm-mode-hook
+            (lambda ()
+              (set (make-local-variable 'buffer-face-mode-face) '(:family "Sarasa Term SC Nerd"))
+              (buffer-face-mode t)))
+
+  (defvar +my-vterm-tab-buffer-name "vterm-tab-buffer")
+  (defun my-vterm-dwim ()
     (interactive)
-    (defvar vterm-buffer-name)
-    (defvar vterm-shell)
     (let ((vterm-buffer-name +my-vterm-tab-buffer-name))
-      (if (get-buffer vterm-buffer-name)
-          (progn
-            (tab-bar-select-tab-by-name "vterm")
-            (switch-to-buffer vterm-buffer-name))
-        (let ((vterm-shell "tmux"))
-          (tab-new)
-          (tab-bar-rename-tab +my-vterm-tab-name)
-          (call-interactively #'vterm)
-          (delete-other-windows)))))
+      (my-create-term-cmd #'vterm vterm-buffer-name)))
 
   (defun +my/smart-vterm-find-file (filename)
     (interactive)
@@ -3437,6 +3387,7 @@ Install the doc if it's not installed."
           (find-file filename))
       (find-file filename)))
   (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file))
+  (add-to-list 'vterm-eval-cmds '("dired" dirvish))
 
   (defun vterm-project ()
     (interactive)
@@ -3444,6 +3395,24 @@ Install the doc if it's not installed."
                                   default-directory))
            (vterm-buffer-name (format "*vterm_%s*" default-directory)))
       (vterm))))
+
+(defvar my-term-tab-name "*term*")
+(defvar my-term-tab-last-tab nil)
+(defmacro my-create-term-cmd (term-fn term-buffer-name)
+  `(let* ((current-tab-name (alist-get 'name (tab-bar--current-tab))))
+     (if (string= current-tab-name my-term-tab-name)
+         (tab-bar-select-tab-by-name my-term-tab-last-tab)
+       (setq my-term-tab-last-tab current-tab-name)
+       (if (get-buffer ,term-buffer-name)
+           (progn
+             (tab-bar-select-tab-by-name my-term-tab-name)
+             (switch-to-buffer ,term-buffer-name))
+         (if (tab-bar--tab-index-by-name my-term-tab-name)
+             (tab-bar-close-tab-by-name my-term-tab-name))
+         (tab-new)
+         (tab-bar-rename-tab my-term-tab-name)
+         (call-interactively ,term-fn)
+         (delete-other-windows)))))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
