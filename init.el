@@ -411,97 +411,33 @@ It will split otherwise."
       (switch-to-buffer buffer t t)
       (selected-window))))
 
+(use-package browse-at-remote
+  :bind (:map vc-prefix-map
+              ("B" . browse-at-remote)))
 
-(defvar gitmoji--all-emoji
-  '(("Improving structure / format of the code." . ":art:")
-    ("Improving performance." . ":zap:")
-    ("Removing code or files." . ":fire:")
-    ("Fixing a bug." . ":bug:")
-    ("Critical hotfix." . ":ambulance:")
-    ("Introducing new features." . ":sparkles:")
-    ("Writing docs." . ":memo:")
-    ("Deploying stuff." . ":rocket:")
-    ("Updating the UI and style files." . ":lipstick:")
-    ("Initial commit." . ":tada:")
-    ("Updating tests." . ":white_check_mark:")
-    ("Fixing security issues." . ":lock:")
-    ("Fixing something on macOS." . ":apple:")
-    ("Fixing something on Linux." . ":penguin:")
-    ("Fixing something on Windows." . ":checkered_flag:")
-    ("Fixing something on Android." . ":robot:")
-    ("Fixing something on iOS." . ":green_apple:")
-    ("Releasing / Version tags." . ":bookmark:")
-    ("Removing linter warnings." . ":rotating_light:")
-    ("Work in progress." . ":construction:")
-    ("Fixing CI Build." . ":green_heart:")
-    ("Downgrading dependencies." . ":arrow_down:")
-    ("Upgrading dependencies." . ":arrow_up:")
-    ("Pinning dependencies to specific versions." . ":pushpin:")
-    ("Adding CI build system." . ":construction_worker:")
-    ("Adding analytics or tracking code." . ":chart_with_upwards_trend:")
-    ("Refactoring code." . ":recycle:")
-    ("Work about Docker." . ":whale:")
-    ("Adding a dependency." . ":heavy_plus_sign:")
-    ("Removing a dependency." . ":heavy_minus_sign:")
-    ("Changing configuration files." . ":wrench:")
-    ("Internationalization and localization." . ":globe_with_meridians:")
-    ("Fixing typos." . ":pencil2:")
-    ("Writing bad code that needs to be improved." . ":hankey:")
-    ("Reverting changes." . ":rewind:")
-    ("Merging branches." . ":twisted_rightwards_arrows:")
-    ("Updating compiled files or packages." . ":package:")
-    ("Updating code due to external API changes." . ":alien:")
-    ("Moving or renaming files." . ":truck:")
-    ("Adding or updating license." . ":page_facing_up:")
-    ("Introducing breaking changes." . ":boom:")
-    ("Adding or updating assets." . ":bento:")
-    ("Updating code due to code review changes." . ":ok_hand:")
-    ("Improving accessibility." . ":wheelchair:")
-    ("Documenting source code." . ":bulb:")
-    ("Writing code drunkenly." . ":beers:")
-    ("Updating text and literals." . ":speech_balloon:")
-    ("Performing database related changes." . ":card_file_box:")
-    ("Adding logs." . ":loud_sound:")
-    ("Removing logs." . ":mute:")
-    ("Adding contributor(s)." . ":busts_in_silhouette:")
-    ("Improving user experience / usability." . ":children_crossing:")
-    ("Making architectural changes." . ":building_construction:")
-    ("Working on responsive design." . ":iphone:")
-    ("Mocking things." . ":clown_face:")
-    ("Adding an easter egg." . ":egg:")
-    ("Adding or updating a .gitignore file" . ":see_no_evil:")
-    ("Adding or updating snapshots" . ":camera_flash:")
-    ("Experimenting new things" . ":alembic:")
-    ("Improving SEO" . ":mag:")
-    ("Work about Kubernetes" . ":wheel_of_dharma:")
-    ("Catching errors" . ":goal_net:")
-    ("Adding or updating types (Flow, TypeScript)" . ":label:")
-    ("增加新特性" . "feat")
-    ("bug 修复" . "fix")
-    ("文档改动" . "docs")
-    ("功能、交互优化" . "improve")
-    ("格式改动（不影响代码运行的变动，例如加空格、换行、分号等）" . "style")
-    ("重构代码" . "refactor")
-    ("性能相关优化" . "perf")
-    ("测试代码" . "test")
-    ("构建过程或辅助工具变动" . "chore")
-    ("回滚" . "revert")
-    ("合并" . "merge")
-    ("上传资源文件" . "resource")))
+(use-package hydra
+  :init
+  (setq hydra-hint-display-type 'posframe)
 
-(defun gitmoji-picker ()
-  "Choose a gitmoji."
-  (interactive)
-  (let* ((choices gitmoji--all-emoji)
-         (candidates (mapcar (lambda (cell)
-                               (cons (format "%s — %s" (cdr cell) (car cell)) (concat (cdr cell) " ")))
-                             choices)))
-    (insert (cdr (assoc (completing-read "Choose a gitmoji " candidates) candidates)))))
+  (with-eval-after-load 'posframe
+    (defun hydra-set-posframe-show-params ()
+      "Set hydra-posframe style."
+      (setq hydra-posframe-show-params
+            `(:left-fringe 8
+                           :right-fringe 8
+                           :internal-border-width 2
+                           ;; :internal-border-color ,(face-background 'posframe-border nil t)
+                           :background-color ,(face-background 'tooltip nil t)
+                           :foreground-color ,(face-foreground 'tooltip nil t)
+                           :lines-truncate t
+                           :poshandler posframe-poshandler-frame-bottom-center)))
+    (hydra-set-posframe-show-params)
+    (add-hook 'after-load-theme-hook #'hydra-set-posframe-show-params t)))
 
-(use-package hydra)
+(use-package pretty-hydra)
 
 (use-package smerge-mode
-  :elpaca nil
+  :ensure nil
   :after magit
   :diminish
   :bind (:map smerge-mode-map
@@ -1954,28 +1890,60 @@ Just put this function in `hippie-expand-try-functions-list'."
   ;; 使用 super-1 super-2 ... 来切换 tab
   (customize-set-variable 'tab-bar-select-tab-modifiers '(super))
 
-  ;; 自动截取 tab name，并且添加在每个 tab 上添加数字，方便用快捷键切换
-  (setq tab-bar-tab-name-function
-        (lambda () (let* ((raw-tab-name (buffer-name (window-buffer (minibuffer-selected-window))))
-                          (count (length (window-list-1 nil 'nomini)))
-                          (truncated-tab-name (if (< (length raw-tab-name)
-                                                     tab-bar-tab-name-truncated-max)
-                                                  raw-tab-name
-                                                (truncate-string-to-width raw-tab-name
-                                                                          tab-bar-tab-name-truncated-max
-                                                                          nil nil tab-bar-tab-name-ellipsis))))
-                     (if (> count 1)
-                         (concat truncated-tab-name "(" (number-to-string count) ")")
-                       truncated-tab-name))))
+  ;; 为 tab 添加序号，便于快速切换。
+  ;; 参考：https://christiantietze.de/posts/2022/02/emacs-tab-bar-numbered-tabs/
+  (defvar ct/circle-numbers-alist
+    '((0 . "⓪")
+      (1 . "①")
+      (2 . "②")
+      (3 . "③")
+      (4 . "④")
+      (5 . "⑤")
+      (6 . "⑥")
+      (7 . "⑦")
+      (8 . "⑧")
+      (9 . "⑨"))
+    "Alist of integers to strings of circled unicode numbers.")
+  (setq tab-bar-tab-hints t)
+  (defun ct/tab-bar-tab-name-format-default (tab i)
+    (let ((current-p (eq (car tab) 'current-tab))
+          (tab-num (if (and tab-bar-tab-hints (< i 10))
+                       (alist-get i ct/circle-numbers-alist) "")))
+      (propertize
+       (concat tab-num
+               " "
+               (alist-get 'name tab)
+               (or (and tab-bar-close-button-show
+                        (not (eq tab-bar-close-button-show
+                                 (if current-p 'non-selected 'selected)))
+                        tab-bar-close-button)
+                   "")
+               " ")
+       'face (funcall tab-bar-tab-face-function tab))))
+  (setq tab-bar-tab-name-format-function #'ct/tab-bar-tab-name-format-default)
+
+  ;; ;; 自动截取 tab name，并且添加在每个 tab 上添加数字，方便用快捷键切换
+  ;; (setq tab-bar-tab-name-function
+  ;;       (lambda () (let* ((raw-tab-name (buffer-name (window-buffer (minibuffer-selected-window))))
+  ;;                         (count (length (window-list-1 nil 'nomini)))
+  ;;                         (truncated-tab-name (if (< (length raw-tab-name)
+  ;;                                                    tab-bar-tab-name-truncated-max)
+  ;;                                                 raw-tab-name
+  ;;                                               (truncate-string-to-width raw-tab-name
+  ;;                                                                         tab-bar-tab-name-truncated-max
+  ;;                                                                         nil nil tab-bar-tab-name-ellipsis))))
+  ;;                    (if (> count 1)
+  ;;                        (concat truncated-tab-name "(" (number-to-string count) ")")
+  ;;                      truncated-tab-name))))
 
   ;; 给 tab 两边加上空格，更好看
-  (setq tab-bar-tab-name-format-function
-        (lambda (tab i)
-          (let ((face (funcall tab-bar-tab-face-function tab)))
-            (concat
-             (propertize " " 'face face)
-             (propertize (number-to-string i) 'face `(:inherit ,face :weight ultra-bold :underline t))
-             (propertize (concat " " (alist-get 'name tab) " ") 'face face)))))
+  ;; (setq tab-bar-tab-name-format-function
+  ;;       (lambda (tab i)
+  ;;         (let ((face (funcall tab-bar-tab-face-function tab)))
+  ;;           (concat
+  ;;            (propertize " " 'face face)
+  ;;            (propertize (number-to-string i) 'face `(:inherit ,face :weight ultra-bold :underline t))
+  ;;            (propertize (concat " " (alist-get 'name tab) " ") 'face face)))))
 
   ;; 我把 meow 的 indicator 也放在 tab-bar 上
   (setq tab-bar-format '(meow-indicator  tab-bar-format-tabs))
