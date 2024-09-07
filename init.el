@@ -69,15 +69,15 @@
  (lambda (p) (add-to-list 'elpaca-ignored-dependencies p))
  '(xref tramp tramp-sh tramp-adb flymake simple diff-mode smerge-mode python css-mode custom
         server help elec-pair paren recentf winner tab-bar hl-line pulse prog-mode
-        lisp-mode treesit imenu eldoc transient hippie-exp eglot autorevert))
+        lisp-mode treesit imenu eldoc hippie-exp eglot autorevert))
 
 ;; Block until current queue processed.
 (elpaca-wait)
 
 (use-package benchmark-init
-  :demand t
-  :config
-  (add-hook '+my/first-input-hook 'benchmark-init/deactivate))
+ :demand t
+ :config
+ (add-hook '+my/first-input-hook 'benchmark-init/deactivate))
 
 (push (expand-file-name "site-lisp" user-emacs-directory) load-path)
 
@@ -221,6 +221,13 @@ REST and STATE."
         (mapcar (lambda (ext)
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
+(use-package casual-dired
+  :commands (casual-dired-tmenu casual-dired-sort-by-tmenu casual-dired-search-replace-tmenu)
+  :bind (:map dired-mode-map
+              ("C-o" . #'casual-dired-tmenu)
+              ("s" . #'casual-dired-sort-by-tmenu)
+              ("/" . #'casual-dired-search-replace-tmenu)))
+
 (use-package dirvish
   :after-call +my/first-input-hook-fun
   :after dired
@@ -267,8 +274,11 @@ REST and STATE."
 
   (use-package dirvish-vc
     :ensure nil
-    :after dirvish))
+    :after dirvish)
 
+  (use-package dirvish-history
+    :ensure nil
+    :after dirvish))
 
 ;;; Documentation in echo area
 (use-package eldoc
@@ -288,6 +298,7 @@ REST and STATE."
 
 ;;; Version controll
 (use-package magit
+  :ensure (:files (:defaults "lisp/*.el"))
   :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push magit-add-current-buffer-to-kill-ring)
   :bind
   (:map magit-mode-map
@@ -299,7 +310,6 @@ REST and STATE."
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (setq magit-diff-refine-hunk t)
-  (magit-auto-revert-mode)
 
   (defun magit-open-repo ()
     "open remote repo URL"
@@ -342,6 +352,9 @@ REST and STATE."
           (progn (kill-new branch)
                  (message "%s" branch))
         (user-error "There is not current branch")))))
+
+(use-package transient
+  :ensure t)
 
 (defvar +magit-open-windows-in-direction 'right
   "What direction to open new windows from the status buffer.
@@ -1145,7 +1158,7 @@ targets."
          ("M-g a" . consult-org-agenda)
          ("<help> a" . consult-apropos)            ;; orig. apropos-command
          ;; M-s bindings (search-map)
-         ("M-s m" . consult-multi-occur)
+         ;; ("M-s m" . consult-multi-occur)
          ;; Isearch integration
          ("M-s e" . consult-isearch))
   :config
@@ -2036,7 +2049,7 @@ Just put this function in `hippie-expand-try-functions-list'."
           "^\\*shell.*\\*$"  shell-mode
           "^\\*term.*\\*$"   term-mode
           "^\\*vterm.*\\*$"  vterm-mode
-          "^\\*eat.*\\*$"    eat-mode
+          "^\\*.*eat*\\*$"
 
           "\\*DAP Templates\\*$" dap-server-log-mode
           "\\*ELP Profiling Restuls\\*" profiler-report-mode
@@ -2088,7 +2101,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 ;;; UI
 (use-package doom-modeline
-  :hook (window-setup . doom-modeline-mode)
+  :hook (elpaca-after-init . doom-modeline-mode)
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
@@ -2139,18 +2152,25 @@ Just put this function in `hippie-expand-try-functions-list'."
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
-  (defvar +my-en-font "Cascadia Code"
-    "The font name of English characters.")
-
-  (set-face-attribute 'default nil :font +my-en-font :height 140)
+  (progn
+    (defvar +my-en-font "Cascadia Code NF"
+      "The font name of English characters.")
+    (set-face-attribute 'default nil :font +my-en-font :height 150))
   (set-fontset-font t 'han (font-spec :family +my-cn-font))
-  (custom-set-faces
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   '(org-table ((t (:family "Sarasa Term SC Nerd"))))
-   ))
+  (with-eval-after-load 'org
+    (set-face-attribute 'org-table nil :family +my-cn-font))
+
+  (with-eval-after-load 'vterm
+    (add-hook 'vterm-mode-hook
+              (lambda ()
+                (set (make-local-variable 'buffer-face-mode-face) `(:height 1.1))
+                (buffer-face-mode t))))
+  (with-eval-after-load 'eat
+    (add-hook 'eat-mode-hook
+              (lambda ()
+                (set (make-local-variable 'buffer-face-mode-face) `(:height 1.1))
+                (buffer-face-mode t))))
+  )
 
 (use-package composite
   :ensure nil
@@ -2711,23 +2731,23 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
-  (add-to-list 'eglot-server-programs '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
+  ;; (add-to-list 'eglot-server-programs '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
 
-  (defclass eglot-deno (eglot-lsp-server) ()
-    :documentation "A custom class for deno lsp.")
+  ;; (defclass eglot-deno (eglot-lsp-server) ()
+  ;;   :documentation "A custom class for deno lsp.")
 
-  (cl-defmethod eglot-initialization-options ((server eglot-deno))
-    "Passes through required deno initialization options"
-    (list :enable t
-          :lint t))
+  ;; (cl-defmethod eglot-initialization-options ((server eglot-deno))
+  ;;   "Passes through required deno initialization options"
+  ;;   (list :enable t
+  ;;         :lint t))
 
-  (defvar +eglot/display-buf "*+eglot/display-buffer*")
-  (defvar +eglot/display-frame nil)
-  (defvar +eglot/hover-last-point nil)
-  (defvar +eglot/signature-last-point nil)
-  (defface +eglot/display-border '((((background dark)) . (:background "white"))
-                                   (((background light)) . (:background "black")))
-    "The border color used in childframe.")
+  ;; (defvar +eglot/display-buf "*+eglot/display-buffer*")
+  ;; (defvar +eglot/display-frame nil)
+  ;; (defvar +eglot/hover-last-point nil)
+  ;; (defvar +eglot/signature-last-point nil)
+  ;; (defface +eglot/display-border '((((background dark)) . (:background "white"))
+  ;;                                  (((background light)) . (:background "black")))
+  ;;   "The border color used in childframe.")
   (defvar +eglot/last-buffer nil)
 
   ;; WORKAROUND https://github.com/joaotavora/eglot/issues/1296
@@ -2740,93 +2760,82 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                  (not (buffer-modified-p)))
             (flymake-start t)))))
 
-  ;; Hover
-  (defun +eglot/show-hover-at-point ()
-    (interactive)
-    (when (eglot-server-capable :hoverProvider)
-      (let ((buf (current-buffer)))
-        (setq +eglot/last-buffer buf)
-        (jsonrpc-async-request
-         (eglot--current-server-or-lose)
-         :textDocument/hover (eglot--TextDocumentPositionParams)
-         :success-fn (eglot--lambda ((Hover) contents range)
-                       (eglot--when-buffer-window +eglot/last-buffer
-                         (if-let ((info (unless (seq-empty-p contents)
-                                          (eglot--hover-info contents range))))
-                             (progn
-                               (with-current-buffer (get-buffer-create +eglot/display-buf)
-                                 (erase-buffer)
-                                 (insert info))
-                               (setq +eglot/display-frame
-                                     (posframe-show
-                                      (get-buffer-create +eglot/display-buf)
-                                      :border-width 1
-                                      :border-color (face-background '+eglot/display-border nil t)
-                                      :max-height (/ (frame-height) 3)
-                                      :max-width (/ (frame-width) 3)
-                                      :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))
-                               (run-with-timer 0.1 nil #'+eglot/hide-hover))
-                           (message "LSP No Hover Document"))))
-         :deferred :textDocument/hover))
-      (setq +eglot/hover-last-point (point))))
-
-  (defun +eglot/hide-hover ()
-    (if (or (eq (point) +eglot/hover-last-point)
-            (eq (selected-frame) +eglot/display-frame))
-        (run-with-timer 0.1 nil #'+eglot/hide-hover)
-      (posframe-hide +eglot/display-buf)))
-
   ;; Signature
-  (defun +eglot/show-signature-help ()
-    (when (and (eglot-managed-p)
-               (eglot-server-capable :signatureHelpProvider))
-      (unless +eglot/signature-last-point
-        (setq +eglot/signature-last-point (point)))
-      (let ((buf (current-buffer)))
-        (setq +eglot/last-buffer buf)
-        (if (eql (line-number-at-pos +eglot/signature-last-point)
-                 (line-number-at-pos (point)))
-            (jsonrpc-async-request
-             (eglot--current-server-or-lose)
-             :textDocument/signatureHelp (eglot--TextDocumentPositionParams)
-             :success-fn (eglot--lambda ((SignatureHelp)
-                                         signatures activeSignature (activeParameter 0))
-                           (eglot--when-buffer-window +eglot/last-buffer
-                             (let ((active-sig (and (cl-plusp (length signatures))
-                                                    (aref signatures (or activeSignature 0)))))
-                               (if (not active-sig)
-                                   (+eglot/hide-signature buf)
-                                 (with-current-buffer (get-buffer-create +eglot/display-buf)
-                                   (erase-buffer)
-                                   (insert (or (eglot--sig-info active-sig activeParameter t) "")))
-                                 (setq +eglot/display-frame
-                                       (posframe-show
-                                        (get-buffer-create +eglot/display-buf)
-                                        :position +eglot/signature-last-point
-                                        :border-width 1
-                                        :border-color (face-background '+eglot/display-border nil t)
-                                        :max-width (/ (frame-width) 3)
-                                        :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))))))
-             :timeout-fn (lambda () (+eglot/hide-signature buf))
-             :error-fn (lambda () (+eglot/hide-signature buf))
-             :deferred :textDocument/signatureHelp)
-          (+eglot/hide-signature buf)))))
+  ;; (defun +eglot/show-signature-help ()
+  ;;   (when (and (eglot-managed-p)
+  ;;              (eglot-server-capable :signatureHelpProvider))
+  ;;     (unless +eglot/signature-last-point
+  ;;       (setq +eglot/signature-last-point (point)))
+  ;;     (let ((buf (current-buffer)))
+  ;;       (setq +eglot/last-buffer buf)
+  ;;       (if (eql (line-number-at-pos +eglot/signature-last-point)
+  ;;                (line-number-at-pos (point)))
+  ;;           (jsonrpc-async-request
+  ;;            (eglot--current-server-or-lose)
+  ;;            :textDocument/signatureHelp (eglot--TextDocumentPositionParams)
+  ;;            :success-fn (eglot--lambda ((SignatureHelp)
+  ;;                                        signatures activeSignature (activeParameter 0))
+  ;;                          (eglot--when-buffer-window +eglot/last-buffer
+  ;;                            (let ((active-sig (and (cl-plusp (length signatures))
+  ;;                                                   (aref signatures (or activeSignature 0)))))
+  ;;                              (if (not active-sig)
+  ;;                                  (+eglot/hide-signature buf)
+  ;;                                (with-current-buffer (get-buffer-create +eglot/display-buf)
+  ;;                                  (erase-buffer)
+  ;;                                  (insert (or (eglot--sig-info active-sig activeParameter t) "")))
+  ;;                                (setq +eglot/display-frame
+  ;;                                      (posframe-show
+  ;;                                       (get-buffer-create +eglot/display-buf)
+  ;;                                       :position +eglot/signature-last-point
+  ;;                                       :border-width 1
+  ;;                                       :border-color (face-background '+eglot/display-border nil t)
+  ;;                                       :max-width (/ (frame-width) 3)
+  ;;                                       :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))))))
+  ;;            :timeout-fn (lambda () (+eglot/hide-signature buf))
+  ;;            :error-fn (lambda () (+eglot/hide-signature buf))
+  ;;            :deferred :textDocument/signatureHelp)
+  ;;         (+eglot/hide-signature buf)))))
 
-  (defun +eglot/hide-signature (buf)
-    (with-current-buffer buf
-      (remove-hook 'post-command-hook #'+eglot/show-signature-help t))
-    (setq +eglot/signature-last-point nil
-          +eglot/signature-retries 0)
-    (posframe-hide +eglot/display-buf))
+  ;; (defun +eglot/hide-signature (buf)
+  ;;   (with-current-buffer buf
+  ;;     (remove-hook 'post-command-hook #'+eglot/show-signature-help t))
+  ;;   (setq +eglot/signature-last-point nil
+  ;;         +eglot/signature-retries 0)
+  ;;   (posframe-hide +eglot/display-buf))
 
-  (defun +eglot/signature-help-at-point ()
-    (interactive)
-    (when (and (eglot-managed-p)
-               (eglot-server-capable :signatureHelpProvider))
-      (+eglot/show-signature-help)
-      (add-hook 'post-command-hook #'+eglot/show-signature-help nil t)))
+  ;; (defun +eglot/signature-help-at-point ()
+  ;;   (interactive)
+  ;;   (when (and (eglot-managed-p)
+  ;;              (eglot-server-capable :signatureHelpProvider))
+  ;;     (+eglot/show-signature-help)
+  ;;     (add-hook 'post-command-hook #'+eglot/show-signature-help nil t)))
 
   (eglot-booster-mode +1)
+  )
+
+(use-package eldoc-box
+  :commands (+eldoc-box-documentation-at-point)
+  :custom
+  (eldoc-box-clear-with-C-g t)
+  :config
+  (defun +eldoc-box-documentation-at-point ()
+    (interactive)
+    (eglot--dbind ((Hover) contents range)
+                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                                   (eglot--TextDocumentPositionParams))
+                  (let ((blurb (and (not (seq-empty-p contents))
+                                    (eglot--hover-info contents range)))
+                        (hint (thing-at-point 'symbol))
+                        (eldoc-box-position-function
+                         eldoc-box-at-point-position-function))
+                    (if (or (not blurb) (string-empty-p blurb))
+                        (message "No documentation found")
+                      (progn
+                        (eldoc-box--display blurb)
+                        (setq eldoc-box--help-at-point-last-point (point))
+                        (run-with-timer 0.1 nil #'eldoc-box--help-at-point-cleanup)
+                        (when eldoc-box-clear-with-C-g
+                          (advice-add #'keyboard-quit :before #'eldoc-box-quit-frame)))))))
   )
 
 (use-package eglot-booster
@@ -2845,37 +2854,40 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :commands (dape-hydra/body)
   :bind
   (("<f6>" . dape-hydra/body))
-  :init
-  (pretty-hydra-define dape-hydra (:title "Debug" :color pink :quit-key ("q" "C-g") :post (dape-hydra-auto-leave))
-    ("Stepping"
-     (("n" dape-next "next")
-      ("s" dape-step-in "step in")
-      ("o" dape-step-out "step out")
-      ("c" dape-continue "continue")
-      ("p" dape-pause "pause")
-      ("K" dape-kill "kill")
-      ("r" dape-restart "restart")
-      ("D" dape-disconnect-quit "disconnect"))
-     "Switch"
-     (("m" dape-read-memory "memory")
-      ("t" dape-select-thread "thread")
-      ("w" dape-watch-dwim "watch")
-      ("S" dape-select-stack "stack")
-      ("i" dape-info "info")
-      ("R" dape-repl "repl"))
-     "Breakpoints"
-     (("b" dape-breakpoint-toggle "toggle")
-      ("l" dape-breakpoint-log "log")
-      ("e" dape-breakpoint-expression "expression")
-      ("B" dape-breakpoint-remove-all "clear"))
-     "Debug"
-     (("d" dape "dape")
-      ("Q" dape-quit "quit" :exit t)))
-    )
   :config
   (remove-hook 'dape-on-start-hooks 'dape-info)
   ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
+  (defhydra dape-hydra (:color pink :hint nil :foreign-keys run)
+    "
+^Stepping^          ^Breakpoints^               ^Info
+^^^^^^^^-----------------------------------------------------------
+_d_: init           _bb_: Toggle (add/remove)   _si_: Info
+_n_: Next           _bd_: Delete                _sm_: Memory
+_i_: Step in        _bD_: Delete all            _ss_: Select Stack
+_o_: Step out       _bl_: Set log message       _R_: Repl
+_c_: Continue
+_r_: Restart
+_Q_: Disconnect
+"
+    ("d" dape)
+    ("n" dape-next)
+    ("i" dape-step-in)
+    ("o" dape-step-out)
+    ("c" dape-continue)
+    ("r" dape-restart)
+    ("ba" dape-breakpoint-toggle)
+    ("bb" dape-breakpoint-toggle)
+    ("be" dape-breakpoint-expression)
+    ("bd" dape-breakpoint-remove-at-point)
+    ("bD" dape-breakpoint-remove-all)
+    ("bl" dape-breakpoint-log)
+    ("si" dape-info)
+    ("sm" dape-read-memory)
+    ("ss" dape-select-stack)
+    ("R"  dape-repl)
+    ("q" nil "quit" :color blue)
+    ("Q" dape-kill :color red))
 
   (setq dape-debug t)
   (setq dape-request-timeout 20)
@@ -3336,15 +3348,11 @@ Install the doc if it's not installed."
   (setq vterm-timer-delay 0.001
         process-adaptive-read-buffering nil)
   :config
-  (add-hook 'vterm-mode-hook
-            (lambda ()
-              (set (make-local-variable 'buffer-face-mode-face) '(:family "Sarasa Term SC Nerd"))
-              (buffer-face-mode t)))
-
   (defvar +my-vterm-tab-buffer-name "vterm-tab-buffer")
   (defun my-vterm-dwim ()
     (interactive)
-    (let ((vterm-buffer-name +my-vterm-tab-buffer-name))
+    (let ((vterm-buffer-name +my-vterm-tab-buffer-name)
+          (vterm-shell "tmux"))
       (my-create-term-cmd #'vterm vterm-buffer-name)))
 
   (defun +my/smart-vterm-find-file (filename)
@@ -3355,7 +3363,15 @@ Install the doc if it's not installed."
           (find-file filename))
       (find-file filename)))
   (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file))
-  (add-to-list 'vterm-eval-cmds '("dired" dirvish))
+  (defun +my/vterm-dired-dwim ()
+    (interactive)
+    (if (string= (buffer-name) +my-vterm-tab-buffer-name)
+        (progn
+          (tab-bar-switch-to-recent-tab)
+          (dirvish default-directory))
+      (dirvish default-directory)))
+
+  (add-to-list 'vterm-eval-cmds '("dired" +my/vterm-dired-dwim))
 
   (defun vterm-project ()
     (interactive)
@@ -3380,7 +3396,58 @@ Install the doc if it's not installed."
          (tab-new)
          (tab-bar-rename-tab my-term-tab-name)
          (call-interactively ,term-fn)
-         (delete-other-windows)))))
+         (when (> 1 (count-windows))
+           (delete-other-windows))))))
+
+(use-package eat
+  :disabled
+  :ensure (:host codeberg
+                 :repo "akib/emacs-eat"
+                 :files ("*.el" ("term" "term/*.el") "*.texi"
+                         "*.ti" ("terminfo/e" "terminfo/e/*")
+                         ("terminfo/65" "terminfo/65/*")
+                         ("integration" "integration/*")
+                         (:exclude ".dir-locals.el" "*-tests.el")))
+  :commands (eat-project eat my-eat-dwim)
+  :custom
+  (eat-shell "fish")
+  :bind
+  (("C-0" . #'eat-project)
+   ("C-9" . #'my-eat-dwim))
+  :init
+  (with-eval-after-load 'meow
+    (add-to-list 'meow-mode-state-list '(eat-mode . insert)))
+  :config
+  ;; For `eat-eshell-mode'.
+  (add-hook 'eshell-load-hook #'eat-eshell-mode)
+
+  ;; For `eat-eshell-visual-command-mode'.
+  (add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
+
+  (defun my-eat-dwim ()
+    (interactive)
+    (let ((eat-buffer-name "eat-standalone"))
+      (my-create-term-cmd #'eat eat-buffer-name)))
+
+  (defun my-eat-find-file-dwim (filename)
+    (interactive)
+    (let ((dir default-directory))
+      (if (string= (buffer-name) "eat-standalone")
+          (progn
+            (tab-bar-switch-to-recent-tab)
+            (find-file (expand-file-name filename dir)))
+        (find-file-other-window filename))))
+
+  (defun my-eat-dired-dwim ()
+    (interactive)
+    (if (string= (buffer-name) "eat-standalone")
+        (progn
+          (tab-bar-switch-to-recent-tab)
+          (dirvish default-directory))
+      (dirvish default-directory)))
+
+  (add-to-list 'eat-message-handler-alist '("find-file" . my-eat-find-file-dwim))
+  (add-to-list 'eat-message-handler-alist '("dired" . my-eat-dired-dwim)))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
@@ -3680,6 +3747,13 @@ Install the doc if it's not installed."
 
   ;; avoid unneccesary calculations, I never need it.
   (defalias 'org-align-tags #'ignore))
+
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :hook (org-mode . org-modern-indent-mode))
+
+(use-package org-timeblock
+  :ensure (:host github :repo "ichernyshovvv/org-timeblock"))
 
 ;;;; Notification for org todos
 ;; -Notification only for mac os
