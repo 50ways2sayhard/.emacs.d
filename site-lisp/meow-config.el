@@ -80,7 +80,7 @@ S is string of the two-key sequence."
     "r" #'eglot-rename
     "a" #'eglot-code-actions
     "c" #'separedit
-    "h" #'+eglot/show-hover-at-point
+    "h" #'+eldoc-box-documentation-at-point
     "f" #'apheleia-format-buffer
     "I" #'+eglot-organize-imports
     "i" #'consult-eglot-symbols
@@ -116,7 +116,8 @@ S is string of the two-key sequence."
   (defvar-keymap +meow-project-map
     "p" #'project-switch-project
     "f" #'project-find-file
-    "k" #'project-kill-buffers)
+    "k" #'project-kill-buffers
+    "d" #'project-dired)
   (defvar-keymap +meow-quit-map
     "q" #'kill-emacs
     "r" #'restart-emacs)

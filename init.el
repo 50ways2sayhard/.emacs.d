@@ -75,9 +75,9 @@
 (elpaca-wait)
 
 (use-package benchmark-init
- :demand t
- :config
- (add-hook '+my/first-input-hook 'benchmark-init/deactivate))
+  :demand t
+  :config
+  (add-hook '+my/first-input-hook 'benchmark-init/deactivate))
 
 (push (expand-file-name "site-lisp" user-emacs-directory) load-path)
 
@@ -352,6 +352,32 @@ REST and STATE."
           (progn (kill-new branch)
                  (message "%s" branch))
         (user-error "There is not current branch")))))
+
+(use-package emsg-blame
+  :ensure (:repo "ISouthRain/emsg-blame" :host github)
+  :config
+  (defun my--emsg-blame-display ()
+    "Display git blame message, right-aligned with Magit-style faces.
+If another message is already being displayed, display both messages unless they
+do not both fit in the echo area."
+    (let* ((message-log-max nil) ; prevent messages from being logged to *Messages*
+           (cur-msg (or (current-message) ""))
+	         (blm-msg (format "%s %s %s "
+			                      emsg-blame--commit-summary
+			                      (propertize emsg-blame--commit-author 'face 'magit-log-author)
+			                      (propertize emsg-blame--commit-date 'face 'magit-log-date)))
+	         (available-width (max 0 (- (frame-width) (string-width cur-msg) 1)))
+	         (blm-msg-width (string-width blm-msg))
+	         (padding (max 0 (- available-width blm-msg-width)))
+	         (rev-blm-msg (concat (make-string padding ?\s) blm-msg)))
+      (if (> blm-msg-width available-width)
+	        (message blm-msg)
+        (message (concat cur-msg rev-blm-msg)))))
+
+  (setq emsg-blame-display #'my--emsg-blame-display)
+
+  (setq emsg-blame-data-pretty t
+        emsg-blame-i18n-lang "Chinese"))
 
 (use-package transient
   :ensure t)
@@ -744,13 +770,13 @@ It will split otherwise."
 
   ;; Vertical Scroll
   (setq scroll-step 1
-        scroll-margin 3
-        ;; scroll-margin 0
+        ;; scroll-margin 3
+        scroll-margin 0
         scroll-conservatively 100000
-        auto-window-vscroll t
+        auto-window-vscroll nil
         scroll-up-aggressively 0.01
         scroll-down-aggressively 0.01
-        scroll-preserve-screen-position 'always)
+        )
   (when (display-graphic-p)
     (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
           mouse-wheel-scroll-amount-horizontal 1
@@ -760,6 +786,27 @@ It will split otherwise."
   (setq mouse-wheel-progressive-speed t)
   (mouse-wheel-mode -1)
   (pixel-scroll-precision-mode)
+  (defun filter-mwheel-always-coalesce (orig &rest args)
+    "A filter function suitable for :around advices that ensures only
+   coalesced scroll events reach the advised function."
+    (if mwheel-coalesce-scroll-events
+        (apply orig args)
+      (setq mwheel-coalesce-scroll-events t)))
+
+  (defun filter-mwheel-never-coalesce (orig &rest args)
+    "A filter function suitable for :around advices that ensures only
+   non-coalesced scroll events reach the advised function."
+    (if mwheel-coalesce-scroll-events
+        (setq mwheel-coalesce-scroll-events nil)
+      (apply orig args)))
+
+                                        ; Don't coalesce for high precision scrolling
+  (advice-add 'pixel-scroll-precision :around #'filter-mwheel-never-coalesce)
+
+                                        ; Coalesce for default scrolling (which is still used for horizontal scrolling)
+                                        ; and text scaling (bound to ctrl + mouse wheel by default).
+  (advice-add 'mwheel-scroll          :around #'filter-mwheel-always-coalesce)
+  (advice-add 'mouse-wheel-text-scale :around #'filter-mwheel-always-coalesce)
 
   (setq pixel-scroll-precision-interpolate-page t)
   (defun +pixel-scroll-interpolate-down (&optional lines)
@@ -1282,6 +1329,15 @@ When the number of characters in a buffer exceeds this threshold,
                 (marginalia--fields
                  ((marginalia--full-candidate cand)
                   :face 'marginalia-size ))))
+
+  (defun maple/consult-git ()
+    "Find file in the current Git repository."
+    (interactive)
+    (let* ((default-directory (project-root (project-current)))
+           (cmd "git ls-files -z --full-name --")
+           (cands (split-string (shell-command-to-string cmd) "\0" t))
+           (file (completing-read "Find file: " (project--file-completion-table cands) nil t)))
+      (find-file file)))
   )
 
 (use-package consult-dir
@@ -1292,22 +1348,19 @@ When the number of characters in a buffer exceeds this threshold,
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file))
   :config
-  (defun consult-dir--zlua-dirs ()
+  (defun consult-dir--zoxide-dirs ()
     "Return list of fasd dirs."
-    (reverse
-     (mapcar
-      (lambda (str) (format "%s/" (car (last (split-string str " ")))))
-      (split-string (shell-command-to-string "z -l | tail -n 50") "\n" t))))
-  (defvar consult-dir--source-zlua
-    `(:name     "z.lua dirs"
+    (split-string (shell-command-to-string "zoxide query -l | head -n 50") "\n" t))
+  (defvar consult-dir--source-zoxide
+    `(:name     "zoxide dirs"
                 :narrow   ?z
                 :category file
                 :face     consult-file
                 :history  file-name-history
-                :enabled  ,(lambda () (getenv "ZLUA_SCRIPT"))
-                :items    ,#'consult-dir--zlua-dirs)
+                :enabled  ,(lambda () (executable-find "zoxide"))
+                :items    ,#'consult-dir--zoxide-dirs)
     "Fasd directory source for `consult-dir'.")
-  (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zlua consult-dir--source-project)))
+  (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zoxide consult-dir--source-project)))
 
 (use-package consult-project-extra
   :commands (consult-project-extra-find)
@@ -1791,6 +1844,82 @@ Just put this function in `hippie-expand-try-functions-list'."
     (interactive (list (maple-translate-word)))
     (maple-translate-show word 'maple-translate-posframe-tip)))
 
+(use-package go-translate
+  ;; :bind (("C-c g"   . gt-do-translate)
+  ;;        ("C-c G"   . gt-do-translate-prompt)
+  ;;        ("C-c u"   . gt-do-text-utility)
+  ;;        ("C-c d g" . gt-do-translate)
+  ;;        ("C-c d G" . gt-do-translate-prompt)
+  ;;        ("C-c d p" . gt-do-speak)
+  ;;        ("C-c d s" . gt-do-setup)
+  ;;        ("C-c d u" . gt-do-text-utility))
+  :commands (gt-do-translate-prompt gt-do-text-utility)
+  :init
+  (setq gt-langs '(en zh)
+        gt-buffer-render-follow-p t
+        gt-buffer-render-window-config
+        '((display-buffer-reuse-window display-buffer-in-direction)
+          (direction . bottom)
+          (window-height . 0.4)))
+
+  (setq gt-pop-posframe-forecolor (face-foreground 'tooltip nil t)
+        gt-pop-posframe-backcolor (face-background 'tooltip nil t))
+  (when (facep 'posframe-border)
+    (setq gt-pin-posframe-bdcolor (face-background 'posframe-border nil t)))
+  :config
+  (with-no-warnings
+    (setq gt-preset-translators
+          `((default . ,(gt-translator
+                         :taker   (list (gt-taker :pick nil :if 'selection)
+                                        (gt-taker :text 'paragraph :if '(Info-mode help-mode helpful-mode devdocs-mode))
+                                        (gt-taker :text 'buffer :pick 'fresh-word
+                                                  :if (lambda (translatror)
+                                                        (and (not (derived-mode-p 'fanyi-mode)) buffer-read-only)))
+                                        (gt-taker :text 'word))
+                         :engines (if (display-graphic-p)
+                                      (list (gt-bing-engine :if 'not-word)
+                                            (gt-youdao-dict-engine :if 'word))
+                                    (list (gt-bing-engine :if 'not-word)
+                                          (gt-youdao-dict-engine :if 'word)
+                                          (gt-youdao-suggest-engine :if 'word)
+                                          (gt-google-engine :if 'word)))
+                         :render  (list (gt-posframe-pop-render
+                                         :if (lambda (translator)
+                                               (and (display-graphic-p)
+                                                    (not (derived-mode-p 'Info-mode 'help-mode 'helpful-mode 'devdocs-mode))
+                                                    (not (member (buffer-name) '("COMMIT_EDITMSG")))))
+                                         :frame-params (list :accept-focus nil
+                                                             :width 70
+                                                             :height 15
+                                                             :left-fringe 16
+                                                             :right-fringe 16
+                                                             :border-width 1
+                                                             :border-color gt-pin-posframe-bdcolor))
+                                        (gt-overlay-render :if 'read-only)
+                                        (gt-insert-render :if (lambda (translator) (member (buffer-name) '("COMMIT_EDITMSG"))))
+                                        (gt-buffer-render))))
+            (multi-dict . ,(gt-translator :taker (gt-taker :prompt t)
+                                          :engines (list (gt-bing-engine)
+                                                         (gt-youdao-dict-engine)
+                                                         (gt-youdao-suggest-engine :if 'word)
+                                                         (gt-google-engine))
+                                          :render (gt-buffer-render)))
+            (Text-Utility . ,(gt-text-utility :taker (gt-taker :pick nil)
+                                              :render (gt-buffer-render)))))
+
+    (defun gt--do-translate (dict)
+      "Translate using DICT from the preset tranlators."
+      (gt-start (alist-get dict gt-preset-translators)))
+
+    (defun gt-do-translate-prompt ()
+      "Translate with prompt using the multiple dictionaries."
+      (interactive)
+      (gt--do-translate 'multi-dict))
+
+    (defun gt-do-text-utility ()
+      "Handle the texts with the utilities."
+      (interactive)
+      (gt--do-translate 'Text-Utility))))
 
 ;; SaveAllBuffers
 (defun save-all-buffers ()
@@ -2111,14 +2240,6 @@ Just put this function in `hippie-expand-try-functions-list'."
   (doom-modeline-env-version t)
   (doom-modeline-check-simple-format t)
   (doom-modeline-buffer-modification-icon t))
-
-(use-package catppuccin-theme
-  :defer nil
-  :config
-  (setq catppuccin-flavor 'macchiato)
-  (setq catppuccin-highlight-matches t)
-  ;; (load-theme 'catppuccin :no-confirm)
-  )
 
 (use-package ef-themes
   :init
@@ -2640,6 +2761,34 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
      (advice-add fn :around #'better-jump-set-jump-a))
    (list #'kill-current-buffer #'consult-imenu #'consult-line
          #'find-file #'consult-fd #'consult-ripgrep #'xref-pop-to-location)))
+
+(use-package dogears
+  :hook (window-setup . dogears-mode)
+  :bind (:map global-map
+              ("M-g d" . dogears-go)
+              ("M-g M-b" . dogears-back)
+              ("M-g M-f" . dogears-forward)
+              ("M-g M-d" . dogears-list)
+              ("M-g M-D" . dogears-sidebar))
+  :config
+  (setq dogears-idle 1
+        dogears-limit 200
+        dogears-position-delta 20)
+  (setq dogears-functions '(find-file recenter-top-bottom
+                                      other-window switch-to-buffer
+                                      aw-select toggle-window-split
+                                      windmove-do-window-select
+                                      pager-page-down pager-page-up
+                                      tab-bar-select-tab
+                                      pop-to-mark-command
+                                      pop-global-mark
+                                      goto-last-change
+                                      xref-go-back
+                                      xref-find-definitions
+                                      xref-find-references
+                                      better-jumper-jump-backward
+                                      better-jumper-jump-forward
+                                      )))
 
 (use-package dumb-jump
   :defer nil
@@ -3378,7 +3527,28 @@ Install the doc if it's not installed."
     (let* ((default-directory (or (project-root (project-current))
                                   default-directory))
            (vterm-buffer-name (format "*vterm_%s*" default-directory)))
-      (vterm))))
+      (vterm)))
+
+  (defun my-project-shell ()
+    "Start an inferior shell in the current project's root directory.
+If a buffer already exists for running a shell in the project's root,
+switch to it.  Otherwise, create a new shell buffer.
+With \\[universal-argument] prefix arg, create a new inferior shell buffer even
+if one already exists."
+    (interactive)
+    (require 'comint)
+    (let* ((default-directory (project-root (project-current t)))
+           (default-project-shell-name (project-prefixed-buffer-name "shell"))
+           (shell-buffer (get-buffer default-project-shell-name)))
+      (if (and shell-buffer (not current-prefix-arg))
+          (if (comint-check-proc shell-buffer)
+              (pop-to-buffer shell-buffer (bound-and-true-p display-comint-buffer-action))
+            (vterm shell-buffer))
+        (vterm (generate-new-buffer-name default-project-shell-name)))))
+
+  (advice-add 'project-shell :override #'my-project-shell)
+
+  )
 
 (defvar my-term-tab-name "*term*")
 (defvar my-term-tab-last-tab nil)
