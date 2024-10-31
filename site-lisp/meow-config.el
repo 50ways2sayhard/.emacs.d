@@ -130,7 +130,8 @@ S is string of the two-key sequence."
     "I" #'consult-imenu-multi
     "p" #'consult-ripgrep
     "g" #'+my/google-it
-    "m" #'consult-mark)
+    "m" #'consult-mark
+    "w" #'webjump)
   (defvar-keymap +meow-toggle-map
     "e" #'+my/smart-switch-to-vterm-tab
     "t" #'dirvish-side
@@ -203,7 +204,8 @@ S is string of the two-key sequence."
 
 (add-hook 'meow-insert-exit-hook
           #'(lambda ()
-              (corfu-quit)))
+              (when (featurep 'corfu)
+                (corfu-quit))))
 
 (defun meow-setup ()
   (interactive)

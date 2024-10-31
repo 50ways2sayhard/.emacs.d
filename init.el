@@ -221,12 +221,18 @@ REST and STATE."
         (mapcar (lambda (ext)
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
-(use-package casual-dired
+(use-package casual
+  :ensure (:host github :repo "kickingvegas/casual" :files ("lisp/*.el"))
   :commands (casual-dired-tmenu casual-dired-sort-by-tmenu casual-dired-search-replace-tmenu)
+  :init
+  (require 'casual-dired)
+  (require 'casual-agenda)
   :bind (:map dired-mode-map
               ("C-o" . #'casual-dired-tmenu)
               ("s" . #'casual-dired-sort-by-tmenu)
-              ("/" . #'casual-dired-search-replace-tmenu)))
+              ("/" . #'casual-dired-search-replace-tmenu)
+              :map org-agenda-mode-map
+              ("C-o" . #'casual-agenda-tmenu)))
 
 (use-package dirvish
   :after-call +my/first-input-hook-fun
@@ -355,6 +361,7 @@ REST and STATE."
 
 (use-package emsg-blame
   :ensure (:repo "ISouthRain/emsg-blame" :host github)
+  :hook (elpaca-after-init . global-emsg-blame-mode)
   :config
   (defun my--emsg-blame-display ()
     "Display git blame message, right-aligned with Magit-style faces.
@@ -453,6 +460,32 @@ It will split otherwise."
 (use-package browse-at-remote
   :bind (:map vc-prefix-map
               ("B" . browse-at-remote)))
+
+(use-package webjump
+  :ensure nil
+  :init (setq webjump-sites
+              '(;; Emacs
+                ("Emacs Home Page" .
+                 "www.gnu.org/software/emacs/emacs.html")
+                ("Mastering Emacs" .
+                 "https://www.masteringemacs.org/")
+
+                ;; Search engines.
+                ("Google" .
+                 [simple-query "www.google.com"
+                               "www.google.com/search?q=" ""])
+
+                ("Wikipedia" .
+                 [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
+
+                ;; Documentations
+                ("Flutter" .
+                 [simple-query "api.flutter.dev/flutter" "api.flutter.dev/flutter/search.html?q=" ""])
+
+                ;; Programming languages
+                ("Pub" .
+                 [simple-query "pub.dev" "pub.dev/packages?q=" ""])
+                )))
 
 (use-package hydra
   :init
@@ -1011,6 +1044,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   (add-to-list 'meow-mode-state-list '(magit-blame-mode . insert))
+  (add-to-list 'meow-mode-state-list '(ediff-mode . insert))
   (add-to-list 'meow-mode-state-list '(occur-mode . motion))
   (add-hook 'org-capture-mode-hook #'meow-insert)
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
@@ -1340,6 +1374,22 @@ When the number of characters in a buffer exceeds this threshold,
       (find-file file)))
   )
 
+(use-package zoxide
+  :commands (+zoxide-cd dired-jump-with-zoxide)
+  :init
+  (defun +zoxide-cd ()
+    (interactive)
+    (cd (completing-read "path:" (zoxide-query) nil t)))
+  :config
+  (defun dired-jump-with-zoxide ()
+    (interactive)
+    (if (equal current-prefix-arg nil)
+        (zoxide-open-with nil (lambda (file) (dired file)) t)
+      (zoxide-open-with nil (lambda (file) (dired-other-window file)) t)))
+  :bind
+  (:map dired-mode-map
+        ("z" . dired-jump-with-zoxide)))
+
 (use-package consult-dir
   :commands (consult-dir consult-dir-jump-file)
   :after consult
@@ -1440,7 +1490,8 @@ When the number of characters in a buffer exceeds this threshold,
   (add-hook 'minibuffer-setup-hook #'mcfly-time-travel))
 
 (use-package orderless
-  :after-call +my/first-input-hook-fun
+  :commands (orderless-literal-prefix)
+  :after-call elpaca-after-init-hook
   :demand t
   :init
   (require 'orderless-kwd)
@@ -1529,7 +1580,6 @@ When the number of characters in a buffer exceeds this threshold,
 ;;; Auto completion
 (use-package corfu
   :ensure (corfu :files (:defaults "extensions/corfu-*.el"))
-  :after-call +my/first-input-hook-fun
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -1566,8 +1616,9 @@ When the number of characters in a buffer exceeds this threshold,
         ([backtab] . corfu-previous)
         ([remap move-beginning-of-line] . nil)
         ([remap move-end-of-line] . nil))
-  :config
+  :init
   (global-corfu-mode)
+  :config
   (use-package corfu-quick
     :ensure nil
     :commands (corfu-quick-insert corfu-quick-complete)
@@ -2180,6 +2231,7 @@ Just put this function in `hippie-expand-try-functions-list'."
           "^\\*vterm.*\\*$"  vterm-mode
           "^\\*.*eat*\\*$"
 
+          "\\*dape-repl\\*$"
           "\\*DAP Templates\\*$" dap-server-log-mode
           "\\*ELP Profiling Restuls\\*" profiler-report-mode
           "\\*Flymake diagnostics for .*\\*"
@@ -2416,6 +2468,8 @@ Just put this function in `hippie-expand-try-functions-list'."
 	    parenthesized_expression
 	    subscript)))
   (indent-bars-no-stipple-char ?\⎸)
+  :init
+  (require 'indent-bars-ts)
   )
 
 (use-package consult-todo
@@ -2816,54 +2870,20 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :ensure nil
   :commands (+eglot-organize-imports +eglot-help-at-point eglot-booster)
   :hook ((eglot-managed-mode . (lambda ()
-                                 ;; (+lsp-optimization-mode)
                                  (setq eldoc-documentation-functions
                                        (cons #'flymake-eldoc-function
                                              (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; ;; Show all eldoc feedback.
-                                 (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)
-                                 (if (or (boundp 'lsp-bridge-mode) (boundp 'lspce-mode))
-                                     (setq completion-at-point-functions (remove #'eglot-completion-at-point completion-at-point-functions))
-                                   (my/set-eglot-capf))
-                                 (when (boundp 'lspce-mode)
-                                   eglot-stay-out-of '(eldoc))
-                                 ))
+                                 (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)))
          (prog-mode . (lambda ()
                         (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
-                                    (my-project--ignored-p (buffer-file-name (current-buffer))))
+                                    ;; (my-project--ignored-p (buffer-file-name (current-buffer)))
+                                    )
                           (eglot-ensure)))))
   :init
   (defvar +lsp--default-read-process-output-max nil)
   (defvar +lsp--default-gcmh-high-cons-threshold nil)
   (defvar +lsp--optimization-init-p nil)
-
-  (define-minor-mode +lsp-optimization-mode
-    "Deploys universal GC and IPC optimizations for `lsp-mode' and `eglot'."
-    :global t
-    :init-value nil
-    (if (not +lsp-optimization-mode)
-        (setq-default read-process-output-max +lsp--default-read-process-output-max
-                      gcmh-high-cons-threshold +lsp--default-gcmh-high-cons-threshold
-                      +lsp--optimization-init-p nil)
-      ;; Only apply these settings once!
-      (unless +lsp--optimization-init-p
-        (setq +lsp--default-read-process-output-max
-              ;; DEPRECATED Remove check when 26 support is dropped
-              (if (boundp 'read-process-output-max)
-                  (default-value 'read-process-output-max))
-              +lsp--default-gcmh-high-cons-threshold
-              (default-value 'gcmh-high-cons-threshold))
-        ;; `read-process-output-max' is only available on recent development
-        ;; builds of Emacs 27 and above.
-        (setq-default read-process-output-max (* 1024 1024))
-        ;; REVIEW LSP causes a lot of allocations, with or without Emacs 27+'s
-        ;;        native JSON library, so we up the GC threshold to stave off
-        ;;        GC-induced slowdowns/freezes. Doom uses `gcmh' to enforce its
-        ;;        GC strategy, so we modify its variables rather than
-        ;;        `gc-cons-threshold' directly.
-        (setq-default gcmh-high-cons-threshold (* 2 +lsp--default-gcmh-high-cons-threshold))
-        (gcmh-set-high-threshold)
-        (setq +lsp--optimization-init-p t))))
   :config
   (setq
    eglot-send-changes-idle-time 0.4
@@ -3231,7 +3251,9 @@ Handles newline."
           (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
           (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
-          (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))))
+          (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
+          (markdown . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src"))
+          (markdown-inline . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
