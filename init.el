@@ -561,6 +561,7 @@ It will split otherwise."
     ("q" nil "cancel" :color blue)))
 
 (use-package git-timemachine
+  :ensure (:host github :repo "emacsmirror/git-timemachine")
   :commands (git-timemachine git-timemachine-toggle)
   :bind (:map vc-prefix-map
               ("t" . git-timemachine))
@@ -750,6 +751,10 @@ It will split otherwise."
   (defconst *sys/linux*
     (eq system-type 'gnu/linux)
     "Are we running on a GNU/Linux system?")
+
+  (defconst *rg*
+    (executable-find "rg")
+    "Is ripgrep installed?")
 
   (setq-default indent-tabs-mode nil)
   (setq-default indent-line-function 'insert-tab)
@@ -1233,6 +1238,7 @@ targets."
          ([remap swich-to-buffer-other-window] . consult-buffer-other-window)
          ([remap goto-line] . consult-goto-line)
          ([remap yank-pop] . consult-yank-from-kill-ring)
+         ([remap bookmark-jump] . consult-bookmark)
          ("M-?" . consult-ripgrep)
          ("M-g o" . consult-outline)
          ("M-g h" . consult-org-heading)
@@ -1502,8 +1508,12 @@ When the number of characters in a buffer exceeds this threshold,
         completion-category-defaults nil
         orderless-component-separator #'orderless-escapable-split-on-space
         completion-category-overrides '((file (styles basic partial-completion))
-                                        (eglot-capf (styles orderless-literal basic))
-                                        (eglot (styles orderless-literal basic))))
+                                        (eglot (styles orderless))
+                                        (eglot-capf (styles orderless))))
+
+  ;; Option 2: Undo the Eglot modification of completion-category-defaults
+  (with-eval-after-load 'eglot
+    (setq completion-category-defaults nil))
   )
 
 (use-package marginalia
@@ -2474,7 +2484,28 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package consult-todo
   :ensure (:host github :repo "liuyinz/consult-todo")
-  :demand t)
+  :demand t
+  :config
+  (when *rg*
+    ;;  HACK: speed up with `ripgrep'
+    ;; (grep-apply-setting 'grep-find-template "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
+    (grep-apply-setting 'grep-template "rg --no-heading -H <R> <D>")
+
+    (defun consult-todo-dir (&optional directory files)
+      "Jump to hl-todo keywords in FILES in DIRECTORY.
+If optinal arg FILES is nil, search in all files.
+If optional arg DIRECTORY is nil, rgrep in default directory."
+      (interactive)
+      (let* ((files (or files "* .*"))
+             (directory (or directory default-directory)))
+        (add-hook 'compilation-finish-functions #'consult-todo--candidates-rgrep)
+        (cl-letf ((compilation-buffer-name-function
+                   (lambda (&rest _) (format "*consult-todo-%s*" directory))))
+          (save-window-excursion
+            ;;  HACK: use `lgrep' instead `find'
+            (lgrep (concat  "\\b" (replace-regexp-in-string "\\\\[<>]*" "" (hl-todo--regexp)) "\\b") files directory)
+            ))))
+    ))
 
 (use-package volatile-highlights
   :diminish
