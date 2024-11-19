@@ -20,13 +20,13 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.7)
+(defvar elpaca-installer-version 0.8)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil
-                              :files (:defaults (:exclude "extensions"))
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
@@ -37,16 +37,18 @@
     (make-directory repo t)
     (when (< emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (call-process "git" nil buffer t "clone"
-                                       (plist-get order :repo) repo)))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
             (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
@@ -926,24 +928,6 @@ point reaches the beginning or end of the buffer, stop there."
 		             (looking-back "==" 2))
 			       (forward-char))
 			      (t (forward-char 0))))))
-
-(defun +my/replace (&optional word )
-  "Make it easy to replace WORD.If WORD is not given, automatically extract it by major-mode."
-  (interactive)
-  (cond
-   ((derived-mode-p 'occur-mode) (occur-edit-mode))
-   ((derived-mode-p 'grep-mode) (wgrep-change-to-wgrep-mode))
-   ((and (featurep 'deadgrep) (derived-mode-p 'deadgrep-mode))
-    (wgrep-change-to-wgrep-mode)))
-  (let* ((buffer-name (buffer-name))
-         (raw-keyword (cond ((string-match "*Embark .* - \\(?1:.*\\)\\*" buffer-name)
-                             (match-string 1 buffer-name))
-                            ((buffer-match-p "\\*deadgrep.*" buffer-name)
-                             (car deadgrep-history))
-                            (t (read-string "Keyword: " word))))
-         (keyword (replace-regexp-in-string "^#" "" raw-keyword))
-         (replacement (read-string (format "Replace \"%s\" with: " keyword))))
-    (vr/query-replace keyword replacement (point-min) (point-max))))
 
 (defun +my-delete-file ()
   "Put current buffer file to top."
@@ -1856,9 +1840,37 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq vundo-glyph-alist vundo-unicode-symbols
         vundo-compact-display t))
 
-(use-package visual-regexp)
+(use-package visual-replace
+  :commands (my/visual-query-replace +my/replace-dwim)
+  :config
+  (setq visual-replace-default-to-full-scope t
+        visual-replace-display-total t)
+  (defun my/visual-query-replace (args ranges)
+    "Like visual-replace but defaults to query mode, like query-replace"
+    (interactive (visual-replace-read (visual-replace-make-args
+                                       :query t
+                                       :word (and current-prefix-arg (not (eq current-prefix-arg '-))))))
+    (visual-replace args ranges))
 
-(use-package visual-regexp-steroids)
+  (defun +my/replace-dwim (&optional word )
+    "Make it easy to replace WORD.If WORD is not given, automatically extract it by major-mode."
+    (interactive)
+    (cond
+     ((derived-mode-p 'occur-mode) (occur-edit-mode))
+     ((derived-mode-p 'grep-mode) (wgrep-change-to-wgrep-mode))
+     ((and (featurep 'deadgrep) (derived-mode-p 'deadgrep-mode))
+      (wgrep-change-to-wgrep-mode)))
+    (let* ((buffer-name (buffer-name))
+           (raw-keyword (cond ((string-match "*Embark .* - \\(?1:.*\\)\\*" buffer-name)
+                               (match-string 1 buffer-name))
+                              ((buffer-match-p "\\*deadgrep.*" buffer-name)
+                               (car deadgrep-history))
+                              (t (read-string "Keyword: " word))))
+           (keyword (replace-regexp-in-string "^#" "" raw-keyword)))
+      (visual-replace
+       (visual-replace-read (visual-replace-make-args :from keyword :regexp t))
+       (list (cons (point-min) (point-max))))
+      )))
 
 (use-package maple-translate
   :ensure (:host github :repo "honmaple/emacs-maple-translate")
