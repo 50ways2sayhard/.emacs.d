@@ -1038,6 +1038,13 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
   (add-hook 'org-capture-mode-hook #'meow-insert)
   (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
 
+(use-package meow-tree-sitter
+  :after meow
+  :defer nil
+  :config
+  (meow-tree-sitter-register-defaults)
+  (meow-tree-sitter-register-thing ?C "class"))
+
 (use-package bind
   :ensure (:host github :repo "repelliuss/bind")
   :functions (bind))
@@ -1195,6 +1202,9 @@ targets."
   (defun crm-indicator (args)
     (cons (concat "[CRM] " (car args)) (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  (when *sys/mac*
+    (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"))
 
   ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
@@ -1842,7 +1852,11 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package visual-replace
   :commands (my/visual-query-replace +my/replace-dwim)
+  :custom-face
+  (visual-replace-delete-match ((t (:inherit query-replace :strike-through t))))
   :config
+  (custom-set-faces
+   '(visual-replace-delete-match ((t (:inherit query-replace :strike-through t)))))
   (setq visual-replace-default-to-full-scope t
         visual-replace-display-total t)
   (defun my/visual-query-replace (args ranges)
@@ -3070,6 +3084,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (remove-hook 'dape-on-start-hooks 'dape-info)
   ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
+  (add-hook 'dape-stopped-hook (lambda () (kill-buffer my/dape--log-buffer)))
   (defhydra dape-hydra (:color pink :hint nil :foreign-keys run)
     "
 ^Stepping^          ^Breakpoints^               ^Info
