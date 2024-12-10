@@ -102,7 +102,7 @@ REST and STATE."
                        (require ',name))
                    ((debug error)
                     (message "Failed to load deferred package %s: %s" ',name e)))
-                 (when-let (deferral-list (assq ',name +use-package--deferred-pkgs))
+                 (when-let* ((deferral-list (assq ',name +use-package--deferred-pkgs)))
                    (dolist (hook (cdr deferral-list))
                      (advice-remove hook #',fn)
                      (remove-hook hook #',fn))
@@ -435,16 +435,16 @@ It will split otherwise."
   (let ((direction (or (alist-get 'direction alist)
                        +magit-open-windows-in-direction))
         (origin-window (selected-window)))
-    (if-let (window (window-in-direction direction))
+    (if-let* ((window (window-in-direction direction)))
         (unless magit-display-buffer-noselect
           (select-window window))
-      (if-let (window (and (not (one-window-p))
-                           (window-in-direction
-                            (pcase direction
-                              (`right 'left)
-                              (`left 'right)
-                              ((or `up `above) 'down)
-                              ((or `down `below) 'up)))))
+      (if-let* ((window (and (not (one-window-p))
+                             (window-in-direction
+                              (pcase direction
+                                (`right 'left)
+                                (`left 'right)
+                                ((or `up `above) 'down)
+                                ((or `down `below) 'up))))))
           (unless magit-display-buffer-noselect
             (select-window window))
         (let ((window (split-window nil nil direction)))
@@ -867,33 +867,6 @@ It will split otherwise."
   (setq hscroll-step 1)
   (setq hscroll-margin 1)
   ;; -SmoothScroll
-
-  (defun smarter-move-beginning-of-line (arg)
-    "Move point back to indentation of beginning of line.
-
-Move point to the first non-whitespace character on this line.
-If point is already there, move to the beginning of the line.
-Effectively toggle between the first non-whitespace character and
-the beginning of the line.
-
-If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-point reaches the beginning or end of the buffer, stop there."
-    (interactive "^p")
-    (setq arg (or arg 1))
-
-    ;; Move lines first
-    (when (/= arg 1)
-      (let ((line-move-visual nil))
-        (forward-line (1- arg))))
-
-    (let ((orig-point (point)))
-      (back-to-indentation)
-      (when (= orig-point (point))
-        (move-beginning-of-line 1))))
-
-  ;; remap C-a to `smarter-move-beginning-of-line'
-  (global-set-key [remap move-beginning-of-line]
-                  'smarter-move-beginning-of-line)
   )
 ;;; Helper functions
 (defun font-installed-p (font-name)
@@ -1026,6 +999,7 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
 (use-package meow
   :defer nil
   :config
+  (setq meow-keypad-leader-dispatch "C-c")
   (require 'meow-config)
   (meow-setup)
   (meow-setup-indicator)
@@ -1137,9 +1111,9 @@ targets."
 
   ;; smerge integration
   (defun embark-target-smerge-at-point ()
-    (when-let (((bound-and-true-p smerge-mode))
-               (ov (cl-find-if (lambda (ov) (eq (overlay-get ov 'smerge) 'conflict))
-                               (overlays-at (point)))))
+    (when-let* (((bound-and-true-p smerge-mode))
+                (ov (cl-find-if (lambda (ov) (eq (overlay-get ov 'smerge) 'conflict))
+                                (overlays-at (point)))))
       `(smerge-diff "conflict" ,(overlay-start ov) . ,(overlay-end ov))))
 
   (add-to-list 'embark-keymap-alist '(smerge-diff . smerge-basic-map))
@@ -1372,6 +1346,73 @@ When the number of characters in a buffer exceeds this threshold,
            (cands (split-string (shell-command-to-string cmd) "\0" t))
            (file (completing-read "Find file: " (project--file-completion-table cands) nil t)))
       (find-file file)))
+
+  ;;  HACK: for `breadcrumb' and `eglot'
+  (defun my-consult-imenu--compute ()
+    "Compute imenu candidates."
+    (consult--forbid-minibuffer)
+    (let* ((imenu-use-markers t)
+           ;; Generate imenu, see `imenu--make-index-alist'.
+           (items (imenu--truncate-items
+                   (save-excursion
+                     (without-restriction
+                       (funcall imenu-create-index-function)))))
+           (config (cdr (seq-find (lambda (x) (derived-mode-p (car x))) consult-imenu-config))))
+      ;; Fix toplevel items, e.g., emacs-lisp-mode toplevel items are functions
+      (when-let (toplevel (plist-get config :toplevel))
+        (let ((tops (seq-remove (lambda (x) (listp (cdr x))) items))
+              (rest (seq-filter (lambda (x) (listp (cdr x))) items)))
+          (setq items (nconc rest (and tops (list (cons toplevel tops)))))))
+      ;; Apply our flattening in order to ease searching the imenu.
+      (let ((fn (if (and (boundp 'eglot--managed-mode) eglot--managed-mode) #'consult-imenu--flatten-eglot #'consult-imenu--flatten)))
+        (funcall fn
+                 nil nil items
+                 (mapcar (pcase-lambda (`(,x ,y ,z)) (list y x z))
+                         (plist-get config :types)))
+        )
+      ))
+
+  (advice-add 'consult-imenu--compute :override #'my-consult-imenu--compute)
+
+  (defun consult-imenu--create-key-name-eglot (prefix item types)
+    "Create a key-name with optional prefix and type annotations."
+    (let* ((name (copy-sequence (car item)))
+           (name-type (get-text-property 0 'breadcrumb-kind name))
+           (type (assoc name-type types))
+           (pos (consult-imenu--normalize (or (car (get-text-property 0 'breadcrumb-region name)) (cdr item))))
+           (key-name (concat (when prefix (concat prefix " ")) name)))
+
+      (when type
+        (add-face-text-property (if prefix (1+ (length prefix)) 0) (length key-name)
+                                (nth 2 type) 'append key-name)
+
+        (setq key-name (concat (car type) " " key-name))
+        (put-text-property 0 (length (car type)) 'consult--type (nth 1 type) key-name))
+
+      (list (cons key-name pos))))
+
+
+  (defun consult-imenu--flatten-eglot (prefix face list types)
+    "Flatten imenu LIST.
+PREFIX is prepended in front of all items.
+FACE is the item face.
+TYPES is the mode-specific types configuration."
+    (mapcan
+     (lambda (item)
+       (if (and (consp item) (stringp (car item)) (integer-or-marker-p (cdr item)))
+           (consult-imenu--create-key-name-eglot prefix item types)
+
+         (progn
+           (append
+            (consult-imenu--create-key-name-eglot prefix item types)
+
+            (let* ((name (concat (car item)))
+                   (next-prefix (if prefix (concat prefix "/" name) name)))
+              (add-face-text-property 0 (length name)
+                                      'consult-imenu-prefix 'append name)
+
+              (consult-imenu--flatten-eglot next-prefix face (cdr item) types))))))
+     list))
   )
 
 (use-package zoxide
@@ -2720,7 +2761,7 @@ If optional arg DIRECTORY is nil, rgrep in default directory."
            (node-end (treesit-node-end node)))
       ;; Node fits the region exactly. Try its parent node instead.
       (when (and (= (region-beginning) node-start) (= (region-end) node-end))
-        (when-let ((node (treesit-node-parent node)))
+        (when-let* (((node (treesit-node-parent node))))
           (setq node-start (treesit-node-start node)
                 node-end (treesit-node-end node))))
       (set-mark node-end)
@@ -2731,6 +2772,11 @@ If optional arg DIRECTORY is nil, rgrep in default directory."
   :diminish
   :demand t
   :commands (avy-goto-char avy-goto-line))
+
+(use-package mwim
+  :bind
+  ("C-a" . mwim-beginning-of-code-or-line)
+  ("C-e" . mwim-end-of-code-or-line))
 
 (use-package embrace
   :commands (embrace-commander)
@@ -2980,61 +3026,20 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (cl-defmethod eglot-handle-notification :after
     (_server (_method (eql textDocument/publishDiagnostics)) &key uri
              &allow-other-keys)
-    (when-let ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
+    (when-let* ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
       (with-current-buffer buffer
         (if (and (eq nil flymake-no-changes-timeout)
                  (not (buffer-modified-p)))
             (flymake-start t)))))
+                                        ; (cl-defmethod eglot-handle-notification :after
+                                        ;   (_server (_method (eql textDocument/publishDiagnostics)) &key uri
+                                        ;            &allow-other-keys)
+                                        ;   (when-let ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
+                                        ;     (with-current-buffer buffer
+                                        ;       (if (and (eq nil flymake-no-changes-timeout)
+                                        ;                (not (buffer-modified-p)))
+                                        ;           (flymake-start t)))))
 
-  ;; Signature
-  ;; (defun +eglot/show-signature-help ()
-  ;;   (when (and (eglot-managed-p)
-  ;;              (eglot-server-capable :signatureHelpProvider))
-  ;;     (unless +eglot/signature-last-point
-  ;;       (setq +eglot/signature-last-point (point)))
-  ;;     (let ((buf (current-buffer)))
-  ;;       (setq +eglot/last-buffer buf)
-  ;;       (if (eql (line-number-at-pos +eglot/signature-last-point)
-  ;;                (line-number-at-pos (point)))
-  ;;           (jsonrpc-async-request
-  ;;            (eglot--current-server-or-lose)
-  ;;            :textDocument/signatureHelp (eglot--TextDocumentPositionParams)
-  ;;            :success-fn (eglot--lambda ((SignatureHelp)
-  ;;                                        signatures activeSignature (activeParameter 0))
-  ;;                          (eglot--when-buffer-window +eglot/last-buffer
-  ;;                            (let ((active-sig (and (cl-plusp (length signatures))
-  ;;                                                   (aref signatures (or activeSignature 0)))))
-  ;;                              (if (not active-sig)
-  ;;                                  (+eglot/hide-signature buf)
-  ;;                                (with-current-buffer (get-buffer-create +eglot/display-buf)
-  ;;                                  (erase-buffer)
-  ;;                                  (insert (or (eglot--sig-info active-sig activeParameter t) "")))
-  ;;                                (setq +eglot/display-frame
-  ;;                                      (posframe-show
-  ;;                                       (get-buffer-create +eglot/display-buf)
-  ;;                                       :position +eglot/signature-last-point
-  ;;                                       :border-width 1
-  ;;                                       :border-color (face-background '+eglot/display-border nil t)
-  ;;                                       :max-width (/ (frame-width) 3)
-  ;;                                       :poshandler 'posframe-poshandler-point-bottom-left-corner-upward))))))
-  ;;            :timeout-fn (lambda () (+eglot/hide-signature buf))
-  ;;            :error-fn (lambda () (+eglot/hide-signature buf))
-  ;;            :deferred :textDocument/signatureHelp)
-  ;;         (+eglot/hide-signature buf)))))
-
-  ;; (defun +eglot/hide-signature (buf)
-  ;;   (with-current-buffer buf
-  ;;     (remove-hook 'post-command-hook #'+eglot/show-signature-help t))
-  ;;   (setq +eglot/signature-last-point nil
-  ;;         +eglot/signature-retries 0)
-  ;;   (posframe-hide +eglot/display-buf))
-
-  ;; (defun +eglot/signature-help-at-point ()
-  ;;   (interactive)
-  ;;   (when (and (eglot-managed-p)
-  ;;              (eglot-server-capable :signatureHelpProvider))
-  ;;     (+eglot/show-signature-help)
-  ;;     (add-hook 'post-command-hook #'+eglot/show-signature-help nil t)))
 
   (eglot-booster-mode +1)
   )
@@ -3047,21 +3052,50 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (defun +eldoc-box-documentation-at-point ()
     (interactive)
     (eglot--dbind ((Hover) contents range)
-                  (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                                   (eglot--TextDocumentPositionParams))
-                  (let ((blurb (and (not (seq-empty-p contents))
-                                    (eglot--hover-info contents range)))
-                        (hint (thing-at-point 'symbol))
-                        (eldoc-box-position-function
-                         eldoc-box-at-point-position-function))
-                    (if (or (not blurb) (string-empty-p blurb))
-                        (message "No documentation found")
-                      (progn
-                        (eldoc-box--display blurb)
-                        (setq eldoc-box--help-at-point-last-point (point))
-                        (run-with-timer 0.1 nil #'eldoc-box--help-at-point-cleanup)
-                        (when eldoc-box-clear-with-C-g
-                          (advice-add #'keyboard-quit :before #'eldoc-box-quit-frame)))))))
+        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
+                         (eglot--TextDocumentPositionParams))
+      (let ((blurb (and (not (seq-empty-p contents))
+                        (eglot--hover-info contents range)))
+            (hint (thing-at-point 'symbol))
+            (eldoc-box-position-function
+             eldoc-box-at-point-position-function))
+        (if (or (not blurb) (string-empty-p blurb))
+            (message "No documentation found")
+          (progn
+            (eldoc-box--display blurb)
+            (setq eldoc-box--help-at-point-last-point (point))
+            (run-with-timer 0.1 nil #'eldoc-box--help-at-point-cleanup)
+            (when eldoc-box-clear-with-C-g
+              (advice-add #'keyboard-quit :before #'eldoc-box-quit-frame)))))))
+  (setq eldoc-box-frame-parameters
+        '((left . -1)
+          (top . -1)
+          (width  . 0)
+          (height  . 0)
+          (no-accept-focus . t)
+          (no-focus-on-map . t)
+          (min-width  . 0)
+          (min-height  . 0)
+          (internal-border-width . 2)
+          (vertical-scroll-bars . nil)
+          (horizontal-scroll-bars . nil)
+          (right-fringe . 10)
+          (left-fringe . 3)
+          (menu-bar-lines . 0)
+          (tool-bar-lines . 0)
+          (line-spacing . 0)
+          (unsplittable . t)
+          (undecorated . t)
+          (visibility . nil)
+          (mouse-wheel-frame . nil)
+          (no-other-frame . t)
+          (cursor-type . nil)
+          (inhibit-double-buffering . t)
+          (drag-internal-border . t)
+          (no-special-glyphs . t)
+          (desktop-dont-save . t)
+          (tab-bar-lines . 0)
+          (tab-bar-lines-keep-state . 1)))
   )
 
 (use-package eglot-booster
@@ -3201,7 +3235,7 @@ _Q_: Disconnect
                (vm-service-uri (progn
                                  (string-match "connectedVmServiceUri.*\\(https?://.*?\\)\"" (buffer-string))
                                  (match-string 1 (buffer-string)))))
-          (browse-url (format "%s?uri=%s" devtools-addr vm-service-uri))
+          (browse-url-chrome (format "%s?uri=%s" devtools-addr vm-service-uri))
           ))))
 
   (with-eval-after-load 'bind
@@ -3224,7 +3258,7 @@ _Q_: Disconnect
     (get-buffer-create my/dape--log-buffer))
 
   (defun my/dape--delete-log-buffer()
-    (when-let ((buffer (get-buffer my/dape--log-buffer)))
+    (when-let* ((buffer (get-buffer my/dape--log-buffer)))
       (kill-buffer buffer)))
 
   (defun my/dape--log-write (msg)
@@ -3233,43 +3267,6 @@ _Q_: Disconnect
         (goto-char (point-max))
         (insert msg)
         )))
-
-  (defun my/dape--repl-message (msg &optional face)
-    "Insert MSG with FACE in *dape-repl* buffer.
-Handles newline."
-    (when (and (stringp msg) (not (string-empty-p msg)))
-      (when (eql (aref msg (1- (length msg))) ?\n)
-        (setq msg (substring msg 0 (1- (length msg)))))
-      (setq msg (concat "\n" msg))
-      (if (not (get-buffer-window "*dape-repl*"))
-          (when (stringp msg)
-            (my/dape--log-write msg))
-        (cond
-         (dape--repl-insert-text-guard
-          (run-with-timer 0.1 nil 'dape--repl-message msg))
-         (t
-          (let ((dape--repl-insert-text-guard t))
-            (when-let ((buffer (get-buffer "*dape-repl*")))
-              (with-current-buffer buffer
-                (let (start)
-                  (if comint-last-prompt
-                      (goto-char (1- (marker-position (car comint-last-prompt))))
-                    (goto-char (point-max)))
-                  (setq start (point-marker))
-                  (let ((inhibit-read-only t))
-                    (insert (propertize msg 'font-lock-face face)))
-                  (goto-char (point-max))
-                  ;; HACK Run hooks as if comint-output-filter was executed
-                  ;;      Could not get comint-output-filter to work by moving
-                  ;;      process marker. Comint removes forgets last prompt
-                  ;;      and everything goes to shit.
-                  (when-let ((process (get-buffer-process buffer)))
-                    (set-marker (process-mark process)
-                                (point-max)))
-                  (let ((comint-last-output-start start))
-                    (run-hook-with-args 'comint-output-filter-functions msg)))))))))))
-
-  (advice-add #'dape--repl-message :override #'my/dape--repl-message)
   )
 
 (use-package breadcrumb
@@ -3495,8 +3492,8 @@ Install the doc if it's not installed."
                                                       ((?c "Class"    font-lock-type-face)
                                                        (?e "Enum" font-lock-type-face)
                                                        (?E "EnumMember" font-lock-variable-name-face)
-                                                       (?V "Constructor" font-lock-type-face)
-                                                       (?C "Constant"    font-lock-constant-face)
+                                                       (?C "Constructor" font-lock-type-face)
+                                                       (?S "Constant"    font-lock-constant-face)
                                                        (?f "Function"  font-lock-function-name-face)
                                                        (?m "Method"  font-lock-function-name-face)
                                                        (?p "Property" font-lock-variable-name-face)
@@ -3506,8 +3503,6 @@ Install the doc if it's not installed."
   :ensure (:repo "50ways2sayhard/flutter.el" :host github)
   :after dart-ts-mode
   :init
-  :config
-
   (with-eval-after-load 'bind
     (bind
      dart-ts-mode-map
@@ -3532,7 +3527,7 @@ Install the doc if it's not installed."
        "tf" #'flutter-test-current-file
        "tF" #'flutter-test-all
        "o" #'my/flutter-doc-search)))
-
+  :config
   (defvar flutter--modeline-device nil)
 
   (defun flutter--modeline-device-update ()
