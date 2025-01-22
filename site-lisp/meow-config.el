@@ -50,12 +50,38 @@ S is string of the two-key sequence."
   (cond
    ((region-active-p)
     (call-interactively 'meow-reverse))
-   (t
+   (t (jump-sexp))))
+
+(defun jump-sexp ()
+  "Jump to the beginning or end of the current balanced expression.
+If inside a balanced expression, jump to its beginning.
+If at the end of a balanced expression, jump to its beginning.
+If at the beginning of a balanced expression, jump to its end."
+  (interactive)
+  (let* ((ppss (syntax-ppss))
+        (in-string-or-comment (or (nth 3 ppss) (nth 4 ppss))))
     (cond
-     ((looking-at "\\s\(")
+     ;; If in string or comment, do nothing
+     (in-string-or-comment
+      (message "Currently in string or comment"))
+
+     ;; If at the end of a balanced expression, jump to its beginning
+     ((and (eq (char-before) ?\)) (not (eq (char-after) ?\()))
+      (backward-sexp))
+
+     ;; If at the beginning of a balanced expression, jump to its end
+     ((and (eq (char-after) ?\() (not (eq (char-before) ?\))))
       (forward-sexp))
-     ((looking-back "\\s\)")
-      (backward-list))))))
+
+     ;; If inside a balanced expression, jump to its beginning
+     ((> (car (syntax-ppss)) 0)
+      (backward-up-list))
+
+     ;; If none of the above, try to move forward to next expression
+     (t
+      (condition-case nil
+          (forward-sexp)
+        (error (message "No balanced expression found")))))))
 
 (with-no-warnings
   (defvar-keymap +meow-file-map

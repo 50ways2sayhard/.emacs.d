@@ -57,6 +57,7 @@ org-mode
        :post (progn (tempel-done) (org-edit-src-code)))
 (link "[[" (s link) "][" (s description) "]]")
 (table "|" p "|" p "|" n> "|-+-|" n> "|||")
+(td "- [ ] " p)
 
 dart-ts-mode
 

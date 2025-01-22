@@ -459,6 +459,25 @@ It will split otherwise."
       (switch-to-buffer buffer t t)
       (selected-window))))
 
+(defun pmx-split-window-conservatively (&optional window)
+  "Split WINDOW only if absolutely necessary.
+Only split if there is no split, and only split into left & right
+windows."
+  (interactive)
+  (let ((window (or window (selected-window))))
+    (if (and
+         (window-splittable-p window t)
+         (= (length (window-list)) 1))
+        (with-selected-window window
+          (split-window-right))
+      nil)))
+
+(setq split-window-preferred-function #'pmx-split-window-conservatively)
+
+;; Did I mention that I have a preferred function?  Could you like, not?
+(setq warning-display-at-bottom nil)
+(setq ediff-split-window-function 'split-window-horizontally)
+
 (use-package browse-at-remote
   :bind (:map vc-prefix-map
               ("B" . browse-at-remote)))
@@ -937,30 +956,6 @@ It will split otherwise."
     (end-of-line)
     (newline-and-indent)))
 
-(defun hexcolour-luminance (color)
-  "Calculate the luminance of a COLOR string (e.g. \"#ffaa00\", \"blue\").
-This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
-  (let* ((values (x-color-values color))
-         (r (car values))
-         (g (cadr values))
-         (b (caddr values)))
-    (floor (+ (* .3 r) (* .59 g) (* .11 b)) 256)))
-
-(defun hexcolour-add-to-font-lock ()
-  "Add hex color to font lock."
-  (interactive)
-  (font-lock-add-keywords
-   nil
-   `((,(concat "#[0-9a-fA-F]\\{3\\}[0-9a-fA-F]\\{3\\}?\\|"
-               (regexp-opt (x-defined-colors) 'words))
-      (0 (let ((colour (match-string-no-properties 0)))
-           (put-text-property
-            (match-beginning 0) (match-end 0)
-            'face `((:foreground ,(if (> 128.0 (hexcolour-luminance colour))
-                                      "white" "black"))
-                    (:background ,colour)))))))))
-
-
 (defun +my/google-it (&optional word)
   "Google WORD."
   (interactive)
@@ -1053,8 +1048,10 @@ This is 0.3 red + 0.59 green + 0.11 blue and always between 0 and 255."
    ("=" . er/expand-region)
    (";" . embrace-commander)
    ("Y". #'evilnc-copy-and-comment-lines)
+   ("R" . visual-replace)
    :map embark-identifier-map
    (";" . embrace-commander)
+   ("R" . visual-replace)
    ("D" . xref-find-definitions-other-window))
   :custom
   (embark-cycle-key ".")
@@ -1098,6 +1095,9 @@ targets."
         '(embark-which-key-indicator
           embark-highlight-indicator
           embark-isearch-highlight-indicator))
+
+  (add-to-list 'embark-target-injection-hooks
+               '(visual-replace embark--allow-edit))
 
   (defun embark-hide-which-key-indicator (fn &rest args)
     "Hide the which-key indicator immediately when using the completing-read prompter."
@@ -1194,7 +1194,8 @@ targets."
   (setq enable-recursive-minibuffers t)
   (setq completion-ignore-case t
         read-buffer-completion-ignore-case t
-        read-file-name-completion-ignore-case t))
+        read-file-name-completion-ignore-case t)
+  )
 
 (use-package consult
   :after orderless
@@ -1570,9 +1571,7 @@ TYPES is the mode-specific types configuration."
           (right-fringe . 8))))
 
 ;;; Icons
-(use-package nerd-icons
-  :config
-  (add-to-list 'nerd-icons-mode-icon-alist '(dart-ts-mode nerd-icons-devicon "nf-dev-dart" :face nerd-icons-blue)))
+(use-package nerd-icons)
 (use-package nerd-icons-completion
   :ensure (nerd-icons-completion :type git :host github :repo "rainstormstudio/nerd-icons-completion")
   :commands (nerd-icons-completion-marginalia-setup)
@@ -2370,6 +2369,19 @@ Just put this function in `hippie-expand-try-functions-list'."
   (doom-modeline-check-simple-format t)
   (doom-modeline-buffer-modification-icon t))
 
+(use-package colorful-mode
+  :custom
+  (colorful-use-prefix t)
+  :hook ((prog-mode . colorful-mode)))
+
+(use-package ultra-scroll
+  :ensure (:host github :repo "jdtsmith/ultra-scroll")
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+
 (use-package ef-themes
   :init
   (ef-themes-select 'ef-trio-light)
@@ -2715,7 +2727,6 @@ If optional arg DIRECTORY is nil, rgrep in default directory."
   :commands (apheleia-format-buffer)
   :bind ("C-c c f" . apheleia-format-buffer)
   :config
-  (add-to-list 'apheleia-mode-alist '(dart-ts-mode . dart-format))
   (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent)))
 
 (use-package delete-block
@@ -3003,25 +3014,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
-  ;; (add-to-list 'eglot-server-programs '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
-
-  ;; (defclass eglot-deno (eglot-lsp-server) ()
-  ;;   :documentation "A custom class for deno lsp.")
-
-  ;; (cl-defmethod eglot-initialization-options ((server eglot-deno))
-  ;;   "Passes through required deno initialization options"
-  ;;   (list :enable t
-  ;;         :lint t))
-
-  ;; (defvar +eglot/display-buf "*+eglot/display-buffer*")
-  ;; (defvar +eglot/display-frame nil)
-  ;; (defvar +eglot/hover-last-point nil)
-  ;; (defvar +eglot/signature-last-point nil)
-  ;; (defface +eglot/display-border '((((background dark)) . (:background "white"))
-  ;;                                  (((background light)) . (:background "black")))
-  ;;   "The border color used in childframe.")
-  (defvar +eglot/last-buffer nil)
-
   ;; WORKAROUND https://github.com/joaotavora/eglot/issues/1296
   (cl-defmethod eglot-handle-notification :after
     (_server (_method (eql textDocument/publishDiagnostics)) &key uri
@@ -3031,15 +3023,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (if (and (eq nil flymake-no-changes-timeout)
                  (not (buffer-modified-p)))
             (flymake-start t)))))
-                                        ; (cl-defmethod eglot-handle-notification :after
-                                        ;   (_server (_method (eql textDocument/publishDiagnostics)) &key uri
-                                        ;            &allow-other-keys)
-                                        ;   (when-let ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
-                                        ;     (with-current-buffer buffer
-                                        ;       (if (and (eq nil flymake-no-changes-timeout)
-                                        ;                (not (buffer-modified-p)))
-                                        ;           (flymake-start t)))))
-
 
   (eglot-booster-mode +1)
   )
@@ -3485,6 +3468,12 @@ Install the doc if it's not installed."
                  (cons 'dart-ts-mode (if (executable-find "fvm")
                                          (add-to-list 'dart-lsp-command "fvm")
                                        dart-lsp-command))))
+  (with-eval-after-load 'org
+    (add-to-list 'org-src-lang-modes '("dart" . dart-ts)))
+
+  (with-eval-after-load 'markdown
+    (add-to-list 'markdown-code-lang-modes '("dart" . dart-ts)))
+
   :config
   (add-to-list 'project-vc-extra-root-markers "pubspec.yaml")
   (with-eval-after-load 'consult-imenu
