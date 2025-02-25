@@ -20,12 +20,12 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.8)
+(defvar elpaca-installer-version 0.9)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
+                              :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -318,6 +318,7 @@ REST and STATE."
   :config
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (setq magit-diff-refine-hunk t)
+  (setopt magit-format-file-function #'magit-format-file-nerd-icons)
 
   (defun magit-open-repo ()
     "open remote repo URL"
@@ -1850,7 +1851,9 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package simple
   :ensure nil
-  :config (column-number-mode))
+  :config
+  (column-number-mode)
+  (setq kill-whole-line t))
 
 (use-package tramp
   :ensure nil
@@ -2542,6 +2545,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :custom-face
   (indent-bars-face ((t (:height 1.2))))
   :custom
+  (indent-bars-color '(highlight :face-bg t :blend 0.225))
   (indent-bars-treesit-support t)
   (indent-bars-no-descend-string t)
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
@@ -2696,24 +2700,16 @@ If optional arg DIRECTORY is nil, rgrep in default directory."
   (setq flymake-no-changes-timeout nil
         flymake-show-diagnostics-at-end-of-line nil
         flymake-fringe-indicator-position 'right-fringe)
-
   )
 
-(use-package sideline-flymake
-  :diminish sideline-mode
+(use-package flymake-popon
+  :diminish
   :custom-face
-  (sideline-flymake-error ((t (:height 0.85 :italic t))))
-  (sideline-flymake-warning ((t (:height 0.85 :italic t))))
-  (sideline-flymake-success ((t (:height 0.85 :italic t))))
-  :hook (flymake-mode . sideline-mode)
-  :init (setq sideline-flymake-display-mode 'point
-              sideline-backends-right '(sideline-flymake)))
-
-;; (use-package flymake-popon
-;;   :hook (flymake-mode . flymake-popon-mode)
-;;   :config
-;;   (setq flymake-popon-delay 1)
-;;   )
+  (flymake-popon-posframe-border ((t :foreground ,(face-background 'region))))
+  :hook (flymake-mode . flymake-popon-mode)
+  :init (setq flymake-popon-width 70
+              flymake-popon-posframe-border-width 1
+              flymake-popon-method 'posframe))
 
 (use-package jinx
   :ensure (:repo "minad/jinx")
@@ -3632,6 +3628,28 @@ if one already exists."
          (call-interactively ,term-fn)
          (when (> 1 (count-windows))
            (delete-other-windows))))))
+
+;; In ~/.config/kitty/kitty.conf add the following line:
+;; allow_remote_control yes
+;; listen_on unix:/tmp/kitty_sock
+(defun open-directory-kitty (dir)
+  "Open New Kitty Tab, change work directory to the DIR."
+  (interactive "D")
+  (let* ((ksock (car-safe (file-expand-wildcards "/tmp/kitty_sock-[0-9]*")))
+         (dir (expand-file-name dir)))
+    (shell-command (format "/Applications/kitty.app/Contents/MacOS/kitty @ --to unix:%1$s launch --type=tab --cwd=%2$s && open -a kitty" ksock dir) nil nil)))
+
+(defun kitty-here ()
+	"Open New Kitty Tab, change work directory to the current."
+	(interactive)
+  (open-directory-kitty default-directory))
+
+(defun project-kitty ()
+  "Open New Kitty Tab, change work directory to the current project root."
+  (interactive)
+  (let* ((default-directory (or (project-root (project-current))
+                                default-directory)))
+    (open-directory-kitty default-directory)))
 
 (use-package eat
   :disabled

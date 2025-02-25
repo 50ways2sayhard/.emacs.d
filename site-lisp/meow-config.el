@@ -143,7 +143,8 @@ If at the beginning of a balanced expression, jump to its end."
     "p" #'project-switch-project
     "f" #'project-find-file
     "k" #'project-kill-buffers
-    "d" #'project-dired)
+    "d" #'project-dired
+    "E" #'project-kitty)
   (defvar-keymap +meow-quit-map
     "q" #'kill-emacs
     "r" #'restart-emacs)
@@ -164,7 +165,8 @@ If at the beginning of a balanced expression, jump to its end."
     "T" #'dirvish-dwim
     "d" #'toggle-debug-on-error
     "l" #'toggle-truncate-lines
-    "y" #'go-translate-at-point)
+    "y" #'gt-do-translate
+    "Y" #'gt-do-translate-prompt)
   (defvar-keymap +meow-window-map
     "u" #'winner-undo
     "o" #'winner-redo
