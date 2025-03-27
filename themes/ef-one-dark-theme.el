@@ -95,12 +95,12 @@
 
       (bg-changed        "#4a4a2a")
       (bg-changed-faint  "#3d352a")
-      (bg-changed-refine "#5c5a1f")
+      (bg-changed-refine green-faint)
       (fg-changed        "#d0c080")
 
       (bg-removed        "#5a3142")
       (bg-removed-faint  "#4a2034")
-      (bg-removed-refine "#782a4a")
+      (bg-removed-refine red-faint)
       (fg-removed        "#f0bfcf")
 
 ;;; Graphs
