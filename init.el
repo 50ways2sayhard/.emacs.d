@@ -2387,8 +2387,11 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package ef-themes
   :init
-  (ef-themes-select 'ef-trio-light)
+  (add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
+  (ef-themes-select 'ef-one-dark)
   :config
+  (require 'ef-one-dark-theme)
+
   (setq ef-themes-headings
         '((0 . (bold 1))
           (1 . (bold 1))
