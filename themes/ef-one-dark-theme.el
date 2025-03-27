@@ -95,12 +95,12 @@
 
       (bg-changed        "#4a4a2a")
       (bg-changed-faint  "#3d352a")
-      (bg-changed-refine green-faint)
+      (bg-changed-refine green)
       (fg-changed        "#d0c080")
 
       (bg-removed        "#5a3142")
       (bg-removed-faint  "#4a2034")
-      (bg-removed-refine red-faint)
+      (bg-removed-refine red)
       (fg-removed        "#f0bfcf")
 
 ;;; Graphs
@@ -131,11 +131,11 @@
 
       (border        "#3f4445")
       (cursor        "#51afef")
-      (fg-intense    "#ffffff")
+      (fg-intense    magenta)
 
       (modeline-err     "#ff6c6b")
       (modeline-warning "#ecbe7b")
-      (modeline-info    "#46d9ff")
+      (modeline-info    magenta)
 
       (underline-err     "#ff6c6b")
       (underline-warning "#ecbe7b")
@@ -180,8 +180,8 @@
       (rx-construct red)
 
 ;;;; Accent mappings
-      (accent-0 blue)
-      (accent-1 magenta)
+      (accent-0 magenta)
+      (accent-1 blue)
       (accent-2 green)
       (accent-3 yellow)
 
