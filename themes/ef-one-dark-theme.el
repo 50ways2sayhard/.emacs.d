@@ -89,18 +89,18 @@
 
 ;;; Diffs
       (bg-added          "#304a4f")
-      (bg-added-faint    "#16383f")
-      (bg-added-refine   "#2f6767")
+      (bg-added-faint    "#3B564C")
+      (bg-added-refine   green-warmer)
       (fg-added          "#a0d0f0")
 
       (bg-changed        "#4a4a2a")
-      (bg-changed-faint  "#3d352a")
-      (bg-changed-refine green)
+      (bg-changed-faint  "#40483B")
+      (bg-changed-refine yellow-cooler)
       (fg-changed        "#d0c080")
 
       (bg-removed        "#5a3142")
-      (bg-removed-faint  "#4a2034")
-      (bg-removed-refine red)
+      (bg-removed-faint  "#522330")
+      (bg-removed-refine red-cooler)
       (fg-removed        "#f0bfcf")
 
 ;;; Graphs
@@ -121,10 +121,10 @@
       (bg-mode-line       "#1c2024")
       (fg-mode-line       "#c0c4d2")
       (bg-completion      "#3f4445")
-      (bg-hover           "#4db5bd")
+      (bg-hover           "#47586E")
       (bg-hover-secondary "#665f7a")
       (bg-hl-line         "#212428")
-      (bg-paren           "#4db5bd")
+      (bg-paren           "#47586E")
       (bg-err             "#501a2d")
       (bg-warning         "#4a352a")
       (bg-info            "#0f3f4f")
@@ -133,9 +133,9 @@
       (cursor        "#51afef")
       (fg-intense    magenta)
 
-      (modeline-err     "#ff6c6b")
-      (modeline-warning "#ecbe7b")
-      (modeline-info    magenta)
+      (modeline-err     red)
+      (modeline-warning yellow)
+      (modeline-info    green)
 
       (underline-err     "#ff6c6b")
       (underline-warning "#ecbe7b")
@@ -286,8 +286,8 @@
       (rainbow-0 blue)
       (rainbow-1 magenta)
       (rainbow-2 green)
-      (rainbow-3 yellow)
-      (rainbow-4 blue)
+      (rainbow-3 orange)
+      (rainbow-4 yellow)
       (rainbow-5 red)
       (rainbow-6 magenta-cooler)
       (rainbow-7 green-cooler)
