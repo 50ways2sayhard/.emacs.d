@@ -165,6 +165,7 @@ If at the beginning of a balanced expression, jump to its end."
     "T" #'dirvish-dwim
     "d" #'toggle-debug-on-error
     "l" #'toggle-truncate-lines
+    "f" #'toggle-fold
     "y" #'gt-do-translate
     "Y" #'gt-do-translate-prompt)
   (defvar-keymap +meow-window-map

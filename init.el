@@ -20,44 +20,46 @@
     (load-file (expand-file-name "early-init.el" user-emacs-directory))))
 
 ;;; Package Manager
-(defvar elpaca-installer-version 0.9)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1 :inherit ignore
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+(progn
+  (defvar elpaca-installer-version 0.10)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (<= emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (load "./elpaca-autoloads")))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order)))
+
 
 ;; Install use-package support
 (elpaca elpaca-use-package
@@ -510,7 +512,7 @@ windows."
                 )))
 
 (use-package hydra
-  :init
+  :config
   (setq hydra-hint-display-type 'posframe)
 
   (with-eval-after-load 'posframe
@@ -520,11 +522,11 @@ windows."
             `(:left-fringe 8
                            :right-fringe 8
                            :internal-border-width 2
-                           ;; :internal-border-color ,(face-background 'posframe-border nil t)
+                           :internal-border-color ,(face-background 'posframe-border nil t)
                            :background-color ,(face-background 'tooltip nil t)
                            :foreground-color ,(face-foreground 'tooltip nil t)
                            :lines-truncate t
-                           :poshandler posframe-poshandler-frame-bottom-center)))
+                           :poshandler posframe-poshandler-frame-center-near-bottom)))
     (hydra-set-posframe-show-params)
     (add-hook 'after-load-theme-hook #'hydra-set-posframe-show-params t)))
 
@@ -534,8 +536,8 @@ windows."
   :ensure nil
   :after magit
   :diminish
-  :bind (:map smerge-mode-map
-              ("C-c m" . hydra-smerge/body))
+  ;; :bind (:map smerge-mode-map
+  ;;             ("C-c m" . hydra-smerge/body))
   :hook ((find-file . (lambda ()
                         (save-excursion
                           (goto-char (point-min))
@@ -549,38 +551,11 @@ windows."
   (when (>= emacs-major-version 27)
     (set-face-attribute 'smerge-refined-removed nil :extend t)
     (set-face-attribute 'smerge-refined-added   nil :extend t))
-  (require 'hydra)
-  (defhydra hydra-smerge (:hint nil
-                                :pre (smerge-mode 1)
-                                ;; Disable `smerge-mode' when quitting hydra if
-                                ;; no merge conflicts remain.
-                                :post (smerge-auto-leave))
-    "
-  ^Move^       ^Keep^               ^Diff^                 ^Other^
-  ^^-----------^^-------------------^^---------------------^^-------
-  _n_ext       _b_ase               _<_: upper/base        _C_ombine
-  _p_rev       _u_pper              _=_: upper/lower       _r_esolve
-  ^^           _l_ower              _>_: base/lower        _k_ill current
-  ^^           _a_ll                _R_efine
-  ^^           _RET_: current       _E_diff
-  "
-    ("n" smerge-next)
-    ("p" smerge-prev)
-    ("b" smerge-keep-base)
-    ("u" smerge-keep-upper)
-    ("l" smerge-keep-lower)
-    ("a" smerge-keep-all)
-    ("RET" smerge-keep-current)
-    ("\C-m" smerge-keep-current)
-    ("<" smerge-diff-base-upper)
-    ("=" smerge-diff-upper-lower)
-    (">" smerge-diff-base-lower)
-    ("R" smerge-refine)
-    ("E" smerge-ediff)
-    ("C" smerge-combine-with-next)
-    ("r" smerge-resolve)
-    ("k" smerge-kill-current)
-    ("q" nil "cancel" :color blue)))
+  )
+
+(use-package smerge-menu
+  :ensure (:repo "KarimAziev/smerge-menu" :host github)
+  :after smerge-mode)
 
 (use-package git-timemachine
   :ensure (:host github :repo "emacsmirror/git-timemachine")
@@ -685,6 +660,7 @@ windows."
   :hook (elpaca-after-init . show-paren-mode)
   :config
   (setq show-paren-style 'parenthesis
+        blink-matching-paren-highlight-offscreen t
         show-paren-context-when-offscreen 'child-frame
         show-paren-when-point-in-periphery t
         show-paren-when-point-inside-paren t))
@@ -831,8 +807,8 @@ windows."
   ;; Vertical Scroll
   (setq scroll-step 1
         ;; scroll-margin 3
-        scroll-margin 0
-        scroll-conservatively 100000
+        ;; scroll-margin 0
+        ;; scroll-conservatively 100000
         auto-window-vscroll nil
         scroll-up-aggressively 0.01
         scroll-down-aggressively 0.01
@@ -2274,6 +2250,7 @@ Just put this function in `hippie-expand-try-functions-list'."
               ("C-M-<tab>" . popper-toggle-type))
   :hook (window-setup . popper-mode)
   :init
+  (setq popper-mode-line "")
   (setq popper-reference-buffers
         '("\\*Messages\\*"
           "Output\\*$" "\\*Pp Eval Output\\*$"
@@ -2491,29 +2468,6 @@ Just put this function in `hippie-expand-try-functions-list'."
   :hook ((elpaca-after-init . global-hl-line-mode)
          ((term-mode vterm-mode) . hl-line-unload-function)))
 
-;; Colorize color names in buffers
-(use-package rainbow-mode
-  :diminish
-  :bind (:map help-mode-map
-              ("w" . rainbow-mode))
-  ;; :hook ((web-mode) . rainbow-mode)
-  :config
-  ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
-  ;; @see https://emacs.stackexchange.com/questions/36420
-  (defun my-rainbow-colorize-match (color &optional match)
-    (let* ((match (or match 0))
-           (ov (make-overlay (match-beginning match) (match-end match))))
-      (overlay-put ov 'ovrainbow t)
-      (overlay-put ov 'face `((:foreground ,(if (> 0.5 (rainbow-x-color-luminance color))
-                                                "white" "black"))
-                              (:background ,color)))))
-  (advice-add #'rainbow-colorize-match :override #'my-rainbow-colorize-match)
-
-  (defun my-rainbow-clear-overlays ()
-    "Clear all rainbow overlays."
-    (remove-overlays (point-min) (point-max) 'ovrainbow t))
-  (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays))
-
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -2569,29 +2523,12 @@ Just put this function in `hippie-expand-try-functions-list'."
   )
 
 (use-package consult-todo
-  :ensure (:host github :repo "liuyinz/consult-todo")
+  :after hl-todo
+  :ensure (:host github :repo "theFool32/consult-todo" :branch "dev")
   :demand t
   :config
-  (when *rg*
-    ;;  HACK: speed up with `ripgrep'
-    ;; (grep-apply-setting 'grep-find-template "find <D> <X> -type f <F> -exec rg <C> --no-heading -H  <R> /dev/null {} +")
-    (grep-apply-setting 'grep-template "rg --no-heading -H <R> <D>")
-
-    (defun consult-todo-dir (&optional directory files)
-      "Jump to hl-todo keywords in FILES in DIRECTORY.
-If optinal arg FILES is nil, search in all files.
-If optional arg DIRECTORY is nil, rgrep in default directory."
-      (interactive)
-      (let* ((files (or files "* .*"))
-             (directory (or directory default-directory)))
-        (add-hook 'compilation-finish-functions #'consult-todo--candidates-rgrep)
-        (cl-letf ((compilation-buffer-name-function
-                   (lambda (&rest _) (format "*consult-todo-%s*" directory))))
-          (save-window-excursion
-            ;;  HACK: use `lgrep' instead `find'
-            (lgrep (concat  "\\b" (replace-regexp-in-string "\\\\[<>]*" "" (hl-todo--regexp)) "\\b") files directory)
-            ))))
-    ))
+  ;; (defadvice #'consult-todo-dir :before (lambda (&rest _) (consult-todo--init)))
+  )
 
 (use-package volatile-highlights
   :diminish
@@ -3308,6 +3245,23 @@ _Q_: Disconnect
 	      (message "`%s' parser was installed." lang)
 	      (sit-for 0.75)))))
 
+(use-package hideshow
+  :ensure nil
+  :hook ((prog-mode . hs-minor-mode)))
+
+(defun toggle-fold ()
+  (interactive)
+  (save-excursion
+    (end-of-line)
+    (hs-toggle-hiding)))
+
+(use-package treesit-fold
+  :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
+  ;; :hook (elpaca-after-init . global-treesit-fold-mode)
+  :init
+  ;; (require 'ts-fold-indicators)
+  )
+
 ;;;; Online document
 (use-package devdocs
   :commands (devdocs-lookup-at-point devdocs-search-at-point +devdocs-lookup-at-point +devdocs-search-at-point devdocs-dwim)
@@ -3564,7 +3518,7 @@ Install the doc if it's not installed."
   (defun my-vterm-dwim ()
     (interactive)
     (let ((vterm-buffer-name +my-vterm-tab-buffer-name)
-          (vterm-shell "tmux"))
+          (vterm-shell "fish"))
       (my-create-term-cmd #'vterm vterm-buffer-name)))
 
   (defun +my/smart-vterm-find-file (filename)
