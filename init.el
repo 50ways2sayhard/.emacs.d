@@ -1,4 +1,4 @@
-;;; package --- Summary
+;;; package --- Summary  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; init.el --- user-init-file               -*- lexical-binding: t -*-
 
@@ -21,7 +21,7 @@
 
 ;;; Package Manager
 (progn
-  (defvar elpaca-installer-version 0.10)
+  (defvar elpaca-installer-version 0.11)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -536,8 +536,8 @@ windows."
   :ensure nil
   :after magit
   :diminish
-  ;; :bind (:map smerge-mode-map
-  ;;             ("C-c m" . hydra-smerge/body))
+  :bind (:map smerge-mode-map
+              ("C-c m" . smerge-menu))
   :hook ((find-file . (lambda ()
                         (save-excursion
                           (goto-char (point-min))
@@ -545,7 +545,7 @@ windows."
                             (smerge-mode 1)))))
          (magit-diff-visit-file . (lambda ()
                                     (when smerge-mode
-                                      (hydra-smerge/body))))
+                                      (smerge-menu))))
          )
   :config
   (when (>= emacs-major-version 27)
@@ -1537,8 +1537,31 @@ TYPES is the mode-specific types configuration."
               ("M-A" . marginalia-cycle)
               ("C-i" . marginalia-cycle-annotators)))
 
+(use-package posframe
+  :hook (after-load-theme . posframe-delete-all)
+  :init
+  (defface posframe-border
+    `((t (:inherit region)))
+    "Face used by the `posframe' border."
+    :group 'posframe)
+  (defvar posframe-border-width 2
+    "Default posframe border width.")
+  :config
+  (with-no-warnings
+    (defun my-posframe--prettify-frame (&rest _)
+      (set-face-background 'fringe nil posframe--frame))
+    (advice-add #'posframe--create-posframe :after #'my-posframe--prettify-frame)
+
+    (defun posframe-poshandler-frame-center-near-bottom (info)
+      (cons (/ (- (plist-get info :parent-frame-width)
+                  (plist-get info :posframe-width))
+               2)
+            (/ (+ (plist-get info :parent-frame-height)
+                  (* 2 (plist-get info :font-height)))
+               2)))))
+
+
 (use-package vertico-posframe
-  :when (display-graphic-p)
   :hook (vertico-mode . vertico-posframe-mode)
   :config
   (setq vertico-posframe-parameters
@@ -1870,7 +1893,7 @@ Just put this function in `hippie-expand-try-functions-list'."
         vundo-compact-display t))
 
 (use-package visual-replace
-  :commands (my/visual-query-replace +my/replace-dwim)
+  :commands (visual-replace my/visual-query-replace +my/replace-dwim)
   :custom-face
   (visual-replace-delete-match ((t (:inherit query-replace :strike-through t))))
   :config
@@ -2918,7 +2941,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 ;;;; Lsp integration
 (use-package eglot
   :ensure nil
-  :commands (+eglot-organize-imports +eglot-help-at-point eglot-booster)
+  :commands (+eglot-organize-imports eglot-booster)
   :hook ((eglot-managed-mode . (lambda ()
                                  (setq eldoc-documentation-functions
                                        (cons #'flymake-eldoc-function
@@ -2927,8 +2950,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                  (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)))
          (prog-mode . (lambda ()
                         (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
-                                    ;; (my-project--ignored-p (buffer-file-name (current-buffer)))
-                                    )
+                                    (my-project--ignored-p (buffer-file-name (current-buffer))))
                           (eglot-ensure)))))
   :init
   (defvar +lsp--default-read-process-output-max nil)
@@ -2943,6 +2965,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
    eglot-sync-connect nil
    eglot-events-buffer-config '(:size 0 :format full)
    eglot-report-progress nil
+   eglot-code-action-indications '(mode-line)
    )
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
@@ -3033,6 +3056,9 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :commands (dape-hydra/body)
   :bind
   (("<f6>" . dape-hydra/body))
+  :init
+  (defvar dape-flutter-devices '(("chrome" . "chrome")
+                                 ("macos" . "macos")))
   :config
   (remove-hook 'dape-on-start-hooks 'dape-info)
   ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
@@ -3096,8 +3122,10 @@ _Q_: Disconnect
 
   (require 'flutter)
 
+
+
   (defun dape--flutter-devices ()
-    (let* ((collection (flutter--devices))
+    (let* ((collection dape-flutter-devices)
            (choice (completing-read "Device: " collection)))
       (cdr (assoc choice collection))))
 

@@ -27,9 +27,9 @@
   (defconst ef-one-dark-palette
     '(
 ;;; Basic values
-      (bg-main     "#282c30")
+      (bg-main     "#282C35")
       (fg-main     "#c0c4d2")
-      (bg-dim      "#212428")
+      (bg-dim      "#21252C")
       (fg-dim      "#5b6265")
       (bg-alt      "#1c2024")
       (fg-alt      "#9ca0a5")
@@ -160,7 +160,7 @@
 
       (link blue)
       (link-alt cyan)
-      (name violet)
+      (name magenta)
       (keybind blue)
       (identifier yellow)
       (prompt magenta)

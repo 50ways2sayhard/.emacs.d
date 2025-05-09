@@ -153,6 +153,7 @@ If at the beginning of a balanced expression, jump to its end."
     "d" #'+devdocs-dwim
     "D" #'+devdocs-search-at-point
     "h" #'+consult-ripgrep-current-directory
+    "t" #'tab-switch
     "i" #'+my-imenu
     "I" #'consult-imenu-multi
     "p" #'consult-ripgrep
