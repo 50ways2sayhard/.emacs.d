@@ -1278,44 +1278,6 @@ When the number of characters in a buffer exceeds this threshold,
   ;;    (lambda (str) (orderless--highlight input t str))))
   ;; (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
 
-  ;; Shorten candidates in consult-buffer:
-  ;; See: https://emacs-china.org/t/21-emacs-vertico-orderless-marginalia-embark-consult/19683/50
-  (defun vmacs-consult--source-recentf-items ()
-    (let ((ht (consult--buffer-file-hash))
-          file-name-handler-alist ;; No Tramp slowdown please.
-          items)
-      (dolist (file recentf-list (nreverse items))
-        ;; Emacs 29 abbreviates file paths by default, see
-        ;; `recentf-filename-handlers'.
-        (unless (eq (aref file 0) ?/)
-          (setq file (expand-file-name file)))
-        (unless (gethash file ht)
-          (push (propertize
-                 (vmacs-short-filename file)
-                 'multi-category `(file . ,file))
-                items)))))
-
-  (defun vmacs-short-filename(file)
-    "return filename with one parent directory.
-/a/b/c/d-> c/d"
-    (let* ((file (directory-file-name file))
-           (filename (file-name-nondirectory file))
-           (dir (file-name-directory file))
-           short-name)
-      (setq short-name
-            (if dir
-                (format "%s/%s" (file-name-nondirectory (directory-file-name dir)) filename)
-              filename))
-      (propertize short-name 'multi-category `(file . ,file))))
-
-  (plist-put consult--source-recent-file
-             :items #'vmacs-consult--source-recentf-items)
-  (advice-add 'marginalia--annotate-local-file :override
-              (defun marginalia--annotate-local-file-advice (cand)
-                (marginalia--fields
-                 ((marginalia--full-candidate cand)
-                  :face 'marginalia-size ))))
-
   (defun maple/consult-git ()
     "Find file in the current Git repository."
     (interactive)
@@ -1391,6 +1353,38 @@ TYPES is the mode-specific types configuration."
 
               (consult-imenu--flatten-eglot next-prefix face (cdr item) types))))))
      list))
+
+  (defvar consult--source-project-file
+    `( :name     "Project File"
+       :narrow   ?f
+       :category file
+       :face     consult-file
+       :history  file-name-history
+       :state    ,#'consult--file-state
+       :new
+       ,(lambda (file)
+          (consult--file-action
+           (expand-file-name file (consult--project-root))))
+       :enabled
+       ,(lambda ()
+          consult-project-function)
+       :items ,#'consult-project--project-files)
+    "Project file source for `consult-buffer'.")
+  (setq consult-project-buffer-sources '(consult--source-project-buffer-hidden
+                                         consult--source-project-file
+                                         consult--source-project-root-hidden))
+
+  (defun consult-project--project-files ()
+    "Compute the project files given the ROOT."
+    (let* ((root (consult--project-root))
+           (project (project--find-in-directory root))
+           (files (project-files project)))
+      (mapcar (lambda (f)
+                (let* ((filename (file-relative-name f root))
+                       (abs-filename (expand-file-name f root))
+                       (result filename))
+                  (propertize result 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files)))
+
   )
 
 (use-package zoxide
@@ -1430,40 +1424,6 @@ TYPES is the mode-specific types configuration."
                 :items    ,#'consult-dir--zoxide-dirs)
     "Fasd directory source for `consult-dir'.")
   (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zoxide consult-dir--source-project)))
-
-(use-package consult-project-extra
-  :commands (consult-project-extra-find)
-  :after consult
-  :config
-  (defun consult-project-extra--find-with-concat-root (candidate)
-    "Find-file concatenating root with CANDIDATE."
-    (find-file candidate))
-
-  ;; WORKAROUND Embark action on project source, eg. find-file-other-window
-  ;; FIXME: I don't know how to set full minibuffer contents for file candidate in 'consult--read'.
-  (defun consult-project-extra--file (selected-root)
-    "Create a view for selecting project files for the project at SELECTED-ROOT."
-    ;; (let ((candidate (consult--read
-    ;;                   (consult-project-extra--project-files selected-root t)
-    ;;                   :prompt "Project File: "
-    ;;                   :sort t
-    ;;                   :require-match t
-    ;;                   :category 'file
-    ;;                   :state (consult--file-preview)
-    ;;                   :history 'file-name-history)))
-    ;;   (find-file candidate))
-    (consult-fd selected-root)
-    )
-
-  (defun consult-project-extra--project-files (root &optional include-root)
-    "Compute the project files given the ROOT."
-    (let* ((project (consult-project-extra--project-with-root root))
-           (files (project-files project)))
-      (mapcar (lambda (f)
-                (let* ((filename (file-relative-name f root))
-                       (abs-filename (expand-file-name f root))
-                       (result (if include-root (abbreviate-file-name abs-filename) filename)))
-                  (propertize result 'multi-category `(file . ,(abbreviate-file-name abs-filename))))) files))))
 
 ;;;; Better xxx-thing-at-point,
 ;; from: https://github.com/Elilif/.elemacs/blob/master/lisp/init-completion.el
@@ -2147,6 +2107,10 @@ Just put this function in `hippie-expand-try-functions-list'."
                                       "*Ibuffer*"
                                       "*esh command on file*")))
 
+(use-package ediff
+  :ensure nil
+  :hook (ediff-quit . winner-undo))
+
 (use-package tab-bar
   :ensure nil
   :hook (window-setup . tab-bar-mode)
@@ -2242,6 +2206,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (with-eval-after-load 'consult
     ;; hide full buffer list (still available with "b" prefix)
     (consult-customize consult--source-buffer :hidden t :default nil)
+
     ;; set consult-workspace buffer list
     (defvar consult--source-workspace
       (list :name     "Workspace Buffers"
@@ -2254,7 +2219,8 @@ Just put this function in `hippie-expand-try-functions-list'."
                                   :predicate #'tabspaces--local-buffer-p
                                   :sort 'visibility
                                   :as #'buffer-name))))
-    (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
+    (add-to-list 'consult-buffer-sources 'consult--source-workspace)
+    (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
 (use-package helpful
   :bind
@@ -2308,7 +2274,7 @@ Just put this function in `hippie-expand-try-functions-list'."
           "^\\*shell.*\\*$"  shell-mode
           "^\\*term.*\\*$"   term-mode
           "^\\*vterm.*\\*$"  vterm-mode
-          "^\\*.*eat*\\*$"
+          "^\\*.*eat.*\\*.*$"
 
           "\\*dape-repl\\*$"
           "\\*DAP Templates\\*$" dap-server-log-mode
