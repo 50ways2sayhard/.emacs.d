@@ -1,6 +1,7 @@
 /.cask
 /.hive-maint
 /custom.el
+/.cache
 /eln-cache
 /elpa
 /var

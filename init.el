@@ -2351,37 +2351,11 @@ Just put this function in `hippie-expand-try-functions-list'."
   :config
   (ultra-scroll-mode 1))
 
-(use-package ef-themes
+(use-package modus-themes
+  :defer nil
   :init
   (add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
-  (ef-themes-select 'ef-one-dark)
-  :config
-  (require 'ef-one-dark-theme)
-
-  (setq ef-themes-headings
-        '((0 . (bold 1))
-          (1 . (bold 1))
-          (2 . (rainbow bold 1))
-          (3 . (rainbow bold 1))
-          (4 . (rainbow bold 1))
-          (t . (rainbow bold 1))))
-  (setq ef-themes-region '(intense no-extend neutral))
-  ;; Disable all other themes to avoid awkward blending:
-  ;; (mapc #'disable-theme custom-enabled-themes)
-  (defun +my-custom-org-todo-faces()
-    (ef-themes-with-colors
-      (setq org-todo-keyword-faces
-            `(("TODO" . (:foreground ,red-cooler :weight bold))
-              ("INPROCESS"  . ,yellow-cooler)
-              ("PROJ"  . ,cyan-cooler)
-              ("WAITING" . ,green-faint)
-              ("DONE" . (:foreground ,fg-alt :strike-through t))
-              ("CANCELED" . (:foreground ,fg-dim :weight bold :strike-through t)))
-            )))
-  (with-eval-after-load 'org
-    (+my-custom-org-todo-faces))
-  (with-eval-after-load 'kind-icon
-    (add-hook 'ef-themes-post-load-hook #'kind-icon-reset-cache)))
+  (load-theme 'modus-one-dark :no-confirm))
 
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
@@ -2795,9 +2769,10 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
   (add-hook 'rime-mode-hook 'cursor-chg-mode)
 
-  (with-eval-after-load 'ef-themes
-    (ef-themes-with-colors
-      (setq im-cursor-color (face-foreground 'warning)))))
+  (with-eval-after-load 'modus-themes
+    (modus-themes-with-colors
+      (setq im-cursor-color (face-foreground 'warning))))
+  )
 
 (use-package super-save
   :hook (window-setup . super-save-mode)

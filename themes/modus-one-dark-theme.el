@@ -15,16 +15,9 @@
 
 
 (eval-and-compile
-  (require 'ef-themes)
+  (require 'modus-themes)
 
-;;;###theme-autoload
-  (deftheme ef-one-dark
-    "A dark theme inspired by mood-one with complete EF themes structure."
-    :background-mode 'dark
-    :kind 'color-scheme
-    :family 'ef)
-
-  (defconst ef-one-dark-palette
+  (defconst modus-one-dark-palette-partial
     '(
 ;;; Basic values
       (bg-main     "#282C35")
@@ -118,8 +111,8 @@
       (bg-graph-cyan-1    "#00808f")
 
 ;;; Special hues
-      (bg-mode-line       "#1c2024")
-      (fg-mode-line       "#c0c4d2")
+      (bg-mode-line-active       "#1c2024")
+      (fg-mode-line-active       "#c0c4d2")
       (bg-completion      "#3f4445")
       (bg-hover           "#47586E")
       (bg-hover-secondary "#665f7a")
@@ -168,6 +161,7 @@
 ;;;; Code mappings
       (builtin magenta)
       (comment "#5b6265")
+      (property blue)
       (constant blue)
       (fnname violet)
       (keyword blue)
@@ -294,12 +288,88 @@
       (rainbow-8 yellow-cooler))
     "The complete `ef-one-dark' palette with all EF themes variables.")
 
-  (defcustom ef-one-dark-palette-overrides nil
-    "Overrides for `ef-one-dark-palette'."
-    :group 'ef-themes
-    :type '(repeat (list symbol (choice symbol string))))
+  (defcustom modus-one-dark-palette-overrides nil
+    "Overrides for `modus-one-dark-palette'.
 
-  (ef-themes-theme ef-one-dark ef-one-dark-palette ef-one-dark-palette-overrides)
+Mirror the elements of the aforementioned palette, overriding
+their value.
 
-  (provide-theme 'ef-one-dark))
-;;; ef-one-dark-theme.el ends here
+For overrides that are shared across all of the Ef themes,
+refer to `ef-themes-common-palette-overrides'.
+
+To preview the palette entries, use `ef-themes-preview-colors' or
+`ef-themes-preview-colors-current' (read the documentation for
+further details)."
+    ;; :group 'modus-themes
+    ;; :package-version '(modus-themes . "1.0.0")
+    :type '(repeat (list symbol (choice symbol string)))
+    :link '(info-link "(modus-themes) Palette overrides"))
+
+
+  (defconst ef-themes-palette-common
+    '((fringe unspecified)
+      (fg-region unspecified)
+
+      (bg-diff-context bg-dim)
+
+      (bg-tab-bar bg-alt)
+      (bg-tab-current bg-main)
+      (bg-tab-other bg-active)
+
+      (fg-link-symbolic fg-alt)
+      (underline-link border)
+      (underline-link-symbolic border)
+
+      (border-mode-line-active unspecified)
+      (bg-mode-line-inactive bg-alt)
+      (fg-mode-line-inactive fg-dim)
+      (border-mode-line-inactive unspecified)
+
+      (bg-line-number-active unspecified)
+      (fg-line-number-active accent-0)
+      (bg-line-number-inactive unspecified)
+
+      (bg-prominent-err bg-err)
+      (bg-prominent-warning bg-warning)
+      (bg-prominent-note bg-info)
+      (fg-prominent-err err)
+      (fg-prominent-warning warning)
+      (fg-prominent-note info)
+
+      (bg-space unspecified)
+      (fg-space border)
+
+      (bg-active-argument bg-warning)
+      (fg-active-argument warning)
+      (bg-active-value bg-info)
+      (fg-active-value info)
+
+      (fg-completion-match-0 accent-0)
+      (fg-completion-match-1 accent-1)
+      (fg-completion-match-2 accent-2)
+      (fg-completion-match-3 accent-3)
+
+      (fg-heading-0 rainbow-0)
+      (fg-heading-1 rainbow-1)
+      (fg-heading-2 rainbow-2)
+      (fg-heading-3 rainbow-3)
+      (fg-heading-4 rainbow-4)
+      (fg-heading-5 rainbow-5)
+      (fg-heading-6 rainbow-6)
+      (fg-heading-7 rainbow-7)
+      (fg-heading-8 rainbow-8))
+    "Common palette mappings for the Ef themes.")
+
+  (defconst modus-one-dark-palette
+    (append ef-themes-palette-common modus-one-dark-palette-partial modus-themes-common-palette-mappings))
+
+  (modus-themes-theme
+    modus-one-dark
+    modus-themes
+    "Custom `One-Dark' theme combining modus themes and Doom One styles."
+    dark
+    modus-vivendi-palette
+    modus-one-dark-palette
+    modus-one-dark-palette-overrides))
+
+;;; modus-one-dark-theme.el ends here
