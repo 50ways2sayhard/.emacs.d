@@ -35,7 +35,20 @@
        (magenta "#C678DD")
        (cyan "#56B6C2")
        (orange "#da8548")
-       (grey "#3f444a"))
+       (grey "#3f444a")
+
+       ;; Diff/Magit highlight colors tuned for Atom One Dark
+       (bg-added "#2f3b32")
+       (bg-added-faint "#252d27")
+       (bg-added-refine "#3b4a3f")
+       (bg-removed "#3f2a32")
+       (bg-removed-faint "#301f25")
+       (bg-removed-refine "#53333b")
+       (bg-changed "#2f3543")
+       (bg-changed-faint "#262b38")
+       (bg-changed-refine "#3c4453")
+
+       )
      ;; The COOL-OR-WARM-PREFERENCE is derived internally based on
      ;; `bg-main'.  We can pass it here if we feel strongly about it.
      nil
@@ -140,17 +153,14 @@
 
        (info blue)
 
-       (bg-changed-fringe yellow)
-       (bg-removed-fringe red)
-       (bg-added-fringe green)
-       (fg-added green)
-       (bg-added green-cooler)
-       (fg-removed red)
-       (bg-removed red-cooler)
-       (fg-changed yellow)
-       (bg-changed yellow-cooler)
-
        (keybind blue)
+
+       (bg-changed-fringe yellow)
+       (fg-changed yellow)
+       (bg-removed-fringe red)
+       (fg-removed red)
+       (bg-added-fringe green)
+       (bg-added green)
 
        ;; Date
        (date-common green)
