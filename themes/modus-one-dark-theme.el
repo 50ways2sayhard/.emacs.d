@@ -6,7 +6,7 @@
 ;; Author: Your Name <your@email.com>
 ;; URL: https://github.com/your-repo/ef-one-dark-theme
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "27.1") (modus-themes "5.1"))
 
 ;;; Commentary:
 ;; A dark theme combining the EF themes' approach with Doom One's color scheme.
@@ -26,7 +26,6 @@
      ;; the `modus-vivendi' color values.
      '((bg-main "#282C34")
        (bg-dim "#21242b")
-       ;; (fg-main "#ABB2BF")
        (fg-main "#bbc2cf")
        (fg-dim "#5b6268")
        (red "#E06C75")
@@ -65,10 +64,13 @@
        (bg-completion fg-dim)
        (bg-mark-select bg-dim)
        (fg-mark-select fg-dim)
+       (bg-space unspecified)
+       (fg-space border)
+       (fg-alt green)
 
-       (bg-tab-bar bg-alt)
-       (bg-tab-current bg-main)
-       (bg-tab-other bg-active)
+       (bg-tab-bar bg-main)
+       (bg-tab-current bg-active)
+       (bg-tab-other bg-dim)
 
        (bg-line-number-active unspecified)
        (fg-line-number-active accent-0)
@@ -127,8 +129,8 @@
        (string green)
        (docstring green)
        (comment fg-dim)
-       (constant orange)
-       (property orange)
+       (constant magenta)
+       (property blue)
        (fnname blue)
        (fnname-call blue)
 
@@ -155,6 +157,28 @@
        (date-weekday blue)
 
        (prose-table green)
+       (fg-prose-code blue)
+
+       (prose-todo yellow)
+
+       (rainbow-0 red)
+       (rainbow-1 magenta)
+       (rainbow-2 blue)
+       (rainbow-3 green)
+       (rainbow-4 orange)
+       (rainbow-5 cyan)
+       (rainbow-6 yellow)
+       (rainbow-7 grey)
+
+       (fg-heading-0 rainbow-0)
+       (fg-heading-1 rainbow-1)
+       (fg-heading-2 rainbow-2)
+       (fg-heading-3 rainbow-3)
+       (fg-heading-4 rainbow-4)
+       (fg-heading-5 rainbow-5)
+       (fg-heading-6 rainbow-6)
+       (fg-heading-7 rainbow-7)
+       (fg-heading-8 rainbow-8)
        )
      ))
 
