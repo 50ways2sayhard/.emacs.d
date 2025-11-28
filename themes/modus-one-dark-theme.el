@@ -36,7 +36,7 @@
        (cyan "#56B6C2")
        (orange "#da8548")
        (grey "#3f444a")
-
+       (fg-alt "#61AFEF")
        ;; Diff/Magit highlight colors tuned for Atom One Dark
        (bg-added "#2f3b32")
        (bg-added-faint "#252d27")
@@ -79,7 +79,6 @@
        (fg-mark-select fg-dim)
        (bg-space unspecified)
        (fg-space border)
-       (fg-alt green)
 
        (bg-tab-bar bg-main)
        (bg-tab-current bg-active)
