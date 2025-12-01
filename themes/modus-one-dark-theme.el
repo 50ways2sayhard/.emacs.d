@@ -48,6 +48,8 @@
        (bg-changed-faint "#262b38")
        (bg-changed-refine "#3c4453")
 
+       (bg-completion "#353C46")
+
        )
      ;; The COOL-OR-WARM-PREFERENCE is derived internally based on
      ;; `bg-main'.  We can pass it here if we feel strongly about it.
@@ -74,7 +76,6 @@
        (bg-hl-line bg-dim)
        (bg-paren-match fg-dim)
        (fg-prompt blue)
-       (bg-completion fg-dim)
        (bg-mark-select bg-dim)
        (fg-mark-select fg-dim)
        (bg-space unspecified)
