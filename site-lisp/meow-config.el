@@ -59,7 +59,7 @@ If at the end of a balanced expression, jump to its beginning.
 If at the beginning of a balanced expression, jump to its end."
   (interactive)
   (let* ((ppss (syntax-ppss))
-        (in-string-or-comment (or (nth 3 ppss) (nth 4 ppss))))
+         (in-string-or-comment (or (nth 3 ppss) (nth 4 ppss))))
     (cond
      ;; If in string or comment, do nothing
      (in-string-or-comment
@@ -95,6 +95,8 @@ If at the beginning of a balanced expression, jump to its end."
     :doc "Buffer operations"
     "b" #'consult-buffer
     "d" #'kill-current-buffer
+    "R" #'revert-buffer-quick
+    "r" #'rename-visited-file
     "s" #'(lambda ()
             (interactive)
             (when (and (boundp 'eglot-managed-p) (eglot-managed-p))
@@ -106,11 +108,17 @@ If at the beginning of a balanced expression, jump to its end."
     "r" #'eglot-rename
     "a" #'eglot-code-actions
     "c" #'separedit
-    "h" #'+eldoc-box-documentation-at-point
+    "h" #'eldoc-mouse-pop-doc-at-cursor
     "f" #'apheleia-format-buffer
     "I" #'+eglot-organize-imports
     "i" #'consult-eglot-symbols
     "D" #'dape-transient)
+  (defvar-keymap +meow-ai-map
+    :doc "AI"
+    "a" #'agent-shell-sidebar-toggle
+    "m" #'agent-shell-help-menu
+    "c" #'superchat
+    "q" #'gptel-quick)
   (defvar-keymap +meow-diagnostics-map
     :doc "Diagnostic operations"
     "b" #'flymake-start
@@ -128,6 +136,7 @@ If at the beginning of a balanced expression, jump to its end."
   (defvar-keymap +meow-vc-map
     :doc "VC map"
     "s" #'magit-status
+    "d" #'magit-dispatch
     "B" #'magit-blame
     "u" #'aborn/simple-git-commit-push
     "y" #'magit-add-current-buffer-to-kill-ring
@@ -144,7 +153,8 @@ If at the beginning of a balanced expression, jump to its end."
     "f" #'project-find-file
     "k" #'project-kill-buffers
     "d" #'project-dired
-    "E" #'project-kitty)
+    "E" #'project-kitty
+    "i" #'project-ignore-project-here)
   (defvar-keymap +meow-quit-map
     "q" #'kill-emacs
     "r" #'restart-emacs)
@@ -201,17 +211,18 @@ If at the beginning of a balanced expression, jump to its end."
  `("w" . ,+meow-window-map)
 
  '("x" . org-capture)
- '("=" . er/expand-region)
+ '("=" . expreg-expand)
  '("?" . consult-ripgrep)
- '("/" . noct-consult-ripgrep-or-line)
+ '("/" . consult-line)
  '(":" . "M-x")
- '("SPC" . consult-project-extra-find)
+ '("SPC" . consult-project-buffer)
  '(";" . +my/open-org-agenda)
  '("," . "C-x ,"))
 
 (with-no-warnings
   (defvar-keymap +meow-g-map
     "d" #'xref-find-definitions
+    "D" #'xref-find-definitions-other-window
     "r" #'xref-find-references
     "c c" #'evilnc-comment-or-uncomment-lines
     "c Y" #'evilnc-copy-and-comment-lines))
@@ -347,7 +358,7 @@ If at the beginning of a balanced expression, jump to its end."
    '("C-i" . xref-go-back)
    '("C-o" . xref-go-forward)
    '("?" . consult-ripgrep)
-   '("/" . noct-consult-ripgrep-or-line)
+   '("/" . consult-line)
    `("C-s" . ,+meow-tab-map)
    '("%" . my-meow-reverse-or-jump-matching-pair)
    ))

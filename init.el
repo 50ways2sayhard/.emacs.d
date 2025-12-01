@@ -135,7 +135,9 @@ REST and STATE."
 (use-package autorevert
   :ensure nil
   :diminish
-  :hook (after-init . global-auto-revert-mode))
+  :hook (after-init . global-auto-revert-mode)
+  :init
+  (setq auto-revert-interval 1))
 
 ;;; Custom settings
 (use-package custom
@@ -149,6 +151,7 @@ REST and STATE."
 ;;; Server mode
 (use-package server
   :ensure nil
+  :defer 5
   :commands (server-running-p)
   :config (or (server-running-p) (server-mode)))
 
@@ -182,6 +185,8 @@ REST and STATE."
 (use-package diff-mode
   :ensure nil
   :config
+  (setq diff-font-lock-prettify t)
+  (setq diff-font-lock-syntax 'hunk-also)
   (when (>= emacs-major-version 27)
     (set-face-attribute 'diff-refine-changed nil :extend t)
     (set-face-attribute 'diff-refine-removed nil :extend t)
@@ -462,22 +467,8 @@ It will split otherwise."
       (switch-to-buffer buffer t t)
       (selected-window))))
 
-(defun pmx-split-window-conservatively (&optional window)
-  "Split WINDOW only if absolutely necessary.
-Only split if there is no split, and only split into left & right
-windows."
-  (interactive)
-  (let ((window (or window (selected-window))))
-    (if (and
-         (window-splittable-p window t)
-         (= (length (window-list)) 1))
-        (with-selected-window window
-          (split-window-right))
-      nil)))
-
-(setq split-window-preferred-function #'pmx-split-window-conservatively)
-
-;; Did I mention that I have a preferred function?  Could you like, not?
+(setq split-width-threshold 120)
+(setq split-window-preferred-direction 'horizontal)
 (setq warning-display-at-bottom nil)
 (setq ediff-split-window-function 'split-window-horizontally)
 
@@ -526,7 +517,7 @@ windows."
                            :background-color ,(face-background 'tooltip nil t)
                            :foreground-color ,(face-foreground 'tooltip nil t)
                            :lines-truncate t
-                           :poshandler posframe-poshandler-frame-center-near-bottom)))
+                           :poshandler posframe-poshandler-frame-bottom-center)))
     (hydra-set-posframe-show-params)
     (add-hook 'after-load-theme-hook #'hydra-set-posframe-show-params t)))
 
@@ -798,18 +789,16 @@ windows."
   (setq word-wrap t
         word-wrap-by-category t
         require-final-newline t)
-  (setq split-width-threshold 0
-        split-height-threshold nil)
   (setq-default cursor-in-non-selected-windows nil)
   (setq highlight-nonselected-windows nil)
   (setq redisplay-skip-fontification-on-input t)
 
   ;; Vertical Scroll
   (setq scroll-step 1
-        ;; scroll-margin 3
-        ;; scroll-margin 0
-        ;; scroll-conservatively 100000
+        scroll-margin 0
+        scroll-conservatively 100000
         auto-window-vscroll nil
+        scroll-preserve-screen-position t
         scroll-up-aggressively 0.01
         scroll-down-aggressively 0.01
         )
@@ -980,9 +969,10 @@ windows."
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   (add-to-list 'meow-mode-state-list '(magit-blame-mode . insert))
   (add-to-list 'meow-mode-state-list '(ediff-mode . insert))
+  (add-to-list 'meow-mode-state-list '(diff-mode . insert))
   (add-to-list 'meow-mode-state-list '(occur-mode . motion))
   (add-hook 'org-capture-mode-hook #'meow-insert)
-  (add-to-list 'meow-mode-state-list '(git-timemachine-mode . insert)))
+  (add-hook 'git-timemachine-mode-hook #'meow-insert))
 
 (use-package meow-tree-sitter
   :after meow
@@ -1157,6 +1147,8 @@ targets."
   (when *sys/mac*
     (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"))
 
+  (setq elisp-fontify-semantically t)
+
   ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
         '(read-only t cursor-intangible t face minibuffer-prompt))
@@ -1176,7 +1168,7 @@ targets."
 
 (use-package consult
   :after orderless
-  :commands (noct-consult-ripgrep-or-line consult-clock-in +consult-ripgrep-current-directory)
+  :commands (consult-clock-in +consult-ripgrep-current-directory)
   :bind (([remap recentf-open-files] . consult-recent-file)
          ([remap imenu] . consult-imenu)
          ([remap switch-to-buffer] . consult-buffer)
@@ -1202,6 +1194,7 @@ targets."
   (setq consult-find-args "fd --color=never --full-path ARG OPTS")
   (setq consult-ripgrep-args
         "rga --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip")
+  (consult-customize consult-source-recent-file :narrow ?r :name "Recent File")
 
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
@@ -1216,51 +1209,6 @@ targets."
                 :hidden   t
                 :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
   (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
-
-  (defcustom noct-consult-ripgrep-or-line-limit 300000
-    "Buffer size threshold for `noct-consult-ripgrep-or-line'.
-When the number of characters in a buffer exceeds this threshold,
-`consult-ripgrep' will be used instead of `consult-line'."
-    :type 'integer)
-
-  ;; simulate counsel-grep-or-swiper
-  (defun noct-consult-ripgrep-or-line ()
-    "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
-    (interactive)
-    (if (or (not buffer-file-name)
-            (buffer-narrowed-p)
-            (ignore-errors
-              (file-remote-p buffer-file-name))
-            (jka-compr-get-compression-info buffer-file-name)
-            (<= (buffer-size)
-                (/ noct-consult-ripgrep-or-line-limit
-                   (if (eq major-mode 'org-mode) 4 1))))
-        (progn (consult-line)
-               ;; (my-consult-set-evil-search-pattern)
-               )
-
-      (when (file-writable-p buffer-file-name)
-        (save-buffer))
-      (let ((consult-ripgrep-args
-             (concat "rg "
-                     "--null "
-                     "--line-buffered "
-                     "--color=ansi "
-                     "--max-columns=250 "
-                     "--no-heading "
-                     "--line-number "
-                     ;; adding these to default
-                     "--smart-case "
-                     "--hidden "
-                     "--max-columns-preview "
-                     ;; add back filename to get parsing to work
-                     "--with-filename "
-                     ;; defaults
-                     "-e ARG OPTS "
-                     (shell-quote-argument buffer-file-name))))
-        (consult-ripgrep)
-        ;; (my-consult-set-evil-search-pattern 'rg)
-        )))
 
   ;; Configure initial narrowing per command
   ;; (dolist (src consult-buffer-sources)
@@ -1355,7 +1303,7 @@ TYPES is the mode-specific types configuration."
      list))
 
   (defvar consult--source-project-file
-    `( :name     "Project File"
+    `( :name     "Project Files"
        :narrow   ?f
        :category file
        :face     consult-file
@@ -1370,9 +1318,14 @@ TYPES is the mode-specific types configuration."
           consult-project-function)
        :items ,#'consult-project--project-files)
     "Project file source for `consult-buffer'.")
-  (setq consult-project-buffer-sources '(consult--source-project-buffer-hidden
-                                         consult--source-project-file
-                                         consult--source-project-root-hidden))
+
+  (defvar consult-source-recent-file-hidden
+    `(:hidden t :narrow ((?R . "Recent Files"))
+              ,@consult-source-recent-file))
+  (setq consult-project-buffer-sources '(consult-source-project-buffer-hidden
+                                         consult-source-project-file
+                                         consult-source-recent-file-hidden
+                                         consult-source-project-root-hidden))
 
   (defun consult-project--project-files ()
     "Compute the project files given the ROOT."
@@ -1411,6 +1364,7 @@ TYPES is the mode-specific types configuration."
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file))
   :config
+  (setq consult-dir-default-command 'dirvish)
   (defun consult-dir--zoxide-dirs ()
     "Return list of fasd dirs."
     (split-string (shell-command-to-string "zoxide query -l | head -n 50") "\n" t))
@@ -1492,7 +1446,6 @@ TYPES is the mode-specific types configuration."
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
   :config
-  (setq marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light))
   :bind (:map minibuffer-local-completion-map
               ("M-A" . marginalia-cycle)
               ("C-i" . marginalia-cycle-annotators)))
@@ -1727,13 +1680,6 @@ Just put this function in `hippie-expand-try-functions-list'."
 
   (setq-default completion-at-point-functions '(cape-file cape-dabbrev)))
 
-(use-package tabnine-capf
-  :when +self/enable-tabnine
-  :after cape
-  :ensure (:host github :repo "50ways2sayhard/tabnine-capf")
-  :commands (tabnine-completion-at-point tabnine-capf-start-process)
-  :hook ((kill-emacs . tabnine-capf-kill-process)))
-
 (use-package copilot
   :when +self/enable-copilot
   :after corfu
@@ -1760,23 +1706,75 @@ Just put this function in `hippie-expand-try-functions-list'."
                '(dart-ts-mode dart-ts-mode-indent-offset))
 
   (setq warning-minimum-level :error)
+  (setq copilot-lsp-settings '(:github (:copilot (:selectedCompletionModel "claude-sonnet-4"))))
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
   (setq copilot-max-char 1000000))
 
-(use-package starhugger
-  :when (and (not +self/enable-copilot) (length> starhugger-api-token 0))
-  :ensure (:repo "https://gitlab.com/daanturo/starhugger.el" :files (:defaults "*.py"))
-  :hook (prog-mode . starhugger-auto-mode)
-  :after corfu
+(use-package agent-shell-sidebar
+  :after agent-shell
+  :commands (agent-shell-sidebar-toggle)
+  :ensure (:host github :repo "rynffoll/agent-shell-sidebar"))
+(use-package agent-shell
+  :commands (agent-shell agent-shell-toggle)
+  :bind (:map agent-shell-mode-map
+              ("C-c m" . agent-shell-help-menu))
+  :config
+  (setq agent-shell--transcript-file-path-function #'agent-shell--default-transcript-file-path)
+  (setopt agent-shell-file-completion-enabled t))
+
+(use-package gptel
+  :commands (gptel-translate-to gptel gptel-send)
+  :hook (gptel-mode . gptel-highlight-mode)
   :bind
-  (("C-M-i" . #'starhugger-accept-suggestion)
-   :map starhugger-inlining-mode-map
-   ("TAB" . #'starhugger-accept-suggestion)
-   ("M-[" . #'starhugger-show-prev-suggestion)
-   ("M-]" . #'starhugger-show-next-suggestion)
-   ("M-f" . #'starhugger-accept-suggestion-by-word)))
+  ((:map gptel-mode-map
+         ("C-c m" . gptel-menu)))
+  :config
+  (require 'gptel-context)
+  (require 'gptel-rewrite)
+  (defun gptel-translate-to (lang)
+    "Translate the selected region or buffer to the specified language.
+LANG is the full name of the target language (e.g., `French')."
+    (interactive
+     (list (completing-read "Target language: " '("English" "French" "Spanish" "German" "Chinese" "Japanese" "Russian" "Italian" "Korean"))))
+    (unless (use-region-p)
+      (error "You should select a region to perform such action"))
+    (let ((prompt (format "Translate the following text to %s. Do not explain your changes." lang)))
+      (gptel--suffix-rewrite prompt)))
+
+  (cl-defun my/clean-up-gptel-refactored-code (beg end)
+    "Clean up the code responses for refactored code in the current buffer.
+
+The response is placed between BEG and END.  The current buffer is
+guaranteed to be the response buffer."
+    (when gptel-mode          ; Don't want this to happen in the dedicated buffer.
+      (cl-return-from my/clean-up-gptel-refactored-code))
+    (when (and beg end)
+      (save-excursion
+        (let ((contents
+               (replace-regexp-in-string
+                "\n*``.*\n*" ""
+                (buffer-substring-no-properties beg end))))
+          (delete-region beg end)
+          (goto-char beg)
+          (insert contents))
+        ;; Indent the code to match the buffer indentation if it's messed up.
+        (indent-region beg end)
+        (pulse-momentary-highlight-region beg end))))
+
+  (add-hook 'gptel-post-response-functions #'my/clean-up-gptel-refactored-code))
+
+(use-package superchat
+  :ensure (:repo "yibie/superchat" :host github)
+  :config
+  (setq superchat-data-directory "~/Documents/Sync/chats/")
+  (setq superchat-lang "中文"))
+
+(use-package gptel-quick
+  :after gptel
+  :ensure (:repo "karthink/gptel-quick" :host github)
+  :commands (gptel-quick))
 
 ;;; Utils
 (use-package gcmh
@@ -1824,7 +1822,21 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq vc-ignore-dir-regexp
         (format "\\(%s\\)\\|\\(%s\\)"
                 vc-ignore-dir-regexp
-                tramp-file-name-regexp)))
+                tramp-file-name-regexp)
+        tramp-copy-size-limit (* 1024 1024))
+
+  (setq remote-file-name-inhibit-locks t
+        tramp-use-scp-direct-remote-copying t
+        remote-file-name-inhibit-auto-save-visited t)
+
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "scp")
+   'remote-direct-async-process)
+
+  (setq magit-tramp-pipe-stty-settings 'pty))
 
 (use-package tramp-sh
   :ensure nil
@@ -1889,6 +1901,7 @@ Just put this function in `hippie-expand-try-functions-list'."
       )))
 
 (use-package maple-translate
+  :disabled
   :ensure (:host github :repo "honmaple/emacs-maple-translate")
   :commands (maple-translate maple-translate+ maple-translate-posframe)
   :bind
@@ -1933,7 +1946,7 @@ Just put this function in `hippie-expand-try-functions-list'."
     (interactive (list (maple-translate-word)))
     (maple-translate-show word 'maple-translate-posframe-tip)))
 
-(use-package go-translate
+(use-package gt
   ;; :bind (("C-c g"   . gt-do-translate)
   ;;        ("C-c G"   . gt-do-translate-prompt)
   ;;        ("C-c u"   . gt-do-text-utility)
@@ -1950,12 +1963,11 @@ Just put this function in `hippie-expand-try-functions-list'."
         '((display-buffer-reuse-window display-buffer-in-direction)
           (direction . bottom)
           (window-height . 0.4)))
-
+  :config
   (setq gt-pop-posframe-forecolor (face-foreground 'tooltip nil t)
         gt-pop-posframe-backcolor (face-background 'tooltip nil t))
   (when (facep 'posframe-border)
     (setq gt-pin-posframe-bdcolor (face-background 'posframe-border nil t)))
-  :config
   (with-no-warnings
     (setq gt-preset-translators
           `((default . ,(gt-translator
@@ -1967,7 +1979,8 @@ Just put this function in `hippie-expand-try-functions-list'."
                                         (gt-taker :text 'word))
                          :engines (if (display-graphic-p)
                                       (list (gt-bing-engine :if 'not-word)
-                                            (gt-youdao-dict-engine :if 'word))
+                                            (gt-youdao-dict-engine :if 'word)
+                                            (gt-chatgpt-engine))
                                     (list (gt-bing-engine :if 'not-word)
                                           (gt-youdao-dict-engine :if 'word)
                                           (gt-youdao-suggest-engine :if 'word)
@@ -1990,6 +2003,7 @@ Just put this function in `hippie-expand-try-functions-list'."
             (multi-dict . ,(gt-translator :taker (gt-taker :prompt t)
                                           :engines (list (gt-bing-engine)
                                                          (gt-youdao-dict-engine)
+                                                         (gt-chatgpt-engine)
                                                          (gt-youdao-suggest-engine :if 'word)
                                                          (gt-google-engine))
                                           :render (gt-buffer-render)))
@@ -2037,27 +2051,6 @@ Just put this function in `hippie-expand-try-functions-list'."
 
   (setq project-vc-ignores '(".dart-tool" ".idea" ".DS_Store" ".git" "build"))
 
-  (defvar project--ignore-under
-    '("~/fvm"
-      "~/.pub-cache"
-      ))
-
-  (defvar project--ignore-project-names '("example"))
-
-  (defun my-project--ignored-p (path)
-    (when path
-      (catch 'found
-        (dolist (ignore project--ignore-under)
-          (when (string-prefix-p (file-truename ignore) (file-truename path))
-            (throw 'found t))))))
-
-  (defun my-project--ignored-project-p (path)
-    (when path
-      (catch 'found
-        (dolist (ignore-name project--ignore-project-names)
-          (when (string-match-p ignore-name (file-name-nondirectory (directory-file-name path)))
-            (throw 'found t))))))
-
   (cl-defmethod project-files ((project (head transient)) &optional dirs)
     "Override `project-files' to use `fd' in local projects."
     (mapcan #'my/project-files-in-directory
@@ -2071,25 +2064,59 @@ Just put this function in `hippie-expand-try-functions-list'."
     :group 'project)
 
   (defun project-root-p (path)
-    "Check if the current PATH has any of the project root markers."
-    (catch 'found
-      (dolist (marker project-root-markers)
-        (when (and
-               (file-exists-p (concat path marker))
-               (not (or (my-project--ignored-p path) (my-project--ignored-project-p path))))
-          (throw 'found marker)))))
+    "Check if the current PATH has any of the project root markers.
+Return nil if .ignoreproject file exists in PATH."
+    ;; First check if this directory should be ignored
+    (if (file-exists-p (expand-file-name ".ignoreproject" path))
+        (progn
+          (message "Ignoring project directory: %s (.ignoreproject found)" return)
+          (path-from project-root-p nil))
+      ;; Then check for project markers
+      (catch 'found
+        (dolist (marker project-root-markers)
+          (when (and
+                 (file-exists-p (concat path marker)))
+            (throw 'found marker))))
+      ))
 
   (defun project-find-root (path)
-    "Search up the PATH for `project-root-markers'."
-    (let ((path (expand-file-name path)))
-      (catch 'found
-        (while (not (equal "/" path))
-          (if (not (project-root-p path))
-              (setq path (file-name-directory (directory-file-name path)))
-            (throw 'found (cons 'transient path)))))))
+    "Search up the PATH for `project-root-markers'.
+Skip directories containing .ignoreproject file."
+    (when-let ((root (locate-dominating-file path #'project-root-p)))
+      (cons 'transient (expand-file-name root))))
+
+  (defun project-ignore-project-p (dir)
+    "Check if DIR should be ignored as a project.
+Returns t if .ignoreproject file exists in DIR."
+    (file-exists-p (expand-file-name ".ignoreproject" dir)))
+
+  (defun project-ignore-project-here ()
+    "Create .ignoreproject file in current directory to exclude it from project.el."
+    (interactive)
+    (let ((ignore-file (expand-file-name ".ignoreproject" default-directory)))
+      (if (file-exists-p ignore-file)
+          (message "Directory already has .ignoreproject file")
+        (with-temp-file ignore-file
+          (insert "# This directory should be ignored by project.el\n")
+          (insert "# Remove this file to restore project detection\n"))
+        (message "Created .ignoreproject file in %s" default-directory))))
+
+  (defun project-find-root--ignore-project (orig-fun path)
+    "Advice function to skip directories containing .ignoreproject file."
+    (let ((result (funcall orig-fun path)))
+      (when result
+        (let ((root-dir (cdr result)))
+          (if (project-ignore-project-p root-dir)
+              (progn
+                (message "Skipping project root %s (contains .ignoreproject)" root-dir)
+                nil)
+            result)))))
+
+  (advice-add 'project-find-root :around #'project-find-root--ignore-project)
 
   (require 'project)
-  (add-to-list 'project-find-functions #'project-find-root)
+  ;; (add-to-list 'project-find-functions #'project-find-root t)
+  (setq project-list-exclude '("~/fvm/**" "~/.pub-cache/**" "**/example/**"))
   )
 
 (use-package winner
@@ -2109,81 +2136,65 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package ediff
   :ensure nil
-  :hook (ediff-quit . winner-undo))
+  :hook (ediff-quit . winner-undo)
+  :config
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setq ediff-split-window-function 'split-window-horizontally))
 
 (use-package tab-bar
   :ensure nil
   :hook (window-setup . tab-bar-mode)
   :config
-  (setq tab-bar-separator ""
-        tab-bar-new-tab-choice "*scratch*"
-        tab-bar-tab-name-truncated-max 20
-        tab-bar-auto-width nil
-        tab-bar-close-button-show nil
-        tab-bar-tab-hints t)
+  (defun +tab-bar-tab-name-function ()
+    "Generate a name for the current tab based on the buffer name.
+If the buffer name exceeds `tab-bar-tab-name-truncated-max` characters,
+truncate it and append `tab-bar-tab-name-ellipsis`.  If there are multiple
+windows in the tab, append the count of windows in parentheses.
+Return the formatted tab name."
+    (let* ((raw-tab-name (buffer-name (window-buffer (minibuffer-selected-window))))
+           (count (length (window-list-1 nil 'nomini)))
+           (truncated-tab-name (if (< (length raw-tab-name)
+                                      tab-bar-tab-name-truncated-max)
+                                   raw-tab-name
+                                 (truncate-string-to-width raw-tab-name
+                                                           tab-bar-tab-name-truncated-max
+                                                           nil nil tab-bar-tab-name-ellipsis))))
+      (if (> count 1)
+          (concat truncated-tab-name "(" (number-to-string count) ")")
+        truncated-tab-name)))
 
-  ;; 使用 super-1 super-2 ... 来切换 tab
-  (customize-set-variable 'tab-bar-select-tab-modifiers '(super))
+  (defun +tab-bar-tab-name-format-function (tab i)
+    "Format the display name for a tab in the tab bar.
+TAB is the tab descriptor, and I is the tab index.  Apply custom
+styling to the tab name and index using `tab-bar-tab-face-function`.
 
-  ;; 为 tab 添加序号，便于快速切换。
-  ;; 参考：https://christiantietze.de/posts/2022/02/emacs-tab-bar-numbered-tabs/
-  (defvar ct/circle-numbers-alist
-    '((0 . "⓪")
-      (1 . "①")
-      (2 . "②")
-      (3 . "③")
-      (4 . "④")
-      (5 . "⑤")
-      (6 . "⑥")
-      (7 . "⑦")
-      (8 . "⑧")
-      (9 . "⑨"))
-    "Alist of integers to strings of circled unicode numbers.")
-  (setq tab-bar-tab-hints t)
-  (defun ct/tab-bar-tab-name-format-default (tab i)
-    (let ((current-p (eq (car tab) 'current-tab))
-          (tab-num (if (and tab-bar-tab-hints (< i 10))
-                       (alist-get i ct/circle-numbers-alist) "")))
-      (propertize
-       (concat tab-num
-               " "
-               (alist-get 'name tab)
-               (or (and tab-bar-close-button-show
-                        (not (eq tab-bar-close-button-show
-                                 (if current-p 'non-selected 'selected)))
-                        tab-bar-close-button)
-                   "")
-               " ")
-       'face (funcall tab-bar-tab-face-function tab))))
-  (setq tab-bar-tab-name-format-function #'ct/tab-bar-tab-name-format-default)
+- Prefix the tab with its index and a colon, styled with a bold weight.
+- Surround the tab name with spaces, adjusting vertical alignment
+  for aesthetics.
+- Return the formatted tab name with applied text properties."
+    (let ((face (funcall tab-bar-tab-face-function tab)))
+      (concat
+       ;; change tab-bar's height
+       (propertize " " 'display '(raise 0.25))
+       (propertize (format "%d:" i) 'face `(:inherit ,face :weight ultra-bold))
+       (propertize (concat " " (alist-get 'name tab) " ") 'face face)
+       (propertize " " 'display '(raise -0.25)))))
 
-  ;; ;; 自动截取 tab name，并且添加在每个 tab 上添加数字，方便用快捷键切换
-  ;; (setq tab-bar-tab-name-function
-  ;;       (lambda () (let* ((raw-tab-name (buffer-name (window-buffer (minibuffer-selected-window))))
-  ;;                         (count (length (window-list-1 nil 'nomini)))
-  ;;                         (truncated-tab-name (if (< (length raw-tab-name)
-  ;;                                                    tab-bar-tab-name-truncated-max)
-  ;;                                                 raw-tab-name
-  ;;                                               (truncate-string-to-width raw-tab-name
-  ;;                                                                         tab-bar-tab-name-truncated-max
-  ;;                                                                         nil nil tab-bar-tab-name-ellipsis))))
-  ;;                    (if (> count 1)
-  ;;                        (concat truncated-tab-name "(" (number-to-string count) ")")
-  ;;                      truncated-tab-name))))
-
-  ;; 给 tab 两边加上空格，更好看
-  ;; (setq tab-bar-tab-name-format-function
-  ;;       (lambda (tab i)
-  ;;         (let ((face (funcall tab-bar-tab-face-function tab)))
-  ;;           (concat
-  ;;            (propertize " " 'face face)
-  ;;            (propertize (number-to-string i) 'face `(:inherit ,face :weight ultra-bold :underline t))
-  ;;            (propertize (concat " " (alist-get 'name tab) " ") 'face face)))))
-
-  ;; 我把 meow 的 indicator 也放在 tab-bar 上
-  (setq tab-bar-format '(meow-indicator  tab-bar-format-tabs))
-  (tab-bar--update-tab-bar-lines)
-
+  (setopt tab-bar-close-button-show nil
+          tab-bar-new-button-show nil
+          tab-bar-new-tab-to 'rightmost
+          tab-bar-tab-hints t
+          tab-bar-show 1
+          tab-bar-new-tab-choice "*scratch*"
+          tab-bar-select-tab-modifiers '(super)
+          tab-bar-tab-name-truncated-max 20
+          tab-bar-auto-width nil
+          ;; Add spaces for tab-name
+          tab-bar-tab-name-function #'+tab-bar-tab-name-function
+          tab-bar-tab-name-format-function #'+tab-bar-tab-name-format-function
+          tab-bar-format '(tab-bar-format-tabs
+                           tab-bar-format-add-tab
+                           tab-bar-format-align-right))
   ;; WORKAROUND: update tab-bar for daemon
   (when (daemonp)
     (add-hook 'after-make-frame-functions
@@ -2216,9 +2227,9 @@ Just put this function in `hippie-expand-try-functions-list'."
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                                  :predicate #'tabspaces--local-buffer-p
-                                  :sort 'visibility
-                                  :as #'buffer-name))))
+                             :predicate #'tabspaces--local-buffer-p
+                             :sort 'visibility
+                             :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
@@ -2344,29 +2355,43 @@ Just put this function in `hippie-expand-try-functions-list'."
   :hook ((prog-mode . colorful-mode)))
 
 (use-package ultra-scroll
-  :ensure (:host github :repo "jdtsmith/ultra-scroll")
-  :init
-  (setq scroll-conservatively 101 ; important!
-        scroll-margin 0)
+  :functions (hl-todo-mode diff-hl-flydiff-mode)
+  :hook (elpaca-after-init . ultra-scroll-mode)
   :config
-  (ultra-scroll-mode 1))
+  (add-hook 'ultra-scroll-hide-functions #'diff-hl-flydiff-mode)
+  (add-hook 'ultra-scroll-hide-functions #'hl-todo-mode)
+  (add-hook 'ultra-scroll-hide-functions #'jit-lock-mode))
 
 (use-package modus-themes
-  :defer nil
   :init
-  (add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
-  (load-theme 'modus-one-dark :no-confirm))
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+  (load-theme 'modus-one-dark t)
+  :config
+  (setq modus-themes-include-derivatives-mode t)
+  )
+
+(use-package ef-themes)
+
+;; (use-package doom-themes
+;;   :init
+;;   (load-theme 'doom-one t))
+
 
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
+  ;; (progn
+  ;;   (defvar +my-en-font "Cascadia Code NF"
+  ;;     "The font name of English characters.")
+  ;;   (set-face-attribute 'default nil :font +my-en-font :height 130))
   (progn
-    (defvar +my-en-font "Cascadia Code NF"
+    (defvar +my-en-font "PragmataPro Mono"
       "The font name of English characters.")
-    (set-face-attribute 'default nil :font +my-en-font :height 150))
+    (set-face-attribute 'default nil :font +my-en-font :height 140))
   (set-fontset-font t 'han (font-spec :family +my-cn-font))
-  (with-eval-after-load 'org
-    (set-face-attribute 'org-table nil :family +my-cn-font))
+  (add-hook 'elpaca-after-init-hook
+            (lambda ()
+              (set-face-attribute 'org-table nil :family +my-cn-font)))
 
   (with-eval-after-load 'vterm
     (add-hook 'vterm-mode-hook
@@ -2588,20 +2613,21 @@ Just put this function in `hippie-expand-try-functions-list'."
   (add-hook 'flymake-diagnostics-buffer-mode-hook #'my/flymake-sort-by-type-desc)
   (defun my/flymake-sort-by-type-desc ()
     (setq-local tabulated-list-sort-key (cons "Type" t)))
-  (defun sanityinc/eldoc-flymake-first ()
-    "Gives flymake's eldoc function priority in the minibuffer."
-    (when flymake-mode
-      (setq-local eldoc-documentation-functions
-                  (cons 'flymake-eldoc-function
-                        (delq 'flymake-eldoc-function eldoc-documentation-functions)))))
-  (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first)
+  ;; (defun sanityinc/eldoc-flymake-first ()
+  ;;   "Gives flymake's eldoc function priority in the minibuffer."
+  ;;   (when flymake-mode
+  ;;     (setq-local eldoc-documentation-functions
+  ;;                 (cons 'flymake-eldoc-function
+  ;;                       (delq 'flymake-eldoc-function eldoc-documentation-functions)))))
+  ;; (add-hook 'flymake-mode-hook 'sanityinc/eldoc-flymake-first)
 
   (setq elisp-flymake-byte-compile-load-path
         (append elisp-flymake-byte-compile-load-path
                 load-path))
 
   (setq flymake-no-changes-timeout nil
-        flymake-show-diagnostics-at-end-of-line nil
+        ;; flymake-show-diagnostics-at-end-of-line nil
+        flymake-margin-indicator-position 'right-margin
         flymake-fringe-indicator-position 'right-fringe)
   )
 
@@ -2610,7 +2636,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :custom-face
   (flymake-popon-posframe-border ((t :foreground ,(face-background 'region))))
   :hook (flymake-mode . flymake-popon-mode)
-  :init (setq flymake-popon-width 70
+  :init (setq flymake-popon-width 80
               flymake-popon-posframe-border-width 1
               flymake-popon-method 'posframe))
 
@@ -2660,23 +2686,15 @@ Just put this function in `hippie-expand-try-functions-list'."
   (:map deadgrep-mode-map
         ("i" . #'wgrep-change-to-wgrep-mode)))
 
-(use-package expand-region
-  :commands (er/expand-region)
+(use-package expreg)
+(use-package home-row-expreg
+  :ensure (:host github
+                 :repo "bommbo/home-row-expreg"
+                 :files ("*.el"))
+  :after expreg
+  :demand t
   :config
-  (defun treesit-mark-bigger-node ()
-    "Use tree-sitter to mark regions."
-    (let* ((root (treesit-buffer-root-node))
-           (node (treesit-node-descendant-for-range root (region-beginning) (region-end)))
-           (node-start (treesit-node-start node))
-           (node-end (treesit-node-end node)))
-      ;; Node fits the region exactly. Try its parent node instead.
-      (when (and (= (region-beginning) node-start) (= (region-end) node-end))
-        (when-let* (((node (treesit-node-parent node))))
-          (setq node-start (treesit-node-start node)
-                node-end (treesit-node-end node))))
-      (set-mark node-end)
-      (goto-char node-start)))
-  (add-to-list 'er/try-expand-list 'treesit-mark-bigger-node))
+  (home-row-expreg-mode))
 
 (use-package avy
   :diminish
@@ -2882,22 +2900,22 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 ;;;; Lsp integration
 (use-package eglot
   :ensure nil
-  :commands (+eglot-organize-imports eglot-booster)
+  :commands (+eglot-organize-imports)
   :hook ((eglot-managed-mode . (lambda ()
-                                 (setq eldoc-documentation-functions
-                                       (cons #'flymake-eldoc-function
-                                             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+                                 ;; (setq eldoc-documentation-functions
+                                 ;;       (cons #'flymake-eldoc-function
+                                 ;;             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; ;; Show all eldoc feedback.
                                  (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)))
          (prog-mode . (lambda ()
-                        (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode)
-                                    (my-project--ignored-p (buffer-file-name (current-buffer))))
+                        (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode))
                           (eglot-ensure)))))
   :init
   (defvar +lsp--default-read-process-output-max nil)
   (defvar +lsp--default-gcmh-high-cons-threshold nil)
   (defvar +lsp--optimization-init-p nil)
   :config
+  (setq read-process-output-max #x100000)  ; 1MB
   (setq
    eglot-send-changes-idle-time 0.4
    eglot-autoshutdown t
@@ -2907,6 +2925,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
    eglot-events-buffer-config '(:size 0 :format full)
    eglot-report-progress nil
    eglot-code-action-indications '(mode-line)
+   eglot-advertise-cancellation t
    )
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
@@ -2923,63 +2942,27 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
         (if (and (eq nil flymake-no-changes-timeout)
                  (not (buffer-modified-p)))
             (flymake-start t)))))
-
-  (eglot-booster-mode +1)
+  ;; (eglot-booster-mode +1)
   )
 
-(use-package eldoc-box
-  :commands (+eldoc-box-documentation-at-point)
+(use-package eglot-inactive-regions
+  :ensure (:url "https://github.com/fargiolas/eglot-inactive-regions")
   :custom
-  (eldoc-box-clear-with-C-g t)
-  :config
-  (defun +eldoc-box-documentation-at-point ()
-    (interactive)
-    (eglot--dbind ((Hover) contents range)
-        (jsonrpc-request (eglot--current-server-or-lose) :textDocument/hover
-                         (eglot--TextDocumentPositionParams))
-      (let ((blurb (and (not (seq-empty-p contents))
-                        (eglot--hover-info contents range)))
-            (hint (thing-at-point 'symbol))
-            (eldoc-box-position-function
-             eldoc-box-at-point-position-function))
-        (if (or (not blurb) (string-empty-p blurb))
-            (message "No documentation found")
-          (progn
-            (eldoc-box--display blurb)
-            (setq eldoc-box--help-at-point-last-point (point))
-            (run-with-timer 0.1 nil #'eldoc-box--help-at-point-cleanup)
-            (when eldoc-box-clear-with-C-g
-              (advice-add #'keyboard-quit :before #'eldoc-box-quit-frame)))))))
-  (setq eldoc-box-frame-parameters
-        '((left . -1)
-          (top . -1)
-          (width  . 0)
-          (height  . 0)
-          (no-accept-focus . t)
-          (no-focus-on-map . t)
-          (min-width  . 0)
-          (min-height  . 0)
-          (internal-border-width . 2)
-          (vertical-scroll-bars . nil)
-          (horizontal-scroll-bars . nil)
-          (right-fringe . 10)
-          (left-fringe . 3)
-          (menu-bar-lines . 0)
-          (tool-bar-lines . 0)
-          (line-spacing . 0)
-          (unsplittable . t)
-          (undecorated . t)
-          (visibility . nil)
-          (mouse-wheel-frame . nil)
-          (no-other-frame . t)
-          (cursor-type . nil)
-          (inhibit-double-buffering . t)
-          (drag-internal-border . t)
-          (no-special-glyphs . t)
-          (desktop-dont-save . t)
-          (tab-bar-lines . 0)
-          (tab-bar-lines-keep-state . 1)))
-  )
+  (eglot-inactive-regions-style 'darken-foreground)
+  (eglot-inactive-regions-opacity 0.3)
+  :hook
+  (eglot-connect . eglot-inactive-regions-mode))
+
+(use-package eldoc-mouse
+  :diminish
+  :bind (:map emacs-lisp-mode-map
+              ("C-h ." . eldoc-mouse-pop-doc-at-cursor)
+              :map eglot-mode-map
+              ("C-h ." . eldoc-mouse-pop-doc-at-cursor))
+  :hook (eglot-managed-mode emacs-lisp-mode)
+  :init (setq eldoc-mouse-posframe-border-color (face-background 'posframe-border nil t))
+  :config (add-to-list 'eldoc-mouse-posframe-override-parameters
+                       `(background-color . ,(face-background 'tooltip nil t))))
 
 (use-package eglot-booster
   :ensure (:repo "jdtsmith/eglot-booster" :host github)
@@ -2989,7 +2972,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :init
   (require 'eglot-booster)
   :config
-  (eglot-booster-mode))
+  ;; (eglot-booster-mode)
+  )
 
 (use-package dape
   :ensure (:host github :repo "svaante/dape")
@@ -3196,6 +3180,7 @@ _Q_: Disconnect
           (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
           (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
           (markdown . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src"))
+          (swift . ("https://github.com/alex-pinkus/tree-sitter-swift"))
           (markdown-inline . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
@@ -3281,10 +3266,17 @@ Install the doc if it's not installed."
 (use-package symbols-outline
   :commands (symbols-outline-show)
   :ensure (:files (:defaults "*.el" "icons"))
+  :diminish
+  :hook (symbols-outline-mode . (lambda ()
+                                  (setq-local mode-line-format nil)))
   :config
-  (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)
+  (with-eval-after-load 'eglot
+    (add-hook 'eglot-managed-mode-hook ; Or `eglot-managed-mode-hook'
+              (lambda ()
+                (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))))
   (setq symbols-outline-window-position 'left)
   (setq symbols-outline-use-nerd-icon-in-gui t)
+  (setq symbols-outline-window-width 40)
   (symbols-outline-follow-mode))
 
 (use-package xref
@@ -3301,7 +3293,25 @@ Install the doc if it's not installed."
   :hook ((xref-after-return xref-after-jump) . recenter))
 
 (use-package markdown-mode
-  :mode ("\\.md\\'" . markdown-mode))
+  :commands (copy-markdown-code-block)
+  :mode ("\\.md\\'" . markdown-mode)
+  :config
+  (defun copy-markdown-code-block ()
+    "Copy code from markdown code block at point."
+    (interactive)
+    (save-excursion
+      (let (start end)
+        (search-backward "```" nil t)
+        (forward-line 1)
+        (setq start (point))
+        (search-forward "```" nil t)
+        (forward-line -1)
+        (setq end (point))
+        (kill-ring-save start end)
+        (message "Code block copied!")))))
+
+(use-package diagram-preview
+  :ensure (:host github :repo "natrys/diagram-preview"))
 
 (use-package python
   :ensure nil
@@ -3384,7 +3394,7 @@ Install the doc if it's not installed."
   :mode ("\\.dart\\'" . dart-ts-mode)
   :ensure (:repo "50ways2sayhard/dart-ts-mode" :host github)
   :init
-  (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart"))
+  (defvar dart-lsp-command '("dart" "language-server" "--client-id" "emacs-eglot-dart" "--protocol" "lsp"))
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
                  (cons 'dart-ts-mode (if (executable-find "fvm")
@@ -3397,7 +3407,6 @@ Install the doc if it's not installed."
     (add-to-list 'markdown-code-lang-modes '("dart" . dart-ts)))
 
   :config
-  (add-to-list 'project-vc-extra-root-markers "pubspec.yaml")
   (with-eval-after-load 'consult-imenu
     (add-to-list 'consult-imenu-config '(dart-ts-mode :types
                                                       ((?c "Class"    font-lock-type-face)
@@ -3578,7 +3587,6 @@ if one already exists."
     (open-directory-kitty default-directory)))
 
 (use-package eat
-  :disabled
   :ensure (:host codeberg
                  :repo "akib/emacs-eat"
                  :files ("*.el" ("term" "term/*.el") "*.texi"
@@ -3589,9 +3597,9 @@ if one already exists."
   :commands (eat-project eat my-eat-dwim)
   :custom
   (eat-shell "fish")
-  :bind
-  (("C-0" . #'eat-project)
-   ("C-9" . #'my-eat-dwim))
+  ;; :bind
+  ;; (("C-0" . #'eat-project)
+  ;;  ("C-9" . #'my-eat-dwim))
   :init
   (with-eval-after-load 'meow
     (add-to-list 'meow-mode-state-list '(eat-mode . insert)))
@@ -3690,7 +3698,6 @@ if one already exists."
       (org-update-parent-todo-statistics))))
 
 (use-package org
-  :ensure nil
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda +org/archive-done-tasks)
   :hook ((org-mode . org-indent-mode)
@@ -3902,7 +3909,7 @@ if one already exists."
    org-modern-checkbox nil
    org-modern-timestamp nil
    org-modern-priority nil
-   org-modern-todo nil
+   org-modern-todo t
    org-modern-list nil
    org-modern-keyword nil
    org-agenda-block-separator ?─
