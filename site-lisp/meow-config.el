@@ -116,9 +116,11 @@ If at the beginning of a balanced expression, jump to its end."
   (defvar-keymap +meow-ai-map
     :doc "AI"
     "a" #'agent-shell-sidebar-toggle
-    "m" #'agent-shell-help-menu
+    "f" #'agent-shell-insert-file
     "c" #'superchat
-    "q" #'gptel-quick)
+    "C" #'gptel
+    "q" #'gptel-quick
+    "m" #'gptel-menu)
   (defvar-keymap +meow-diagnostics-map
     :doc "Diagnostic operations"
     "b" #'flymake-start
@@ -197,6 +199,7 @@ If at the beginning of a balanced expression, jump to its end."
     "5" #'(lambda () (interactive) (tab-bar-select-tab 5))))
 
 (meow-leader-define-key
+ `("a" . ,+meow-ai-map)
  `("f" . ,+meow-file-map)
  `("b" . ,+meow-buffer-map)
  `("c" . ,+meow-code-map)

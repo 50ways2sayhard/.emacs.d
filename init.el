@@ -603,49 +603,6 @@ It will split otherwise."
   :config
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
-(use-package fingertip
-  :ensure (:repo "manateelazycat/fingertip" :host github)
-  :hook ((dart-ts-mode) . fingertip-mode)
-  :config
-  ;; (define-key fingertip-mode-map (kbd "(") 'fingertip-open-round)
-  ;; (define-key fingertip-mode-map (kbd "[") 'fingertip-open-bracket)
-  ;; (define-key fingertip-mode-map (kbd "{") 'fingertip-open-curly)
-  ;; (define-key fingertip-mode-map (kbd ")") 'fingertip-close-round)
-  ;; (define-key fingertip-mode-map (kbd "]") 'fingertip-close-bracket)
-  ;; (define-key fingertip-mode-map (kbd "}") 'fingertip-close-curly)
-  ;; (define-key fingertip-mode-map (kbd "=") 'fingertip-equal)
-
-  ;; (define-key fingertip-mode-map (kbd "（") 'fingertip-open-chinese-round)
-  ;; (define-key fingertip-mode-map (kbd "「") 'fingertip-open-chinese-bracket)
-  ;; (define-key fingertip-mode-map (kbd "【") 'fingertip-open-chinese-curly)
-  ;; (define-key fingertip-mode-map (kbd "）") 'fingertip-close-chinese-round)
-  ;; (define-key fingertip-mode-map (kbd "」") 'fingertip-close-chinese-bracket)
-  ;; (define-key fingertip-mode-map (kbd "】") 'fingertip-close-chinese-curly)
-
-  (define-key fingertip-mode-map (kbd "%") 'fingertip-match-paren)
-  (define-key fingertip-mode-map (kbd "\"") 'fingertip-double-quote)
-  (define-key fingertip-mode-map (kbd "'") 'fingertip-single-quote)
-
-  ;; (define-key fingertip-mode-map (kbd "SPC") 'fingertip-space)
-  ;; (define-key fingertip-mode-map (kbd "RET") 'fingertip-newline)
-
-  (define-key fingertip-mode-map (kbd "M-o") 'fingertip-backward-delete)
-  (define-key fingertip-mode-map (kbd "C-d") 'fingertip-forward-delete)
-  (define-key fingertip-mode-map (kbd "C-k") 'fingertip-kill)
-
-  (define-key fingertip-mode-map (kbd "M-\"") 'fingertip-wrap-double-quote)
-  (define-key fingertip-mode-map (kbd "M-'") 'fingertip-wrap-single-quote)
-  (define-key fingertip-mode-map (kbd "M-[") 'fingertip-wrap-bracket)
-  (define-key fingertip-mode-map (kbd "M-{") 'fingertip-wrap-curly)
-  (define-key fingertip-mode-map (kbd "M-(") 'fingertip-wrap-round)
-  (define-key fingertip-mode-map (kbd "M-)") 'fingertip-unwrap)
-
-  (define-key fingertip-mode-map (kbd "M-p") 'fingertip-jump-right)
-  (define-key fingertip-mode-map (kbd "M-n") 'fingertip-jump-left)
-  ;; (define-key fingertip-mode-map (kbd "M-:") 'fingertip-jump-out-pair-and-newline)
-
-  (define-key fingertip-mode-map (kbd "C-j") 'fingertip-jump-up))
-
 (use-package paren
   :ensure nil
   :hook (elpaca-after-init . show-paren-mode)
@@ -1302,7 +1259,7 @@ TYPES is the mode-specific types configuration."
               (consult-imenu--flatten-eglot next-prefix face (cdr item) types))))))
      list))
 
-  (defvar consult--source-project-file
+  (defvar consult-source-project-file
     `( :name     "Project Files"
        :narrow   ?f
        :category file
@@ -1716,6 +1673,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :after agent-shell
   :commands (agent-shell-sidebar-toggle)
   :ensure (:host github :repo "rynffoll/agent-shell-sidebar"))
+
 (use-package agent-shell
   :commands (agent-shell agent-shell-toggle)
   :bind (:map agent-shell-mode-map
@@ -2175,10 +2133,10 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
     (let ((face (funcall tab-bar-tab-face-function tab)))
       (concat
        ;; change tab-bar's height
-       (propertize " " 'display '(raise 0.25))
+       (propertize "" 'display '(raise 0.25))
        (propertize (format "%d:" i) 'face `(:inherit ,face :weight ultra-bold))
        (propertize (concat " " (alist-get 'name tab) " ") 'face face)
-       (propertize " " 'display '(raise -0.25)))))
+       (propertize "" 'display '(raise -0.25)))))
 
   (setopt tab-bar-close-button-show nil
           tab-bar-new-button-show nil

@@ -14,192 +14,201 @@
 ;;; Code:
 
 
-(eval-and-compile
-  (require 'modus-themes)
+(require 'modus-themes)
 
-  (defvar modus-one-dark-palette
-    (modus-themes-generate-palette
-     ;; We provide the two base colors of Solarized, plus most of its
-     ;; accents.  These form the BASE-COLORS we pass as an argument.
-     ;; All other color values come from those.  The BASE-COLORS here
-     ;; are enough to generate a new palatte that has no traces of, say,
-     ;; the `modus-vivendi' color values.
-     '((bg-main "#282C34")
-       (bg-dim "#21242b")
-       (fg-main "#bbc2cf")
-       (fg-dim "#5b6268")
-       (red "#E06C75")
-       (green "#98C379")
-       (yellow "#E5C07B")
-       (blue "#61AFEF")
-       (magenta "#C678DD")
-       (cyan "#56B6C2")
-       (orange "#da8548")
-       (grey "#3f444a")
-       (fg-alt "#61AFEF")
-       ;; Diff/Magit highlight colors tuned for Atom One Dark
-       (bg-added "#2f3b32")
-       (bg-added-faint "#252d27")
-       (bg-added-refine "#3b4a3f")
-       (bg-removed "#3f2a32")
-       (bg-removed-faint "#301f25")
-       (bg-removed-refine "#53333b")
-       (bg-changed "#2f3543")
-       (bg-changed-faint "#262b38")
-       (bg-changed-refine "#3c4453")
+(defvar modus-one-dark-palette
+  (modus-themes-generate-palette
+   ;; We provide the two base colors of Solarized, plus most of its
+   ;; accents.  These form the BASE-COLORS we pass as an argument.
+   ;; All other color values come from those.  The BASE-COLORS here
+   ;; are enough to generate a new palatte that has no traces of, say,
+   ;; the `modus-vivendi' color values.
+   '((bg-main "#282C34")
+     (bg-dim "#21242b")
+     (fg-main "#bbc2cf")
+     (fg-dim "#5b6268")
+     (red "#E06C75")
+     (green "#98C379")
+     (yellow "#E5C07B")
+     (blue "#61AFEF")
+     (magenta "#C678DD")
+     (cyan "#56B6C2")
+     (orange "#da8548")
+     (grey "#3f444a")
+     (fg-alt "#61AFEF")
+     ;; Diff/Magit highlight colors tuned for Atom One Dark
+     (bg-added "#2f3b32")
+     (bg-added-faint "#252d27")
+     (bg-added-refine "#3b4a3f")
+     (bg-removed "#3f2a32")
+     (bg-removed-faint "#301f25")
+     (bg-removed-refine "#53333b")
+     (bg-changed "#2f3543")
+     (bg-changed-faint "#262b38")
+     (bg-changed-refine "#3c4453")
 
-       (bg-completion "#353C46")
+     (bg-completion "#353C46")
 
-       )
-     ;; The COOL-OR-WARM-PREFERENCE is derived internally based on
-     ;; `bg-main'.  We can pass it here if we feel strongly about it.
-     nil
-     ;; If we need to specify the CORE-PALETTE from where to inherit any
-     ;; missing colors and/or semantic mappings, we can give it here.
-     ;; Though nil is the appropriate starting point, as the code will
-     ;; handle things internally.
-     nil
-     ;; And here are our MAPPINGS where we can specify what values apply
-     ;; to which semantic color.  The `modus-themes-list-colors' shows
-     ;; them all.
-     ;;
-     ;; Note that in our BASE-COLORS above we never wrote what, say,
-     ;; `magenta-warmer' is: it is derived programmatically from the
-     ;; `magenta' we have there.  Absent that, it would be taken from
-     ;; the CORE-PALETTE.
-     '((cursor blue)
-       (fg-region unspecified)
-       (fringe unspecified)
-       (bg-hover grey)
-       (bg-diff-context bg-dim)
-       (bg-hover-secondary grey)
-       (bg-hl-line bg-dim)
-       (bg-paren-match fg-dim)
-       (fg-prompt blue)
-       (bg-mark-select bg-dim)
-       (fg-mark-select fg-dim)
-       (bg-space unspecified)
-       (fg-space border)
-
-       (bg-tab-bar bg-main)
-       (bg-tab-current bg-active)
-       (bg-tab-other bg-dim)
-
-       (bg-line-number-active unspecified)
-       (fg-line-number-active accent-0)
-       (bg-line-number-inactive unspecified)
-
-       (bg-prominent-err bg-err)
-       (bg-prominent-warning bg-warning)
-       (bg-prominent-note bg-info)
-       (fg-prominent-err err)
-       (fg-prominent-warning warning)
-       (fg-prominent-note info)
-
-       (bg-space unspecified)
-       (fg-space border)
-
-       (bg-active-argument bg-warning)
-       (fg-active-argument warning)
-       (bg-active-value bg-info)
-       (fg-active-value info)
-
-       (bg-mark-delete bg-err)
-       (fg-mark-delete err)
-       (bg-mark-select bg-info)
-       (fg-mark-select info)
-       (bg-mark-other bg-warning)
-       (fg-mark-other warning)
-
-       (fg-search-current fg-main)
-       (fg-search-lazy fg-main)
-       (fg-search-static fg-main)
-       (fg-search-replace fg-main)
-
-       (fg-search-rx-group-0 fg-main)
-       (fg-search-rx-group-1 fg-main)
-       (fg-search-rx-group-2 fg-main)
-       (fg-search-rx-group-3 fg-main)
-
-       (fg-completion-match-0 accent-0)
-       (fg-completion-match-1 accent-1)
-       (fg-completion-match-2 accent-2)
-       (fg-completion-match-3 accent-3)
-
-       (accent-0 magenta)
-       (accent-1 blue)
-       (accent-2 green)
-       (accent-3 yellow)
-
-       (fg-link blue)
-
-       ;; Code mappings
-       (builtin magenta)
-       (keyword magenta)
-       (type yellow)
-       (variable fg-main)
-       (variable-use fg-main)
-       (string green)
-       (docstring green)
-       (comment fg-dim)
-       (constant magenta)
-       (property blue)
-       (fnname blue)
-       (fnname-call blue)
-
-       (underline-note blue)
-       (underline-err red)
-       (underline-warning yellow)
-
-       (info blue)
-
-       (keybind blue)
-
-       (bg-changed-fringe yellow)
-       (fg-changed yellow)
-       (bg-removed-fringe red)
-       (fg-removed red)
-       (bg-added-fringe green)
-       (bg-added green)
-
-       ;; Date
-       (date-common green)
-       (date-weekday blue)
-
-       (prose-table green)
-       (fg-prose-code blue)
-
-       (prose-todo yellow)
-
-       (rainbow-0 red)
-       (rainbow-1 magenta)
-       (rainbow-2 blue)
-       (rainbow-3 green)
-       (rainbow-4 orange)
-       (rainbow-5 cyan)
-       (rainbow-6 yellow)
-       (rainbow-7 grey)
-
-       (fg-heading-0 rainbow-0)
-       (fg-heading-1 rainbow-1)
-       (fg-heading-2 rainbow-2)
-       (fg-heading-3 rainbow-3)
-       (fg-heading-4 rainbow-4)
-       (fg-heading-5 rainbow-5)
-       (fg-heading-6 rainbow-6)
-       (fg-heading-7 rainbow-7)
-       (fg-heading-8 rainbow-8)
-       )
-     ))
-
-  (modus-themes-theme
-   'modus-one-dark
-   'modus-one-themes
-   "Sample of a basic Solarized dark port."
-   'dark
-   'modus-one-dark-palette
+     )
+   ;; The COOL-OR-WARM-PREFERENCE is derived internally based on
+   ;; `bg-main'.  We can pass it here if we feel strongly about it.
    nil
-   nil)
-  )
+   ;; If we need to specify the CORE-PALETTE from where to inherit any
+   ;; missing colors and/or semantic mappings, we can give it here.
+   ;; Though nil is the appropriate starting point, as the code will
+   ;; handle things internally.
+   nil
+   ;; And here are our MAPPINGS where we can specify what values apply
+   ;; to which semantic color.  The `modus-themes-list-colors' shows
+   ;; them all.
+   ;;
+   ;; Note that in our BASE-COLORS above we never wrote what, say,
+   ;; `magenta-warmer' is: it is derived programmatically from the
+   ;; `magenta' we have there.  Absent that, it would be taken from
+   ;; the CORE-PALETTE.
+   '((cursor blue)
+     (fg-region unspecified)
+     (fringe unspecified)
+     (bg-hover grey)
+     (bg-diff-context bg-dim)
+     (bg-hover-secondary grey)
+     (bg-hl-line bg-dim)
+     (bg-paren-match fg-dim)
+     (fg-prompt blue)
+     (bg-mark-select bg-dim)
+     (fg-mark-select fg-dim)
+     (bg-space unspecified)
+     (fg-space border)
+
+     (bg-search-current blue)
+     (fg-search-current grey)
+
+     (bg-tab-bar bg-main)
+     (bg-tab-current bg-active)
+     (bg-tab-other bg-dim)
+
+     (bg-line-number-active unspecified)
+     (fg-line-number-active accent-0)
+     (bg-line-number-inactive unspecified)
+
+     (bg-prominent-err bg-err)
+     (bg-prominent-warning bg-warning)
+     (bg-prominent-note bg-info)
+     (fg-prominent-err err)
+     (fg-prominent-warning warning)
+     (fg-prominent-note info)
+
+     (bg-space unspecified)
+     (fg-space border)
+
+     (bg-active-argument bg-warning)
+     (fg-active-argument warning)
+     (bg-active-value bg-info)
+     (fg-active-value info)
+
+     (bg-mark-delete bg-err)
+     (fg-mark-delete err)
+     (bg-mark-select bg-info)
+     (fg-mark-select info)
+     (bg-mark-other bg-warning)
+     (fg-mark-other warning)
+
+     (fg-search-current fg-main)
+     (fg-search-lazy fg-main)
+     (fg-search-static fg-main)
+     (fg-search-replace fg-main)
+
+     (fg-search-rx-group-0 fg-main)
+     (fg-search-rx-group-1 fg-main)
+     (fg-search-rx-group-2 fg-main)
+     (fg-search-rx-group-3 fg-main)
+
+     (fg-completion-match-0 accent-0)
+     (fg-completion-match-1 accent-1)
+     (fg-completion-match-2 accent-2)
+     (fg-completion-match-3 accent-3)
+
+     (accent-0 magenta)
+     (accent-1 blue)
+     (accent-2 green)
+     (accent-3 yellow)
+
+     (fg-link blue)
+
+     ;; Code mappings
+     (builtin magenta)
+     (keyword magenta)
+     (type yellow)
+     (variable fg-main)
+     (variable-use fg-main)
+     (string green)
+     (docstring green)
+     (comment fg-dim)
+     (constant magenta)
+     (property blue)
+     (fnname blue)
+     (fnname-call blue)
+
+     (underline-note blue)
+     (underline-err red)
+     (underline-warning yellow)
+
+     (info blue)
+
+     (keybind blue)
+
+     (bg-changed-fringe yellow)
+     (fg-changed yellow)
+     (bg-removed-fringe red)
+     (fg-removed red)
+     (bg-added-fringe green)
+     (bg-added green)
+
+     ;; Date
+     (date-common green)
+     (date-weekday blue)
+
+     (prose-table green)
+     (fg-prose-code blue)
+
+     (prose-todo yellow)
+
+     (rainbow-0 red)
+     (rainbow-1 magenta)
+     (rainbow-2 blue)
+     (rainbow-3 green)
+     (rainbow-4 orange)
+     (rainbow-5 cyan)
+     (rainbow-6 yellow)
+     ;; (rainbow-7 grey)
+
+     (fg-heading-0 rainbow-0)
+     (fg-heading-1 rainbow-1)
+     (fg-heading-2 rainbow-2)
+     (fg-heading-3 rainbow-3)
+     (fg-heading-4 rainbow-4)
+     (fg-heading-5 rainbow-5)
+     (fg-heading-6 rainbow-6)
+     (fg-heading-7 rainbow-7)
+     (fg-heading-8 rainbow-8)
+     )
+   ))
+
+(defconst modus-one-dark-custom-face
+  '(
+    `(pulse-highlight-start-face ((,c :background ,fg-dim :extend t)))
+    `(nerd-icons-blue ((,c :foreground ,blue)))
+    ))
+
+(modus-themes-theme
+ 'modus-one-dark
+ 'modus-one-themes
+ "Sample of a basic Solarized dark port."
+ 'dark
+ 'modus-one-dark-palette
+ nil
+ nil
+ 'modus-one-dark-custom-face
+ )
 
 ;;; modus-one-dark-theme.el ends here
