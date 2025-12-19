@@ -83,9 +83,9 @@
      (bg-search-current blue)
      (fg-search-current grey)
 
-     (bg-tab-bar bg-main)
-     (bg-tab-current bg-active)
-     (bg-tab-other bg-dim)
+     (bg-tab-bar bg-active)
+     (bg-tab-current bg-dim)
+     (bg-tab-other bg-active)
 
      (bg-line-number-active unspecified)
      (fg-line-number-active accent-0)
