@@ -369,32 +369,33 @@ REST and STATE."
                  (message "%s" branch))
         (user-error "There is not current branch")))))
 
-(use-package emsg-blame
-  :ensure (:repo "ISouthRain/emsg-blame" :host github)
-  :hook (elpaca-after-init . global-emsg-blame-mode)
+(use-package forge
   :config
-  (defun my--emsg-blame-display ()
-    "Display git blame message, right-aligned with Magit-style faces.
-If another message is already being displayed, display both messages unless they
-do not both fit in the echo area."
-    (let* ((message-log-max nil) ; prevent messages from being logged to *Messages*
-           (cur-msg (or (current-message) ""))
-	         (blm-msg (format "%s %s %s "
-			                      emsg-blame--commit-summary
-			                      (propertize emsg-blame--commit-author 'face 'magit-log-author)
-			                      (propertize emsg-blame--commit-date 'face 'magit-log-date)))
-	         (available-width (max 0 (- (frame-width) (string-width cur-msg) 1)))
-	         (blm-msg-width (string-width blm-msg))
-	         (padding (max 0 (- available-width blm-msg-width)))
-	         (rev-blm-msg (concat (make-string padding ?\s) blm-msg)))
-      (if (> blm-msg-width available-width)
-	        (message blm-msg)
-        (message (concat cur-msg rev-blm-msg)))))
+  (push '("gitlab.futunn.com"               ; GITHOST
+          "gitlab.futunn.com/api/v4"        ; APIHOST
+          "gitlab.futunn.com"               ; WEBHOST and INSTANCE-ID
+          forge-gitlab-repository)    ; CLASS
+        forge-alist)
+  )
 
-  (setq emsg-blame-display #'my--emsg-blame-display)
+(use-package blame-reveal
+  :ensure (:host github :repo "LuciusChen/blame-reveal")
+  :config
+  (setq blame-reveal-style 'right-fringe)
+  ;; Smart time-based selection
+  (setq blame-reveal-recent-days-limit 'auto)
+  (setq blame-reveal-gradient-quality 'auto)
 
-  (setq emsg-blame-data-pretty t
-        emsg-blame-i18n-lang "Chinese"))
+  ;; Display
+  (setq blame-reveal-header-style 'block)
+  (setq blame-reveal-show-uncommitted-fringe nil)  ; Use with diff-hl
+
+  ;; Performance
+  (setq blame-reveal-async-blame 'auto)
+  (setq blame-reveal-lazy-load-threshold 3000)
+
+  ;; Enable recursive blame
+  (require 'blame-reveal-recursive))
 
 (use-package transient
   :ensure t)
@@ -588,7 +589,7 @@ It will split otherwise."
                                  (,electric-pair-inhibit-predicate c)))))))
 
 (use-package puni
-  :hook ((emacs-lisp-mode markdown-mode org-mode) . puni-mode)
+  :hook ((emacs-lisp-mode markdown-mode org-mode prog-mode) . puni-mode)
   :bind
   (:map puni-mode-map
         ("DEL" . puni-backward-delete-char)
@@ -1614,7 +1615,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq dabbrev-upcase-means-case-search t)
   (setq case-fold-search nil)
   (setq cape-dict-file "/usr/share/dict/words")
-  (setq cape-dabbrev-check-other-buffers nil)
+  (setq cape-dabbrev-buffer-function #'cape-text-buffers)
 
   (advice-add #'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
 
@@ -1675,12 +1676,21 @@ Just put this function in `hippie-expand-try-functions-list'."
   :ensure (:host github :repo "rynffoll/agent-shell-sidebar"))
 
 (use-package agent-shell
+  :hook (agent-shell-mode . (lambda () (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
   :commands (agent-shell agent-shell-toggle)
   :bind (:map agent-shell-mode-map
               ("C-c m" . agent-shell-help-menu))
+  :custom
+  (agent-shell-file-completion-enabled t)
+  (agent-shell-display-action '((display-buffer-in-side-window)
+                                (side . right)
+                                (slot . 0)
+                                (window-width . 0.25)
+                                (dedicated . t)
+                                (window-parameters . ((no-delete-other-windows . t)))))
+  (agent-shell-prefer-viewport-interaction t)
   :config
-  (setq agent-shell--transcript-file-path-function #'agent-shell--default-transcript-file-path)
-  (setopt agent-shell-file-completion-enabled t))
+  )
 
 (use-package gptel
   :commands (gptel-translate-to gptel gptel-send)
@@ -1768,7 +1778,9 @@ guaranteed to be the response buffer."
   :ensure nil
   :config
   (column-number-mode)
-  (setq kill-whole-line t))
+  (setq kill-whole-line t)
+  (setq duplicate-line-final-position 1)
+  (setq duplicate-region-final-position 1))
 
 (use-package tramp
   :ensure nil
@@ -2185,9 +2197,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                             :predicate #'tabspaces--local-buffer-p
-                             :sort 'visibility
-                             :as #'buffer-name))))
+                                  :predicate #'tabspaces--local-buffer-p
+                                  :sort 'visibility
+                                  :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
@@ -2584,7 +2596,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
                 load-path))
 
   (setq flymake-no-changes-timeout nil
-        ;; flymake-show-diagnostics-at-end-of-line nil
+        flymake-show-diagnostics-at-end-of-line nil
         flymake-margin-indicator-position 'right-margin
         flymake-fringe-indicator-position 'right-fringe)
   )
@@ -2864,6 +2876,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                  ;;       (cons #'flymake-eldoc-function
                                  ;;             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; ;; Show all eldoc feedback.
+                                 (eglot-semantic-tokens-mode -1)
                                  (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)))
          (prog-mode . (lambda ()
                         (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode))
@@ -2917,7 +2930,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
               ("C-h ." . eldoc-mouse-pop-doc-at-cursor)
               :map eglot-mode-map
               ("C-h ." . eldoc-mouse-pop-doc-at-cursor))
-  :hook (eglot-managed-mode emacs-lisp-mode)
   :init (setq eldoc-mouse-posframe-border-color (face-background 'posframe-border nil t))
   :config (add-to-list 'eldoc-mouse-posframe-override-parameters
                        `(background-color . ,(face-background 'tooltip nil t))))
@@ -3385,18 +3397,16 @@ Install the doc if it's not installed."
     (bind
      dart-ts-mode-map
      (bind-prefix "C-x ,"
-       ;; "r" #'flutter-run-or-hot-reload
        "r" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection 'last))
+             (if (and (featurep 'dape) (dape--live-connection 'last :nowarn))
                  (dape-flutter-hotReload)
                (flutter-run-or-hot-reload)))
-       ;; "R" #'flutter-run-or-hot-restart
        "R" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection 'last))
+             (if (and (featurep 'dape) (dape--live-connection 'last :nowarn))
                  (dape-flutter-hotRestart)
                (flutter-run-or-hot-restart)))
        "v" (lambda () (interactive)
-             (if (and (featurep 'dape) (dape--live-connection 'last))
+             (if (and (featurep 'dape) (dape--live-connection 'last :nowarn))
                  (dape-flutter-devtools)
                (flutter-open-devtools)))
        "Q" #'flutter-quit
