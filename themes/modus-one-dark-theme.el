@@ -123,15 +123,16 @@
      (fg-search-rx-group-2 fg-main)
      (fg-search-rx-group-3 fg-main)
 
+     (accent-0 magenta)
+     (accent-1 blue)
+     (accent-2 green)
+     (accent-3 yellow)
+
      (fg-completion-match-0 accent-0)
      (fg-completion-match-1 accent-1)
      (fg-completion-match-2 accent-2)
      (fg-completion-match-3 accent-3)
 
-     (accent-0 magenta)
-     (accent-1 blue)
-     (accent-2 green)
-     (accent-3 yellow)
 
      (fg-link blue)
 
