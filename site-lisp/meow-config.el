@@ -115,7 +115,7 @@ If at the beginning of a balanced expression, jump to its end."
     "D" #'dape-transient)
   (defvar-keymap +meow-ai-map
     :doc "AI"
-    "a" #'agent-shell-sidebar-toggle
+    "a" #'agent-shell
     "f" #'agent-shell-insert-file
     "c" #'superchat
     "C" #'gptel
@@ -131,7 +131,8 @@ If at the beginning of a balanced expression, jump to its end."
     "p" #'flymake-goto-prev-error)
   (defvar-keymap +meow-jump-map
     :doc "Jump map"
-    "j" #'avy-goto-char
+    ;; "j" #'avy-goto-char
+    "j" #'flash-emacs-jump
     "l" #'avy-goto-line
     "J" #'avy-goto-char-2
     "e" #'consult-global-mark)
@@ -178,7 +179,7 @@ If at the beginning of a balanced expression, jump to its end."
     "T" #'dirvish-dwim
     "d" #'toggle-debug-on-error
     "l" #'toggle-truncate-lines
-    "f" #'toggle-fold
+    "f" #'kirigami-toggle-fold
     "y" #'gt-do-translate
     "Y" #'gt-do-translate-prompt)
   (defvar-keymap +meow-window-map
@@ -214,7 +215,7 @@ If at the beginning of a balanced expression, jump to its end."
  `("w" . ,+meow-window-map)
 
  '("x" . org-capture)
- '("=" . expreg-expand)
+ '("=" . home-row-expreg-expand-with-letters)
  '("?" . consult-ripgrep)
  '("/" . consult-line)
  '(":" . "M-x")
@@ -354,10 +355,11 @@ If at the beginning of a balanced expression, jump to its end."
    '("C-w v" . +meow-window-vsplit)
    '("C-w s" . +meow-window-split)
    '("C-w 0" . balance-windows)
-   '("C-w j" . windmove-down)
-   '("C-w k" . windmove-up)
-   '("C-w l" . windmove-right)
-   '("C-w h" . windmove-left)
+   '("C-x j" . windmove-down)
+   '("C-x k" . windmove-up)
+   '("C-x l" . windmove-right)
+   '("C-x h" . windmove-left)
+   '("C-x H" . mark-whole-buffer)
    '("C-i" . xref-go-back)
    '("C-o" . xref-go-forward)
    '("?" . consult-ripgrep)

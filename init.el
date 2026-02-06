@@ -135,7 +135,7 @@ REST and STATE."
 (use-package autorevert
   :ensure nil
   :diminish
-  :hook (after-init . global-auto-revert-mode)
+  :hook (elpaca-after-init . global-auto-revert-mode)
   :init
   (setq auto-revert-interval 1))
 
@@ -231,7 +231,6 @@ REST and STATE."
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package casual
-  :ensure (:host github :repo "kickingvegas/casual" :files ("lisp/*.el"))
   :commands (casual-dired-tmenu casual-dired-sort-by-tmenu casual-dired-search-replace-tmenu)
   :init
   (require 'casual-dired)
@@ -326,6 +325,8 @@ REST and STATE."
   (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (setq magit-diff-refine-hunk t)
   (setopt magit-format-file-function #'magit-format-file-nerd-icons)
+  (when *sys/mac*
+    (setq magit-process-connection-type nil))
 
   (defun magit-open-repo ()
     "open remote repo URL"
@@ -468,7 +469,7 @@ It will split otherwise."
       (switch-to-buffer buffer t t)
       (selected-window))))
 
-(setq split-width-threshold 120)
+(setq split-width-threshold 240)
 (setq split-window-preferred-direction 'horizontal)
 (setq warning-display-at-bottom nil)
 (setq ediff-split-window-function 'split-window-horizontally)
@@ -1610,6 +1611,8 @@ Just put this function in `hippie-expand-try-functions-list'."
                            (my/convert-super-capf #'cape-dabbrev)))
          (emacs-lisp-mode . (lambda ()
                               (my/convert-super-capf #'elisp-completion-at-point)))
+         (comint-mode . (lambda ()
+                          (setq-local completion-at-point-functions '(cape-dabbrev comint-completion-at-point))))
          (org-mode . my/set-basic-capf))
   :config
   (setq dabbrev-upcase-means-case-search t)
@@ -1670,11 +1673,6 @@ Just put this function in `hippie-expand-try-functions-list'."
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
   (setq copilot-max-char 1000000))
 
-(use-package agent-shell-sidebar
-  :after agent-shell
-  :commands (agent-shell-sidebar-toggle)
-  :ensure (:host github :repo "rynffoll/agent-shell-sidebar"))
-
 (use-package agent-shell
   :hook (agent-shell-mode . (lambda () (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
   :commands (agent-shell agent-shell-toggle)
@@ -1685,12 +1683,15 @@ Just put this function in `hippie-expand-try-functions-list'."
   (agent-shell-display-action '((display-buffer-in-side-window)
                                 (side . right)
                                 (slot . 0)
-                                (window-width . 0.25)
+                                (window-width . 0.27)
                                 (dedicated . t)
                                 (window-parameters . ((no-delete-other-windows . t)))))
-  (agent-shell-prefer-viewport-interaction t)
-  :config
   )
+
+(use-package opencode
+  :ensure (opencode :type git :host codeberg :repo "sczi/opencode.el")
+  :bind (:map comint-mode-map
+              ("s-<RET>" . newline)))
 
 (use-package gptel
   :commands (gptel-translate-to gptel gptel-send)
@@ -2005,6 +2006,10 @@ guaranteed to be the response buffer."
   :ensure nil
   :commands (project-find-file project-switch-project)
   :config
+  (use-package vc-git
+    :defer nil
+    :ensure nil)
+
   (defun my/project-files-in-directory (dir)
     "Use `fd' to list files in DIR."
     (let* ((default-directory dir)
@@ -2186,7 +2191,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :config
   (with-eval-after-load 'consult
     ;; hide full buffer list (still available with "b" prefix)
-    (consult-customize consult--source-buffer :hidden t :default nil)
+    (consult-customize consult-source-buffer :hidden t :default nil)
 
     ;; set consult-workspace buffer list
     (defvar consult--source-workspace
@@ -2611,7 +2616,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
               flymake-popon-method 'posframe))
 
 (use-package jinx
-  :ensure (:repo "minad/jinx")
   :bind (([remap ispell-word] . #'jinx-correct))
   :hook ((text-mode) . jinx-mode)
   :config
@@ -2670,6 +2674,15 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :diminish
   :demand t
   :commands (avy-goto-char avy-goto-line))
+
+(use-package flash-emacs
+  :ensure (:host github :repo "JiaweiChenC/flash-emacs")
+  :config
+  (defun flash-emacs--set-jump-before-jump (&rest _args)
+    "Set a jump point before running `flash-emacs-jump`."
+    (better-jumper-set-jump))
+
+  (advice-add 'flash-emacs-jump :before #'flash-emacs--set-jump-before-jump))
 
 (use-package mwim
   :bind
@@ -2849,7 +2862,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 (use-package dumb-jump
   :defer nil
   :after-call +my/first-input-hook-fun
-  :commands dumb-jump-result-follow dumb-jump-go dumb-jump-xref-activate
+  :commands (dumb-jump-result-follow dumb-jump-go dumb-jump-xref-activate)
   :config
   (setq dumb-jump-prefer-searcher 'rg
         dumb-jump-aggressive nil)
@@ -2872,10 +2885,11 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :ensure nil
   :commands (+eglot-organize-imports)
   :hook ((eglot-managed-mode . (lambda ()
-                                 ;; (setq eldoc-documentation-functions
-                                 ;;       (cons #'flymake-eldoc-function
-                                 ;;             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+                                 (setq eldoc-documentation-functions
+                                       (cons #'flymake-eldoc-function
+                                             (remove #'flymake-eldoc-function eldoc-documentation-functions)))
                                  ;; ;; Show all eldoc feedback.
+                                 (my/set-eglot-capf)
                                  (eglot-semantic-tokens-mode -1)
                                  (setq eldoc-documentation-strategy #'eldoc-documentation-enthusiast)))
          (prog-mode . (lambda ()
@@ -2912,7 +2926,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
       (with-current-buffer buffer
         (if (and (eq nil flymake-no-changes-timeout)
                  (not (buffer-modified-p)))
-            (flymake-start t)))))
+            (run-with-timer 2 nil #'flymake-start t)))))
   ;; (eglot-booster-mode +1)
   )
 
@@ -3173,18 +3187,8 @@ _Q_: Disconnect
   :ensure nil
   :hook ((prog-mode . hs-minor-mode)))
 
-(defun toggle-fold ()
-  (interactive)
-  (save-excursion
-    (end-of-line)
-    (hs-toggle-hiding)))
-
-(use-package treesit-fold
-  :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-  ;; :hook (elpaca-after-init . global-treesit-fold-mode)
-  :init
-  ;; (require 'ts-fold-indicators)
-  )
+(use-package kirigami
+  :ensure t)
 
 ;;;; Online document
 (use-package devdocs
@@ -3266,19 +3270,21 @@ Install the doc if it's not installed."
   :commands (copy-markdown-code-block)
   :mode ("\\.md\\'" . markdown-mode)
   :config
-  (defun copy-markdown-code-block ()
-    "Copy code from markdown code block at point."
+  (defun my/markdown-copy-fenced-code-block ()
+    "Copy the contents of the fenced code block at point (without fences)."
     (interactive)
     (save-excursion
-      (let (start end)
-        (search-backward "```" nil t)
+      (let (beg end)
+        (unless (re-search-backward "^```" nil t)
+          (user-error "Not inside a fenced code block"))
         (forward-line 1)
-        (setq start (point))
-        (search-forward "```" nil t)
-        (forward-line -1)
+        (setq beg (point))
+        (unless (re-search-forward "^```" nil t)
+          (user-error "No closing fence found"))
+        (beginning-of-line)
         (setq end (point))
-        (kill-ring-save start end)
-        (message "Code block copied!")))))
+        (kill-new (buffer-substring-no-properties beg end))
+        (message "Copied fenced code block")))))
 
 (use-package diagram-preview
   :ensure (:host github :repo "natrys/diagram-preview"))
@@ -3389,7 +3395,13 @@ Install the doc if it's not installed."
                                                        (?p "Property" font-lock-variable-name-face)
                                                        (?F "Field"  font-lock-variable-name-face))))))
 
+(use-package flymake-dart
+  :disabled
+  :ensure (:repo "50ways2sayhard/flymake-dart" :host github)
+  :hook (dart-ts-mode . flymake-dart-setup))
+
 (use-package flutter
+  :commands (dart--get-dart-vm-service-port)
   :ensure (:repo "50ways2sayhard/flutter.el" :host github)
   :after dart-ts-mode
   :init
@@ -3439,6 +3451,62 @@ Install the doc if it's not installed."
     (interactive "ssearch: ")
     (browse-url
      (concat "https://docs.flutter.dev/search?q=" (string-replace " " "%20" query)) t))
+
+  (defun dart--get-dart-vm-service-port ()
+    "获取 Dart VM Service 信息。
+使用 dns-sd 命令查找 _dartVmService._tcp 服务,
+如果有多个服务则使用 completing-read 让用户选择。
+返回 (port . authCode) 的 cons,如果未找到则返回 nil。"
+    (let* ((timeout 1)
+           (cmd (format "timeout %d dns-sd -Z _dartVmService._tcp 2>&1 || true"
+                        timeout))
+           (output (shell-command-to-string cmd))
+           (lines (split-string output "\n" t))
+           (vm-services nil)
+           (current-service nil))
+      ;; 解析 SRV 和 TXT 记录
+      (dolist (line lines)
+        (cond
+         ;; 解析 SRV 记录: <name> SRV 0 0 <port> <host>
+         ((string-match
+           "^\\([^ ]+\\)\\._dartVmService\\._tcp\\s-+SRV\\s-+[0-9]+\\s-+[0-9]+\\s-+\\([0-9]+\\)"
+           line)
+          (let* ((raw-name (match-string 1 line))
+                 (port (match-string 2 line))
+                 ;; 去掉转义符,将 \. 替换为 .
+                 (name (replace-regexp-in-string "\\\\\\." "." raw-name))
+                 ;; 去掉转义的空格 \032
+                 (name (replace-regexp-in-string "\\\\032" " " name)))
+            ;; 过滤掉重复的 vm 服务(名称包含空格加括号,如 " (2)")
+            (unless (string-match-p "\\s-+(.*)" name)
+              (setq current-service (list :name name :port port :auth-code nil)))))
+         ;; 解析 TXT 记录: <name> TXT "authCode=xxx"
+         ((and current-service
+               (string-match "TXT\\s-+\"authCode=\\([^\"]+\\)\"" line))
+          (let ((auth-code (match-string 1 line)))
+            (plist-put current-service :auth-code auth-code)
+            (push current-service vm-services)
+            (setq current-service nil)))))
+      ;; 根据找到的服务数量决定如何返回
+      (cond
+       ((null vm-services)
+        (message "找不到 VM-Service")
+        nil)
+       ((= (length vm-services) 1)
+        (let ((service (car vm-services)))
+          (cons (plist-get service :port)
+                (plist-get service :auth-code))))
+       (t
+        ;; 多个服务时使用 completing-read 让用户选择
+        (let* ((candidates (mapcar (lambda (service)
+                                     (let ((name (plist-get service :name))
+                                           (port (plist-get service :port)))
+                                       (cons (format "[%s] %s" port name) service)))
+                                   (reverse vm-services)))
+               (choice (completing-read "选择 VM Service: " candidates nil t))
+               (selected (cdr (assoc choice candidates))))
+          (cons (plist-get selected :port)
+                (plist-get selected :auth-code)))))))
   )
 
 ;;; Terminal integration
@@ -3556,7 +3624,7 @@ if one already exists."
 
 (use-package eat
   :ensure (:host codeberg
-                 :repo "akib/emacs-eat"
+                 :repo "Stebalien/emacs-eat"
                  :files ("*.el" ("term" "term/*.el") "*.texi"
                          "*.ti" ("terminfo/e" "terminfo/e/*")
                          ("terminfo/65" "terminfo/65/*")
@@ -3907,6 +3975,14 @@ if one already exists."
 
 (use-package org-timeblock
   :ensure (:host github :repo "ichernyshovvv/org-timeblock"))
+
+(use-package ob-mermaid
+  :after org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((mermaid . t)
+     (scheme . t))))
 
 ;;;; Notification for org todos
 ;; -Notification only for mac os
