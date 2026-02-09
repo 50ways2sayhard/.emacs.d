@@ -3286,6 +3286,44 @@ Install the doc if it's not installed."
         (kill-new (buffer-substring-no-properties beg end))
         (message "Copied fenced code block")))))
 
+(use-package olivetti
+  :ensure t
+  :commands (olivetti-mode)
+  :custom
+  (olivetti-style 'fancy)
+  (olivetti-margin-width 5))
+
+(define-minor-mode prose-mode
+  "Set up a buffer for prose editing.
+This enables or modifies a number of settings so that the
+experience of editing prose is a little more like that of a
+typical word processor."
+  :init-value nil :lighter " Prose" :keymap nil
+  (if prose-mode
+      (progn
+        (when (fboundp 'olivetti-mode)
+          (olivetti-mode 1))
+        (setq truncate-lines nil)
+        (display-line-numbers-mode -1)
+        (setq word-wrap t)
+        (setq word-wrap-by-category t)
+        (setq cursor-type 'bar)
+        (setq-local blink-cursor-interval 0.6)
+        (setq-local show-trailing-whitespace nil)
+        (setq-local electric-pair-mode nil)
+        (visual-line-mode 1))
+    (kill-local-variable 'truncate-lines)
+    (kill-local-variable 'word-wrap)
+    (kill-local-variable 'word-wrap-by-category)
+    (kill-local-variable 'cursor-type)
+    (kill-local-variable 'blink-cursor-interval)
+    (kill-local-variable 'show-trailing-whitespace)
+    (kill-local-variable 'electric-pair-mode)
+    (visual-line-mode -1)
+    (display-line-numbers-mode 1)
+    (when (fboundp 'olivetti-mode)
+      (olivetti-mode -1))))
+
 (use-package diagram-preview
   :ensure (:host github :repo "natrys/diagram-preview"))
 
