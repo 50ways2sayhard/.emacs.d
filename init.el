@@ -1406,8 +1406,7 @@ TYPES is the mode-specific types configuration."
   :hook (+my/first-input . marginalia-mode)
   :config
   :bind (:map minibuffer-local-completion-map
-              ("M-A" . marginalia-cycle)
-              ("C-i" . marginalia-cycle-annotators)))
+              ("C-i" . marginalia-cycle)))
 
 (use-package posframe
   :hook (after-load-theme . posframe-delete-all)
@@ -1679,6 +1678,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :bind (:map agent-shell-mode-map
               ("C-c m" . agent-shell-help-menu))
   :custom
+  (agent-shell-session-strategy 'prompt)
   (agent-shell-file-completion-enabled t)
   (agent-shell-session-strategy 'prompt)
   (agent-shell-display-action '(display-buffer-reuse-window))
@@ -2089,6 +2089,28 @@ Returns t if .ignoreproject file exists in DIR."
   ;; (add-to-list 'project-find-functions #'project-find-root t)
   (setq project-list-exclude '("~/fvm/**" "~/.pub-cache/**" "**/example/**"))
   )
+
+(use-package window
+  :preface
+  (let ((windows nil) (index 0))
+    (defun my/other-window-mru ()
+      "Cycle windows in most-recently-used order."
+      (interactive)
+      (if (one-window-p t)
+          (message "No other window to select")
+        (if (eq last-command this-command)
+            (setq index (mod (1+ index) (length windows)))
+          (select-window (selected-window))
+          (setq windows (sort (window-list nil 'nomini)
+                              :key #'window-use-time :reverse t)
+                index 1))
+        (select-window (nth index windows) 'norecord))))
+  :bind
+  (("C-x o" . my/other-window-mru)
+   :map other-window-repeat-map
+   ("o" . my/other-window-mru))
+  :config
+  (put 'my/other-window-mru 'repeat-map 'other-window-repeat-map))
 
 (use-package winner
   :ensure nil
@@ -2724,7 +2746,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (define-key rime-mode-map (kbd "M-j") 'rime-force-enable)
   (define-key rime-mode-map (kbd "M-k") 'rime-inline-ascii)
   (cond (*sys/mac* (setq rime-user-data-dir "~/.config/rime"
-                         rime-librime-root "~/.local/share/librime/dist/"))
+                         rime-librime-root "/opt/homebrew"))
         (*sys/linux* (setq rime-user-data-dir "~/.rime")))
   (when *sys/mac*
     (unless rime-emacs-module-header-root
@@ -3262,11 +3284,19 @@ Install the doc if it's not installed."
   (setq xref-history-storage 'xref-window-local-history)
   :hook ((xref-after-return xref-after-jump) . recenter))
 
+(use-package xref-project-history
+  :ensure (:url "https://codeberg.org/imarko/xref-project-history")
+  :custom
+  (xref-history-storage #'xref-project-history))
+
 (use-package markdown-mode
   :commands (copy-markdown-code-block)
   :mode ("\\.md\\'" . markdown-mode)
+  :bind
+  (:map markdown-mode-map
+        ("C-c C" . copy-markdown-code-block))
   :config
-  (defun my/markdown-copy-fenced-code-block ()
+  (defun copy-markdown-code-block ()
     "Copy the contents of the fenced code block at point (without fences)."
     (interactive)
     (save-excursion
