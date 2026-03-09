@@ -1206,10 +1206,10 @@ targets."
                        (funcall imenu-create-index-function)))))
            (config (cdr (seq-find (lambda (x) (derived-mode-p (car x))) consult-imenu-config))))
       ;; Fix toplevel items, e.g., emacs-lisp-mode toplevel items are functions
-      (when-let* (toplevel (plist-get config :toplevel))
-        (let ((tops (seq-remove (lambda (x) (listp (cdr x))) items))
-              (rest (seq-filter (lambda (x) (listp (cdr x))) items)))
-          (setq items (nconc rest (and tops (list (cons toplevel tops)))))))
+      (when-let* ((toplevel (plist-get config :toplevel))
+                  (tops (seq-remove (lambda (x) (listp (cdr x))) items))
+                  (rest (seq-filter (lambda (x) (listp (cdr x))) items)))
+        (setq items (nconc rest (and tops (list (cons toplevel tops))))))
       ;; Apply our flattening in order to ease searching the imenu.
       (let ((fn (if (and (boundp 'eglot--managed-mode) eglot--managed-mode) #'consult-imenu--flatten-eglot #'consult-imenu--flatten)))
         (funcall fn
@@ -2091,6 +2091,7 @@ Returns t if .ignoreproject file exists in DIR."
   )
 
 (use-package window
+  :ensure nil
   :preface
   (let ((windows nil) (index 0))
     (defun my/other-window-mru ()
@@ -2222,9 +2223,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                             :predicate #'tabspaces--local-buffer-p
-                             :sort 'visibility
-                             :as #'buffer-name))))
+                                  :predicate #'tabspaces--local-buffer-p
+                                  :sort 'visibility
+                                  :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
