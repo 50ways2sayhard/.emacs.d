@@ -21,15 +21,15 @@
 
 ;;; Package Manager
 (progn
-  (defvar elpaca-installer-version 0.11)
+  (defvar elpaca-installer-version 0.12)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
   (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                                 :ref nil :depth 1 :inherit ignore
                                 :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+                                :build (:not elpaca-activate)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
          (build (expand-file-name "elpaca/" elpaca-builds-directory))
          (order (cdr elpaca-order))
          (default-directory repo))
@@ -56,7 +56,7 @@
     (unless (require 'elpaca-autoloads nil t)
       (require 'elpaca)
       (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order)))
 
@@ -710,9 +710,9 @@ It will split otherwise."
   (setq-default js-switch-indent-offset 2)
   (add-hook 'after-change-major-mode-hook
             #'(lambda () (if (equal electric-indent-mode 't)
-                             (when (derived-mode-p 'text-mode)
-                               (electric-indent-mode -1))
-                           (electric-indent-mode 1))))
+                        (when (derived-mode-p 'text-mode)
+                          (electric-indent-mode -1))
+                      (electric-indent-mode 1))))
 
 
   ;; When buffer is closed, saves the cursor location
@@ -965,6 +965,7 @@ It will split otherwise."
    ("r" . rename-visited-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
+   ("g" . magit-status)
    ("SPC" . +my/quick-look)
    :map embark-become-file+buffer-map
    ("F" . consult-fd)
@@ -1143,8 +1144,7 @@ targets."
          ("<help> a" . consult-apropos)            ;; orig. apropos-command
          ;; M-s bindings (search-map)
          ;; ("M-s m" . consult-multi-occur)
-         ;; Isearch integration
-         ("M-s e" . consult-isearch))
+         )
   :config
   (require 'embark-consult)
   (setq consult-preview-key '(:debounce 1.0 any))
@@ -1206,7 +1206,7 @@ targets."
                        (funcall imenu-create-index-function)))))
            (config (cdr (seq-find (lambda (x) (derived-mode-p (car x))) consult-imenu-config))))
       ;; Fix toplevel items, e.g., emacs-lisp-mode toplevel items are functions
-      (when-let (toplevel (plist-get config :toplevel))
+      (when-let* (toplevel (plist-get config :toplevel))
         (let ((tops (seq-remove (lambda (x) (listp (cdr x))) items))
               (rest (seq-filter (lambda (x) (listp (cdr x))) items)))
           (setq items (nconc rest (and tops (list (cons toplevel tops)))))))
@@ -1667,7 +1667,7 @@ Just put this function in `hippie-expand-try-functions-list'."
                '(dart-ts-mode dart-ts-mode-indent-offset))
 
   (setq warning-minimum-level :error)
-  (setq copilot-lsp-settings '(:github (:copilot (:selectedCompletionModel "claude-sonnet-4"))))
+  (setq copilot-completion-model "claude-sonnet-4-6")
 
   (customize-set-variable 'copilot-enable-predicates '(meow-insert-mode-p))
   (customize-set-variable 'copilot-disable-predicates '(+my/corfu-candidates-p evil-ex-p minibufferp))
@@ -1680,12 +1680,8 @@ Just put this function in `hippie-expand-try-functions-list'."
               ("C-c m" . agent-shell-help-menu))
   :custom
   (agent-shell-file-completion-enabled t)
-  (agent-shell-display-action '((display-buffer-in-side-window)
-                                (side . right)
-                                (slot . 0)
-                                (window-width . 0.27)
-                                (dedicated . t)
-                                (window-parameters . ((no-delete-other-windows . t)))))
+  (agent-shell-session-strategy 'prompt)
+  (agent-shell-display-action '(display-buffer-reuse-window))
   )
 
 (use-package opencode
@@ -2057,7 +2053,7 @@ Return nil if .ignoreproject file exists in PATH."
   (defun project-find-root (path)
     "Search up the PATH for `project-root-markers'.
 Skip directories containing .ignoreproject file."
-    (when-let ((root (locate-dominating-file path #'project-root-p)))
+    (when-let* ((root (locate-dominating-file path #'project-root-p)))
       (cons 'transient (expand-file-name root))))
 
   (defun project-ignore-project-p (dir)
@@ -2187,6 +2183,8 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (tabspaces-remove-to-default t)
   ;; sessions
   (tabspaces-session t)
+  (tabspaces-session-file (concat user-emacs-directory "tabspaces/tabsession.el"))
+  (tabspaces-session-project-session-store (concat user-emacs-directory "tabspaces/"))
   ;; (tabspaces-session-auto-restore t)
   :config
   (with-eval-after-load 'consult
@@ -2202,13 +2200,14 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                                  :predicate #'tabspaces--local-buffer-p
-                                  :sort 'visibility
-                                  :as #'buffer-name))))
+                             :predicate #'tabspaces--local-buffer-p
+                             :sort 'visibility
+                             :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
 (use-package helpful
+  :disabled
   :bind
   ("C-h k" . helpful-key)
   ("C-h f" . helpful-callable)
@@ -2346,11 +2345,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   )
 
 (use-package ef-themes)
-
-;; (use-package doom-themes
-;;   :init
-;;   (load-theme 'doom-one t))
-
 
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
@@ -2660,7 +2654,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (:map deadgrep-mode-map
         ("i" . #'wgrep-change-to-wgrep-mode)))
 
-(use-package expreg)
+(use-package expreg
+  :bind (("C-=" . expreg-expand)
+         ("C--" . expreg-contract)))
 (use-package home-row-expreg
   :ensure (:host github
                  :repo "bommbo/home-row-expreg"

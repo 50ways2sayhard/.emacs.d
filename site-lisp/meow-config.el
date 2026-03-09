@@ -228,6 +228,7 @@ If at the beginning of a balanced expression, jump to its end."
     "d" #'xref-find-definitions
     "D" #'xref-find-definitions-other-window
     "r" #'xref-find-references
+    "i" #'eglot-find-implementation
     "c c" #'evilnc-comment-or-uncomment-lines
     "c Y" #'evilnc-copy-and-comment-lines))
 
