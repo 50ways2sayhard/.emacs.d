@@ -3659,14 +3659,53 @@ if one already exists."
        (if (get-buffer ,term-buffer-name)
            (progn
              (tab-bar-select-tab-by-name my-term-tab-name)
-             (switch-to-buffer ,term-buffer-name))
+             (let ((switch-to-buffer-obey-display-actions nil))
+               (switch-to-buffer ,term-buffer-name)))
          (if (tab-bar--tab-index-by-name my-term-tab-name)
              (tab-bar-close-tab-by-name my-term-tab-name))
          (tab-new)
          (tab-bar-rename-tab my-term-tab-name)
          (call-interactively ,term-fn)
          (when (> 1 (count-windows))
-           (delete-other-windows))))))
+           (delete-other-windows)))
+       ;; 让 switch-to-buffer 也走 display-buffer，
+       ;; 从而被 display-buffer-alist 的条件规则拦截
+       (setq-local switch-to-buffer-obey-display-actions t)
+       (setq-local consult-preview-key nil))))
+
+(defun my-term-tab-p ()
+  "Return non-nil if current tab is *term* and buffer is a terminal."
+  (and (string= (alist-get 'name (tab-bar--current-tab)) my-term-tab-name)
+       (derived-mode-p 'vterm-mode 'eat-mode 'shell-mode 'term-mode)))
+
+(defun my-term-tab--display-condition (buffer-name _action)
+  "Return non-nil when display-buffer is called from *term* tab's terminal buffer.
+Skip terminal buffers themselves to avoid redirect loops."
+  (and (my-term-tab-p)
+       (not (with-current-buffer buffer-name
+              (derived-mode-p 'vterm-mode 'eat-mode 'shell-mode 'term-mode)))))
+
+(defun my-term-tab--display-in-recent-tab (buffer alist)
+  "Switch to recent tab, then display BUFFER there."
+  (tab-bar-switch-to-recent-tab)
+  (display-buffer-same-window buffer alist))
+
+(add-to-list 'display-buffer-alist
+             '(my-term-tab--display-condition
+               (my-term-tab--display-in-recent-tab)))
+
+(defun my-term-tab--server-redirect ()
+  "After emacsclient opens a buffer in *term* tab, move it to recent tab.
+server-switch-buffer bypasses buffer-local `switch-to-buffer-obey-display-actions'
+because its current-buffer is the server process buffer, not vterm."
+  (when (and (string= (alist-get 'name (tab-bar--current-tab)) my-term-tab-name)
+             (not (derived-mode-p 'vterm-mode 'eat-mode 'shell-mode 'term-mode)))
+    (let ((buf (current-buffer)))
+      (switch-to-prev-buffer)          ; restore vterm in *term* tab
+      (tab-bar-switch-to-recent-tab)
+      (switch-to-buffer buf))))
+
+(add-hook 'server-switch-hook #'my-term-tab--server-redirect)
 
 ;; In ~/.config/kitty/kitty.conf add the following line:
 ;; allow_remote_control yes
