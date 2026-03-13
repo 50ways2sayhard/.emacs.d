@@ -708,12 +708,6 @@ It will split otherwise."
   (setq-default indent-line-function 'insert-tab)
   (setq-default tab-width 2)
   (setq-default js-switch-indent-offset 2)
-  (add-hook 'after-change-major-mode-hook
-            #'(lambda () (if (equal electric-indent-mode 't)
-                        (when (derived-mode-p 'text-mode)
-                          (electric-indent-mode -1))
-                      (electric-indent-mode 1))))
-
 
   ;; When buffer is closed, saves the cursor location
   (save-place-mode 1)
@@ -954,6 +948,7 @@ It will split otherwise."
 ;;; Minibuffer completion
 (use-package embark
   :ensure (embark :files (:defaults "*.el"))
+  :commands (my/embark-magit-status)
   :after-call +my/first-input-hook-fun
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -965,7 +960,7 @@ It will split otherwise."
    ("r" . rename-visited-file)
    ("d" . +my-delete-file)
    ("X" . +my/open-in-osx-finder)
-   ("g" . magit-status)
+   ("g" . my/embark-magit-status)
    ("SPC" . +my/quick-look)
    :map embark-become-file+buffer-map
    ("F" . consult-fd)
@@ -986,6 +981,14 @@ It will split otherwise."
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
+  (defun my/embark-magit-status (path)
+    (interactive "fPath: ")
+    (let* ((dir (if (file-directory-p path)
+                    (file-name-as-directory path)
+                  (file-name-directory path)))
+           (top (or (magit-toplevel dir)
+                    (message "Not inside a Git repository: %s" dir))))
+      (magit-status top)))
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
