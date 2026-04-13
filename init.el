@@ -713,7 +713,8 @@ It will split otherwise."
   (save-place-mode 1)
 
   ;; for long line
-  (setq-default bidi-display-reordering nil)
+  (setq-default bidi-display-reordering 'left-to-right
+                bidi-paragraph-direction 'left-to-right)
   (setq bidi-inhibit-bpa t
         long-line-threshold 1000
         large-hscroll-threshold 1000
@@ -745,6 +746,9 @@ It will split otherwise."
   (setq-default cursor-in-non-selected-windows nil)
   (setq highlight-nonselected-windows nil)
   (setq redisplay-skip-fontification-on-input t)
+
+  (setq save-interprogram-paste-before-kill t)
+  (setq set-mark-command-repeat-pop t)
 
   ;; Vertical Scroll
   (setq scroll-step 1
@@ -2368,27 +2372,24 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :init
   (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
   (load-theme 'modus-one-dark t)
-  :config
-  (setq modus-themes-include-derivatives-mode t)
-  )
+  :custom
+  (modus-themes-include-derivatives-mode t))
 
 (use-package ef-themes)
 
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
-  ;; (progn
-  ;;   (defvar +my-en-font "Cascadia Code NF"
-  ;;     "The font name of English characters.")
-  ;;   (set-face-attribute 'default nil :font +my-en-font :height 130))
   (progn
-    (defvar +my-en-font "PragmataPro Mono"
+    (defvar +my-en-font "IoskeleyMono Nerd Font"
       "The font name of English characters.")
-    (set-face-attribute 'default nil :font +my-en-font :height 140))
+    (set-face-attribute 'default nil :font +my-en-font :height 130))
   (set-fontset-font t 'han (font-spec :family +my-cn-font))
   (add-hook 'elpaca-after-init-hook
             (lambda ()
-              (set-face-attribute 'org-table nil :family +my-cn-font)))
+              (set-face-attribute 'org-table nil :family +my-cn-font)
+              (with-eval-after-load 'markdown-mode
+                (set-face-attribute 'markdown-table-face nil :family +my-cn-font))))
 
   (with-eval-after-load 'vterm
     (add-hook 'vterm-mode-hook
@@ -2941,14 +2942,14 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (setq-default eglot-workspace-configuration '((:dart . (:completeFunctionCalls t :enableSnippets t))))
 
   ;; WORKAROUND https://github.com/joaotavora/eglot/issues/1296
-  (cl-defmethod eglot-handle-notification :after
-    (_server (_method (eql textDocument/publishDiagnostics)) &key uri
-             &allow-other-keys)
-    (when-let* ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
-      (with-current-buffer buffer
-        (if (and (eq nil flymake-no-changes-timeout)
-                 (not (buffer-modified-p)))
-            (run-with-timer 2 nil #'flymake-start t)))))
+  ;; (cl-defmethod eglot-handle-notification :after
+  ;;   (_server (_method (eql textDocument/publishDiagnostics)) &key uri
+  ;;            &allow-other-keys)
+  ;;   (when-let* ((buffer (find-buffer-visiting (eglot-uri-to-path uri))))
+  ;;     (with-current-buffer buffer
+  ;;       (if (and (eq nil flymake-no-changes-timeout)
+  ;;                (not (buffer-modified-p)))
+  ;;           (run-with-timer 2 nil #'flymake-start t)))))
   ;; (eglot-booster-mode +1)
   )
 
@@ -3859,6 +3860,11 @@ because its current-buffer is the server process buffer, not vterm."
     (let (org-hierarchical-todo-statistics)
       (org-update-parent-todo-statistics))))
 
+(defun +my/open-org-agenda ()
+  "open org agenda in left window"
+  (interactive)
+  (org-agenda nil "n"))
+
 (use-package org
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda +org/archive-done-tasks)
@@ -3903,10 +3909,6 @@ because its current-buffer is the server process buffer, not vterm."
   :config
   (require '+org-helper)
   (setq org-modules '(org-habit))
-  (defun +my/open-org-agenda ()
-    "open org agenda in left window"
-    (interactive)
-    (org-agenda nil "n"))
   (setq org-clock-persist t
         org-clock-persist-file (concat +self/org-base-dir "org-clock-save.el"))
   (add-hook 'org-clock-in-hook #'org-save-all-org-buffers)
@@ -4020,10 +4022,6 @@ because its current-buffer is the server process buffer, not vterm."
      "I" #'org-toggle-inline-images
      "d" +org-schedule-map
      "i" +org-insert-map))
-
-  (with-eval-after-load 'org-agenda
-    (define-key org-agenda-mode-map (kbd "C-k") #'+my-org/mark-done))
-
 
   (add-hook 'org-mode-hook  (lambda ()
                               (setq prettify-symbols-alist
