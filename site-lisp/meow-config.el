@@ -20,7 +20,7 @@
 
 S is string of the two-key sequence."
   (when (meow-insert-mode-p)
-    (cond ((derived-mode-p 'vterm-mode 'term-mode) (call-interactively 'term-send-raw))
+    (cond ((derived-mode-p 'vterm-mode 'term-mode 'ghostel-mode) (call-interactively 'term-send-raw))
           (t (let ((modified (buffer-modified-p))
                    (undo-list buffer-undo-list))
                (insert (elt s 0))

@@ -924,6 +924,7 @@ It will split otherwise."
   (add-to-list 'meow-mode-state-list '(ediff-mode . insert))
   (add-to-list 'meow-mode-state-list '(diff-mode . insert))
   (add-to-list 'meow-mode-state-list '(occur-mode . motion))
+  (add-to-list 'meow-mode-state-list '(ghostel-mode . insert))
   (add-hook 'org-capture-mode-hook #'meow-insert)
   (add-hook 'git-timemachine-mode-hook #'meow-insert))
 
@@ -2285,6 +2286,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
           "^\\*shell.*\\*$"  shell-mode
           "^\\*term.*\\*$"   term-mode
           "^\\*vterm.*\\*$"  vterm-mode
+          "^\\*.*ghostel.*\\*$" ghostel-mode
           "^\\*.*eat.*\\*.*$"
 
           "\\*dape-repl\\*$"
@@ -2802,10 +2804,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :init
   (setq auto-save-default nil)
   :config
-  (add-to-list 'super-save-triggers 'switch-window)
-  (add-to-list 'super-save-triggers 'switch-to-buffer)
   (add-to-list 'super-save-triggers 'eglot-rename)
-  (add-to-list 'super-save-triggers 'consult-buffer)
   (setq super-save-exclude '(".gpg"))
   (setq super-save-idle-duration 0.6)
   (setq super-save-auto-save-when-idle t)
@@ -2933,6 +2932,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
    eglot-report-progress nil
    eglot-code-action-indications '(mode-line)
    eglot-advertise-cancellation t
+   eglot-watch-files-outside-project-root nil
    )
   (setq eldoc-echo-area-use-multiline-p 5)
   (setq eglot-ignored-server-capabilities '(:documentHighlightProvider :foldingRangeProvider :colorProvider :codeLensProvider :documentOnTypeFormattingProvider :executeCommandProvider))
@@ -3289,6 +3289,7 @@ Install the doc if it's not installed."
   :hook ((xref-after-return xref-after-jump) . recenter))
 
 (use-package xref-project-history
+  :commands (xref-project-history)
   :ensure (:url "https://codeberg.org/imarko/xref-project-history")
   :custom
   (xref-history-storage #'xref-project-history))
@@ -3577,8 +3578,25 @@ typical word processor."
                 (plist-get selected :auth-code)))))))
   )
 
+(use-package ghostel
+  :commands (ghostel-dwim)
+  :bind
+  (("C-0" . #'ghostel-project)
+   ("C-9" . #'ghostel-dwim))
+  :custom
+  (ghostel-enable-title-tracking nil)
+  :config
+  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer")
+  (defun ghostel-dwim ()
+    (interactive)
+    (let ((ghostel-buffer-name +my-ghostel-tab-buffer-name))
+      (my-create-term-cmd #'ghostel ghostel-buffer-name)
+      (when (derived-mode-p 'ghostel-mode)
+        (setq-local ghostel-enable-title-tracking nil)))))
+
 ;;; Terminal integration
 (use-package vterm
+  :disabled
   :commands (vterm--internal vterm-project my-vterm-dwim)
   :bind
   (("C-0" . #'vterm-project)
@@ -3730,6 +3748,7 @@ because its current-buffer is the server process buffer, not vterm."
     (open-directory-kitty default-directory)))
 
 (use-package eat
+  :disabled
   :ensure (:host codeberg
                  :repo "Stebalien/emacs-eat"
                  :files ("*.el" ("term" "term/*.el") "*.texi"
