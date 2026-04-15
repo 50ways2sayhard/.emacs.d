@@ -3582,8 +3582,7 @@ typical word processor."
 (use-package ghostel
   :commands (ghostel-dwim)
   :bind
-  (("C-0" . #'ghostel-project)
-   ("C-9" . #'ghostel-dwim))
+  (("C-0" . #'ghostel-project))
   :custom
   (ghostel-enable-title-tracking nil)
   :config
@@ -3595,79 +3594,24 @@ typical word processor."
       (when (derived-mode-p 'ghostel-mode)
         (setq-local ghostel-enable-title-tracking nil)))))
 
-;;; Terminal integration
-(use-package vterm
-  :disabled
-  :commands (vterm--internal vterm-project my-vterm-dwim)
-  :bind
-  (("C-0" . #'vterm-project)
-   ("C-9" . #'my-vterm-dwim)
-   :map vterm-mode-map
-   ("M-v" . #'yank)
-   ("C-x" . #'vterm--self-insert)
-   ("C-s" . #'tab-bar-switch-to-recent-tab)
-   ("s-<escape>" . #'vterm-send-escape))
+(use-package popterm
+  :commands (+popterm-toggle-dwim +popterm-register-shortcut)
+  :bind (("C-9" . +popterm-toggle-dwim)
+         ("C-c t r" . +popterm-register-shortcut)
+         ([f9]    . popterm-window-toggle)
+         :map popterm-term-map
+         ("C-g" . popterm-return))
   :init
-  (setq vterm-always-compile-module t)
-  ;; (setq vterm-shell "zsh")
-  (setq vterm-kill-buffer-on-exit t)
-  (setq vterm-max-scrollback 5000)
-  (setq vterm-timer-delay 0.001
-        process-adaptive-read-buffering nil)
+  (require '+popterm)
+  :custom
+  (popterm-backend        'ghostel)     ; or 'ghostel, 'eat, 'shell, 'eshell
+  (popterm-display-method 'posframe)  ; or 'window, 'fullscreen
+  (popterm-scope          'project)   ; or 'frame, 'dedicated, nil
+  (popterm-auto-cd        nil)
   :config
-  (defvar +my-vterm-tab-buffer-name "vterm-tab-buffer")
-  (defun my-vterm-dwim ()
-    (interactive)
-    (let ((vterm-buffer-name +my-vterm-tab-buffer-name)
-          (vterm-shell "fish"))
-      (my-create-term-cmd #'vterm vterm-buffer-name)))
+  (popterm-global-mode 1))
 
-  (defun +my/smart-vterm-find-file (filename)
-    (interactive)
-    (if (string= (buffer-name) +my-vterm-tab-buffer-name)
-        (progn
-          (tab-bar-switch-to-recent-tab)
-          (find-file filename))
-      (find-file filename)))
-  (add-to-list 'vterm-eval-cmds '("+my/smart-vterm-find-file" +my/smart-vterm-find-file))
-  (defun +my/vterm-dired-dwim ()
-    (interactive)
-    (if (string= (buffer-name) +my-vterm-tab-buffer-name)
-        (progn
-          (tab-bar-switch-to-recent-tab)
-          (dirvish default-directory))
-      (dirvish default-directory)))
-
-  (add-to-list 'vterm-eval-cmds '("dired" +my/vterm-dired-dwim))
-
-  (defun vterm-project ()
-    (interactive)
-    (let* ((default-directory (or (project-root (project-current))
-                                  default-directory))
-           (vterm-buffer-name (format "*vterm_%s*" default-directory)))
-      (vterm)))
-
-  (defun my-project-shell ()
-    "Start an inferior shell in the current project's root directory.
-If a buffer already exists for running a shell in the project's root,
-switch to it.  Otherwise, create a new shell buffer.
-With \\[universal-argument] prefix arg, create a new inferior shell buffer even
-if one already exists."
-    (interactive)
-    (require 'comint)
-    (let* ((default-directory (project-root (project-current t)))
-           (default-project-shell-name (project-prefixed-buffer-name "shell"))
-           (shell-buffer (get-buffer default-project-shell-name)))
-      (if (and shell-buffer (not current-prefix-arg))
-          (if (comint-check-proc shell-buffer)
-              (pop-to-buffer shell-buffer (bound-and-true-p display-comint-buffer-action))
-            (vterm shell-buffer))
-        (vterm (generate-new-buffer-name default-project-shell-name)))))
-
-  (advice-add 'project-shell :override #'my-project-shell)
-
-  )
-
+;;; Terminal integration
 (defvar my-term-tab-name "*term*")
 (defvar my-term-tab-last-tab nil)
 (defmacro my-create-term-cmd (term-fn term-buffer-name)
@@ -3747,56 +3691,6 @@ because its current-buffer is the server process buffer, not vterm."
   (let* ((default-directory (or (project-root (project-current))
                                 default-directory)))
     (open-directory-kitty default-directory)))
-
-(use-package eat
-  :disabled
-  :ensure (:host codeberg
-                 :repo "Stebalien/emacs-eat"
-                 :files ("*.el" ("term" "term/*.el") "*.texi"
-                         "*.ti" ("terminfo/e" "terminfo/e/*")
-                         ("terminfo/65" "terminfo/65/*")
-                         ("integration" "integration/*")
-                         (:exclude ".dir-locals.el" "*-tests.el")))
-  :commands (eat-project eat my-eat-dwim)
-  :custom
-  (eat-shell "fish")
-  ;; :bind
-  ;; (("C-0" . #'eat-project)
-  ;;  ("C-9" . #'my-eat-dwim))
-  :init
-  (with-eval-after-load 'meow
-    (add-to-list 'meow-mode-state-list '(eat-mode . insert)))
-  :config
-  ;; For `eat-eshell-mode'.
-  (add-hook 'eshell-load-hook #'eat-eshell-mode)
-
-  ;; For `eat-eshell-visual-command-mode'.
-  (add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode)
-
-  (defun my-eat-dwim ()
-    (interactive)
-    (let ((eat-buffer-name "eat-standalone"))
-      (my-create-term-cmd #'eat eat-buffer-name)))
-
-  (defun my-eat-find-file-dwim (filename)
-    (interactive)
-    (let ((dir default-directory))
-      (if (string= (buffer-name) "eat-standalone")
-          (progn
-            (tab-bar-switch-to-recent-tab)
-            (find-file (expand-file-name filename dir)))
-        (find-file-other-window filename))))
-
-  (defun my-eat-dired-dwim ()
-    (interactive)
-    (if (string= (buffer-name) "eat-standalone")
-        (progn
-          (tab-bar-switch-to-recent-tab)
-          (dirvish default-directory))
-      (dirvish default-directory)))
-
-  (add-to-list 'eat-message-handler-alist '("find-file" . my-eat-find-file-dwim))
-  (add-to-list 'eat-message-handler-alist '("dired" . my-eat-dired-dwim)))
 
 ;;; Org Mode
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))

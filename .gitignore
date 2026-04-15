@@ -29,3 +29,4 @@
 /tutorial
 /devdocs
 .DS_Store
+/.agent-shell/
