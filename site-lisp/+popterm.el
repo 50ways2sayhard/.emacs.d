@@ -105,9 +105,19 @@ Respects `popterm-display-method' for all operations."
    (t
     (let ((recent (car (let ((popterm-scope nil))
                          (popterm--buffer-list)))))
-      (if recent
-          (popterm--show recent)
-        (+popterm--pick-via-completion))))))
+      (cond
+       ;; Most recent popterm exists → show it
+       (recent
+        (popterm--show recent))
+       ;; No open popterm and no registered shortcuts → open default
+       ((null +popterm-shortcuts)
+        (let ((buf (popterm--get-or-create "default"))
+              (popterm-auto-cd nil))
+          (popterm--show buf)
+          (+popterm--send-cd-to-dir buf "~")))
+       ;; Otherwise → prompt
+       (t
+        (+popterm--pick-via-completion)))))))
 
 ;;;###autoload
 (defun +popterm-register-shortcut (&optional name dir)
