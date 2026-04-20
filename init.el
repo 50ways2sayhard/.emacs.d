@@ -3608,8 +3608,11 @@ typical word processor."
   (popterm-display-method 'posframe)  ; or 'window, 'fullscreen
   (popterm-scope          'project)   ; or 'frame, 'dedicated, nil
   (popterm-auto-cd        nil)
+  (popterm-posframe-width-ratio 0.93)
+  (popterm-posframe-height-ratio 0.85)
   :config
-  (popterm-global-mode 1))
+  (popterm-global-mode 1)
+  (+popterm-auto-hide-mode 1))
 
 ;;; Terminal integration
 (defvar my-term-tab-name "*term*")
