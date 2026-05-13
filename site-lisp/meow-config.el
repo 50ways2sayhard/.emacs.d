@@ -15,12 +15,14 @@
 
 (defvar meow-two-char-escape-sequence "jk")
 (defvar meow-two-char-escape-delay 0.5)
+(defvar meow-two-char-escape-sequence-first-char (substring meow-two-char-escape-sequence 0 1))
 (defun meow--two-char-exit-insert-state (s)
   "Exit meow insert state when pressing consecutive two keys.
 
 S is string of the two-key sequence."
   (when (meow-insert-mode-p)
-    (cond ((derived-mode-p 'vterm-mode 'term-mode 'ghostel-mode) (call-interactively 'term-send-raw))
+    (cond ((derived-mode-p 'vterm-mode 'term-mode) (call-interactively 'term-send-raw))
+          ((derived-mode-p 'ghostel-mode) (funcall 'ghostel-send-string meow-two-char-escape-sequence-first-char))
           (t (let ((modified (buffer-modified-p))
                    (undo-list buffer-undo-list))
                (insert (elt s 0))
@@ -42,7 +44,7 @@ S is string of the two-key sequence."
   "Exit meow insert state when pressing consecutive two keys."
   (interactive)
   (meow--two-char-exit-insert-state meow-two-char-escape-sequence))
-(define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
+(define-key meow-insert-state-keymap meow-two-char-escape-sequence-first-char
             #'meow-two-char-exit-insert-state)
 
 (defun my-meow-reverse-or-jump-matching-pair ()
