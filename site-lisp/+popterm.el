@@ -145,13 +145,51 @@ Persists the registration via `customize-save-variable'."
 (defvar +popterm--auto-hide-inhibit nil
   "Re-entry guard for `+popterm--auto-hide-on-buffer-change'.")
 
+(defvar +popterm--last-focus-change 0
+  "Float-time of the most recent Emacs↔OS focus transition.
+Used to suppress auto-hide triggers that fire as a side-effect of
+OS-level focus transitions (alt-tab, etc.).  Internal transitions
+between Emacs frames (e.g. parent ↔ child/posframe) are ignored.")
+
+(defvar +popterm--emacs-had-focus t
+  "Whether any Emacs frame had focus at the last focus-change event.")
+
+(defconst +popterm--focus-change-cooldown 0.4
+  "Seconds after an Emacs↔OS focus transition during which auto-hide
+is suppressed.")
+
+(defun +popterm--any-emacs-frame-focused-p ()
+  "Return non-nil if any live Emacs frame currently has OS focus."
+  (seq-some (lambda (f) (eq (frame-focus-state f) t))
+            (frame-list)))
+
+(defun +popterm--track-focus-change (&rest _)
+  "Record an Emacs↔OS focus transition.
+Ignore purely internal frame-to-frame transitions (e.g. parent frame
+to child posframe) so they don't block auto-hide."
+  (let ((now-focused (+popterm--any-emacs-frame-focused-p)))
+    (unless (eq now-focused +popterm--emacs-had-focus)
+      (setq +popterm--last-focus-change (float-time)
+            +popterm--emacs-had-focus now-focused))))
+
 (defun +popterm--other-buffer-displayed-p ()
   "Return non-nil when selected window shows a non-popterm buffer
-on the parent frame while popterm is visible."
+on the parent frame while popterm is visible and Emacs has focus.
+
+Skipped when Emacs frame is unfocused (e.g. user switched to another
+app) or when a focus change just happened, to avoid hiding popterm on
+focus-out/focus-in events."
   (and (popterm--visible-p)
        (not (active-minibuffer-window))
        (not (frame-parameter (selected-frame) 'parent-frame))
        (not (eq (selected-frame) (bound-and-true-p popterm--frame)))
+       ;; Only act when Emacs actually has focus.
+       (let ((focus (frame-focus-state (selected-frame))))
+         (or (eq focus t) (eq focus 'unknown)))
+       ;; Cooldown around focus changes: ignore hook firings triggered
+       ;; by alt-tab / window-manager focus transitions.
+       (> (- (float-time) +popterm--last-focus-change)
+          +popterm--focus-change-cooldown)
        (let ((buf (window-buffer (selected-window))))
          (and (buffer-live-p buf)
               (not (popterm--buffer-p buf))
@@ -173,14 +211,20 @@ focus-guard which reclaims focus back to the posframe."
   :group 'popterm
   (if +popterm-auto-hide-mode
       (progn
+        (setq +popterm--emacs-had-focus (+popterm--any-emacs-frame-focused-p)
+              +popterm--last-focus-change 0)
         (add-hook 'window-buffer-change-functions
                   #'+popterm--auto-hide-on-buffer-change)
         (add-hook 'window-selection-change-functions
-                  #'+popterm--auto-hide-on-buffer-change))
+                  #'+popterm--auto-hide-on-buffer-change)
+        (add-function :before after-focus-change-function
+                      #'+popterm--track-focus-change))
     (remove-hook 'window-buffer-change-functions
                  #'+popterm--auto-hide-on-buffer-change)
     (remove-hook 'window-selection-change-functions
-                 #'+popterm--auto-hide-on-buffer-change)))
+                 #'+popterm--auto-hide-on-buffer-change)
+    (remove-function after-focus-change-function
+                     #'+popterm--track-focus-change)))
 
 (provide '+popterm)
 ;;; +popterm.el ends here

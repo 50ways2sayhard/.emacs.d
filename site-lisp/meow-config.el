@@ -22,7 +22,7 @@
 S is string of the two-key sequence."
   (when (meow-insert-mode-p)
     (cond ((derived-mode-p 'vterm-mode 'term-mode) (call-interactively 'term-send-raw))
-          ((derived-mode-p 'ghostel-mode) (funcall 'ghostel-send-string meow-two-char-escape-sequence-first-char))
+          ((derived-mode-p 'ghostel-semi-char-mode) (funcall 'ghostel-send-string meow-two-char-escape-sequence-first-char))
           (t (let ((modified (buffer-modified-p))
                    (undo-list buffer-undo-list))
                (insert (elt s 0))
@@ -89,6 +89,7 @@ If at the beginning of a balanced expression, jump to its end."
   (defvar-keymap +meow-file-map
     :doc "File operations"
     "f" #'find-file
+    "b" #'ffap-menu
     "r" #'recentf-open-files
     "p" #'+open-configuration-folder
     "j" #'consult-dir
