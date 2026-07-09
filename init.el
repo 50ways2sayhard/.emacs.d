@@ -917,6 +917,8 @@ It will split otherwise."
 (use-package meow
   :defer nil
   :config
+  ;; (add-hook 'meow-insert-exit-hook (lambda () (setq flymake-no-changes-timeout 0)))
+  ;; (add-hook 'meow-insert-enter-hook (lambda () (setq flymake-no-changes-timeout nil)))
   (setq meow-keypad-leader-dispatch "C-c")
   (require 'meow-config)
   (meow-setup)
@@ -1331,7 +1333,7 @@ TYPES is the mode-specific types configuration."
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file))
   :config
-  (setq consult-dir-default-command 'dirvish)
+  (setq consult-dir-default-command 'dirvish-dwim)
   (defun consult-dir--zoxide-dirs ()
     "Return list of fasd dirs."
     (split-string (shell-command-to-string "zoxide query -l | head -n 50") "\n" t))
@@ -1622,8 +1624,8 @@ Just put this function in `hippie-expand-try-functions-list'."
                           (setq-local completion-at-point-functions '(cape-dabbrev comint-completion-at-point))))
          (org-mode . my/set-basic-capf))
   :config
-  (setq dabbrev-upcase-means-case-search t)
-  (setq case-fold-search nil)
+  (setq dabbrev-upcase-means-case-search nil)
+  (setq dabbrev-case-replace nil)
   (setq cape-dict-file "/usr/share/dict/words")
   (setq cape-dabbrev-buffer-function #'cape-text-buffers)
 
@@ -2036,7 +2038,8 @@ guaranteed to be the response buffer."
             (or dirs (list (project-root project)))))
 
   (defcustom project-root-markers
-    '("Cargo.toml" "compile_commands.json" "compile_flags.txt"
+    '(".project"
+      "Cargo.toml" "compile_commands.json" "compile_flags.txt"
       "project.clj" "pubspec.yaml" "deps.edn" "shadow-cljs.edn")
     "Files or directories that indicate the root of a project."
     :type '(repeat string)
@@ -2094,7 +2097,7 @@ Returns t if .ignoreproject file exists in DIR."
   (advice-add 'project-find-root :around #'project-find-root--ignore-project)
 
   (require 'project)
-  ;; (add-to-list 'project-find-functions #'project-find-root t)
+  (add-to-list 'project-find-functions #'project-find-root t)
   (setq project-list-exclude '("~/fvm/**" "~/.pub-cache/**" "**/example/**"))
   )
 
@@ -2250,7 +2253,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 (use-package popper
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
-              ("C-h z" . popper-toggle-latest)
+              ("C-h z" . popper-toggle)
               ("C-<tab>"   . popper-cycle)
               ("C-M-<tab>" . popper-toggle-type))
   :hook (window-setup . popper-mode)
@@ -2289,8 +2292,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
           "^\\*eshell.*\\*$" eshell-mode
           "^\\*shell.*\\*$"  shell-mode
           "^\\*term.*\\*$"   term-mode
-          "^\\*vterm.*\\*$"  vterm-mode
-          "^\\*.*ghostel.*\\*$" ghostel-mode
+          "^\\*ghostel\\*$" ghostel-mode
           "^\\*.*eat.*\\*.*$"
 
           "\\*dape-repl\\*$"
@@ -2380,27 +2382,37 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 (when (display-graphic-p)
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
-  (progn
-    (defvar +my-en-font "IoskeleyMono Nerd Font"
-      "The font name of English characters.")
-    (set-face-attribute 'default nil :font +my-en-font :height 130))
+  (defconst +my-en-font-candidates
+    '(("IoskeleyMono Nerd Font" . 140)
+      ("Cascadia Code NF" . 130)
+      ("Hack Nerd Font Mono" . 130)
+      ("MonolisaCode" . 130))
+    "Alist of (font-name . height) for `+my/select-en-font'.")
+  (defvar +my-en-font (car (car +my-en-font-candidates))
+    "The font name of English characters.")
+  (defvar +my-en-font-height (cdr (car +my-en-font-candidates))
+    "The height of English font.")
+  (set-face-attribute 'default nil :font +my-en-font :height +my-en-font-height)
+
+  (defun +my/select-en-font (font)
+    "Select English font from `+my-en-font-candidates' and apply it."
+    (interactive
+     (list (completing-read "English font: "
+                            (mapcar #'car +my-en-font-candidates))))
+    (let ((cell (assoc font +my-en-font-candidates)))
+      (unless cell
+        (user-error "Unknown font: %s" font))
+      (setq +my-en-font (car cell)
+            +my-en-font-height (cdr cell))
+      (set-face-attribute 'default nil :font +my-en-font :height +my-en-font-height)
+      (message "Font set to %s (height %d)" +my-en-font +my-en-font-height)))
+
   (set-fontset-font t 'han (font-spec :family +my-cn-font))
   (add-hook 'elpaca-after-init-hook
             (lambda ()
               (set-face-attribute 'org-table nil :family +my-cn-font)
               (with-eval-after-load 'markdown-mode
                 (set-face-attribute 'markdown-table-face nil :family +my-cn-font))))
-
-  (with-eval-after-load 'vterm
-    (add-hook 'vterm-mode-hook
-              (lambda ()
-                (set (make-local-variable 'buffer-face-mode-face) `(:height 1.1))
-                (buffer-face-mode t))))
-  (with-eval-after-load 'eat
-    (add-hook 'eat-mode-hook
-              (lambda ()
-                (set (make-local-variable 'buffer-face-mode-face) `(:height 1.1))
-                (buffer-face-mode t))))
   )
 
 (use-package composite
@@ -3608,8 +3620,8 @@ typical word processor."
   (popterm-display-method 'posframe)  ; or 'window, 'fullscreen
   (popterm-scope          'project)   ; or 'frame, 'dedicated, nil
   (popterm-auto-cd        nil)
-  (popterm-posframe-width-ratio 0.93)
-  (popterm-posframe-height-ratio 0.85)
+  (popterm-posframe-width-ratio 0.95)
+  (popterm-posframe-height-ratio 0.90)
   :config
   (popterm-global-mode 1)
   (+popterm-auto-hide-mode 1))
