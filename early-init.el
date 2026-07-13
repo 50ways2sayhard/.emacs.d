@@ -6,10 +6,14 @@
   (add-to-list 'load-path (expand-file-name "lib/compat" dir))
   (add-to-list 'load-path (expand-file-name "lib/packed" dir)))
 
+(setq menu-bar-mode -1
+      tool-bar-mode -1
+      scroll-bar-mode -1)
+
 (setq package-enable-at-startup nil)
 
 (setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.5
+      gc-cons-percentage 1.0
       file-name-handler-alist nil
       site-run-file nil
       default-frame-alist
@@ -53,14 +57,6 @@
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (custom-set-variables '(x-select-enable-clipboard t))
-
-
-;; Automatically reread from disk if the underlying file changes
-(setq auto-revert-interval 3
-      auto-revert-check-vc-info t)
-(global-auto-revert-mode)
-
-(savehist-mode)
 
 (setq use-package-enable-imenu-support t
       use-package-verbose (not (bound-and-true-p byte-compile-current-file))

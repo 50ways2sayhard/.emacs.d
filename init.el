@@ -14,10 +14,7 @@
   (setq user-init-file (or load-file-name buffer-file-name))
   (setq user-emacs-directory (file-name-directory user-init-file))
   (message "Loading %s..." user-init-file)
-  (when (< emacs-major-version 27)
-    (setq package-enable-at-startup nil)
-    ;; (package-initialize)
-    (load-file (expand-file-name "early-init.el" user-emacs-directory))))
+  )
 
 ;;; Package Manager
 (progn
@@ -59,7 +56,6 @@
       (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order)))
-
 
 ;; Install use-package support
 (elpaca elpaca-use-package
@@ -135,9 +131,13 @@ REST and STATE."
 (use-package autorevert
   :ensure nil
   :diminish
-  :hook (elpaca-after-init . global-auto-revert-mode)
-  :init
-  (setq auto-revert-interval 1))
+  :custom
+  ;; Auto refresh Dired, but be quiet about it
+  (global-auto-revert-non-file-buffers t)
+  (auto-revert-verbose nil)
+  (auto-revert-use-notify nil)
+  (auto-revert-interval 1) ; Auto revert every 3 sec
+  :hook (elpaca-after-init . global-auto-revert-mode))
 
 ;;; Custom settings
 (use-package custom
@@ -163,34 +163,41 @@ REST and STATE."
 
 ;;; Diff
 (use-package diff-hl
-  :commands (diff-hl-revert-hunk diff-hl-show-hunk)
-  :hook ((find-file . diff-hl-mode)
-         (vc-dir-mode . diff-hl-dir-mode)
-         (dired-mode . diff-hl-dired-mode))
+  :commands (diff-hl-revert-hunk diff-hl-show-hunk diff-hl-update)
+  :hook ((window-setup . global-diff-hl-mode))
   :bind
   (:map diff-hl-mode-map
         ("<left-fringe> <mouse-1>" . diff-hl-diff-goto-hunk))
+  :custom
+  (diff-hl-draw-borders nil)
+  (diff-hl-update-async t)
+  (diff-hl-global-modes '(not image-mode pdf-view-mode))
   :config
   ;; Set fringe style
   (setq-default fringes-outside-margins t)
 
-  (add-hook 'after-change-major-mode-hook 'diff-hl-update-once)
-
+  (defun +diff-hl-update-after-focus-change ()
+    (cond ((bound-and-true-p diff-hl-mode)
+           (diff-hl-update))
+          ((bound-and-true-p diff-hl-dir-mode)
+           (diff-hl-dir-update))
+          ((bound-and-true-p diff-hl-dired-mode)
+           (diff-hl-dired-update))
+          (t t)))
+  (add-function :after after-focus-change-function
+                #'+diff-hl-update-after-focus-change)
+  
   ;; Integration with magit
   (with-eval-after-load 'magit
     (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
-  (setq diff-hl-draw-borders nil))
+  )
 
 (use-package diff-mode
   :ensure nil
   :config
   (setq diff-font-lock-prettify t)
-  (setq diff-font-lock-syntax 'hunk-also)
-  (when (>= emacs-major-version 27)
-    (set-face-attribute 'diff-refine-changed nil :extend t)
-    (set-face-attribute 'diff-refine-removed nil :extend t)
-    (set-face-attribute 'diff-refine-added   nil :extend t)))
+  (setq diff-font-lock-syntax 'hunk-also))
 
 ;;; Dired and Dirvish file browser
 (use-package dired
@@ -206,9 +213,6 @@ REST and STATE."
   ;; Always delete and copy recursively
   (dired-recursive-deletes 'always)
   (dired-recursive-copies 'always)
-  ;; Auto refresh Dired, but be quiet about it
-  (global-auto-revert-non-file-buffers t)
-  (auto-revert-verbose nil)
   ;; Quickly copy/move file in Dired
   (dired-dwim-target t)
   ;; Move files to trash when deleting
@@ -216,11 +220,7 @@ REST and STATE."
   ;; Load the newest version of a file
   (load-prefer-newer t)
   ;; Detect external file changes and auto refresh file
-  (auto-revert-use-notify nil)
-  (auto-revert-interval 3) ; Auto revert every 3 sec
   :config
-  ;; Enable global auto-revert
-  (global-auto-revert-mode t)
   ;; Reuse same dired buffer, to prevent numerous buffers while navigating in dired
   (put 'dired-find-alternate-file 'disabled nil)
 
@@ -230,9 +230,13 @@ REST and STATE."
         (mapcar (lambda (ext)
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
+(use-package savehist
+  :ensure nil
+  :hook (elpaca-after-init . savehist-mode))
+
 (use-package casual
   :commands (casual-dired-tmenu casual-dired-sort-by-tmenu casual-dired-search-replace-tmenu)
-  :init
+  :config
   (require 'casual-dired)
   (require 'casual-agenda)
   :bind (:map dired-mode-map
@@ -243,7 +247,6 @@ REST and STATE."
               ("C-o" . #'casual-agenda-tmenu)))
 
 (use-package dirvish
-  :after-call +my/first-input-hook-fun
   :after dired
   :hook (+my/first-input . dirvish-override-dired-mode)
   :bind
@@ -314,6 +317,10 @@ REST and STATE."
 (use-package magit
   :ensure (:files (:defaults "lisp/*.el"))
   :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push magit-add-current-buffer-to-kill-ring)
+  :custom
+  (magit-diff-refine-hunk t)
+  (magit-format-file-function #'magit-format-file-nerd-icons)
+  (magit-process-connection-type nil)
   :bind
   (:map magit-mode-map
         ("x" . magit-discard)
@@ -322,12 +329,10 @@ REST and STATE."
         ("p" . magit-push)
         ("'" . magit-process-buffer))
   :config
-  (setq magit-display-buffer-function #'+magit-display-buffer-fn)
-  (setq magit-diff-refine-hunk t)
-  (setopt magit-format-file-function #'magit-format-file-nerd-icons)
-  (when *sys/mac*
-    (setq magit-process-connection-type nil))
-
+  (use-package magit-prime
+    :diminish
+    :hook elpaca-after-init)
+  ;; (setq magit-display-buffer-function #'+magit-display-buffer-fn)
   (defun magit-open-repo ()
     "open remote repo URL"
     (interactive)
@@ -339,23 +344,6 @@ REST and STATE."
                                                 "https://\\2/\\3"
                                                 url)))
         (message "opening repo %s" url))))
-
-  (defun aborn/simple-git-commit-push ()
-    "Simple commit current git project and push to its upstream."
-    (interactive)
-    (when (and buffer-file-name (buffer-modified-p))
-      (save-buffer))
-    (magit-stage-modified)
-    (magit-diff-staged)
-    (let ((msg (read-string "Commit Message: ")))
-      (when (length= msg 0)
-        (setq msg (format-time-string "commit by magit in emacs@%Y-%m-%d %H:%M:%S"
-                                      (current-time))))
-      (magit-call-git "commit" "-m" msg)
-      (when (magit-get "remote" "origin" "url")
-        (magit-push-current-to-upstream nil)
-        (message "now do async push to %s" (magit-get "remote" "origin" "url")))
-      (magit-mode-bury-buffer)))
 
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-modules
@@ -915,15 +903,14 @@ It will split otherwise."
              evilnc-outer-commenter))
 
 (use-package meow
-  :defer nil
+  :hook (window-setup . (lambda ()
+                          (require 'meow-config)
+                          (meow-setup)
+                          (meow-global-mode)))
   :config
   ;; (add-hook 'meow-insert-exit-hook (lambda () (setq flymake-no-changes-timeout 0)))
   ;; (add-hook 'meow-insert-enter-hook (lambda () (setq flymake-no-changes-timeout nil)))
   (setq meow-keypad-leader-dispatch "C-c")
-  (require 'meow-config)
-  (meow-setup)
-  (meow-setup-indicator)
-  (meow-global-mode)
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(comint-mode . insert))
   (add-to-list 'meow-mode-state-list '(magit-blame-mode . insert))
@@ -936,7 +923,6 @@ It will split otherwise."
 
 (use-package meow-tree-sitter
   :after meow
-  :defer nil
   :config
   (meow-tree-sitter-register-defaults)
   (meow-tree-sitter-register-thing ?C "class"))
@@ -1400,8 +1386,7 @@ TYPES is the mode-specific types configuration."
   :config
   (with-eval-after-load 'orderless
     (add-to-list 'orderless-style-dispatchers 'orderless-kwd-dispatch t))
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
+  (setq completion-styles '(orderless flex)
         orderless-component-separator #'orderless-escapable-split-on-space
         completion-category-overrides '((file (styles basic partial-completion))
                                         (eglot (styles orderless))
@@ -1634,13 +1619,10 @@ Just put this function in `hippie-expand-try-functions-list'."
   (defun my/convert-super-capf (arg-capf)
     (list
      #'cape-file
-     (if +self/enable-tabnine
-         (cape-super-capf
-          arg-capf
-          #'tabnine-completion-at-point
-          #'tempel-complete)
-       (cape-capf-super
-        arg-capf))))
+     (cape-capf-super
+      #'tempel-complete
+      arg-capf)
+     ))
 
   (defun my/set-basic-capf ()
     (setq-local completion-at-point-functions (my/convert-super-capf (car completion-at-point-functions))))
@@ -1756,9 +1738,9 @@ guaranteed to be the response buffer."
 
 (use-package recentf
   :ensure nil
+  :hook (window-setup . recentf-mode)
   :demand t
   :config
-  (recentf-mode)
   (add-to-list 'recentf-exclude "^/\\(?:ssh\\|su\\|sudo\\)?x?:")
   (setq recentf-auto-cleanup "05:00am")
   (setq recentf-max-saved-items 200)
@@ -1961,7 +1943,6 @@ guaranteed to be the response buffer."
   :commands (project-find-file project-switch-project)
   :config
   (use-package vc-git
-    :defer nil
     :ensure nil)
 
   (defun my/project-files-in-directory (dir)
@@ -2294,7 +2275,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 
 ;;; UI
 (use-package doom-modeline
-  :hook (elpaca-after-init . doom-modeline-mode)
+  :hook (window-setup . doom-modeline-mode)
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
   (inhibit-compacting-font-caches t)
@@ -2358,7 +2339,8 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (set-fontset-font t 'han (font-spec :family +my-cn-font))
   (add-hook 'elpaca-after-init-hook
             (lambda ()
-              (set-face-attribute 'org-table nil :family +my-cn-font)
+              (with-eval-after-load 'org
+                (set-face-attribute 'org-table nil :family +my-cn-font))
               (with-eval-after-load 'markdown-mode
                 (set-face-attribute 'markdown-table-face nil :family +my-cn-font))))
   )
@@ -2468,14 +2450,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (require 'indent-bars-ts)
   )
 
-(use-package consult-todo
-  :after hl-todo
-  :ensure (:host github :repo "theFool32/consult-todo" :branch "dev")
-  :demand t
-  :config
-  ;; (defadvice #'consult-todo-dir :before (lambda (&rest _) (consult-todo--init)))
-  )
-
 (use-package volatile-highlights
   :diminish
   :hook (+my/first-input . volatile-highlights-mode)
@@ -2563,7 +2537,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 ;;; Syntax checker
 (use-package flymake
   :ensure nil
-  :after-call +my/first-input-hook-fun
   :hook (emacs-lisp-mode . flymake-mode)
   :config
   (remove-hook 'flymake-diagnostic-functions #'flymake-proc-legacy-flymake)
@@ -2636,7 +2609,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (define-key occur-mode-map (kbd "i") 'occur-edit-mode))
 
 (use-package deadgrep
-  :init
+  :config
   (require 'wgrep-deadgrep)
   :bind
   ("<f5>" . #'deadgrep)
@@ -2803,36 +2776,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
    (list #'kill-current-buffer #'consult-imenu #'consult-line
          #'find-file #'consult-fd #'consult-ripgrep #'xref-pop-to-location)))
 
-(use-package dogears
-  :hook (window-setup . dogears-mode)
-  :bind (:map global-map
-              ("M-g d" . dogears-go)
-              ("M-g M-b" . dogears-back)
-              ("M-g M-f" . dogears-forward)
-              ("M-g M-d" . dogears-list)
-              ("M-g M-D" . dogears-sidebar))
-  :config
-  (setq dogears-idle 1
-        dogears-limit 200
-        dogears-position-delta 20)
-  (setq dogears-functions '(find-file recenter-top-bottom
-                                      other-window switch-to-buffer
-                                      aw-select toggle-window-split
-                                      windmove-do-window-select
-                                      pager-page-down pager-page-up
-                                      tab-bar-select-tab
-                                      pop-to-mark-command
-                                      pop-global-mark
-                                      goto-last-change
-                                      xref-go-back
-                                      xref-find-definitions
-                                      xref-find-references
-                                      better-jumper-jump-backward
-                                      better-jumper-jump-forward
-                                      )))
-
 (use-package dumb-jump
-  :defer nil
   :after-call +my/first-input-hook-fun
   :commands (dumb-jump-result-follow dumb-jump-go dumb-jump-xref-activate)
   :config
@@ -3228,8 +3172,9 @@ Install the doc if it's not installed."
 
 (use-package xref
   :ensure nil
-  :defer nil
-  :init
+  :after-call +my/first-input-hook-fun
+  ;; :defer nil
+  :config
   ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
   ;; `project-find-regexp' benefits from that.
   (when (>= emacs-major-version 28)
@@ -3520,19 +3465,20 @@ typical word processor."
   )
 
 (use-package ghostel
-  :commands (ghostel-dwim)
+  :hook (eshell-load . ghostel-eshell-visual-command-mode)
+  :hook (ghostel-line-mode . (lambda () (add-to-list 'ghostel-line-mode-completion-at-point-functions #'cape-dabbrev)))
   :bind
-  (("C-0" . #'ghostel-project))
+  (("C-0" . #'ghostel-project)
+   :map ghostel-mode-map
+   ("C-g" . nil))
   :custom
   (ghostel-enable-title-tracking nil)
+  (ghostel-ignore-cursor-change t)
   :config
-  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer")
-  (defun ghostel-dwim ()
-    (interactive)
-    (let ((ghostel-buffer-name +my-ghostel-tab-buffer-name))
-      (my-create-term-cmd #'ghostel ghostel-buffer-name)
-      (when (derived-mode-p 'ghostel-mode)
-        (setq-local ghostel-enable-title-tracking nil)))))
+  (when (locate-library "spinner")
+    (setq ghostel-progress-function #'ghostel-spinner-progress
+          ghostel-spinner-type 'progress-bar))
+  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer"))
 
 (use-package popterm
   :commands (+popterm-toggle-dwim +popterm-register-shortcut)
