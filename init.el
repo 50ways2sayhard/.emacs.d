@@ -1740,12 +1740,6 @@ guaranteed to be the response buffer."
 
   (add-hook 'gptel-post-response-functions #'my/clean-up-gptel-refactored-code))
 
-(use-package superchat
-  :ensure (:repo "yibie/superchat" :host github)
-  :config
-  (setq superchat-data-directory "~/Documents/Sync/chats/")
-  (setq superchat-lang "中文"))
-
 (use-package gptel-quick
   :after gptel
   :ensure (:repo "karthink/gptel-quick" :host github)
@@ -1876,52 +1870,6 @@ guaranteed to be the response buffer."
        (visual-replace-read (visual-replace-make-args :from keyword :regexp t))
        (list (cons (point-min) (point-max))))
       )))
-
-(use-package maple-translate
-  :disabled
-  :ensure (:host github :repo "honmaple/emacs-maple-translate")
-  :commands (maple-translate maple-translate+ maple-translate-posframe)
-  :bind
-  ("C-c t y" . maple-translate-posframe)
-  ("C-c t Y" . (lambda () (interactive) (maple-translate+ (read-from-minibuffer "Translate word: "))))
-  :custom
-  (maple-translate-buffer " *maple-translate* ")
-  :config
-  ;; (setq maple-translate-engine '(google dictcn youdao))
-  (setq maple-translate-engine '(google))
-
-  ;; with google translate
-  (setq maple-translate-google-url "https://translate.googleapis.com/translate_a/single")
-
-
-  (defun maple-translate-posframe-tip (result)
-    "Show STRING using posframe-show."
-    (unless (and (require 'posframe nil t) (posframe-workable-p))
-      (error "Posframe not workable"))
-
-    (if result
-        (progn
-          (with-current-buffer (get-buffer-create maple-translate-buffer)
-            (let ((inhibit-read-only t))
-              (erase-buffer)
-              (insert result)
-              (maple-translate-mode)
-              (goto-char (point-min))))
-          (posframe-show maple-translate-buffer
-                         :left-fringe 8
-                         :right-fringe 8
-                         :internal-border-color (face-foreground 'default)
-                         :internal-border-width 1)
-          (unwind-protect
-              (push (read-event) unread-command-events)
-            (progn
-              (posframe-hide maple-translate-buffer))))
-      (message "Nothing to look up")))
-
-  (defun maple-translate-posframe(word)
-    "Translate WORD and display result in posframe."
-    (interactive (list (maple-translate-word)))
-    (maple-translate-show word 'maple-translate-posframe-tip)))
 
 (use-package gt
   ;; :bind (("C-c g"   . gt-do-translate)
@@ -2707,11 +2655,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :config
   (home-row-expreg-mode))
 
-(use-package avy
-  :diminish
-  :demand t
-  :commands (avy-goto-char avy-goto-line))
-
 (use-package flash-emacs
   :ensure (:host github :repo "JiaweiChenC/flash-emacs")
   :config
@@ -2736,11 +2679,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (separedit-default-mode 'markdown-mode)
   :config
   (add-to-list 'separedit-comment-delimiter-alist '(("///" "//") . (dart-mode dart-ts-mode))))
-
-(use-package speedrect
-  :ensure (:repo "jdtsmith/speedrect" :host github)
-  :init
-  (require 'speedrect))
 
 ;;;; Input method
 (use-package rime
@@ -3386,16 +3324,6 @@ typical word processor."
   (setq py-tab-indent nil)
   (add-hook 'python-mode-hook (lambda ()
                                 (setq-local tab-width 4))))
-
-(use-package pyvenv
-  :after python)
-
-(use-package py-isort
-  :after python
-  :hook (python-mode . (lambda ()
-                         (add-hook 'before-save-hook #'py-isort-before-save))))
-
-
 (use-package web-mode
   :mode
   ("\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.vue\\'"
