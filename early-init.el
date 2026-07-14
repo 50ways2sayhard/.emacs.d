@@ -41,8 +41,9 @@
       load-prefer-newer nil
       auto-mode-case-fold nil
       ring-bell-function 'ignore
-      visible-bell t
+      visible-bell nil
 
+      bidi-inhibit-bpa t
       bidi-display-reordering 'left-to-right
       bidi-paragraph-direction 'left-to-right
       cursor-in-non-selected-windows nil
@@ -53,7 +54,16 @@
       redisplay-skip-fontification-on-input t
 
       idle-update-delay 1.0
-      )
+
+      long-line-threshold 1000
+      large-hscroll-threshold 1000
+      syntax-wholeline-max 1000
+      create-lockfiles nil
+      make-backup-files nil
+
+      compilation-always-kill t
+      compilation-ask-about-save nil
+      compilation-scroll-output t)
 
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (custom-set-variables '(x-select-enable-clipboard t))

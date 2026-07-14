@@ -186,7 +186,7 @@ REST and STATE."
           (t t)))
   (add-function :after after-focus-change-function
                 #'+diff-hl-update-after-focus-change)
-  
+
   ;; Integration with magit
   (with-eval-after-load 'magit
     (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
@@ -225,14 +225,16 @@ REST and STATE."
   (put 'dired-find-alternate-file 'disabled nil)
 
   (setq insert-directory-program "gls" dired-use-ls-dired t)
-  (setq dired-listing-switches "-al --group-directories-first")
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
   (setq dired-open-extensions
         (mapcar (lambda (ext)
                   (cons ext "open")) '("pdf" "doc" "docx" "ppt" "pptx"))))
 
 (use-package savehist
   :ensure nil
-  :hook (elpaca-after-init . savehist-mode))
+  :hook ((elpaca-after-init . savehist-mode)
+         (elpaca-after-init . save-place-mode)))
 
 (use-package casual
   :commands (casual-dired-tmenu casual-dired-sort-by-tmenu casual-dired-search-replace-tmenu)
@@ -279,12 +281,6 @@ REST and STATE."
   :config
   (when (boundp 'dirvish-side-follow-mode)
     (dirvish-side-follow-mode t))
-  (setq dired-recursive-deletes 'always)
-  (setq delete-by-moving-to-trash t)
-  (setq dired-dwim-target t)
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
-
   (use-package dirvish-extras
     :ensure nil
     :after dirvish)
@@ -307,11 +303,6 @@ REST and STATE."
 (use-package help
   :ensure nil
   :config (temp-buffer-resize-mode))
-
-;;; Isearch
-(progn ;    `isearch'
-  (setq isearch-allow-scroll t
-        isearch-lazy-count 1))
 
 ;;; Version controll
 (use-package magit
@@ -618,11 +609,9 @@ It will split otherwise."
 
   (add-hook 'window-setup-hook
             #'(lambda ()
-                (+my/open-org-agenda)
                 (message
                  "Initialization done in (%.3fs)"
-                 (float-time (time-subtract (current-time) before-user-init-time)))) t)
-  )
+                 (float-time (time-subtract (current-time) before-user-init-time)))) t))
 
 (defvar +my/first-input-hook nil)
 (defun +my/first-input-hook-fun ()
@@ -695,27 +684,6 @@ It will split otherwise."
   (setq-default indent-tabs-mode nil)
   (setq-default indent-line-function 'insert-tab)
   (setq-default tab-width 2)
-  (setq-default js-switch-indent-offset 2)
-
-  ;; When buffer is closed, saves the cursor location
-  (save-place-mode 1)
-
-  ;; for long line
-  (setq-default bidi-display-reordering 'left-to-right
-                bidi-paragraph-direction 'left-to-right)
-  (setq bidi-inhibit-bpa t
-        long-line-threshold 1000
-        large-hscroll-threshold 1000
-        syntax-wholeline-max 1000)
-
-  (setq-default create-lockfiles nil
-                make-backup-files nil)
-  (setq create-lockfiles nil
-        make-backup-files nil)
-
-  (setq compilation-always-kill t
-        compilation-ask-about-save nil
-        compilation-scroll-output t)
 
   (windmove-default-keybindings 'meta)
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -1165,21 +1133,9 @@ targets."
                 :items    ,(lambda () (mapcar #'buffer-name (org-buffer-list)))))
   (add-to-list 'consult-buffer-sources 'org-buffer-source 'append)
 
-  ;; Configure initial narrowing per command
-  ;; (dolist (src consult-buffer-sources)
-  ;;   (unless (eq src 'consult--source-buffer)
-  ;;     (set src (plist-put (symbol-value src) :hidden t))))
-
   (defun +consult-ripgrep-current-directory (&optional initial)
     (interactive)
     (consult-ripgrep default-directory initial))
-
-  ;; (defun consult--orderless-regexp-compiler (input type &rest _config)
-  ;;   (setq input (orderless-pattern-compiler input))
-  ;;   (cons
-  ;;    (mapcar (lambda (r) (consult--convert-regexp r type)) input)
-  ;;    (lambda (str) (orderless--highlight input t str))))
-  ;; (setq consult--regexp-compiler #'consult--orderless-regexp-compiler)
 
   (defun maple/consult-git ()
     "Find file in the current Git repository."
@@ -1665,67 +1621,40 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq copilot-max-char 1000000))
 
 (use-package agent-shell
+  :ensure (:host github :repo "liaowang11/agent-shell" :files ("*.el"))
   :hook (agent-shell-mode . (lambda () (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
   :commands (agent-shell agent-shell-toggle)
   :bind (:map agent-shell-mode-map
               ("C-c m" . agent-shell-help-menu))
   :custom
-  (agent-shell-session-strategy 'prompt)
+  (agent-shell-opencode-default-model-id "anthropic/claude-opus-4-6")
   (agent-shell-file-completion-enabled t)
   (agent-shell-session-strategy 'prompt)
+  (agent-shell-session-restore-verbosity nil)
   (agent-shell-display-action '(display-buffer-reuse-window))
-  )
-
-(use-package opencode
-  :ensure (opencode :type git :host codeberg :repo "sczi/opencode.el")
-  :bind (:map comint-mode-map
-              ("s-<RET>" . newline)))
-
-(use-package gptel
-  :commands (gptel-translate-to gptel gptel-send)
-  :hook (gptel-mode . gptel-highlight-mode)
-  :bind
-  ((:map gptel-mode-map
-         ("C-c m" . gptel-menu)))
   :config
-  (require 'gptel-context)
-  (require 'gptel-rewrite)
-  (defun gptel-translate-to (lang)
-    "Translate the selected region or buffer to the specified language.
-LANG is the full name of the target language (e.g., `French')."
-    (interactive
-     (list (completing-read "Target language: " '("English" "French" "Spanish" "German" "Chinese" "Japanese" "Russian" "Italian" "Korean"))))
-    (unless (use-region-p)
-      (error "You should select a region to perform such action"))
-    (let ((prompt (format "Translate the following text to %s. Do not explain your changes." lang)))
-      (gptel--suffix-rewrite prompt)))
+  (defvar my/consult-source-agent-shell-buffer
+    `(:name "Agent Shell"
+            :narrow ?a
+            :category buffer
+            :face consult-buffer
+            :history buffer-name-history
+            :state ,#'consult--buffer-state
+            :default t
+            :items
+            ,(lambda ()
+               (consult--buffer-query
+                :sort 'visibility
+                :as #'buffer-name
+                :predicate (lambda (buf)
+                             (with-current-buffer buf
+                               (derived-mode-p 'agent-shell-mode))))))
+    "Consult source for agent-shell buffers.")
 
-  (cl-defun my/clean-up-gptel-refactored-code (beg end)
-    "Clean up the code responses for refactored code in the current buffer.
+  (add-to-list 'consult-buffer-sources 'my/consult-source-agent-shell-buffer 'append))
 
-The response is placed between BEG and END.  The current buffer is
-guaranteed to be the response buffer."
-    (when gptel-mode          ; Don't want this to happen in the dedicated buffer.
-      (cl-return-from my/clean-up-gptel-refactored-code))
-    (when (and beg end)
-      (save-excursion
-        (let ((contents
-               (replace-regexp-in-string
-                "\n*``.*\n*" ""
-                (buffer-substring-no-properties beg end))))
-          (delete-region beg end)
-          (goto-char beg)
-          (insert contents))
-        ;; Indent the code to match the buffer indentation if it's messed up.
-        (indent-region beg end)
-        (pulse-momentary-highlight-region beg end))))
-
-  (add-hook 'gptel-post-response-functions #'my/clean-up-gptel-refactored-code))
-
-(use-package gptel-quick
-  :after gptel
-  :ensure (:repo "karthink/gptel-quick" :host github)
-  :commands (gptel-quick))
+(use-package shell-maker
+  :ensure (:files (:defaults "*.el")))
 
 ;;; Utils
 (use-package gcmh
@@ -1854,14 +1783,6 @@ guaranteed to be the response buffer."
       )))
 
 (use-package gt
-  ;; :bind (("C-c g"   . gt-do-translate)
-  ;;        ("C-c G"   . gt-do-translate-prompt)
-  ;;        ("C-c u"   . gt-do-text-utility)
-  ;;        ("C-c d g" . gt-do-translate)
-  ;;        ("C-c d G" . gt-do-translate-prompt)
-  ;;        ("C-c d p" . gt-do-speak)
-  ;;        ("C-c d s" . gt-do-setup)
-  ;;        ("C-c d u" . gt-do-text-utility))
   :commands (gt-do-translate-prompt gt-do-text-utility)
   :init
   (setq gt-langs '(en zh)
@@ -2628,6 +2549,8 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :config
   (home-row-expreg-mode))
 
+(use-package avy)
+
 (use-package flash-emacs
   :ensure (:host github :repo "JiaweiChenC/flash-emacs")
   :config
@@ -2926,12 +2849,11 @@ _Q_: Disconnect
 
   ;; To display info and/or repl buffers on stopped
   (add-hook 'dape-on-stopped-hooks 'dape-info)
-  (add-hook 'dape-on-stopped-hooks 'dape-hydra/body)
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-hydra/body)
 
   (defun dape-hydra-auto-leave ()
     (when (dape--live-connection 'stopped t)
       (dape-hydra/nil)))
-
 
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
@@ -3042,6 +2964,13 @@ _Q_: Disconnect
         )))
   )
 
+(use-package dape-toolbar
+  :ensure (:url "https://github.com/zsxh/dape-toolbar"
+                :rev :newest)
+  :after dape
+  :config
+  (dape-toolbar-mode))
+
 (use-package breadcrumb
   :ensure (:host github :repo "joaotavora/breadcrumb")
   :hook (elpaca-after-init . breadcrumb-mode))
@@ -3081,7 +3010,7 @@ _Q_: Disconnect
           (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
           (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
           (markdown . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src"))
-          (swift . ("https://github.com/alex-pinkus/tree-sitter-swift"))
+          (swift . ("https://codeberg.org/woolsweater/tree-sitter-swifter"))
           (markdown-inline . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src"))))
   :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
@@ -3106,47 +3035,6 @@ _Q_: Disconnect
 
 (use-package kirigami
   :ensure t)
-
-;;;; Online document
-(use-package devdocs
-  :commands (devdocs-lookup-at-point devdocs-search-at-point +devdocs-lookup-at-point +devdocs-search-at-point devdocs-dwim)
-  :init
-  (defvar devdocs-major-mode-docs-alist
-    '((web-mode . ("Javascript" "Less" "HTML" "Vue.js~2" "CSS"))))
-  (mapc
-   (lambda (e)
-     (add-hook (intern (format "%s-hook" (car e)))
-               (lambda ()
-                 (setq-local devdocs-current-docs (cdr e)))))
-   devdocs-major-mode-docs-alist)
-  :config
-  (defun +devdocs-lookup-at-point()
-    (interactive)
-    (devdocs-lookup devdocs-current-docs (thing-at-point 'symbol)))
-
-  (defun +devdocs-search-at-point()
-    (interactive)
-    (devdocs-search (thing-at-point 'symbol)))
-
-  (defun devdocs-dwim()
-    "Look up a DevDocs documentation entry.
-Install the doc if it's not installed."
-    (interactive)
-    ;; Install the doc if it's not installed
-    (mapc
-     (lambda (str)
-       (let* ((docs (split-string str " "))
-              (doc (if (length= docs 1)
-                       (downcase (car docs))
-                     (concat (downcase (car docs)) "~" (downcase (cdr docs))))))
-         (unless (and (file-directory-p devdocs-data-dir)
-                      (directory-files devdocs-data-dir nil "^[^.]"))
-           (message "Installing %s..." str)
-           (devdocs-install doc))))
-     (alist-get major-mode devdocs-major-mode-docs-alist))
-
-    ;; Lookup the symbol at point
-    (devdocs-lookup nil (thing-at-point 'symbol t))))
 
 ;;;; recenter after imenu jump
 (use-package imenu
