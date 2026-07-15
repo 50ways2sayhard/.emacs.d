@@ -16,6 +16,20 @@
   (message "Loading %s..." user-init-file)
   )
 
+;;; 子进程不继承 macos-startup.el 注入的 LIBRARY_PATH（避免 macOS SDK 库
+;;; 污染 iOS 工具链），同时保留 native-comp 异步 worker 所需的 gcc 库路径。
+(defvar my/native-comp-library-path
+  (getenv "LIBRARY_PATH")
+  "启动时 macos-startup.el 注入的 LIBRARY_PATH，仅供 native-comp worker 使用。")
+
+(require 'cl-lib)
+(setq process-environment
+      (cl-remove-if (lambda (s) (string-prefix-p "LIBRARY_PATH=" s))
+                    process-environment))
+
+(setq native-comp-async-env-modifier-form
+      `(setenv "LIBRARY_PATH" ,my/native-comp-library-path))
+
 ;;; Package Manager
 (progn
   (defvar elpaca-installer-version 0.12)
@@ -314,6 +328,7 @@ REST and STATE."
   (magit-process-connection-type nil)
   :bind
   (:map magit-mode-map
+        ("Q" . magit-mode-bury-buffer)
         ("x" . magit-discard)
         ("N" . magit-section-forward)
         ("P" . magit-section-backward)
@@ -349,6 +364,10 @@ REST and STATE."
                  (message "%s" branch))
         (user-error "There is not current branch")))))
 
+(use-package multi-magit
+  :ensure (:host github :repo "luismbo/multi-magit")
+  :after magit)
+
 (use-package forge
   :config
   (push '("gitlab.futunn.com"               ; GITHOST
@@ -380,73 +399,73 @@ REST and STATE."
 (use-package transient
   :ensure t)
 
-(defvar +magit-open-windows-in-direction 'right
-  "What direction to open new windows from the status buffer.
-For example, diffs and log buffers.  Accepts `left', `right', `up', and `down'.")
-(defun +magit-display-buffer-fn (buffer)
-  "Same as `magit-display-buffer-traditional' displays BUFFER way, except...
-- If opened from a commit window, it will open below it.
-- Magit process windows are always opened in small windows below the current.
-- Everything else will reuse the same window."
-  (let ((buffer-mode (buffer-local-value 'major-mode buffer)))
-    (display-buffer
-     buffer (cond
-             ((and (eq buffer-mode 'magit-status-mode)
-                   (get-buffer-window buffer))
-              '(display-buffer-reuse-window))
-             ;; Any magit buffers opened from a commit window should open below
-             ;; it. Also open magit process windows below.
-             ((or (bound-and-true-p git-commit-mode)
-                  (eq buffer-mode 'magit-process-mode))
-              (let ((size (if (eq buffer-mode 'magit-process-mode)
-                              0.35
-                            0.7)))
-                `(display-buffer-below-selected
-                  . ((window-height . ,(truncate (* (window-height) size)))))))
+;; (defvar +magit-open-windows-in-direction 'right
+;;   "What direction to open new windows from the status buffer.
+;; For example, diffs and log buffers.  Accepts `left', `right', `up', and `down'.")
+;; (defun +magit-display-buffer-fn (buffer)
+;;   "Same as `magit-display-buffer-traditional' displays BUFFER way, except...
+;; - If opened from a commit window, it will open below it.
+;; - Magit process windows are always opened in small windows below the current.
+;; - Everything else will reuse the same window."
+;;   (let ((buffer-mode (buffer-local-value 'major-mode buffer)))
+;;     (display-buffer
+;;      buffer (cond
+;;              ((and (eq buffer-mode 'magit-status-mode)
+;;                    (get-buffer-window buffer))
+;;               '(display-buffer-reuse-window))
+;;              ;; Any magit buffers opened from a commit window should open below
+;;              ;; it. Also open magit process windows below.
+;;              ((or (bound-and-true-p git-commit-mode)
+;;                   (eq buffer-mode 'magit-process-mode))
+;;               (let ((size (if (eq buffer-mode 'magit-process-mode)
+;;                               0.35
+;;                             0.7)))
+;;                 `(display-buffer-below-selected
+;;                   . ((window-height . ,(truncate (* (window-height) size)))))))
 
-             ;; Everything else should reuse the current window.
-             ((or (not (derived-mode-p 'magit-mode))
-                  (not (memq (with-current-buffer buffer major-mode)
-                             '(magit-process-mode
-                               magit-revision-mode
-                               magit-diff-mode
-                               magit-stash-mode
-                               magit-status-mode))))
-              '(display-buffer-same-window))
+;;              ;; Everything else should reuse the current window.
+;;              ((or (not (derived-mode-p 'magit-mode))
+;;                   (not (memq (with-current-buffer buffer major-mode)
+;;                              '(magit-process-mode
+;;                                magit-revision-mode
+;;                                magit-diff-mode
+;;                                magit-stash-mode
+;;                                magit-status-mode))))
+;;               '(display-buffer-same-window))
 
-             ('(+magit--display-buffer-in-direction))))))
+;;              ('(+magit--display-buffer-in-direction))))))
 
-(defun +magit--display-buffer-in-direction (buffer alist)
-  "`display-buffer-alist' handler that opens BUFFER in a direction.
-This differs from `display-buffer-in-direction' in one way:
-it will try to use a window that already exists in that direction.
-It will split otherwise."
-  (let ((direction (or (alist-get 'direction alist)
-                       +magit-open-windows-in-direction))
-        (origin-window (selected-window)))
-    (if-let* ((window (window-in-direction direction)))
-        (unless magit-display-buffer-noselect
-          (select-window window))
-      (if-let* ((window (and (not (one-window-p))
-                             (window-in-direction
-                              (pcase direction
-                                (`right 'left)
-                                (`left 'right)
-                                ((or `up `above) 'down)
-                                ((or `down `below) 'up))))))
-          (unless magit-display-buffer-noselect
-            (select-window window))
-        (let ((window (split-window nil nil direction)))
-          (when (and (not magit-display-buffer-noselect)
-                     (memq direction '(right down below)))
-            (select-window window))
-          (display-buffer-record-window 'reuse window buffer)
-          (set-window-buffer window buffer)
-          (set-window-parameter window 'quit-restore (list 'window 'window origin-window buffer))
-          (set-window-prev-buffers window nil))))
-    (unless magit-display-buffer-noselect
-      (switch-to-buffer buffer t t)
-      (selected-window))))
+;; (defun +magit--display-buffer-in-direction (buffer alist)
+;;   "`display-buffer-alist' handler that opens BUFFER in a direction.
+;; This differs from `display-buffer-in-direction' in one way:
+;; it will try to use a window that already exists in that direction.
+;; It will split otherwise."
+;;   (let ((direction (or (alist-get 'direction alist)
+;;                        +magit-open-windows-in-direction))
+;;         (origin-window (selected-window)))
+;;     (if-let* ((window (window-in-direction direction)))
+;;         (unless magit-display-buffer-noselect
+;;           (select-window window))
+;;       (if-let* ((window (and (not (one-window-p))
+;;                              (window-in-direction
+;;                               (pcase direction
+;;                                 (`right 'left)
+;;                                 (`left 'right)
+;;                                 ((or `up `above) 'down)
+;;                                 ((or `down `below) 'up))))))
+;;           (unless magit-display-buffer-noselect
+;;             (select-window window))
+;;         (let ((window (split-window nil nil direction)))
+;;           (when (and (not magit-display-buffer-noselect)
+;;                      (memq direction '(right down below)))
+;;             (select-window window))
+;;           (display-buffer-record-window 'reuse window buffer)
+;;           (set-window-buffer window buffer)
+;;           (set-window-parameter window 'quit-restore (list 'window 'window origin-window buffer))
+;;           (set-window-prev-buffers window nil))))
+;;     (unless magit-display-buffer-noselect
+;;       (switch-to-buffer buffer t t)
+;;       (selected-window))))
 
 (setq split-width-threshold 240)
 (setq split-window-preferred-direction 'horizontal)
@@ -3101,6 +3120,18 @@ _Q_: Disconnect
         (kill-new (buffer-substring-no-properties beg end))
         (message "Copied fenced code block")))))
 
+(use-package markdown-xwidget
+  :after markdown-mode
+  :ensure (markdown-xwidget
+           :host github
+           :repo "cfclrk/markdown-xwidget"
+           :files (:defaults "resources"))
+  :config
+  (setq markdown-xwidget-github-theme "light"
+        markdown-xwidget-mermaid-theme "default"
+        markdown-xwidget-code-block-theme "default"
+        markdown-xwidget-command "multimarkdown"))
+
 (use-package olivetti
   :ensure t
   :commands (olivetti-mode)
@@ -3238,10 +3269,16 @@ typical word processor."
                                                        (?p "Property" font-lock-variable-name-face)
                                                        (?F "Field"  font-lock-variable-name-face))))))
 
-(use-package flymake-dart
-  :disabled
-  :ensure (:repo "50ways2sayhard/flymake-dart" :host github)
-  :hook (dart-ts-mode . flymake-dart-setup))
+(use-package swift-ts-mode
+  :ensure (:url "https://codeberg.org/woolsweater/swift-ts-mode")
+  :mode ("\\.swift\\'" "\\.swiftinterface\\'")
+  :init
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+                 `(swift-ts-mode . ("sourcekit-lsp"))))
+  :custom
+  (swift-ts-basic-offset 4)
+  (swift-ts:indent-trailing-call-member t))
 
 (use-package flutter
   :commands (dart--get-dart-vm-service-port)
@@ -3381,7 +3418,7 @@ typical word processor."
   (popterm-backend        'ghostel)     ; or 'ghostel, 'eat, 'shell, 'eshell
   (popterm-display-method 'posframe)  ; or 'window, 'fullscreen
   (popterm-scope          'project)   ; or 'frame, 'dedicated, nil
-  (popterm-auto-cd        nil)
+  (popterm-auto-cd        t)
   (popterm-posframe-width-ratio 0.95)
   (popterm-posframe-height-ratio 0.90)
   :config
