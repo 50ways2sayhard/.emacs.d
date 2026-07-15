@@ -21,24 +21,35 @@
 
 S is string of the two-key sequence."
   (when (meow-insert-mode-p)
-    (cond ((derived-mode-p 'vterm-mode 'term-mode) (call-interactively 'term-send-raw))
-          ((derived-mode-p 'ghostel-semi-char-mode) (funcall 'ghostel-send-string meow-two-char-escape-sequence-first-char))
-          (t (let ((modified (buffer-modified-p))
-                   (undo-list buffer-undo-list))
-               (insert (elt s 0))
-               (let* ((second-char (elt s 1))
-                      (event
-                       (if defining-kbd-macro
-                           (read-event nil nil)
-                         (read-event nil nil meow-two-char-escape-delay))))
-                 (cond
-                  ((null event) (ignore))
-                  ((and (integerp event) (char-equal event second-char))
-                   (backward-delete-char 1)
-                   (set-buffer-modified-p modified)
-                   (setq buffer-undo-list undo-list)
-                   (push 'escape unread-command-events))
-                  (t (push event unread-command-events)))))))))
+    (let ((modified (buffer-modified-p))
+          (term-p (derived-mode-p 'vterm-mode 'term-mode)))
+      ;; Send/insert the first char, mode-aware.  Terminal buffers are
+      ;; read-only, so `insert' would signal there; vterm/term use
+      ;; `term-send-raw' (sends the last typed char), ghostel uses its
+      ;; public send API.
+      (cond
+       (term-p (call-interactively 'term-send-raw))
+       ((derived-mode-p 'ghostel-mode)
+        (ghostel-send-string (char-to-string (elt s 0))))
+       (t (insert (elt s 0))))
+      ;; Detect the second char and maybe undo the first — one shared
+      ;; logic block for ghostel and text buffers (vterm/term skip it,
+      ;; matching the original behavior of only sending the first char).
+      (unless term-p
+        (let* ((second-char (elt s 1))
+               (event
+                (if defining-kbd-macro
+                    (read-event nil nil)
+                  (read-event nil nil meow-two-char-escape-delay))))
+          (when event
+            (if (and (characterp event) (= event second-char))
+                (progn
+                  (if (derived-mode-p 'ghostel-mode)
+                      (ghostel-send-string (char-to-string 127)) ; DEL: undo first char
+                    (backward-delete-char 1)
+                    (set-buffer-modified-p modified))
+                  (meow--execute-kbd-macro "<escape>"))
+              (push event unread-command-events))))))))
 
 (defun meow-two-char-exit-insert-state ()
   "Exit meow insert state when pressing consecutive two keys."

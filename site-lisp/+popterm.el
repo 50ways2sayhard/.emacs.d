@@ -49,7 +49,18 @@ Open buffers that are also shortcuts show their registered directory."
     (when (file-directory-p expanded)
       (with-temp-buffer
         (setq default-directory expanded)
-        (popterm--send-cd term-buf (current-buffer))))))
+        (let ((src (current-buffer))
+              (cmd (popterm-cd-string (current-buffer))))
+          (when cmd
+            (with-current-buffer term-buf
+              (if (and (derived-mode-p 'ghostel-mode)
+                       (fboundp 'ghostel-send-string))
+                  ;; popterm--send-cd targets `ghostel--process', which in
+                  ;; ghostel's native-PTY mode is an event pipe — not shell
+                  ;; stdin — so cd bytes never reach the shell.  Use the
+                  ;; public ghostel API instead.
+                  (ghostel-send-string (concat cmd "\r"))
+                (popterm--send-cd term-buf src)))))))))
 
 (defun +popterm--pick-via-completion ()
   "Prompt user via `completing-read' and show the chosen popterm.
