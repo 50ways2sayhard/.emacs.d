@@ -30,3 +30,16 @@
 /devdocs
 .DS_Store
 /.agent-shell/
+
+# runtime / local state
+/.agents/
+/.pi-subagents/
+/agent/
+/bookmarks
+/eshell/
+/forge-database.sqlite
+/projects.eld
+/skills-lock.json
+/tabsession.el
+/tabspaces/
+/tramp
