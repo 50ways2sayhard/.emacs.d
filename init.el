@@ -478,29 +478,29 @@ REST and STATE."
 
 (use-package webjump
   :ensure nil
-  :init (setq webjump-sites
-              '(;; Emacs
-                ("Emacs Home Page" .
-                 "www.gnu.org/software/emacs/emacs.html")
-                ("Mastering Emacs" .
-                 "https://www.masteringemacs.org/")
+  :config (setq webjump-sites
+                '(;; Emacs
+                  ("Emacs Home Page" .
+                   "www.gnu.org/software/emacs/emacs.html")
+                  ("Mastering Emacs" .
+                   "https://www.masteringemacs.org/")
 
-                ;; Search engines.
-                ("Google" .
-                 [simple-query "www.google.com"
-                               "www.google.com/search?q=" ""])
+                  ;; Search engines.
+                  ("Google" .
+                   [simple-query "www.google.com"
+                                 "www.google.com/search?q=" ""])
 
-                ("Wikipedia" .
-                 [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
+                  ("Wikipedia" .
+                   [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""])
 
-                ;; Documentations
-                ("Flutter" .
-                 [simple-query "api.flutter.dev/flutter" "api.flutter.dev/flutter/search.html?q=" ""])
+                  ;; Documentations
+                  ("Flutter" .
+                   [simple-query "api.flutter.dev/flutter" "api.flutter.dev/flutter/search.html?q=" ""])
 
-                ;; Programming languages
-                ("Pub" .
-                 [simple-query "pub.dev" "pub.dev/packages?q=" ""])
-                )))
+                  ;; Programming languages
+                  ("Pub" .
+                   [simple-query "pub.dev" "pub.dev/packages?q=" ""])
+                  )))
 
 (use-package hydra
   :config
@@ -599,7 +599,6 @@ REST and STATE."
         ("C-M-b" . puni-backward-sexp)
         ("C-M-a" . puni-beginning-of-sexp)
         ("C-M-e" . puni-end-of-sexp))
-  :init
   :config
   (setq puni-confirm-when-delete-unbalanced-active-region nil))
 
@@ -958,9 +957,8 @@ REST and STATE."
   :custom
   (embark-cycle-key ".")
   (embark-help-key "?")
-  :init
-  (setq prefix-help-command #'embark-prefix-help-command)
   :config
+  (setq prefix-help-command #'embark-prefix-help-command)
   (defun my/embark-magit-status (path)
     (interactive "fPath: ")
     (let* ((dir (if (file-directory-p path)
@@ -1029,7 +1027,14 @@ targets."
   (add-to-list 'embark-keymap-alist '(smerge-diff . smerge-basic-map))
   (add-to-list 'embark-target-finders 'embark-target-smerge-at-point)
   (add-to-list 'embark-repeat-actions 'smerge-next)
-  (add-to-list 'embark-repeat-actions 'smerge-prev))
+  (add-to-list 'embark-repeat-actions 'smerge-prev)
+
+  ;; ffap-menu candidates use category `ffap-menu', not `file'.
+  (defun +embark-ffap-menu-target (_type target)
+    (if (and (fboundp 'ffap-url-p) (ffap-url-p target))
+        (cons 'url target)
+      (cons 'file (abbreviate-file-name (expand-file-name target)))))
+  (add-to-list 'embark-transformer-alist '(ffap-menu . +embark-ffap-menu-target)))
 
 (use-package embark-consult
   :after consult
@@ -1079,6 +1084,7 @@ targets."
 (use-package emacs
   :ensure nil
   :init
+  (setq auto-save-default nil)
   (setq completion-cycle-threshold 3)
   (setq tab-always-indent 'completion)
   ;; Add prompt indicator to `completing-read-multiple'.
@@ -1272,11 +1278,10 @@ TYPES is the mode-specific types configuration."
 
 (use-package zoxide
   :commands (+zoxide-cd dired-jump-with-zoxide)
-  :init
+  :config
   (defun +zoxide-cd ()
     (interactive)
     (cd (completing-read "path:" (zoxide-query) nil t)))
-  :config
   (defun dired-jump-with-zoxide ()
     (interactive)
     (if (equal current-prefix-arg nil)
@@ -1356,9 +1361,8 @@ TYPES is the mode-specific types configuration."
   :commands (orderless-literal-prefix)
   :after-call elpaca-after-init-hook
   :demand t
-  :init
-  (require 'orderless-kwd)
   :config
+  (require 'orderless-kwd)
   (with-eval-after-load 'orderless
     (add-to-list 'orderless-style-dispatchers 'orderless-kwd-dispatch t))
   (setq completion-styles '(orderless flex)
@@ -1465,6 +1469,7 @@ TYPES is the mode-specific types configuration."
 ;;; Auto completion
 (use-package corfu
   :ensure (corfu :files (:defaults "extensions/corfu-*.el"))
+  :hook (+my/first-input . global-corfu-mode)
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -1472,19 +1477,7 @@ TYPES is the mode-specific types configuration."
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.18)
   (corfu-max-width 120)
-  ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
-  ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
-  ;; (corfu-quit-no-match 'separator)        ;; Automatically quit if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect 'prompt)    ;; Disable candidate preselection
-
-  ;; You may want to enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
-
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since dabbrev can be used globally (M-/).
   :bind
   (:map corfu-map
         ("TAB" . corfu-next)
@@ -1501,9 +1494,11 @@ TYPES is the mode-specific types configuration."
         ([backtab] . corfu-previous)
         ([remap move-beginning-of-line] . nil)
         ([remap move-end-of-line] . nil))
-  :init
-  (global-corfu-mode)
   :config
+  (with-eval-after-load 'corfu-auto
+    (add-to-list 'corfu-auto-commands 'end-of-visual-line))
+  (advice-add #'keyboard-quit :before #'corfu-quit)
+
   (use-package corfu-quick
     :ensure nil
     :commands (corfu-quick-insert corfu-quick-complete)
@@ -1522,9 +1517,6 @@ TYPES is the mode-specific types configuration."
     :config
     (set-face-attribute 'corfu-popupinfo nil :height 140)
     (setq corfu-popupinfo-delay '(0.5 . 1.0)))
-
-  (advice-add #'keyboard-quit :before #'corfu-quit)
-  (add-to-list 'corfu-auto-commands 'end-of-visual-line)
 
   (defun corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
@@ -1621,9 +1613,8 @@ Just put this function in `hippie-expand-try-functions-list'."
          ("M-i" . copilot-accept-completion-by-word)
          ("M-n" . 'copilot-next-completion)
          ("M-p" . 'copilot-previous-completion)))
-  :init
-  (require 'copilot-balancer)
   :config
+  (require 'copilot-balancer)
   (defun +my/corfu-candidates-p ()
     (or (not (eq corfu--candidates nil))
         tempel--active ;; diable copilot in tempel
@@ -1670,7 +1661,8 @@ Just put this function in `hippie-expand-try-functions-list'."
                                (derived-mode-p 'agent-shell-mode))))))
     "Consult source for agent-shell buffers.")
 
-  (add-to-list 'consult-buffer-sources 'my/consult-source-agent-shell-buffer 'append))
+  (with-eval-after-load 'consult
+    (add-to-list 'consult-buffer-sources 'my/consult-source-agent-shell-buffer 'append)))
 
 (use-package shell-maker
   :ensure (:files (:defaults "*.el")))
@@ -1786,7 +1778,7 @@ Just put this function in `hippie-expand-try-functions-list'."
     (interactive)
     (cond
      ((derived-mode-p 'occur-mode) (occur-edit-mode))
-     ((derived-mode-p 'grep-mode) (wgrep-change-to-wgrep-mode))
+     ((derived-mode-p 'grep-mode) (grep-change-to-grep-edit-mode))
      ((and (featurep 'deadgrep) (derived-mode-p 'deadgrep-mode))
       (wgrep-change-to-wgrep-mode)))
     (let* ((buffer-name (buffer-name))
@@ -1803,14 +1795,13 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 (use-package gt
   :commands (gt-do-translate-prompt gt-do-text-utility)
-  :init
+  :config
   (setq gt-langs '(en zh)
         gt-buffer-render-follow-p t
         gt-buffer-render-window-config
         '((display-buffer-reuse-window display-buffer-in-direction)
           (direction . bottom)
           (window-height . 0.4)))
-  :config
   (setq gt-pop-posframe-forecolor (face-foreground 'tooltip nil t)
         gt-pop-posframe-backcolor (face-background 'tooltip nil t))
   (when (facep 'posframe-border)
@@ -1997,16 +1988,16 @@ Returns t if .ignoreproject file exists in DIR."
   :ensure nil
   :commands (winner-undo winner-redo)
   :hook (window-setup . winner-mode)
-  :init (setq winner-boring-buffers '("*Completions*"
-                                      "*Compile-Log*"
-                                      "*inferior-lisp*"
-                                      "*Fuzzy Completions*"
-                                      "*Apropos*"
-                                      "*Help*"
-                                      "*cvs*"
-                                      "*Buffer List*"
-                                      "*Ibuffer*"
-                                      "*esh command on file*")))
+  :config (setq winner-boring-buffers '("*Completions*"
+                                        "*Compile-Log*"
+                                        "*inferior-lisp*"
+                                        "*Fuzzy Completions*"
+                                        "*Apropos*"
+                                        "*Help*"
+                                        "*cvs*"
+                                        "*Buffer List*"
+                                        "*Ibuffer*"
+                                        "*esh command on file*")))
 
 (use-package ediff
   :ensure nil
@@ -2103,9 +2094,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                                  :predicate #'tabspaces--local-buffer-p
-                                  :sort 'visibility
-                                  :as #'buffer-name))))
+                             :predicate #'tabspaces--local-buffer-p
+                             :sort 'visibility
+                             :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
@@ -2126,7 +2117,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
               ("C-<tab>"   . popper-cycle)
               ("C-M-<tab>" . popper-toggle-type))
   :hook (window-setup . popper-mode)
-  :init
+  :config
   (setq popper-mode-line "")
   (setq popper-reference-buffers
         '("\\*Messages\\*"
@@ -2189,7 +2180,6 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (with-eval-after-load 'project
     (setq popper-group-function 'popper-group-by-project))
   (setq popper-echo-dispatch-actions t)
-  :config
   (require 'popper-echo)
   (popper-echo-mode)
   (with-no-warnings
@@ -2240,9 +2230,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (add-hook 'ultra-scroll-hide-functions #'jit-lock-mode))
 
 (use-package modus-themes
-  :init
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-  (load-theme 'modus-one-dark t)
+  :hook (window-setup . (lambda ()
+                          (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+                          (load-theme 'modus-one-dark t)))
   :custom
   (modus-themes-include-derivatives-mode t))
 
@@ -2287,12 +2277,12 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 
 (use-package composite
   :ensure nil
-  :init (defvar composition-ligature-table (make-char-table nil))
   :hook (((prog-mode
            conf-mode nxml-mode markdown-mode help-mode
            shell-mode eshell-mode term-mode vterm-mode)
           . (lambda () (setq-local composition-function-table composition-ligature-table))))
   :config
+  (defvar composition-ligature-table (make-char-table nil))
   ;; support ligatures, some toned down to prevent hang
   (let ((alist
          '((33  . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
@@ -2386,9 +2376,8 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 	    parenthesized_expression
 	    subscript)))
   (indent-bars-no-stipple-char ?\⎸)
-  :init
-  (require 'indent-bars-ts)
-  )
+  :config
+  (require 'indent-bars-ts))
 
 (use-package volatile-highlights
   :diminish
@@ -2456,10 +2445,11 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (symbol-overlay-face-6 ((t (:inherit nerd-icons-purple :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-7 ((t (:inherit nerd-icons-green :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-8 ((t (:inherit nerd-icons-cyan :background unspecified :foreground unspecified :inverse-video t))))
+  :custom
+  (symbol-overlay-idle-time 0.1)
   :hook ((prog-mode . symbol-overlay-mode)
          (iedit-mode . turn-off-symbol-overlay)
          (iedit-mode-end . turn-on-symbol-overlay))
-  :init (setq symbol-overlay-idle-time 0.1)
   :config
   ;; Disable symbol highlighting while selecting
   (defun turn-off-symbol-overlay (&rest _)
@@ -2507,9 +2497,10 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :custom-face
   (flymake-popon-posframe-border ((t :foreground ,(face-background 'region))))
   :hook (flymake-mode . flymake-popon-mode)
-  :init (setq flymake-popon-width 80
-              flymake-popon-posframe-border-width 1
-              flymake-popon-method 'posframe))
+  :custom
+  (flymake-popon-width 80)
+  (flymake-popon-posframe-border-width 1)
+  (flymake-popon-method 'posframe))
 
 (use-package jinx
   :bind (([remap ispell-word] . #'jinx-correct))
@@ -2537,24 +2528,30 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :diminish
   :hook (window-setup . ws-butler-global-mode))
 
+(use-package grep
+  :ensure nil
+  :bind (:map grep-mode-map
+              ("i" . #'grep-change-to-grep-edit-mode)))
+
+(use-package replace
+  :ensure nil
+  :bind (:map occur-mode-map
+              ("i" . #'occur-edit-mode)))
+
+;; deadgrep still needs wgrep; builtin grep-edit-mode only covers grep-mode.
 (use-package wgrep
   :ensure (:files (:defaults "*.el"))
   :commands wgrep-change-to-wgrep-mode
-  :bind
-  (:map grep-mode-map
-        ("i" . #'wgrep-change-to-wgrep-mode))
   :custom
-  (wgrep-auto-save-buffer t)
-  :init
-  (define-key occur-mode-map (kbd "i") 'occur-edit-mode))
+  (wgrep-auto-save-buffer t))
 
 (use-package deadgrep
-  :config
-  (require 'wgrep-deadgrep)
   :bind
   ("<f5>" . #'deadgrep)
   (:map deadgrep-mode-map
-        ("i" . #'wgrep-change-to-wgrep-mode)))
+        ("i" . #'wgrep-change-to-wgrep-mode))
+  :config
+  (require 'wgrep-deadgrep))
 
 (use-package expreg
   :bind (("C-=" . expreg-expand)
@@ -2667,8 +2664,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 
 (use-package super-save
   :hook (window-setup . super-save-mode)
-  :init
-  (setq auto-save-default nil)
   :config
   (add-to-list 'super-save-triggers 'eglot-rename)
   (setq super-save-exclude '(".gpg"))
@@ -2702,10 +2697,10 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 (use-package better-jumper
   :after-call +my/first-input-hook-fun
   :commands better-jump-set-jump-a better-jumper-mode
-  :init
-  (global-set-key [remap xref-pop-marker-stack] #'better-jumper-jump-backward)
-  (global-set-key [remap xref-go-back] #'better-jumper-jump-backward)
-  (global-set-key [remap xref-go-forward] #'better-jumper-jump-forward)
+  :bind
+  (([remap xref-pop-marker-stack] . better-jumper-jump-backward)
+   ([remap xref-go-back] . better-jumper-jump-backward)
+   ([remap xref-go-forward] . better-jumper-jump-forward))
   :config
   (defun better-jump-set-jump-a (fn &rest args)
     (better-jumper-set-jump (if (markerp (car args)) (car args)))
@@ -2753,10 +2748,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
          (prog-mode . (lambda ()
                         (unless (or (derived-mode-p 'emacs-lisp-mode 'makefile-mode))
                           (eglot-ensure)))))
-  :init
-  (defvar +lsp--default-read-process-output-max nil)
-  (defvar +lsp--default-gcmh-high-cons-threshold nil)
-  (defvar +lsp--optimization-init-p nil)
   :config
   (setq read-process-output-max #x100000)  ; 1MB
   (setq
@@ -2786,7 +2777,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   ;;       (if (and (eq nil flymake-no-changes-timeout)
   ;;                (not (buffer-modified-p)))
   ;;           (run-with-timer 2 nil #'flymake-start t)))))
-  ;; (eglot-booster-mode +1)
   )
 
 (use-package eglot-inactive-regions
@@ -2803,7 +2793,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
               ("C-h ." . eldoc-mouse-pop-doc-at-cursor)
               :map eglot-mode-map
               ("C-h ." . eldoc-mouse-pop-doc-at-cursor))
-  :init (setq eldoc-mouse-posframe-border-color (face-background 'posframe-border nil t))
+  :custom
+  (eldoc-mouse-posframe-border-color (face-background 'posframe-border nil t))
   :config (add-to-list 'eldoc-mouse-posframe-override-parameters
                        `(background-color . ,(face-background 'tooltip nil t))))
 
@@ -2811,12 +2802,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :ensure (:repo "jdtsmith/eglot-booster" :host github)
   :when (executable-find "emacs-lsp-booster")
   :commands (eglot-booster-mode)
-  :after eglot
-  :init
-  (require 'eglot-booster)
-  :config
-  ;; (eglot-booster-mode)
-  )
+  :after eglot)
 
 (use-package dape
   :ensure (:host github :repo "svaante/dape")
@@ -2829,7 +2815,6 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
                                  ("macos" . "macos")))
   :config
   (remove-hook 'dape-on-start-hooks 'dape-info)
-  ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
   (add-hook 'dape-stopped-hook (lambda () (kill-buffer my/dape--log-buffer)))
   (defhydra dape-hydra (:color pink :hint nil :foreign-keys run)
@@ -3008,7 +2993,7 @@ _Q_: Disconnect
   :ensure nil
   :when (and (fboundp 'treesit-available-p) (treesit-available-p))
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("\\(?:CMakeLists\\.txt\\|\\.cmake\\)\\'" . cmake-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
@@ -3031,7 +3016,6 @@ _Q_: Disconnect
           (markdown . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src"))
           (swift . ("https://codeberg.org/woolsweater/tree-sitter-swifter"))
           (markdown-inline . ("https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src"))))
-  :config
   (add-hook 'emacs-lisp-mode-hook #'(lambda () (treesit-parser-create 'elisp)))
   (setq major-mode-remap-alist
         '((javascript-mode . js-ts-mode)
@@ -3080,7 +3064,6 @@ _Q_: Disconnect
 (use-package xref
   :ensure nil
   :after-call +my/first-input-hook-fun
-  ;; :defer nil
   :config
   ;; On Emacs 28, `xref-search-program' can be set to `ripgrep'.
   ;; `project-find-regexp' benefits from that.
@@ -3179,10 +3162,8 @@ typical word processor."
   :hook (python-mode . (lambda ()
                          (process-query-on-exit-flag
                           (get-process "Python"))))
-  :init
-  ;; Disable readline based native completion
-  (setq python-shell-completion-native-enable nil)
   :config
+  (setq python-shell-completion-native-enable nil)
   (setq python-indent-offset 4)
   (setq python-shell-interpreter "python3")
   (setq py-tab-indent nil)
@@ -3197,12 +3178,6 @@ typical word processor."
   (web-mode-script-padding 0)
   (web-mode-block-padding 0)
   (web-mode-part-padding 0)
-  :init
-  (defun my/web-vue-setup()
-    (setq-local lsp-enable-imenu t)
-    (make-local-variable 'before-save-hook)
-    (with-eval-after-load 'lsp-eslint
-      (add-hook 'before-save-hook 'lsp-eslint-fix-all)))
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -3226,9 +3201,8 @@ typical word processor."
 
 (use-package css-mode
   :ensure nil
-  :mode ("\\.css\\'" "\\.wxss\\'")
-  :init
-  (add-hook 'css-mode-hook #'rainbow-mode))
+  :hook (css-mode . rainbow-mode)
+  :mode ("\\.css\\'" "\\.wxss\\'"))
 
 ;; EmmetPac
 (use-package emmet-mode
@@ -3285,6 +3259,7 @@ typical word processor."
   :ensure (:repo "50ways2sayhard/flutter.el" :host github)
   :after dart-ts-mode
   :init
+  (defvar flutter--modeline-device nil)
   (with-eval-after-load 'bind
     (bind
      dart-ts-mode-map
@@ -3308,8 +3283,6 @@ typical word processor."
        "tF" #'flutter-test-all
        "o" #'my/flutter-doc-search)))
   :config
-  (defvar flutter--modeline-device nil)
-
   (defun flutter--modeline-device-update ()
     (let* ((devices (flutter--devices))
            (choice (completing-read "Device: " devices))
@@ -3390,20 +3363,51 @@ typical word processor."
   )
 
 (use-package ghostel
+  :commands (+ghostel-here)
   :hook (eshell-load . ghostel-eshell-visual-command-mode)
   :hook (ghostel-line-mode . (lambda () (add-to-list 'ghostel-line-mode-completion-at-point-functions #'cape-dabbrev)))
   :bind
-  (("C-0" . #'ghostel-project)
+  (("C-0" . #'+ghostel-here)
    :map ghostel-mode-map
    ("C-g" . nil))
   :custom
+  (ghostel-term "xterm-256color")
   (ghostel-enable-title-tracking nil)
   (ghostel-ignore-cursor-change t)
   :config
   (when (locate-library "spinner")
     (setq ghostel-progress-function #'ghostel-spinner-progress
           ghostel-spinner-type 'progress-bar))
-  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer"))
+  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer")
+
+  (defun +ghostel-here (&optional arg)
+    "Open Ghostel in project root if in a project, else current directory.
+Same directory reuses the buffer; different directories do not."
+    (interactive "P")
+    (if (project-current)
+        (ghostel-project arg)
+      (let ((ghostel-buffer-name (ghostel-buffer-name-by-directory nil)))
+        (ghostel arg))))
+
+  (defvar +consult-source-ghostel
+    `(:name "Ghostel"
+            :narrow ?t
+            :category buffer
+            :face consult-buffer
+            :history buffer-name-history
+            :state ,#'consult--buffer-state
+            :items
+            ,(lambda ()
+               (consult--buffer-query
+                :sort 'visibility
+                :as #'buffer-name
+                :predicate (lambda (buf)
+                             (with-current-buffer buf
+                               (derived-mode-p 'ghostel-mode))))))
+    "Consult source for ghostel-mode buffers.")
+
+  (with-eval-after-load 'consult
+    (add-to-list 'consult-buffer-sources '+consult-source-ghostel 'append)))
 
 (use-package popterm
   :commands (+popterm-toggle-dwim +popterm-register-shortcut)
@@ -3412,8 +3416,6 @@ typical word processor."
          ([f9]    . popterm-window-toggle)
          :map popterm-term-map
          ("C-g" . popterm-return))
-  :init
-  (require '+popterm)
   :custom
   (popterm-backend        'ghostel)     ; or 'ghostel, 'eat, 'shell, 'eshell
   (popterm-display-method 'posframe)  ; or 'window, 'fullscreen
@@ -3422,6 +3424,7 @@ typical word processor."
   (popterm-posframe-width-ratio 0.95)
   (popterm-posframe-height-ratio 0.90)
   :config
+  (require '+popterm)
   (popterm-global-mode 1)
   (+popterm-auto-hide-mode 1))
 
@@ -3435,10 +3438,10 @@ typical word processor."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                                  +org-capture-file-done
-                                                  +org-capture-file-someday
-                                                  +org-capture-file-note
-                                                  +org-capture-file-routine)))
+                                             +org-capture-file-done
+                                             +org-capture-file-someday
+                                             +org-capture-file-note
+                                             +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
