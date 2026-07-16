@@ -258,8 +258,8 @@ REST and STATE."
   :bind (:map dired-mode-map
               ("C-o" . #'casual-dired-tmenu)
               ("s" . #'casual-dired-sort-by-tmenu)
-              ("/" . #'casual-dired-search-replace-tmenu)
-              :map org-agenda-mode-map
+              ("/" . #'casual-dired-search-replace-tmenu))
+        (:map org-agenda-mode-map
               ("C-o" . #'casual-agenda-tmenu)))
 
 (use-package dirvish
@@ -399,78 +399,9 @@ REST and STATE."
 (use-package transient
   :ensure t)
 
-;; (defvar +magit-open-windows-in-direction 'right
-;;   "What direction to open new windows from the status buffer.
-;; For example, diffs and log buffers.  Accepts `left', `right', `up', and `down'.")
-;; (defun +magit-display-buffer-fn (buffer)
-;;   "Same as `magit-display-buffer-traditional' displays BUFFER way, except...
-;; - If opened from a commit window, it will open below it.
-;; - Magit process windows are always opened in small windows below the current.
-;; - Everything else will reuse the same window."
-;;   (let ((buffer-mode (buffer-local-value 'major-mode buffer)))
-;;     (display-buffer
-;;      buffer (cond
-;;              ((and (eq buffer-mode 'magit-status-mode)
-;;                    (get-buffer-window buffer))
-;;               '(display-buffer-reuse-window))
-;;              ;; Any magit buffers opened from a commit window should open below
-;;              ;; it. Also open magit process windows below.
-;;              ((or (bound-and-true-p git-commit-mode)
-;;                   (eq buffer-mode 'magit-process-mode))
-;;               (let ((size (if (eq buffer-mode 'magit-process-mode)
-;;                               0.35
-;;                             0.7)))
-;;                 `(display-buffer-below-selected
-;;                   . ((window-height . ,(truncate (* (window-height) size)))))))
-
-;;              ;; Everything else should reuse the current window.
-;;              ((or (not (derived-mode-p 'magit-mode))
-;;                   (not (memq (with-current-buffer buffer major-mode)
-;;                              '(magit-process-mode
-;;                                magit-revision-mode
-;;                                magit-diff-mode
-;;                                magit-stash-mode
-;;                                magit-status-mode))))
-;;               '(display-buffer-same-window))
-
-;;              ('(+magit--display-buffer-in-direction))))))
-
-;; (defun +magit--display-buffer-in-direction (buffer alist)
-;;   "`display-buffer-alist' handler that opens BUFFER in a direction.
-;; This differs from `display-buffer-in-direction' in one way:
-;; it will try to use a window that already exists in that direction.
-;; It will split otherwise."
-;;   (let ((direction (or (alist-get 'direction alist)
-;;                        +magit-open-windows-in-direction))
-;;         (origin-window (selected-window)))
-;;     (if-let* ((window (window-in-direction direction)))
-;;         (unless magit-display-buffer-noselect
-;;           (select-window window))
-;;       (if-let* ((window (and (not (one-window-p))
-;;                              (window-in-direction
-;;                               (pcase direction
-;;                                 (`right 'left)
-;;                                 (`left 'right)
-;;                                 ((or `up `above) 'down)
-;;                                 ((or `down `below) 'up))))))
-;;           (unless magit-display-buffer-noselect
-;;             (select-window window))
-;;         (let ((window (split-window nil nil direction)))
-;;           (when (and (not magit-display-buffer-noselect)
-;;                      (memq direction '(right down below)))
-;;             (select-window window))
-;;           (display-buffer-record-window 'reuse window buffer)
-;;           (set-window-buffer window buffer)
-;;           (set-window-parameter window 'quit-restore (list 'window 'window origin-window buffer))
-;;           (set-window-prev-buffers window nil))))
-;;     (unless magit-display-buffer-noselect
-;;       (switch-to-buffer buffer t t)
-;;       (selected-window))))
-
 (setq split-width-threshold 240)
 (setq split-window-preferred-direction 'horizontal)
 (setq warning-display-at-bottom nil)
-(setq ediff-split-window-function 'split-window-horizontally)
 
 (use-package browse-at-remote
   :bind (:map vc-prefix-map
@@ -501,27 +432,6 @@ REST and STATE."
                   ("Pub" .
                    [simple-query "pub.dev" "pub.dev/packages?q=" ""])
                   )))
-
-(use-package hydra
-  :config
-  (setq hydra-hint-display-type 'posframe)
-
-  (with-eval-after-load 'posframe
-    (defun hydra-set-posframe-show-params ()
-      "Set hydra-posframe style."
-      (setq hydra-posframe-show-params
-            `(:left-fringe 8
-                           :right-fringe 8
-                           :internal-border-width 2
-                           :internal-border-color ,(face-background 'posframe-border nil t)
-                           :background-color ,(face-background 'tooltip nil t)
-                           :foreground-color ,(face-foreground 'tooltip nil t)
-                           :lines-truncate t
-                           :poshandler posframe-poshandler-frame-bottom-center)))
-    (hydra-set-posframe-show-params)
-    (add-hook 'after-load-theme-hook #'hydra-set-posframe-show-params t)))
-
-(use-package pretty-hydra)
 
 (use-package smerge-mode
   :ensure nil
@@ -2807,9 +2717,9 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 (use-package dape
   :ensure (:host github :repo "svaante/dape")
   :hook (dape-active-mode . dape-breakpoint-global-mode)
-  :commands (dape-hydra/body)
+  :commands (+dape-transient)
   :bind
-  (("<f6>" . dape-hydra/body))
+  (("<f6>" . +dape-transient))
   :init
   (defvar dape-flutter-devices '(("chrome" . "chrome")
                                  ("macos" . "macos")))
@@ -2817,47 +2727,36 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (remove-hook 'dape-on-start-hooks 'dape-info)
   (add-hook 'dape-on-start-hooks 'my/dape--create-log-buffer)
   (add-hook 'dape-stopped-hook (lambda () (kill-buffer my/dape--log-buffer)))
-  (defhydra dape-hydra (:color pink :hint nil :foreign-keys run)
-    "
-^Stepping^          ^Breakpoints^               ^Info
-^^^^^^^^-----------------------------------------------------------
-_d_: init           _bb_: Toggle (add/remove)   _si_: Info
-_n_: Next           _bd_: Delete                _sm_: Memory
-_i_: Step in        _bD_: Delete all            _ss_: Select Stack
-_o_: Step out       _bl_: Set log message       _R_: Repl
-_c_: Continue
-_r_: Restart
-_Q_: Disconnect
-"
-    ("d" dape)
-    ("n" dape-next)
-    ("i" dape-step-in)
-    ("o" dape-step-out)
-    ("c" dape-continue)
-    ("r" dape-restart)
-    ("ba" dape-breakpoint-toggle)
-    ("bb" dape-breakpoint-toggle)
-    ("be" dape-breakpoint-expression)
-    ("bd" dape-breakpoint-remove-at-point)
-    ("bD" dape-breakpoint-remove-all)
-    ("bl" dape-breakpoint-log)
-    ("si" dape-info)
-    ("sm" dape-read-memory)
-    ("ss" dape-select-stack)
-    ("R"  dape-repl)
-    ("q" nil "quit" :color blue)
-    ("Q" dape-kill :color red))
+  (transient-define-prefix +dape-transient ()
+    "Dape debugger controls."
+    [["Stepping"
+      ("d" "init" dape :transient t)
+      ("n" "Next" dape-next :transient t)
+      ("i" "Step in" dape-step-in :transient t)
+      ("o" "Step out" dape-step-out :transient t)
+      ("c" "Continue" dape-continue :transient t)
+      ("r" "Restart" dape-restart :transient t)]
+     ["Breakpoints"
+      ("bb" "Toggle" dape-breakpoint-toggle :transient t)
+      ("ba" "Toggle" dape-breakpoint-toggle :transient t)
+      ("be" "Expression" dape-breakpoint-expression :transient t)
+      ("bd" "Delete" dape-breakpoint-remove-at-point :transient t)
+      ("bD" "Delete all" dape-breakpoint-remove-all :transient t)
+      ("bl" "Log message" dape-breakpoint-log :transient t)]
+     ["Info"
+      ("si" "Info" dape-info :transient t)
+      ("sm" "Memory" dape-read-memory :transient t)
+      ("ss" "Select stack" dape-select-stack :transient t)
+      ("R" "Repl" dape-repl :transient t)]]
+    ["Quit"
+     ("q" "quit" transient-quit-one)
+     ("Q" "Disconnect" dape-kill)])
 
   (setq dape-debug t)
   (setq dape-request-timeout 20)
 
   ;; To display info and/or repl buffers on stopped
   (add-hook 'dape-on-stopped-hooks 'dape-info)
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-hydra/body)
-
-  (defun dape-hydra-auto-leave ()
-    (when (dape--live-connection 'stopped t)
-      (dape-hydra/nil)))
 
   (defun dape--flutter-cwd ()
     (let ((root (dape--default-cwd)))
@@ -2873,8 +2772,6 @@ _Q_: Disconnect
     (concat (dape--flutter-cwd) "/lib/main.dart"))
 
   (require 'flutter)
-
-
 
   (defun dape--flutter-devices ()
     (let* ((collection dape-flutter-devices)
@@ -3726,9 +3623,6 @@ Same directory reuses the buffer; different directories do not."
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
   :hook (org-mode . org-modern-indent-mode))
-
-(use-package org-timeblock
-  :ensure (:host github :repo "ichernyshovvv/org-timeblock"))
 
 (use-package ob-mermaid
   :after org
