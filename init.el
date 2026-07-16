@@ -318,7 +318,8 @@ REST and STATE."
   :ensure nil
   :config (temp-buffer-resize-mode))
 
-;;; Version controll
+;;; Version control
+;;;; Magit
 (use-package magit
   :ensure (:files (:defaults "lisp/*.el"))
   :commands (magit-status magit-open-repo magit-add-section-hook aborn/simple-git-commit-push magit-add-current-buffer-to-kill-ring)
@@ -364,10 +365,12 @@ REST and STATE."
                  (message "%s" branch))
         (user-error "There is not current branch")))))
 
+;;;; Multi-repo Magit
 (use-package multi-magit
   :ensure (:host github :repo "luismbo/multi-magit")
   :after magit)
 
+;;;; Forge
 (use-package forge
   :config
   (push '("gitlab.futunn.com"               ; GITHOST
@@ -377,6 +380,7 @@ REST and STATE."
         forge-alist)
   )
 
+;;;; Blame
 (use-package blame-reveal
   :ensure (:host github :repo "LuciusChen/blame-reveal")
   :config
@@ -403,10 +407,12 @@ REST and STATE."
 (setq split-window-preferred-direction 'horizontal)
 (setq warning-display-at-bottom nil)
 
+;;;; Browse at remote
 (use-package browse-at-remote
   :bind (:map vc-prefix-map
               ("B" . browse-at-remote)))
 
+;;;; Webjump
 (use-package webjump
   :ensure nil
   :config (setq webjump-sites
@@ -433,6 +439,7 @@ REST and STATE."
                    [simple-query "pub.dev" "pub.dev/packages?q=" ""])
                   )))
 
+;;;; Merge conflicts
 (use-package smerge-mode
   :ensure nil
   :after magit
@@ -458,6 +465,7 @@ REST and STATE."
   :ensure (:repo "KarimAziev/smerge-menu" :host github)
   :after smerge-mode)
 
+;;;; Git timemachine
 (use-package git-timemachine
   :ensure (:host github :repo "emacsmirror/git-timemachine")
   :commands (git-timemachine git-timemachine-toggle)
@@ -587,6 +595,7 @@ REST and STATE."
           envvars)))))
 
 ;;; Global configuration
+;;;; Encoding and platform
 (progn
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
@@ -835,6 +844,7 @@ REST and STATE."
   :hook (window-setup . which-key-mode))
 
 ;;; Minibuffer completion
+;;;; Embark
 (use-package embark
   :ensure (embark :files (:defaults "*.el"))
   :commands (my/embark-magit-status)
@@ -958,7 +968,7 @@ targets."
         (let ((embark-quit-after-action nil))
           (embark-dwim))))))
 
-;;;; Minibuffer completion UI
+;;;; Vertico
 (use-package vertico
   :ensure (vertico :files (:defaults "extensions/vertico-*.el"))
   :hook (+my/first-input . vertico-mode)
@@ -991,6 +1001,7 @@ targets."
                 ("C-w" . vertico-directory-up))
     :hook (rfn-eshadow-update-overlay . vertico-directory-tidy)))
 
+;;;; Minibuffer defaults
 (use-package emacs
   :ensure nil
   :init
@@ -1025,6 +1036,7 @@ targets."
         read-file-name-completion-ignore-case t)
   )
 
+;;;; Consult
 (use-package consult
   :after orderless
   :commands (consult-clock-in +consult-ripgrep-current-directory)
@@ -1186,6 +1198,7 @@ TYPES is the mode-specific types configuration."
 
   )
 
+;;;; Directory jump
 (use-package zoxide
   :commands (+zoxide-cd dired-jump-with-zoxide)
   :config
@@ -1224,7 +1237,7 @@ TYPES is the mode-specific types configuration."
     "Fasd directory source for `consult-dir'.")
   (setq consult-dir-sources '(consult-dir--source-recentf consult-dir--source-zoxide consult-dir--source-project)))
 
-;;;; Better xxx-thing-at-point,
+;;;; Thing-at-point helpers
 ;; from: https://github.com/Elilif/.elemacs/blob/master/lisp/init-completion.el
 (progn
   (defvar mcfly-commands
@@ -1267,6 +1280,7 @@ TYPES is the mode-specific types configuration."
   ;; setup code
   (add-hook 'minibuffer-setup-hook #'mcfly-time-travel))
 
+;;;; Orderless
 (use-package orderless
   :commands (orderless-literal-prefix)
   :after-call elpaca-after-init-hook
@@ -1286,12 +1300,14 @@ TYPES is the mode-specific types configuration."
     (setq completion-category-defaults nil))
   )
 
+;;;; Marginalia
 (use-package marginalia
   :hook (+my/first-input . marginalia-mode)
   :config
   :bind (:map minibuffer-local-completion-map
               ("C-i" . marginalia-cycle)))
 
+;;;; Posframe
 (use-package posframe
   :hook (after-load-theme . posframe-delete-all)
   :init
@@ -1377,6 +1393,7 @@ TYPES is the mode-specific types configuration."
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;;; Auto completion
+;;;; Corfu
 (use-package corfu
   :ensure (corfu :files (:defaults "extensions/corfu-*.el"))
   :hook (+my/first-input . global-corfu-mode)
@@ -1436,6 +1453,7 @@ TYPES is the mode-specific types configuration."
       (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
+;;;; Snippets
 (use-package tempel
   :after-call +my/first-input-hook-fun
   :after corfu
@@ -1473,6 +1491,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :hook ((yas-keymap-disable . (lambda ()
                                  (and (frame-live-p corfu--frame) (frame-visible-p corfu--frame))))))
 
+;;;; CAPE
 (use-package cape
   :after (corfu tempel)
   :commands (my/convert-super-capf my/set-eglot-capf)
@@ -1509,6 +1528,7 @@ Just put this function in `hippie-expand-try-functions-list'."
 
   (setq-default completion-at-point-functions '(cape-file cape-dabbrev)))
 
+;;;; AI assistants
 (use-package copilot
   :when +self/enable-copilot
   :after corfu
@@ -1578,6 +1598,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :ensure (:files (:defaults "*.el")))
 
 ;;; Utils
+;;;; GC and recent files
 (use-package gcmh
   :hook (emacs-startup . gcmh-mode)
   :diminish
@@ -1615,6 +1636,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq duplicate-line-final-position 1)
   (setq duplicate-region-final-position 1))
 
+;;;; TRAMP
 (use-package tramp
   :ensure nil
   :config
@@ -1650,6 +1672,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   :config
   (setq tramp-adb-program "~/Library/Android/sdk/platform-tools/adb"))
 
+;;;; Search helpers
 (use-package pinyinlib
   :after-call +my/first-input-hook-fun
   :after orderless
@@ -1658,6 +1681,7 @@ Just put this function in `hippie-expand-try-functions-list'."
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   (add-to-list 'orderless-matching-styles 'completion--regex-pinyin))
 
+;;;; Undo and replace
 (use-package vundo
   :commands vundo
   :config
@@ -1703,6 +1727,7 @@ Just put this function in `hippie-expand-try-functions-list'."
        (list (cons (point-min) (point-max))))
       )))
 
+;;;; Translation
 (use-package gt
   :commands (gt-do-translate-prompt gt-do-text-utility)
   :config
@@ -1779,6 +1804,7 @@ Just put this function in `hippie-expand-try-functions-list'."
   (save-some-buffers t))
 ;; -SaveAllBuffers
 
+;;;; Project
 (use-package project
   :ensure nil
   :commands (project-find-file project-switch-project)
@@ -1871,6 +1897,7 @@ Returns t if .ignoreproject file exists in DIR."
   (setq project-list-exclude '("~/fvm/**" "~/.pub-cache/**" "**/example/**"))
   )
 
+;;;; Window management
 (use-package window
   :ensure nil
   :preface
@@ -1916,6 +1943,7 @@ Returns t if .ignoreproject file exists in DIR."
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally))
 
+;;;; Tabs and workspaces
 (use-package tab-bar
   :ensure nil
   :hook (window-setup . tab-bar-mode)
@@ -2010,6 +2038,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
+;;;; Help
 (use-package helpful
   :disabled
   :bind
@@ -2020,6 +2049,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   ("C-h C" . helpful-command)
   ("C-h ." . helpful-at-point))
 
+;;;; Popper
 (use-package popper
   :defines popper-echo-dispatch-actions
   :bind (:map popper-mode-map
@@ -2114,6 +2144,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 
 
 ;;; UI
+;;;; Modeline
 (use-package doom-modeline
   :hook (window-setup . doom-modeline-mode)
   :custom
@@ -2126,11 +2157,13 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (doom-modeline-check-simple-format t)
   (doom-modeline-buffer-modification-icon t))
 
+;;;; Color preview
 (use-package colorful-mode
   :custom
   (colorful-use-prefix t)
   :hook ((prog-mode . colorful-mode)))
 
+;;;; Smooth scroll
 (use-package ultra-scroll
   :functions (hl-todo-mode diff-hl-flydiff-mode)
   :hook (elpaca-after-init . ultra-scroll-mode)
@@ -2139,6 +2172,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (add-hook 'ultra-scroll-hide-functions #'hl-todo-mode)
   (add-hook 'ultra-scroll-hide-functions #'jit-lock-mode))
 
+;;;; Themes
 (use-package modus-themes
   :hook (window-setup . (lambda ()
                           (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
@@ -2185,6 +2219,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
                 (set-face-attribute 'markdown-table-face nil :family +my-cn-font))))
   )
 
+;;;; Ligatures
 (use-package composite
   :ensure nil
   :hook (((prog-mode
@@ -2419,12 +2454,14 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (add-to-list 'jinx-exclude-regexps '(t "\\cc")))
 
 ;;; Better edit
+;;;; Formatters
 (use-package apheleia
   :commands (apheleia-format-buffer)
   :bind ("C-c c f" . apheleia-format-buffer)
   :config
   (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent)))
 
+;;;; Text objects and cleanup
 (use-package delete-block
   :ensure (:repo "manateelazycat/delete-block" :host github)
   :commands (delete-block-backward)
@@ -2438,6 +2475,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :diminish
   :hook (window-setup . ws-butler-global-mode))
 
+;;;; Grep and replace
 (use-package grep
   :ensure nil
   :bind (:map grep-mode-map
@@ -2463,6 +2501,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :config
   (require 'wgrep-deadgrep))
 
+;;;; Expand region and jump
 (use-package expreg
   :bind (("C-=" . expreg-expand)
          ("C--" . expreg-contract)))
@@ -2491,6 +2530,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   ("C-a" . mwim-beginning-of-code-or-line)
   ("C-e" . mwim-end-of-code-or-line))
 
+;;;; Surround and edit source blocks
 (use-package embrace
   :commands (embrace-commander)
   :bind ("C-;" . embrace-commander))
@@ -2643,7 +2683,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
     (setq indent-tabs-mode nil))
   (add-hook 'lisp-interaction-mode-hook 'indent-spaces-mode))
 
-;;;; Lsp integration
+;;;; LSP integration
 (use-package eglot
   :ensure nil
   :commands (+eglot-organize-imports)
@@ -2714,6 +2754,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :commands (eglot-booster-mode)
   :after eglot)
 
+;;;; Debug
 (use-package dape
   :ensure (:host github :repo "svaante/dape")
   :hook (dape-active-mode . dape-breakpoint-global-mode)
@@ -2872,6 +2913,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :config
   (dape-toolbar-mode))
 
+;;;; Code navigation chrome
 (use-package breadcrumb
   :ensure (:host github :repo "joaotavora/breadcrumb")
   :hook (elpaca-after-init . breadcrumb-mode))
@@ -2885,7 +2927,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :config
   (consult-eglot-embark-mode))
 
-;;;; Builtin tree sitter
+;;;; Tree-sitter
 (use-package treesit
   :ensure nil
   :when (and (fboundp 'treesit-available-p) (treesit-available-p))
@@ -2936,7 +2978,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 (use-package kirigami
   :ensure t)
 
-;;;; recenter after imenu jump
+;;;; Imenu and symbols
 (use-package imenu
   :ensure nil
   :commands (imenu)
@@ -2958,6 +3000,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (setq symbols-outline-window-width 40)
   (symbols-outline-follow-mode))
 
+;;;; Xref
 (use-package xref
   :ensure nil
   :after-call +my/first-input-hook-fun
@@ -2977,6 +3020,7 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :custom
   (xref-history-storage #'xref-project-history))
 
+;;;; Markdown and prose
 (use-package markdown-mode
   :commands (copy-markdown-code-block)
   :mode ("\\.md\\'" . markdown-mode)
@@ -3053,6 +3097,7 @@ typical word processor."
 (use-package diagram-preview
   :ensure (:host github :repo "natrys/diagram-preview"))
 
+;;;; Language modes
 (use-package python
   :ensure nil
   :mode ("\\.py\\'" . python-mode)
@@ -3111,6 +3156,7 @@ typical word processor."
                                (setq emmet-indent-after-insert t))))
 ;; -EmmetPac
 
+;;;; Dart / Flutter / Swift
 (use-package dart-ts-mode
   :mode ("\\.dart\\'" . dart-ts-mode)
   :ensure (:repo "50ways2sayhard/dart-ts-mode" :host github)
@@ -3259,6 +3305,7 @@ typical word processor."
                 (plist-get selected :auth-code)))))))
   )
 
+;;;; Terminals
 (use-package ghostel
   :commands (+ghostel-here)
   :hook (eshell-load . ghostel-eshell-visual-command-mode)
@@ -3326,6 +3373,7 @@ Same directory reuses the buffer; different directories do not."
   (+popterm-auto-hide-mode 1))
 
 ;;; Org Mode
+;;;; Capture files
 (defvar +org-capture-file-gtd (concat +self/org-base-dir "gtd.org"))
 (defvar +org-capture-file-note (concat +self/org-base-dir "notes.org"))
 (defvar +org-capture-file-someday (concat +self/org-base-dir "someday.org"))
@@ -3392,6 +3440,7 @@ Same directory reuses the buffer; different directories do not."
   (interactive)
   (org-agenda nil "n"))
 
+;;;; Org core
 (use-package org
   :mode ("\\.org\\'" . org-mode)
   :commands (+my/open-org-agenda +org/archive-done-tasks)
@@ -3571,7 +3620,7 @@ Same directory reuses the buffer; different directories do not."
   )
 ;; -OrgPac
 
-;; OrgDownload
+;;;; Org media and UI
 (use-package org-download
   :after org
   :commands (org-download-clipboard org-download-delete org-download-image org-download-yank org-download-edit org-download-rename-at-point org-download-rename-last-file org-download-screenshot)
