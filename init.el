@@ -1573,6 +1573,74 @@ Just put this function in `hippie-expand-try-functions-list'."
   (agent-shell-session-restore-verbosity nil)
   (agent-shell-display-action '(display-buffer-reuse-window))
   :config
+  (defun my/agent-shell-pi-permission-responder (permission)
+    "Use `completing-read' for Pi select requests."
+    (when-let* ((tool-call (map-elt permission :tool-call))
+                (raw-input (map-elt tool-call :raw-input))
+                ((eq (map-nested-elt agent-shell--state '(:agent-config :identifier)) 'pi))
+                ((equal (map-elt raw-input 'method) "select"))
+                (options (map-elt permission :options))
+                (shell-buffer (current-buffer)))
+      (condition-case nil
+          (let* ((choice (completing-read
+                          (format "%s: " (or (map-elt tool-call :title) "Pi"))
+                          (mapcar (lambda (option) (map-elt option :option)) options)
+                          nil t))
+                 (option (seq-find (lambda (candidate)
+                                     (equal (map-elt candidate :option) choice))
+                                   options)))
+            (when option
+              (funcall (map-elt permission :respond)
+                       (map-elt option :option-id)))
+            t)
+        (quit
+         ;; A cancelled Pi UI request cancels the current Pi turn.
+         (with-current-buffer shell-buffer
+           (agent-shell-interrupt t))
+         t))))
+
+  (defun my/agent-shell-pi-send-ui-response (state request result)
+    "Send RESULT for a Pi ACP UI REQUEST."
+    (acp-send-response
+     :client (map-elt state :client)
+     :response `((:request-id . ,(map-elt request 'id))
+                 (:result . ,result))))
+
+  (defun my/agent-shell-pi-ui-request-responder (original &rest args)
+    "Handle Pi's `_pi/ui/input' request without changing agent-shell."
+    (let* ((state (plist-get args :state))
+           (request (plist-get args :acp-request))
+           (params (and request (map-elt request 'params))))
+      (if (and state
+               request
+               (eq (map-nested-elt state '(:agent-config :identifier)) 'pi)
+               (equal (map-elt request 'method) "_pi/ui/input"))
+          (let* ((method (or (map-elt params 'method) "input"))
+                 (title (or (map-elt params 'message)
+                            (map-elt params 'title)
+                            "Pi input"))
+                 (prefill (let ((value (map-elt params 'prefill)))
+                            (if (stringp value) value "")))
+                 (result
+                  (condition-case err
+                      `((value . ,(read-string
+                                   (format "%s%s" title
+                                           (if (equal method "editor") " (editor): " ": "))
+                                   prefill)))
+                    (quit '((cancelled . t)))
+                    (error
+                     (message "Pi UI request failed: %s" err)
+                     '((cancelled . t))))))
+            (my/agent-shell-pi-send-ui-response state request result))
+        (apply original args))))
+
+  (setq agent-shell-pi-acp-command
+        '("node" "/Users/johngong/Documents/code/pi-acp/dist/index.js")
+        agent-shell-permission-responder-function
+        #'my/agent-shell-pi-permission-responder)
+  (advice-add #'agent-shell--on-request :around
+              #'my/agent-shell-pi-ui-request-responder)
+
   (defvar my/consult-source-agent-shell-buffer
     `(:name "Agent Shell"
             :narrow ?a
