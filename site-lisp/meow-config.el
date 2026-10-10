@@ -130,7 +130,7 @@ If at the beginning of a balanced expression, jump to its end."
   (defvar-keymap +meow-ai-map
     :doc "AI"
     "a" #'agent-shell
-    "f" #'agent-shell-insert-file
+    "f" #'+agent-shell-send-file-dwim
     "c" #'superchat
     "C" #'gptel
     "q" #'gptel-quick
