@@ -16,16 +16,92 @@
   (message "Loading %s..." user-init-file)
   )
 
-;;; 子进程不继承 macos-startup.el 注入的 LIBRARY_PATH（避免 macOS SDK 库
-;;; 污染 iOS 工具链），同时保留 native-comp 异步 worker 所需的 gcc 库路径。
-(defvar my/native-comp-library-path
-  (getenv "LIBRARY_PATH")
-  "启动时 macos-startup.el 注入的 LIBRARY_PATH，仅供 native-comp worker 使用。")
+;;; native-comp 的 libgccjit 在真正启动编译后端前读取 LIBRARY_PATH。
+;;; 不把它放进 Emacs 主进程环境：同步编译通过 comp--final 的局部环境传入，
+;;; 异步 worker 通过 comp--run-async-workers 继承，并在 worker 内再次设置。
+(defvar my/native-comp-library-path nil
+  "供 native-comp 和 GCC 子进程使用的完整 LIBRARY_PATH。")
 
 (require 'cl-lib)
-(setq process-environment
-      (cl-remove-if (lambda (s) (string-prefix-p "LIBRARY_PATH=" s))
-                    process-environment))
+(setq my/native-comp-library-path
+      (let* ((library-path (getenv "LIBRARY_PATH"))
+             (arch-dir (if (string-match-p
+                            "\\`\\(aarch64\\|arm64\\)"
+                            system-configuration)
+                           "lib-arm64-11"
+                         "lib-x86_64-11"))
+             (bundled-lib-dir
+              (expand-file-name (concat arch-dir "/libgccjit")
+                                invocation-directory))
+             (bundled-emutls
+              (expand-file-name "libemutls_w.a"
+                                (expand-file-name "apple-darwin"
+                                                  bundled-lib-dir)))
+             (bundled-library-path
+              (mapconcat #'identity
+                         (cl-remove-if-not
+                          #'file-directory-p
+                          (mapcar (lambda (suffix)
+                                    (expand-file-name suffix bundled-lib-dir))
+                                  '("" "apple-darwin" "sdk-libs")))
+                         path-separator))
+             (gcc (executable-find "gcc-16"))
+             (homebrew-emutls (and gcc
+                                   (string-trim
+                                    (shell-command-to-string
+                                     (format "%s -print-file-name=libemutls_w.a"
+                                             (shell-quote-argument gcc)))))))
+        (cond
+         ((and (file-exists-p bundled-emutls)
+               (not (string= bundled-library-path "")))
+          bundled-library-path)
+         ((and homebrew-emutls (file-exists-p homebrew-emutls))
+          (if library-path
+              (concat library-path path-separator
+                      (file-name-directory homebrew-emutls))
+            (file-name-directory homebrew-emutls)))
+         (t library-path))))
+
+;; The Emacs launcher may have installed exactly this path for libgccjit.
+;; Keep it out of unrelated subprocesses; preserve any user-provided path.
+(let ((library-path (getenv "LIBRARY_PATH")))
+  (when (and library-path
+             my/native-comp-library-path
+             (equal
+              (mapcar #'file-name-as-directory
+                      (split-string library-path path-separator t))
+              (mapcar #'file-name-as-directory
+                      (split-string my/native-comp-library-path
+                                    path-separator t))))
+    (setenv "LIBRARY_PATH" nil)))
+
+;; CC/CXX 只对 make/autoconf 这类构建工具有意义：native-comp 走 libgccjit，
+;; 不读这两个变量（comp.el 只认 NATIVE_DISABLED），留在子进程环境里只会让
+;; pip 编译扩展、Xcode 工具链误用 Homebrew GCC。
+;; env 文件是 `make env`（printenv 转储）生成的，会在下面 "Load env" 处重新
+;; 注入，所以加载完之后还要再清一次。
+(defun my/clear-compiler-env ()
+  "Drop the ambient CC/CXX from the Emacs subprocess environment."
+  (dolist (var '("CC" "CXX"))
+    (setenv var nil)))
+
+(my/clear-compiler-env)
+
+(defun my/native-comp--with-library-path (orig-fun &rest args)
+  "Run the native-comp backend with its private GCC runtime path."
+  (let ((process-environment (copy-sequence process-environment)))
+    (setenv "LIBRARY_PATH" my/native-comp-library-path)
+    (apply orig-fun args)))
+
+(with-eval-after-load 'comp
+  (unless (advice-member-p #'my/native-comp--with-library-path 'comp--final)
+    (advice-add 'comp--final :around #'my/native-comp--with-library-path)))
+
+(with-eval-after-load 'comp-run
+  (unless (advice-member-p #'my/native-comp--with-library-path
+                           'comp--run-async-workers)
+    (advice-add 'comp--run-async-workers
+                :around #'my/native-comp--with-library-path)))
 
 (setq native-comp-async-env-modifier-form
       `(setenv "LIBRARY_PATH" ,my/native-comp-library-path))
@@ -259,8 +335,8 @@ REST and STATE."
               ("C-o" . #'casual-dired-tmenu)
               ("s" . #'casual-dired-sort-by-tmenu)
               ("/" . #'casual-dired-search-replace-tmenu))
-        (:map org-agenda-mode-map
-              ("C-o" . #'casual-agenda-tmenu)))
+  (:map org-agenda-mode-map
+        ("C-o" . #'casual-agenda-tmenu)))
 
 (use-package dirvish
   :after dired
@@ -592,7 +668,8 @@ REST and STATE."
                 (if (member "SHELL" envvars)
                     (or (getenv "SHELL") shell-file-name)
                   shell-file-name))
-          envvars)))))
+          (my/clear-compiler-env)
+        envvars)))))
 
 ;;; Global configuration
 ;;;; Encoding and platform
@@ -833,6 +910,7 @@ REST and STATE."
   (meow-tree-sitter-register-thing ?C "class"))
 
 (use-package bind
+  :after-call +my/first-input-hook-fun
   :ensure (:host github :repo "repelliuss/bind")
   :functions (bind))
 
@@ -881,12 +959,14 @@ REST and STATE."
   (setq prefix-help-command #'embark-prefix-help-command)
   (defun my/embark-magit-status (path)
     (interactive "fPath: ")
+    (require 'magit)
     (let* ((dir (if (file-directory-p path)
                     (file-name-as-directory path)
                   (file-name-directory path)))
-           (top (or (magit-toplevel dir)
-                    (message "Not inside a Git repository: %s" dir))))
-      (magit-status top)))
+           (top (magit-toplevel dir)))
+      (if top
+          (magit-status top)
+        (message "Not inside a Git repository: %s" dir))))
   (setq embark-candidate-collectors
         (cl-substitute 'embark-sorted-minibuffer-candidates
                        'embark-minibuffer-candidates
@@ -1004,10 +1084,18 @@ targets."
 ;;;; Minibuffer defaults
 (use-package emacs
   :ensure nil
+  :custom
+  (auto-save-default nil)
+  (completion-cycle-threshold 3)
+  (tab-always-indent 'completion)
+  (elisp-fontify-semantically t)
+  (minibuffer-prompt-properties
+   '(read-only t cursor-intangible t face minibuffer-prompt))
+  (enable-recursive-minibuffers t)
+  (completion-ignore-case t)
+  (read-buffer-completion-ignore-case t)
+  (read-file-name-completion-ignore-case t)
   :init
-  (setq auto-save-default nil)
-  (setq completion-cycle-threshold 3)
-  (setq tab-always-indent 'completion)
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; Alternatively try `consult-completing-read-multiple'.
   (defun crm-indicator (args)
@@ -1017,24 +1105,7 @@ targets."
   (when *sys/mac*
     (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"))
 
-  (setq elisp-fontify-semantically t)
-
-  ;; Do not allow the cursor in the minibuffer prompt
-  (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-
-  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-  ;; Vertico commands are hidden in normal buffers.
-  ;; (setq read-extended-command-predicate
-  ;;       #'command-completion-default-include-p)
-
-  ;; Enable recursive minibuffers
-  (setq enable-recursive-minibuffers t)
-  (setq completion-ignore-case t
-        read-buffer-completion-ignore-case t
-        read-file-name-completion-ignore-case t)
-  )
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode))
 
 ;;;; Consult
 (use-package consult
@@ -1323,6 +1394,79 @@ TYPES is the mode-specific types configuration."
       (set-face-background 'fringe nil posframe--frame))
     (advice-add #'posframe--create-posframe :after #'my-posframe--prettify-frame)
 
+    ;; Local copy of patches/posframe-avoid-posn-at-point-reentry.patch
+    ;; Skip posn-at-point only during IME re-entry (crash path), not
+    ;; whenever an input method is merely active.
+    ;; ponytail: cache last real posn; wrap estimate ignores word-breaks.
+    (defvar my/posframe--skip-posn nil)
+    (defvar my/posframe--posn-cache nil)
+    (defun my/posframe--cache-posn ()
+      (when (and input-method-function
+                 (not my/posframe--skip-posn)
+                 (not inhibit-redisplay))
+        (let ((w (selected-window))
+              (p (posn-at-point)))
+          (when (and (window-live-p w) p)
+            (setq my/posframe--posn-cache
+                  (list w (window-start w) (point) (posn-x-y p)))))))
+    (add-hook 'post-command-hook #'my/posframe--cache-posn)
+    (defun my/posframe--estimate-xy (window pos)
+      (with-current-buffer (window-buffer window)
+        (let ((ww (max 1 (window-body-width window)))
+              (fw (window-font-width window))
+              (fh (window-font-height window))
+              (trunc truncate-lines)
+              (hs (window-hscroll window))
+              (x 0)
+              (y 0))
+          (save-excursion
+            (goto-char (window-start window))
+            (while (< (point) pos)
+              (let* ((beg (point))
+                     (eol (line-end-position))
+                     (hit (<= pos eol))
+                     (cols (string-width
+                            (buffer-substring-no-properties
+                             beg (if hit pos eol)))))
+                (if hit
+                    (progn
+                      (setq x (* (max 0 (- (if trunc cols (mod cols ww)) hs)) fw)
+                            y (+ y (* fh (if trunc 0 (/ cols ww)))))
+                      (goto-char pos))
+                  (setq y (+ y (* fh (if trunc 1 (max 1 (/ (+ cols ww -1) ww))))))
+                  (let ((here (point)))
+                    (forward-line 1)
+                    (when (= here (point))
+                      (goto-char pos)))))))
+          (cons x y))))
+    (defun my/posframe--approximate-posn (info)
+      (let* ((window (plist-get info :parent-window))
+             (pos (plist-get info :position))
+             (c my/posframe--posn-cache)
+             (xy (and c
+                      (eq (nth 0 c) window)
+                      (eq (nth 1 c) (window-start window))
+                      (nth 3 c))))
+        (list window nil
+              (or xy (my/posframe--estimate-xy window pos))
+              0 nil pos (cons 0 0) nil (cons 0 0) (cons 0 0))))
+    (defun my/posframe-poshandler-point-1-safe (orig info &optional font-height upward)
+      (if (and (integerp (plist-get info :position))
+               (or my/posframe--skip-posn inhibit-redisplay))
+          (funcall orig
+                   (plist-put (copy-sequence info)
+                              :position (my/posframe--approximate-posn info))
+                   font-height upward)
+        (funcall orig info font-height upward)))
+    (advice-add #'posframe-poshandler-point-1
+                :around #'my/posframe-poshandler-point-1-safe)
+    (defun my/rime-input-method-skip-posn (orig &rest args)
+      (let ((my/posframe--skip-posn t))
+        (apply orig args)))
+    (with-eval-after-load 'rime
+      (advice-add #'rime-input-method :around
+                  #'my/rime-input-method-skip-posn))
+
     (defun posframe-poshandler-frame-center-near-bottom (info)
       (cons (/ (- (plist-get info :parent-frame-width)
                   (plist-get info :posframe-width))
@@ -1561,43 +1705,67 @@ Just put this function in `hippie-expand-try-functions-list'."
   (setq copilot-max-char 1000000))
 
 (use-package agent-shell
-  :ensure (:host github :repo "liaowang11/agent-shell" :files ("*.el"))
-  :hook (agent-shell-mode . (lambda () (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
-  :commands (agent-shell agent-shell-toggle)
-  :bind (:map agent-shell-mode-map
-              ("C-c m" . agent-shell-help-menu))
+  :ensure (:files ("*.el"))
+  :hook (agent-shell-mode . (lambda ()
+                              (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
+  :commands (agent-shell agent-shell-toggle +agent-shell-send-file-dwim project-ghostel-agent-shell)
+  :init
+  (defun project-ghostel-agent-shell ()
+    "Open Ghostel on the left and `agent-shell' on the right."
+    (interactive)
+    (delete-other-windows)
+    (let ((right (split-window-right))
+          (popper-display-control nil))
+      (switch-to-buffer (+ghostel-here))
+      (select-window right)
+      (agent-shell)
+      (when-let ((buf (agent-shell-shell-buffer :no-error t :no-create t)))
+        (set-window-buffer right buf))))
+  (with-eval-after-load 'project
+    (add-to-list 'project-switch-commands
+                 '(project-ghostel-agent-shell "Ghostel + Agent" ?a) t))
+  :bind
+  (:map agent-shell-mode-map
+        ("C-c m" . agent-shell-help-menu))
   :custom
-  (agent-shell-opencode-default-model-id "anthropic/claude-opus-4-6")
+  (agent-shell-file-display-action '(display-buffer-pop-up-window))
+  (agent-shell-chat-mode-enabled t)
   (agent-shell-file-completion-enabled t)
   (agent-shell-session-strategy 'prompt)
-  (agent-shell-session-restore-verbosity nil)
+  (agent-shell-session-choices-function
+   (lambda (choices)
+     (seq-remove
+      (lambda (choice)
+        (let ((session (cdr choice)))
+          (and (listp session)
+               (string-prefix-p "subagent-"
+                                (or (map-elt session 'title) "")))))
+      choices)))
+  (agent-shell-session-restore-verbosity 'full)
   (agent-shell-display-action '(display-buffer-reuse-window))
+  (agent-shell-preferred-agent-config '(preselect . pi))
+  ;; No region -> no context carried into the shell; never send the line at point.
+  (agent-shell-context-sources '(files region error))
   :config
-  (defun my/agent-shell-pi-permission-responder (permission)
-    "Use `completing-read' for Pi select requests."
-    (when-let* ((tool-call (map-elt permission :tool-call))
-                (raw-input (map-elt tool-call :raw-input))
-                ((eq (map-nested-elt agent-shell--state '(:agent-config :identifier)) 'pi))
-                ((equal (map-elt raw-input 'method) "select"))
-                (options (map-elt permission :options))
-                (shell-buffer (current-buffer)))
-      (condition-case nil
-          (let* ((choice (completing-read
-                          (format "%s: " (or (map-elt tool-call :title) "Pi"))
-                          (mapcar (lambda (option) (map-elt option :option)) options)
-                          nil t))
-                 (option (seq-find (lambda (candidate)
-                                     (equal (map-elt candidate :option) choice))
-                                   options)))
-            (when option
-              (funcall (map-elt permission :respond)
-                       (map-elt option :option-id)))
-            t)
-        (quit
-         ;; A cancelled Pi UI request cancels the current Pi turn.
-         (with-current-buffer shell-buffer
-           (agent-shell-interrupt t))
-         t))))
+  ;; `agent-shell-elicitation--experimental-feature-enabled' is a plain
+  ;; `defvar', so the `:custom' entry this used to be cannot set it.  With the
+  ;; capability left unadvertised, pi-acp's select elicitation gets refused and
+  ;; it silently falls back to a Tool Permission request.
+  (setq agent-shell-elicitation--experimental-feature-enabled t)
+  (transient-append-suffix
+    'agent-shell-help-menu "d"
+    '("q" "Queue prompt" agent-shell-prompt-queue :transient t))
+  (transient-append-suffix
+    'agent-shell-help-menu "q"
+    '("c" "Compose prompt" agent-shell-prompt-compose :transient t))
+
+  (defun +agent-shell-send-file-dwim ()
+    "Send a file to the current project's agent shell when available."
+    (interactive)
+    (call-interactively
+     (if (agent-shell-project-buffers)
+         #'agent-shell-send-file
+       #'agent-shell-send-file-to)))
 
   (defun my/agent-shell-pi-send-ui-response (state request result)
     "Send RESULT for a Pi ACP UI REQUEST."
@@ -1634,20 +1802,116 @@ Just put this function in `hippie-expand-try-functions-list'."
             (my/agent-shell-pi-send-ui-response state request result))
         (apply original args))))
 
-  (setq agent-shell-pi-acp-command
-        '("node" "/Users/johngong/Documents/code/pi-acp/dist/index.js")
-        agent-shell-permission-responder-function
-        #'my/agent-shell-pi-permission-responder)
   (advice-add #'agent-shell--on-request :around
               #'my/agent-shell-pi-ui-request-responder)
+
+  (defun my/consult-agent-shell--buffer (candidate)
+    "Return the live agent-shell buffer represented by CANDIDATE."
+    (let ((buffer (cond ((bufferp candidate) candidate)
+                        ((stringp candidate) (get-buffer candidate)))))
+      (and (buffer-live-p buffer) buffer)))
+
+  (defun my/consult-agent-shell--session-name (buffer)
+    "Return BUFFER's session title, falling back to its buffer name."
+    (with-current-buffer buffer
+      (let ((title (map-nested-elt agent-shell--state '(:session :title))))
+        (truncate-string-to-width
+         (if (and (stringp title) (not (string-empty-p title)))
+             (replace-regexp-in-string "[ \t\n\r]+" " " title)
+           (buffer-name buffer))
+         36 nil nil "…"))))
+
+  (defun my/consult-agent-shell--status (buffer)
+    "Return BUFFER's display status and face."
+    (with-current-buffer buffer
+      (let* ((state agent-shell--state)
+             (client (map-elt state :client))
+             (live (and (process-live-p (get-buffer-process buffer))
+                        (or (not client)
+                            (process-live-p (map-elt client :process)))))
+             (raw-status (if live
+                             (condition-case nil
+                                 (agent-shell-status :shell-buffer buffer)
+                               (error 'killed))
+                           'killed))
+             (session-id (map-nested-elt state '(:session :id))))
+        (cons
+         (pcase raw-status
+           ('busy "Working")
+           ('blocked "Waiting")
+           ('ready (cond ((not (map-elt state :initialized)) "Starting")
+                         ((not session-id) "No Session")
+                         (t "Ready")))
+           ('killed "Killed")
+           (_ "Unknown"))
+         (pcase raw-status
+           ((or 'blocked 'killed) 'agent-shell-error)
+           ('busy 'agent-shell-warning)
+           ('ready (if (and (map-elt state :initialized) session-id)
+                       'agent-shell-success
+                     'shadow))
+           (_ 'shadow))))))
+
+  (defun my/consult-agent-shell--context-usage (buffer)
+    "Return BUFFER's context usage annotation."
+    (with-current-buffer buffer
+      (let* ((usage (map-elt agent-shell--state :usage))
+             (used (map-elt usage :context-used))
+             (size (map-elt usage :context-size)))
+        (if (and (numberp used) (numberp size) (> size 0))
+            (let ((percentage (* 100.0 (/ (float used) size))))
+              (propertize
+               (format "%s/%s (%.0f%%)"
+                       (if (fboundp 'agent-shell--format-number-compact)
+                           (agent-shell--format-number-compact used)
+                         used)
+                       (if (fboundp 'agent-shell--format-number-compact)
+                           (agent-shell--format-number-compact size)
+                         size)
+                       percentage)
+               'face (if (fboundp 'agent-shell--context-usage-face)
+                         (agent-shell--context-usage-face percentage)
+                       'shadow)))
+          (propertize "—" 'face 'shadow)))))
+
+  (defun my/consult-agent-shell--cwd (buffer)
+    "Return BUFFER's abbreviated working directory."
+    (with-current-buffer buffer
+      (or (ignore-errors
+            (abbreviate-file-name
+             (directory-file-name (agent-shell-cwd))))
+          (abbreviate-file-name
+           (directory-file-name default-directory))
+          "—")))
+
+  (defun my/consult-agent-shell-buffer-annotate (candidate)
+    "Annotate agent-shell CANDIDATE with session, status, context and CWD."
+    (when-let* ((buffer (my/consult-agent-shell--buffer candidate)))
+      (let* ((status-data (my/consult-agent-shell--status buffer))
+             (status (car status-data))
+             (status-face (cdr status-data))
+             (session (my/consult-agent-shell--session-name buffer))
+             (usage (my/consult-agent-shell--context-usage buffer))
+             (cwd (my/consult-agent-shell--cwd buffer)))
+        (concat
+         (propertize "│ " 'face 'shadow)
+         (propertize (format "%-36s" session)
+                     'face 'agent-shell-session-title)
+         "  "
+         (propertize (format "%-9s" status) 'face status-face)
+         "  "
+         (propertize (format "%-18s" usage) 'face (get-text-property 0 'face usage))
+         "  "
+         (propertize cwd 'face 'agent-shell-session-directory)))))
 
   (defvar my/consult-source-agent-shell-buffer
     `(:name "Agent Shell"
             :narrow ?a
-            :category buffer
+            :category agent-shell-session
             :face consult-buffer
             :history buffer-name-history
             :state ,#'consult--buffer-state
+            :annotate ,#'my/consult-agent-shell-buffer-annotate
             :default t
             :items
             ,(lambda ()
@@ -1660,10 +1924,25 @@ Just put this function in `hippie-expand-try-functions-list'."
     "Consult source for agent-shell buffers.")
 
   (with-eval-after-load 'consult
-    (add-to-list 'consult-buffer-sources 'my/consult-source-agent-shell-buffer 'append)))
+    (add-to-list 'consult-buffer-sources 'my/consult-source-agent-shell-buffer 'append))
+  (with-eval-after-load 'marginalia
+    (add-to-list 'marginalia-annotators
+                 '(agent-shell-session
+                   my/consult-agent-shell-buffer-annotate
+                   builtin
+                   none)))
+  )
 
 (use-package shell-maker
   :ensure (:files (:defaults "*.el")))
+
+(autoload 'transient-define-prefix
+  "transient"
+  nil nil 'macro)
+
+(use-package codex-ide
+  :ensure (:url "https://github.com/dgillis/emacs-codex-ide" :rev :newest)
+  :bind ("C-c C-;" . codex-ide-menu))
 
 ;;; Utils
 ;;;; GC and recent files
@@ -1797,73 +2076,53 @@ Just put this function in `hippie-expand-try-functions-list'."
 
 ;;;; Translation
 (use-package gt
-  :commands (gt-do-translate-prompt gt-do-text-utility)
+  :bind
+  (("C-c t w" . my-translate-word)
+   ("C-c t r" . my-translate-region)
+   ("C-c t b" . my-translate-buffer))
+  :custom
+  (gt-langs '(en zh))
+  (gt-buffer-render-follow-p t)
+  (gt-buffer-render-window-config
+   '((display-buffer-reuse-window display-buffer-in-direction)
+     (direction . bottom)
+     (window-height . 0.4)))
+  (gt-default-translator
+   (gt-translator
+    :taker (gt-taker :langs '(en zh) :text 'word :prompt t)
+    :engines (list (gt-youdao-dict-engine)
+                   (gt-youdao-suggest-engine))
+    :render (gt-buffer-render)))
+  :custom-face
+  (gt-overlay-source-face ((t nil)))
   :config
-  (setq gt-langs '(en zh)
-        gt-buffer-render-follow-p t
-        gt-buffer-render-window-config
-        '((display-buffer-reuse-window display-buffer-in-direction)
-          (direction . bottom)
-          (window-height . 0.4)))
-  (setq gt-pop-posframe-forecolor (face-foreground 'tooltip nil t)
-        gt-pop-posframe-backcolor (face-background 'tooltip nil t))
-  (when (facep 'posframe-border)
-    (setq gt-pin-posframe-bdcolor (face-background 'posframe-border nil t)))
-  (with-no-warnings
-    (setq gt-preset-translators
-          `((default . ,(gt-translator
-                         :taker   (list (gt-taker :pick nil :if 'selection)
-                                        (gt-taker :text 'paragraph :if '(Info-mode help-mode helpful-mode devdocs-mode))
-                                        (gt-taker :text 'buffer :pick 'fresh-word
-                                                  :if (lambda (translatror)
-                                                        (and (not (derived-mode-p 'fanyi-mode)) buffer-read-only)))
-                                        (gt-taker :text 'word))
-                         :engines (if (display-graphic-p)
-                                      (list (gt-bing-engine :if 'not-word)
-                                            (gt-youdao-dict-engine :if 'word)
-                                            (gt-chatgpt-engine))
-                                    (list (gt-bing-engine :if 'not-word)
-                                          (gt-youdao-dict-engine :if 'word)
-                                          (gt-youdao-suggest-engine :if 'word)
-                                          (gt-google-engine :if 'word)))
-                         :render  (list (gt-posframe-pop-render
-                                         :if (lambda (translator)
-                                               (and (display-graphic-p)
-                                                    (not (derived-mode-p 'Info-mode 'help-mode 'helpful-mode 'devdocs-mode))
-                                                    (not (member (buffer-name) '("COMMIT_EDITMSG")))))
-                                         :frame-params (list :accept-focus nil
-                                                             :width 70
-                                                             :height 15
-                                                             :left-fringe 16
-                                                             :right-fringe 16
-                                                             :border-width 1
-                                                             :border-color gt-pin-posframe-bdcolor))
-                                        (gt-overlay-render :if 'read-only)
-                                        (gt-insert-render :if (lambda (translator) (member (buffer-name) '("COMMIT_EDITMSG"))))
-                                        (gt-buffer-render))))
-            (multi-dict . ,(gt-translator :taker (gt-taker :prompt t)
-                                          :engines (list (gt-bing-engine)
-                                                         (gt-youdao-dict-engine)
-                                                         (gt-chatgpt-engine)
-                                                         (gt-youdao-suggest-engine :if 'word)
-                                                         (gt-google-engine))
-                                          :render (gt-buffer-render)))
-            (Text-Utility . ,(gt-text-utility :taker (gt-taker :pick nil)
-                                              :render (gt-buffer-render)))))
+  (defvar my-gt--active nil)
 
-    (defun gt--do-translate (dict)
-      "Translate using DICT from the preset tranlators."
-      (gt-start (alist-get dict gt-preset-translators)))
+  (defun my-gt-translate (&optional mode)
+    (let ((gt-polyglot-p t))
+      (gt-start
+       (gt-translator
+        :taker (gt-taker :langs '(en zh) :text mode :prompt (eq mode 'word))
+        :engines (list (if (eq mode 'word)
+                           (gt-youdao-dict-engine)
+                         (gt-bing-engine)))
+        :render (if (eq mode 'word)
+                    (gt-buffer-render)
+                  (gt-overlay-render))))))
 
-    (defun gt-do-translate-prompt ()
-      "Translate with prompt using the multiple dictionaries."
-      (interactive)
-      (gt--do-translate 'multi-dict))
+  (defun my-gt-clear ()
+    (dolist (ov (gt-overlay-render-get-overlays (point-min) (point-max)))
+      (delete-overlay ov)))
 
-    (defun gt-do-text-utility ()
-      "Handle the texts with the utilities."
-      (interactive)
-      (gt--do-translate 'Text-Utility))))
+  (defun my-gt-auto-translate (&optional mode)
+    (setq my-gt--active (not my-gt--active))
+    (if my-gt--active
+        (my-gt-translate mode)
+      (my-gt-clear)))
+
+  (defun my-translate-word   () (interactive) (my-gt-auto-translate 'word))
+  (defun my-translate-region () (interactive) (my-gt-auto-translate 'region))
+  (defun my-translate-buffer () (interactive) (my-gt-auto-translate 'buffer)))
 
 ;; SaveAllBuffers
 (defun save-all-buffers ()
@@ -1984,6 +2243,7 @@ Returns t if .ignoreproject file exists in DIR."
         (select-window (nth index windows) 'norecord))))
   :bind
   (("C-x o" . my/other-window-mru)
+   ("M-o" . my/other-window-mru)
    :map other-window-repeat-map
    ("o" . my/other-window-mru))
   :config
@@ -2085,6 +2345,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (tabspaces-session t)
   (tabspaces-session-file (concat user-emacs-directory "tabspaces/tabsession.el"))
   (tabspaces-session-project-session-store (concat user-emacs-directory "tabspaces/"))
+  (tabspaces-exclude-buffers '("*Messages*" "*Compile-Log*" "*ghostel*" "*shell*" "*eshell*" "*elpaca*"))
+  (tabspaces-fully-resolve-paths t)  ; Resolve relative project paths to absolute
+  (tabspaces-project-switch-opens-workspace t)
   ;; (tabspaces-session-auto-restore t)
   :config
   (with-eval-after-load 'consult
@@ -2100,9 +2363,9 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
             :state    #'consult--buffer-state
             :default  t
             :items    (lambda () (consult--buffer-query
-                             :predicate #'tabspaces--local-buffer-p
-                             :sort 'visibility
-                             :as #'buffer-name))))
+                                  :predicate #'tabspaces--local-buffer-p
+                                  :sort 'visibility
+                                  :as #'buffer-name))))
     (add-to-list 'consult-buffer-sources 'consult--source-workspace)
     (add-to-list 'consult-project-buffer-sources 'consult--source-workspace)))
 
@@ -2217,13 +2480,27 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   :hook (window-setup . doom-modeline-mode)
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
+  (doom-modeline-vcs-max-length 30)
+  (doom-modeline-vcs-display-function #'my/doom-modeline-vcs-name-tail)
   (inhibit-compacting-font-caches t)
   (doom-modeline-buffer-file-name-style 'file-name)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-env-version t)
   (doom-modeline-check-simple-format t)
-  (doom-modeline-buffer-modification-icon t))
+  (doom-modeline-buffer-modification-icon t)
+  :config
+  (defvar my/doom-modeline-vcs-tail-length 20)
+
+  (defun my/doom-modeline-vcs-name-tail ()
+    (let* ((name (doom-modeline-vcs-name))
+           (tail-length (min my/doom-modeline-vcs-tail-length
+                             (length name))))
+      (if (< tail-length (length name))
+          (concat doom-modeline-ellipsis
+                  (substring name (- (length name) tail-length)))
+        name)))
+  )
 
 ;;;; Color preview
 (use-package colorful-mode
@@ -2254,7 +2531,8 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
   (defconst +my-en-font-candidates
-    '(("IoskeleyMono Nerd Font" . 140)
+    '(("Paper Mono" . 150)
+      ("IoskeleyMono Nerd Font" . 140)
       ("Cascadia Code NF" . 130)
       ("Hack Nerd Font Mono" . 130)
       ("MonolisaCode" . 130))
@@ -2499,7 +2777,7 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
         (append elisp-flymake-byte-compile-load-path
                 load-path))
 
-  (setq flymake-no-changes-timeout nil
+  (setq flymake-no-changes-timeout 0.5
         flymake-show-diagnostics-at-end-of-line nil
         flymake-margin-indicator-position 'right-margin
         flymake-fringe-indicator-position 'right-fringe)
@@ -2546,8 +2824,20 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
 ;;;; Grep and replace
 (use-package grep
   :ensure nil
+  :custom
+  (grep-using-headings t)
   :bind (:map grep-mode-map
-              ("i" . #'grep-change-to-grep-edit-mode)))
+              ("i" . #'grep-change-to-grep-edit-mode))
+  :config
+  (when (executable-find "rg")
+    (grep-apply-setting
+     'grep-command "rg --color=auto --null -nH --no-heading -e ")
+    (grep-apply-setting
+     'grep-template "rg --color=auto --null --no-heading -g '!*/' -e <R> <D>")
+    (grep-apply-setting
+     'grep-find-command '("rg --color=auto --null -nH --no-heading -e ''" . 38))
+    (grep-apply-setting
+     'grep-find-template "rg --color=auto --null -nH --no-heading -e <R> <D>")))
 
 (use-package replace
   :ensure nil
@@ -2702,7 +2992,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
 ;;; Programing
 (use-package prog-mode
   :ensure nil
-  :hook (prog-mode . hs-minor-mode)
+  :hook ((prog-mode . hs-minor-mode)
+         (prog-mode . (lambda () (setq-local tab-width 2))))
   :config
   (global-prettify-symbols-mode))
 
@@ -3000,6 +3291,8 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :ensure nil
   :when (and (fboundp 'treesit-available-p) (treesit-available-p))
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
+  :custom
+  (treesit-enable-modes t)
   :config
   (add-to-list 'auto-mode-alist '("\\(?:CMakeLists\\.txt\\|\\.cmake\\)\\'" . cmake-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
@@ -3089,28 +3382,13 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   (xref-history-storage #'xref-project-history))
 
 ;;;; Markdown and prose
-(use-package markdown-mode
-  :commands (copy-markdown-code-block)
-  :mode ("\\.md\\'" . markdown-mode)
-  :bind
-  (:map markdown-mode-map
-        ("C-c C" . copy-markdown-code-block))
-  :config
-  (defun copy-markdown-code-block ()
-    "Copy the contents of the fenced code block at point (without fences)."
-    (interactive)
-    (save-excursion
-      (let (beg end)
-        (unless (re-search-backward "^```" nil t)
-          (user-error "Not inside a fenced code block"))
-        (forward-line 1)
-        (setq beg (point))
-        (unless (re-search-forward "^```" nil t)
-          (user-error "No closing fence found"))
-        (beginning-of-line)
-        (setq end (point))
-        (kill-new (buffer-substring-no-properties beg end))
-        (message "Copied fenced code block")))))
+(use-package textui
+  :ensure (:type git :host github :repo "yibie/textui"))
+
+(use-package md-mode
+  :ensure (:type git :host github :repo "yibie/md-mode")
+  :mode ("\\.md\\'" . md-mode))
+
 
 (use-package markdown-xwidget
   :after markdown-mode
@@ -3381,16 +3659,32 @@ typical word processor."
   :bind
   (("C-0" . #'+ghostel-here)
    :map ghostel-mode-map
-   ("C-g" . nil))
+   ("C-g" . nil)
+   :map ghostel-semi-char-mode-map
+   ("C-s"  . consult-line)
+   ("C-k"  . my/ghostel-send-C-k-and-kill)
+   ;; I'm used to go up/down the shell history with M-n/p from eshell
+   ;; Simulate this behavior in ghostel by sending C-p and C-n
+   ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+   ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
   :custom
   (ghostel-term "xterm-256color")
   (ghostel-enable-title-tracking nil)
   (ghostel-ignore-cursor-change t)
   :config
+  (add-to-list 'project-switch-commands '(ghostel-project "Ghostel" ?t) t)
+  (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers" ?T) t)
+
+  (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer))
+  (defun my/ghostel-send-C-k-and-kill ()
+    "Send `C-k' to ghostel.
+Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
+    (interactive)
+    (kill-ring-save (point) (line-end-position))
+    (ghostel-send-key "k" "ctrl"))
   (when (locate-library "spinner")
     (setq ghostel-progress-function #'ghostel-spinner-progress
           ghostel-spinner-type 'progress-bar))
-  (defvar +my-ghostel-tab-buffer-name "ghostel-tab-buffer")
 
   (defun +ghostel-here (&optional arg)
     "Open Ghostel in project root if in a project, else current directory.
@@ -3419,7 +3713,8 @@ Same directory reuses the buffer; different directories do not."
     "Consult source for ghostel-mode buffers.")
 
   (with-eval-after-load 'consult
-    (add-to-list 'consult-buffer-sources '+consult-source-ghostel 'append)))
+    (add-to-list 'consult-buffer-sources '+consult-source-ghostel 'append)
+    (add-to-list 'consult-project-buffer-sources '+consult-source-ghostel 'append)))
 
 (use-package popterm
   :commands (+popterm-toggle-dwim +popterm-register-shortcut)
@@ -3451,10 +3746,10 @@ Same directory reuses the buffer; different directories do not."
 
 (defvar +org-files
   (mapcar (lambda (p) (expand-file-name p)) (list +org-capture-file-gtd
-                                             +org-capture-file-done
-                                             +org-capture-file-someday
-                                             +org-capture-file-note
-                                             +org-capture-file-routine)))
+                                                  +org-capture-file-done
+                                                  +org-capture-file-someday
+                                                  +org-capture-file-note
+                                                  +org-capture-file-routine)))
 
 (defun +org-init-appearance-h ()
   "Configures the UI for `org-mode'."
