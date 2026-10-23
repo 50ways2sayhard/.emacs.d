@@ -1105,7 +1105,8 @@ targets."
   (when *sys/mac*
     (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"))
 
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  (add-hook 'window-setup-hook #'global-visual-line-mode))
 
 ;;;; Consult
 (use-package consult
@@ -1933,6 +1934,11 @@ Just put this function in `hippie-expand-try-functions-list'."
                    none)))
   )
 
+(use-package dsh-emacs
+  :ensure (:host github :repo "vritser/dsh-emacs")
+  :custom
+  (dsh-emacs-default-preset "pantheon"))
+
 (use-package shell-maker
   :ensure (:files (:defaults "*.el")))
 
@@ -2531,11 +2537,11 @@ styling to the tab name and index using `tab-bar-tab-face-function`.
   (defvar +my-cn-font "Sarasa Term SC Nerd"
     "The font name of Chinese characters.")
   (defconst +my-en-font-candidates
-    '(("Paper Mono" . 150)
-      ("IoskeleyMono Nerd Font" . 140)
+    '(("IoskeleyMono Nerd Font" . 140)
+      ("Rysana Mono" . 140)
       ("Cascadia Code NF" . 130)
       ("Hack Nerd Font Mono" . 130)
-      ("MonolisaCode" . 130))
+      ("MonolisaCode" . 140))
     "Alist of (font-name . height) for `+my/select-en-font'.")
   (defvar +my-en-font (car (car +my-en-font-candidates))
     "The font name of English characters.")
@@ -3381,14 +3387,16 @@ When this mode is on, `im-change-cursor-color' control cursor changing."
   :custom
   (xref-history-storage #'xref-project-history))
 
-;;;; Markdown and prose
-(use-package textui
-  :ensure (:type git :host github :repo "yibie/textui"))
+(use-package markdown-table-wrap
+  :ensure (:type git :host github :repo "dnouri/markdown-table-wrap"))
 
-(use-package md-mode
-  :ensure (:type git :host github :repo "yibie/md-mode")
-  :mode ("\\.md\\'" . md-mode))
+(use-package markdown-ts-mode
+  :ensure nil
+  :mode ("\\.md\\'" . markdown-ts-mode))
 
+(use-package markdown-ts-appear
+  :ensure t
+  :hook (markdown-ts-mode . markdown-ts-appear-mode))
 
 (use-package markdown-xwidget
   :after markdown-mode
@@ -3660,6 +3668,7 @@ typical word processor."
   (("C-0" . #'+ghostel-here)
    :map ghostel-mode-map
    ("C-g" . nil)
+   ("C-l" . nil)
    :map ghostel-semi-char-mode-map
    ("C-s"  . consult-line)
    ("C-k"  . my/ghostel-send-C-k-and-kill)
@@ -3716,9 +3725,20 @@ Same directory reuses the buffer; different directories do not."
     (add-to-list 'consult-buffer-sources '+consult-source-ghostel 'append)
     (add-to-list 'consult-project-buffer-sources '+consult-source-ghostel 'append)))
 
+(use-package consult-ghostel
+  :after (ghostel consult)
+  :demand t
+  :config (consult-ghostel-mode)
+  :bind (("C-x m" . consult-ghostel)
+         :map project-prefix-map
+         ("m" . consult-ghostel-project)
+         :map ghostel-semi-char-mode-map
+         ("C-c h" . consult-ghostel-history)))
+
 (use-package popterm
   :commands (+popterm-toggle-dwim +popterm-register-shortcut)
   :bind (("C-9" . +popterm-toggle-dwim)
+         ("C-8" . +popterm-toggle-global)
          ("C-c t r" . +popterm-register-shortcut)
          ([f9]    . popterm-window-toggle)
          :map popterm-term-map
@@ -3733,7 +3753,35 @@ Same directory reuses the buffer; different directories do not."
   :config
   (require '+popterm)
   (popterm-global-mode 1)
-  (+popterm-auto-hide-mode 1))
+  (+popterm-auto-hide-mode 1)
+
+  ;; C-8: fullscreen Popterm whose terminal runs the Herdr TUI instead of a shell.
+  (defun +popterm-toggle-global ()
+    "Toggle a fullscreen Popterm terminal running the Herdr TUI."
+    (interactive)
+    (let ((popterm-display-method 'fullscreen)
+          (popterm-scope 'dedicated)
+          (popterm-auto-cd nil)          ; never type into Herdr's TUI
+          created)
+      ;; `popterm--create' starts the backend's default program; override the
+      ;; Ghostel branch so this instance gets a bare terminal buffer instead.
+      (cl-letf (((symbol-function 'popterm--ghostel-create)
+                 (lambda (buffer-name)
+                   (require 'ghostel)
+                   (setq created (generate-new-buffer buffer-name))
+                   (with-current-buffer created
+                     (ghostel-mode)
+                     (setq-local split-width-threshold nil))
+                   created)))
+        (popterm-toggle "herdr"))
+      ;; Start Herdr only after Popterm has shown the buffer: Ghostel sizes the
+      ;; PTY at spawn, and a resize after Herdr's first paint garbles its rows.
+      (when (and created (buffer-live-p created))
+        (with-current-buffer created
+          (unless (process-live-p ghostel--process)
+            (ghostel-exec created
+                          (or (bound-and-true-p herdr-executable)
+                              "herdr"))))))))
 
 ;;; Org Mode
 ;;;; Capture files
